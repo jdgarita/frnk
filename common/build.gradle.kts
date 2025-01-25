@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -10,10 +10,9 @@ plugins {
 
 kotlin {
     androidTarget {
+        publishLibraryVariants("release")
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
+        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
     }
 
     val xcf = XCFramework()
@@ -48,9 +47,10 @@ android {
     defaultConfig {
         minSdk = 24
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     buildTypes {
