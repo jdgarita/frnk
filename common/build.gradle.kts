@@ -36,6 +36,10 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
+
+    androidTarget {
+        publishLibraryVariants("release")
+    }
 }
 
 android {
