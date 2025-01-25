@@ -37,7 +37,7 @@ kotlin {
     }
 
     androidTarget {
-        publishLibraryVariants("release")
+        publishLibraryVariants("debug", "release")
     }
 }
 
