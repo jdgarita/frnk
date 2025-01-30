@@ -23,7 +23,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "common"
+            baseName = "mvi"
             xcf.add(this)
             isStatic = true
         }
@@ -40,7 +40,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.jdgarita.frnk"
+    namespace = "dev.jdgarita.frnk.presentation.mvi"
     compileSdk = 35
     defaultConfig {
         minSdk = 24
