@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Frnk"
 include(":common")
+include(":presentation:mvi")
