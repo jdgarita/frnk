@@ -32,14 +32,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.koin.core)
-            implementation(libs.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
-
-            implementation(project(":domain:framework-domain"))
-            implementation(project(":presentation:component-core"))
+            implementation(libs.uuid)
             implementation(project(":presentation:frnk-resources"))
-            implementation(project(":util:common"))
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -48,7 +43,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.presentation.mvi"
+    namespace = "dev.jdgarita.frnk.presentation.componentCore"
     compileSdk = 35
     defaultConfig {
         minSdk = 24

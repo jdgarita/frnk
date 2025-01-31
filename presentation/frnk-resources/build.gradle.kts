@@ -24,7 +24,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "mvi"
+            baseName = "resources"
             xcf.add(this)
             isStatic = true
         }
@@ -32,13 +32,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.koin.core)
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
 
-            implementation(project(":domain:framework-domain"))
-            implementation(project(":presentation:component-core"))
-            implementation(project(":presentation:frnk-resources"))
             implementation(project(":util:common"))
         }
         commonTest.dependencies {
@@ -48,7 +44,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.presentation.mvi"
+    namespace = "dev.jdgarita.frnk.presentation.resources"
     compileSdk = 35
     defaultConfig {
         minSdk = 24
