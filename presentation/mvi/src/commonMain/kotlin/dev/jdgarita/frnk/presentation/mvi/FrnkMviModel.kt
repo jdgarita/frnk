@@ -8,6 +8,8 @@ import dev.jdgarita.frnk.presentation.componentCore.FrnkBottomSheetViewState
 import dev.jdgarita.frnk.presentation.componentCore.FrnkDialogViewState
 import dev.jdgarita.frnk.presentation.componentCore.ToastAlertViewState
 import dev.jdgarita.frnk.util.common.Log
+import kotlin.jvm.JvmInline
+import kotlin.random.Random
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -15,15 +17,13 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.jvm.JvmInline
-import kotlin.random.Random
 
 interface FrnkMviModel<
-        TArgs : Arguments,
-        TIntent : Intent,
-        TViewState : ViewStateCommon<TViewState>,
-        TExternalEvent : ExternalEvent
-        > : MviViewModel<TArgs, TIntent, TViewState, TExternalEvent>, DataLoadingModel
+    TArgs : Arguments,
+    TIntent : Intent,
+    TViewState : ViewStateCommon<TViewState>,
+    TExternalEvent : ExternalEvent
+    > : MviViewModel<TArgs, TIntent, TViewState, TExternalEvent>, DataLoadingModel
 
 /**
  * A common View Model that layers functionality over a basic MviModel
@@ -33,12 +33,12 @@ interface FrnkMviModel<
  *  - Common State. See [CommonState]
  */
 abstract class BaseFrnkMviModel<
-        TModelState : StateCommon<TModelState>,
-        TArgs : Arguments,
-        TIntent : Intent,
-        TViewState : ViewStateCommon<TViewState>,
-        TExternalEvent : ExternalEvent
-        >(
+    TModelState : StateCommon<TModelState>,
+    TArgs : Arguments,
+    TIntent : Intent,
+    TViewState : ViewStateCommon<TViewState>,
+    TExternalEvent : ExternalEvent
+    >(
     singleThreadDispatcher: CoroutineDispatcher,
     modelStateFactory: ModelStateFactory<TModelState>,
     private val viewModelDependencies: ViewModelDependencies

@@ -4,9 +4,9 @@ import dev.jdgarita.frnk.presentation.resources.SemanticText
 import dev.jdgarita.frnk.presentation.resources.SemanticTypography
 import dev.jdgarita.frnk.presentation.resources.color.SemanticColor
 import dev.jdgarita.frnk.presentation.resources.images.SemanticIcon
-import kotlinx.serialization.Serializable
 import kotlin.experimental.ExperimentalObjCName
 import kotlin.native.ObjCName
+import kotlinx.serialization.Serializable
 
 @Serializable
 @OptIn(ExperimentalObjCName::class)

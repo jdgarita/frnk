@@ -1,7 +1,6 @@
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 package dev.jdgarita.frnk.domain.framework
 
-
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data object FirstOpen : AnalyticsEvent(
     "first_open",
@@ -29,12 +28,12 @@ data object AuthComplete : AnalyticsEvent(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class AuthFail(
     val errorReason: String,
-    val authType: String? = null,
+    val authType: String? = null
 ) : AnalyticsEvent(
     "auth_fail",
     mutableMapOf<String, String>().apply {
         put("errorReason", errorReason)
-            authType?.let{ put("authType", it) }
+        authType?.let { put("authType", it) }
     }
 )
 
@@ -52,7 +51,7 @@ data object AccountComplete : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class AccountFail(
-    val errorReason: String,
+    val errorReason: String
 ) : AnalyticsEvent(
     "account_fail",
     mutableMapOf<String, String>().apply {
@@ -68,23 +67,23 @@ data object AccountSkip : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ScreenView(
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "screen_view",
     mutableMapOf<String, String>().apply {
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class SearchAttempt(
     val searchTerm: String,
-    val ecomEnabled: String? = null,
+    val ecomEnabled: String? = null
 ) : AnalyticsEvent(
     "search_attempt",
     mutableMapOf<String, String>().apply {
         put("searchTerm", searchTerm)
-            ecomEnabled?.let{ put("ecomEnabled", it) }
+        ecomEnabled?.let { put("ecomEnabled", it) }
     }
 )
 
@@ -97,7 +96,7 @@ data class SearchResults(
     val searchTerm: String,
     val relevancyScore: String,
     val productId: String? = null,
-    val ecomEnabled: String? = null,
+    val ecomEnabled: String? = null
 ) : AnalyticsEvent(
     "search_results",
     mutableMapOf<String, String>().apply {
@@ -107,8 +106,8 @@ data class SearchResults(
         put("resultsReturned", resultsReturned)
         put("searchTerm", searchTerm)
         put("relevancyScore", relevancyScore)
-            productId?.let{ put("productId", it) }
-            ecomEnabled?.let{ put("ecomEnabled", it) }
+        productId?.let { put("productId", it) }
+        ecomEnabled?.let { put("ecomEnabled", it) }
     }
 )
 
@@ -119,7 +118,7 @@ data class SearchFail(
     val resultItemType: String,
     val resultsReturned: String,
     val searchTerm: String,
-    val ecomEnabled: String? = null,
+    val ecomEnabled: String? = null
 ) : AnalyticsEvent(
     "search_fail",
     mutableMapOf<String, String>().apply {
@@ -128,7 +127,7 @@ data class SearchFail(
         put("resultItemType", resultItemType)
         put("resultsReturned", resultsReturned)
         put("searchTerm", searchTerm)
-            ecomEnabled?.let{ put("ecomEnabled", it) }
+        ecomEnabled?.let { put("ecomEnabled", it) }
     }
 )
 
@@ -141,18 +140,18 @@ data object HomeScrollDepth : AnalyticsEvent(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CouponCategoryView(
     val categoryId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "coupon_category_view",
     mutableMapOf<String, String>().apply {
         put("categoryId", categoryId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CouponView(
-    val couponId: String,
+    val couponId: String
 ) : AnalyticsEvent(
     "coupon_view",
     mutableMapOf<String, String>().apply {
@@ -164,49 +163,49 @@ data class CouponView(
 data class CouponTap(
     val couponId: String,
     val brandLandingPageId: String? = null,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "coupon_tap",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            flyerType?.let{ put("flyerType", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CouponDetailsView(
     val couponId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "coupon_details_view",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CouponClipAttempt(
     val couponId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "coupon_clip_attempt",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CouponClipSuccess(
     val couponId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "coupon_clip_success",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
@@ -216,39 +215,39 @@ data class CouponClipFailure(
     val errorReason: String,
     val brandLandingPageId: String? = null,
     val errorSource: String? = null,
-    val errorMessage: String? = null,
+    val errorMessage: String? = null
 ) : AnalyticsEvent(
     "coupon_clip_failure",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
         put("errorReason", errorReason)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            errorSource?.let{ put("errorSource", it) }
-            errorMessage?.let{ put("errorMessage", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        errorSource?.let { put("errorSource", it) }
+        errorMessage?.let { put("errorMessage", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CouponDetailsShare(
     val couponId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "coupon_details_share",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ChallengeView(
     val challengeId: String,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "challenge_view",
     mutableMapOf<String, String>().apply {
         put("challengeId", challengeId)
-            flagType?.let{ put("flagType", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -256,25 +255,25 @@ data class ChallengeView(
 data class ChallengeTap(
     val challengeId: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "challenge_tap",
     mutableMapOf<String, String>().apply {
         put("challengeId", challengeId)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ChallengeDetailsView(
     val challengeId: String,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "challenge_details_view",
     mutableMapOf<String, String>().apply {
         put("challengeId", challengeId)
-            flagType?.let{ put("flagType", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -282,13 +281,13 @@ data class ChallengeDetailsView(
 data class ChallengeActionAttempt(
     val challengeId: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "challenge_action_attempt",
     mutableMapOf<String, String>().apply {
         put("challengeId", challengeId)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -297,14 +296,14 @@ data class ChallengeActionFailure(
     val challengeId: String,
     val errorReason: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "challenge_action_failure",
     mutableMapOf<String, String>().apply {
         put("challengeId", challengeId)
         put("errorReason", errorReason)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -312,19 +311,19 @@ data class ChallengeActionFailure(
 data class ChallengeDetailsShare(
     val challengeId: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "challenge_details_share",
     mutableMapOf<String, String>().apply {
         put("challengeId", challengeId)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class RewardView(
-    val rewardId: String,
+    val rewardId: String
 ) : AnalyticsEvent(
     "reward_view",
     mutableMapOf<String, String>().apply {
@@ -335,18 +334,18 @@ data class RewardView(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class RewardTap(
     val rewardId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "reward_tap",
     mutableMapOf<String, String>().apply {
         put("rewardId", rewardId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class RewardDetailsView(
-    val rewardId: String,
+    val rewardId: String
 ) : AnalyticsEvent(
     "reward_details_view",
     mutableMapOf<String, String>().apply {
@@ -356,7 +355,7 @@ data class RewardDetailsView(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class RewardClipAttempt(
-    val rewardId: String,
+    val rewardId: String
 ) : AnalyticsEvent(
     "reward_clip_attempt",
     mutableMapOf<String, String>().apply {
@@ -366,7 +365,7 @@ data class RewardClipAttempt(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class RewardClipFailure(
-    val rewardId: String,
+    val rewardId: String
 ) : AnalyticsEvent(
     "reward_clip_failure",
     mutableMapOf<String, String>().apply {
@@ -376,7 +375,7 @@ data class RewardClipFailure(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ProductCategoryView(
-    val categoryId: String,
+    val categoryId: String
 ) : AnalyticsEvent(
     "product_category_view",
     mutableMapOf<String, String>().apply {
@@ -387,55 +386,55 @@ data class ProductCategoryView(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ProductListAttempt(
     val productId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "product_list_attempt",
     mutableMapOf<String, String>().apply {
         put("productId", productId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ProductListFailure(
     val productId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "product_list_failure",
     mutableMapOf<String, String>().apply {
         put("productId", productId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ProductDetailsView(
     val productId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "product_details_view",
     mutableMapOf<String, String>().apply {
         put("productId", productId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ProductDetailsShare(
     val productId: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "product_details_share",
     mutableMapOf<String, String>().apply {
         put("productId", productId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ProductScan(
     val productId: String,
-    val barcodeValue: String,
+    val barcodeValue: String
 ) : AnalyticsEvent(
     "product_scan",
     mutableMapOf<String, String>().apply {
@@ -447,24 +446,24 @@ data class ProductScan(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class FlyerListView(
     val flyerId: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_list_view",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class FlyerListItemView(
     val flyerId: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_list_item_view",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -472,13 +471,13 @@ data class FlyerListItemView(
 data class FlyerDetailsView(
     val flyerId: String,
     val flyerPage: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_details_view",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("flyerPage", flyerPage)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -486,13 +485,13 @@ data class FlyerDetailsView(
 data class FlyerDetailsPagination(
     val flyerId: String,
     val flyerPage: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_details_pagination",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("flyerPage", flyerPage)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -500,13 +499,13 @@ data class FlyerDetailsPagination(
 data class FlyerDetailsShare(
     val flyerId: String,
     val flyerPage: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_details_share",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("flyerPage", flyerPage)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -514,13 +513,13 @@ data class FlyerDetailsShare(
 data class FlyerFullscreenView(
     val flyerId: String,
     val flyerPage: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_fullscreen_view",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("flyerPage", flyerPage)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -528,13 +527,13 @@ data class FlyerFullscreenView(
 data class FlyerFullscreenClose(
     val flyerId: String,
     val flyerPage: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_fullscreen_close",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("flyerPage", flyerPage)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -544,15 +543,15 @@ data class FlyerFullscreenTapAttempt(
     val flyerPage: String,
     val couponId: String? = null,
     val productId: String? = null,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_fullscreen_tap_attempt",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("flyerPage", flyerPage)
-            couponId?.let{ put("couponId", it) }
-            productId?.let{ put("productId", it) }
-            flyerType?.let{ put("flyerType", it) }
+        couponId?.let { put("couponId", it) }
+        productId?.let { put("productId", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -560,13 +559,13 @@ data class FlyerFullscreenTapAttempt(
 data class FlyerFullscreenTapFailure(
     val flyerId: String,
     val errorReason: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_fullscreen_tap_failure",
     mutableMapOf<String, String>().apply {
         put("flyerId", flyerId)
         put("errorReason", errorReason)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -574,13 +573,13 @@ data class FlyerFullscreenTapFailure(
 data class FlyerCouponShare(
     val couponId: String,
     val flyerId: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_coupon_share",
     mutableMapOf<String, String>().apply {
         put("couponId", couponId)
         put("flyerId", flyerId)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -588,13 +587,13 @@ data class FlyerCouponShare(
 data class FlyerProductShare(
     val productId: String,
     val flyerId: String,
-    val flyerType: String? = null,
+    val flyerType: String? = null
 ) : AnalyticsEvent(
     "flyer_product_share",
     mutableMapOf<String, String>().apply {
         put("productId", productId)
         put("flyerId", flyerId)
-            flyerType?.let{ put("flyerType", it) }
+        flyerType?.let { put("flyerType", it) }
     }
 )
 
@@ -603,7 +602,7 @@ data class ListItemAction(
     val itemId: String,
     val listActionType: String,
     val listItemType: String,
-    val listItemName: String,
+    val listItemName: String
 ) : AnalyticsEvent(
     "list_item_action",
     mutableMapOf<String, String>().apply {
@@ -616,7 +615,7 @@ data class ListItemAction(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class DeepLinkInvocation(
-    val deepLinkURI: String,
+    val deepLinkURI: String
 ) : AnalyticsEvent(
     "deep_link_invocation",
     mutableMapOf<String, String>().apply {
@@ -626,11 +625,11 @@ data class DeepLinkInvocation(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class StoreDirectorySetDefault(
-    val fulfillmentMethod: String? = null,
+    val fulfillmentMethod: String? = null
 ) : AnalyticsEvent(
     "store_directory_set_default",
     mutableMapOf<String, String>().apply {
-            fulfillmentMethod?.let{ put("fulfillmentMethod", it) }
+        fulfillmentMethod?.let { put("fulfillmentMethod", it) }
     }
 )
 
@@ -638,13 +637,13 @@ data class StoreDirectorySetDefault(
 data class StoreDirectorySearchAttempt(
     val searchTerm: String,
     val searchType: String,
-    val fulfillmentMethod: String? = null,
+    val fulfillmentMethod: String? = null
 ) : AnalyticsEvent(
     "store_directory_search_attempt",
     mutableMapOf<String, String>().apply {
         put("searchTerm", searchTerm)
         put("searchType", searchType)
-            fulfillmentMethod?.let{ put("fulfillmentMethod", it) }
+        fulfillmentMethod?.let { put("fulfillmentMethod", it) }
     }
 )
 
@@ -653,14 +652,14 @@ data class StoreDirectorySearchResult(
     val numberResultsReturned: Int,
     val searchTerm: String? = null,
     val searchType: String? = null,
-    val fulfillmentMethod: String? = null,
+    val fulfillmentMethod: String? = null
 ) : AnalyticsEvent(
     "store_directory_search_result",
     mutableMapOf<String, String>().apply {
         put("numberResultsReturned", numberResultsReturned.toString())
-            searchTerm?.let{ put("searchTerm", it) }
-            searchType?.let{ put("searchType", it) }
-            fulfillmentMethod?.let{ put("fulfillmentMethod", it) }
+        searchTerm?.let { put("searchTerm", it) }
+        searchType?.let { put("searchType", it) }
+        fulfillmentMethod?.let { put("fulfillmentMethod", it) }
     }
 )
 
@@ -669,14 +668,14 @@ data class AdRequest(
     val categoryId: String,
     val placementId: String,
     val environment: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "ad_request",
     mutableMapOf<String, String>().apply {
         put("categoryId", categoryId)
         put("placementId", placementId)
         put("environment", environment)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     },
     AnalyticsEventType.Advertisement
 )
@@ -689,7 +688,7 @@ data class AdsReceived(
     val adImpressionId: String,
     val adId: String,
     val environment: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "ads_received",
     mutableMapOf<String, String>().apply {
@@ -699,7 +698,7 @@ data class AdsReceived(
         put("adImpressionId", adImpressionId)
         put("adId", adId)
         put("environment", environment)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     },
     AnalyticsEventType.Advertisement
 )
@@ -713,7 +712,7 @@ data class Impression(
     val platform: String,
     val adSource: String,
     val environment: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "impression",
     mutableMapOf<String, String>().apply {
@@ -724,7 +723,7 @@ data class Impression(
         put("platform", platform)
         put("adSource", adSource)
         put("environment", environment)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     },
     AnalyticsEventType.Advertisement
 )
@@ -738,7 +737,7 @@ data class AdsView(
     val platform: String,
     val adSource: String,
     val environment: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "ads_view",
     mutableMapOf<String, String>().apply {
@@ -749,7 +748,7 @@ data class AdsView(
         put("platform", platform)
         put("adSource", adSource)
         put("environment", environment)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     },
     AnalyticsEventType.Advertisement
 )
@@ -762,7 +761,7 @@ data class Click(
     val adId: String,
     val platform: String,
     val adSource: String,
-    val brandLandingPageId: String? = null,
+    val brandLandingPageId: String? = null
 ) : AnalyticsEvent(
     "click",
     mutableMapOf<String, String>().apply {
@@ -772,7 +771,7 @@ data class Click(
         put("adId", adId)
         put("platform", platform)
         put("adSource", adSource)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
     },
     AnalyticsEventType.Advertisement
 )
@@ -787,7 +786,7 @@ data class ClickedItemPosition(
     val searchTerm: String,
     val searchType: String,
     val position: Int,
-    val priceDiscounted: String,
+    val priceDiscounted: String
 ) : AnalyticsEvent(
     "clicked_item_position",
     mutableMapOf<String, String>().apply {
@@ -822,7 +821,7 @@ data class ProductTap(
     val brandLandingPageId: String? = null,
     val ecomEnabled: String? = null,
     val flyerType: String? = null,
-    val fulfillmentMethod: String? = null,
+    val fulfillmentMethod: String? = null
 ) : AnalyticsEvent(
     "product_tap",
     mutableMapOf<String, String>().apply {
@@ -834,10 +833,10 @@ data class ProductTap(
         put("sponsoredProduct", sponsoredProduct)
         put("tapType", tapType)
         put("price", price)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            ecomEnabled?.let{ put("ecomEnabled", it) }
-            flyerType?.let{ put("flyerType", it) }
-            fulfillmentMethod?.let{ put("fulfillmentMethod", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        ecomEnabled?.let { put("ecomEnabled", it) }
+        flyerType?.let { put("flyerType", it) }
+        fulfillmentMethod?.let { put("fulfillmentMethod", it) }
     }
 )
 
@@ -851,13 +850,13 @@ data object SessionEnd : AnalyticsEvent(
 data class DealView(
     val dealId: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "deal_view",
     mutableMapOf<String, String>().apply {
         put("dealId", dealId)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -865,13 +864,13 @@ data class DealView(
 data class DealDetailsView(
     val dealId: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "deal_details_view",
     mutableMapOf<String, String>().apply {
         put("dealId", dealId)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -879,13 +878,13 @@ data class DealDetailsView(
 data class DealTap(
     val dealId: String,
     val alternateTenantLoyaltyId: String? = null,
-    val flagType: String? = null,
+    val flagType: String? = null
 ) : AnalyticsEvent(
     "deal_tap",
     mutableMapOf<String, String>().apply {
         put("dealId", dealId)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
-            flagType?.let{ put("flagType", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
+        flagType?.let { put("flagType", it) }
     }
 )
 
@@ -893,13 +892,13 @@ data class DealTap(
 data class CashbackView(
     val cashbackId: String,
     val brandLandingPageId: String? = null,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_view",
     mutableMapOf<String, String>().apply {
         put("cashbackId", cashbackId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
@@ -907,13 +906,13 @@ data class CashbackView(
 data class CashbackDetailsView(
     val cashbackId: String,
     val brandLandingPageId: String? = null,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_details_view",
     mutableMapOf<String, String>().apply {
         put("cashbackId", cashbackId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
@@ -921,13 +920,13 @@ data class CashbackDetailsView(
 data class CashbackClipAttempt(
     val cashbackId: String,
     val brandLandingPageId: String? = null,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_clip_attempt",
     mutableMapOf<String, String>().apply {
         put("cashbackId", cashbackId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
@@ -936,36 +935,36 @@ data class CashbackClipFailure(
     val cashbackId: String,
     val errorReason: String,
     val brandLandingPageId: String? = null,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_clip_failure",
     mutableMapOf<String, String>().apply {
         put("cashbackId", cashbackId)
         put("errorReason", errorReason)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CashbackBalanceTap(
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_balance_tap",
     mutableMapOf<String, String>().apply {
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CashbackBalanceCashoutAttempt(
     val cashoutMethod: String,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_balance_cashout_attempt",
     mutableMapOf<String, String>().apply {
         put("cashoutMethod", cashoutMethod)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
@@ -973,35 +972,35 @@ data class CashbackBalanceCashoutAttempt(
 data class CashbackBalanceCashoutFailure(
     val errorReason: String,
     val cashoutMethod: String,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_balance_cashout_failure",
     mutableMapOf<String, String>().apply {
         put("errorReason", errorReason)
         put("cashoutMethod", cashoutMethod)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CashbackEmailTap(
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_email_tap",
     mutableMapOf<String, String>().apply {
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CashbackEmailSaveAttempt(
     val cashoutMethod: String,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_email_save_attempt",
     mutableMapOf<String, String>().apply {
         put("cashoutMethod", cashoutMethod)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
@@ -1009,13 +1008,13 @@ data class CashbackEmailSaveAttempt(
 data class CashbackEmailSaveFailure(
     val errorReason: String,
     val cashoutMethod: String,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_email_save_failure",
     mutableMapOf<String, String>().apply {
         put("errorReason", errorReason)
         put("cashoutMethod", cashoutMethod)
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
@@ -1023,31 +1022,31 @@ data class CashbackEmailSaveFailure(
 data class CashbackDetailsShare(
     val cashbackId: String,
     val brandLandingPageId: String? = null,
-    val alternateTenantLoyaltyId: String? = null,
+    val alternateTenantLoyaltyId: String? = null
 ) : AnalyticsEvent(
     "cashback_details_share",
     mutableMapOf<String, String>().apply {
         put("cashbackId", cashbackId)
-            brandLandingPageId?.let{ put("brandLandingPageId", it) }
-            alternateTenantLoyaltyId?.let{ put("alternateTenantLoyaltyId", it) }
+        brandLandingPageId?.let { put("brandLandingPageId", it) }
+        alternateTenantLoyaltyId?.let { put("alternateTenantLoyaltyId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class NearbyStoreLinkTap(
     val challengeId: String? = null,
-    val dealId: String? = null,
+    val dealId: String? = null
 ) : AnalyticsEvent(
     "nearby_store_link_tap",
     mutableMapOf<String, String>().apply {
-            challengeId?.let{ put("challengeId", it) }
-            dealId?.let{ put("dealId", it) }
+        challengeId?.let { put("challengeId", it) }
+        dealId?.let { put("dealId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class LoyaltyIdScan(
-    val loyaltyScan: String,
+    val loyaltyScan: String
 ) : AnalyticsEvent(
     "loyalty_id_scan",
     mutableMapOf<String, String>().apply {
@@ -1063,7 +1062,7 @@ data object LoyaltyIdManual : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class LoyaltyIdError(
-    val errorReason: String,
+    val errorReason: String
 ) : AnalyticsEvent(
     "loyalty_id_error",
     mutableMapOf<String, String>().apply {
@@ -1085,7 +1084,7 @@ data object ShoppingListAvgItems : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ShoppingListComplete(
-    val itemId: String,
+    val itemId: String
 ) : AnalyticsEvent(
     "shopping_list_complete",
     mutableMapOf<String, String>().apply {
@@ -1096,7 +1095,7 @@ data class ShoppingListComplete(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ShoppingListWriteIn(
     val searchTerm: String,
-    val searchType: String,
+    val searchType: String
 ) : AnalyticsEvent(
     "shopping_list_write_in",
     mutableMapOf<String, String>().apply {
@@ -1132,7 +1131,7 @@ data object ShoppingListCompletedVsActive : AnalyticsEvent(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class TopCategoryTap(
     val categoryId: String,
-    val position: Int,
+    val position: Int
 ) : AnalyticsEvent(
     "top_category_tap",
     mutableMapOf<String, String>().apply {
@@ -1146,20 +1145,20 @@ data class QuantityStepperTap(
     val productId: String,
     val productCount: String,
     val productWeight: String,
-    val fulfillmentMethod: String? = null,
+    val fulfillmentMethod: String? = null
 ) : AnalyticsEvent(
     "quantity_stepper_tap",
     mutableMapOf<String, String>().apply {
         put("productId", productId)
         put("productCount", productCount)
         put("productWeight", productWeight)
-            fulfillmentMethod?.let{ put("fulfillmentMethod", it) }
+        fulfillmentMethod?.let { put("fulfillmentMethod", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class SignupPromptView(
-    val originatingTapType: String,
+    val originatingTapType: String
 ) : AnalyticsEvent(
     "signup_prompt_view",
     mutableMapOf<String, String>().apply {
@@ -1169,7 +1168,7 @@ data class SignupPromptView(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class SignupPromptTap(
-    val tapType: String,
+    val tapType: String
 ) : AnalyticsEvent(
     "signup_prompt_tap",
     mutableMapOf<String, String>().apply {
@@ -1179,11 +1178,11 @@ data class SignupPromptTap(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CheckAddressTap(
-    val ecomEnabled: String? = null,
+    val ecomEnabled: String? = null
 ) : AnalyticsEvent(
     "check_address_tap",
     mutableMapOf<String, String>().apply {
-            ecomEnabled?.let{ put("ecomEnabled", it) }
+        ecomEnabled?.let { put("ecomEnabled", it) }
     }
 )
 
@@ -1193,7 +1192,7 @@ data class CartView(
     val addressSaved: String,
     val cartCount: String,
     val fulfillmentMethod: String,
-    val ecomEnabled: String? = null,
+    val ecomEnabled: String? = null
 ) : AnalyticsEvent(
     "cart_view",
     mutableMapOf<String, String>().apply {
@@ -1201,7 +1200,7 @@ data class CartView(
         put("addressSaved", addressSaved)
         put("cartCount", cartCount)
         put("fulfillmentMethod", fulfillmentMethod)
-            ecomEnabled?.let{ put("ecomEnabled", it) }
+        ecomEnabled?.let { put("ecomEnabled", it) }
     }
 )
 
@@ -1214,7 +1213,7 @@ data object CartStoreFinderView : AnalyticsEvent(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class CartStoreFinderTap(
     val position: Int,
-    val tapType: String,
+    val tapType: String
 ) : AnalyticsEvent(
     "cart_store_finder_tap",
     mutableMapOf<String, String>().apply {
@@ -1228,7 +1227,7 @@ data class SwipeDelete(
     val productId: String,
     val productCount: String,
     val productWeight: String,
-    val swipeDirection: String,
+    val swipeDirection: String
 ) : AnalyticsEvent(
     "swipe_delete",
     mutableMapOf<String, String>().apply {
@@ -1244,7 +1243,7 @@ data class CheckoutTap(
     val cartCount: String,
     val cartSubtotal: String,
     val cartSavings: String,
-    val fulfillmentMethod: String,
+    val fulfillmentMethod: String
 ) : AnalyticsEvent(
     "checkout_tap",
     mutableMapOf<String, String>().apply {
@@ -1257,7 +1256,7 @@ data class CheckoutTap(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class AccountPageTap(
-    val destination: String,
+    val destination: String
 ) : AnalyticsEvent(
     "account_page_tap",
     mutableMapOf<String, String>().apply {
@@ -1269,13 +1268,13 @@ data class AccountPageTap(
 data class EcomActionFailure(
     val actionAttempt: String,
     val errorMessage: String,
-    val productId: String? = null,
+    val productId: String? = null
 ) : AnalyticsEvent(
     "ecom_action_failure",
     mutableMapOf<String, String>().apply {
         put("actionAttempt", actionAttempt)
         put("errorMessage", errorMessage)
-            productId?.let{ put("productId", it) }
+        productId?.let { put("productId", it) }
     }
 )
 
@@ -1283,7 +1282,7 @@ data class EcomActionFailure(
 data class EcomWebviewFailure(
     val actionAttempt: String,
     val errorSource: String,
-    val errorMessage: String,
+    val errorMessage: String
 ) : AnalyticsEvent(
     "ecom_webview_failure",
     mutableMapOf<String, String>().apply {
@@ -1301,7 +1300,7 @@ data object ReceiptScanTap : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ReceiptScanPermission(
-    val permission_status: String,
+    val permission_status: String
 ) : AnalyticsEvent(
     "receipt_scan_permission",
     mutableMapOf<String, String>().apply {
@@ -1317,7 +1316,7 @@ data object ReceiptScanPhotoCaptured : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ReceiptScanPhotoSubmitted(
-    val photo_count: String,
+    val photo_count: String
 ) : AnalyticsEvent(
     "receipt_scan_photo_submitted",
     mutableMapOf<String, String>().apply {
@@ -1333,7 +1332,7 @@ data object ReceiptScanSuccess : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ReceiptScanFailure(
-    val errorReason: String,
+    val errorReason: String
 ) : AnalyticsEvent(
     "receipt_scan_failure",
     mutableMapOf<String, String>().apply {
@@ -1388,14 +1387,14 @@ data class PointHistoryDetailsTap(
     val itemId: String,
     val tapType: String,
     val rewardId: String? = null,
-    val challengeId: String? = null,
+    val challengeId: String? = null
 ) : AnalyticsEvent(
     "point_history_details_tap",
     mutableMapOf<String, String>().apply {
         put("itemId", itemId)
         put("tapType", tapType)
-            rewardId?.let{ put("rewardId", it) }
-            challengeId?.let{ put("challengeId", it) }
+        rewardId?.let { put("rewardId", it) }
+        challengeId?.let { put("challengeId", it) }
     }
 )
 
@@ -1479,7 +1478,7 @@ data object AuthLoyaltyIdCreationFail : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class WebviewError(
-    val errorReason: String,
+    val errorReason: String
 ) : AnalyticsEvent(
     "webview_error",
     mutableMapOf<String, String>().apply {
@@ -1499,7 +1498,7 @@ data class SearchResultTap(
     val searchType: String,
     val relevancyScore: String,
     val productId: String? = null,
-    val categoryId: String? = null,
+    val categoryId: String? = null
 ) : AnalyticsEvent(
     "search_result_tap",
     mutableMapOf<String, String>().apply {
@@ -1512,14 +1511,14 @@ data class SearchResultTap(
         put("searchTerm", searchTerm)
         put("searchType", searchType)
         put("relevancyScore", relevancyScore)
-            productId?.let{ put("productId", it) }
-            categoryId?.let{ put("categoryId", it) }
+        productId?.let { put("productId", it) }
+        categoryId?.let { put("categoryId", it) }
     }
 )
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class OnSaleForYouView(
-    val numberResultsReturned: Int,
+    val numberResultsReturned: Int
 ) : AnalyticsEvent(
     "on_sale_for_you_view",
     mutableMapOf<String, String>().apply {
@@ -1529,7 +1528,7 @@ data class OnSaleForYouView(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ShoppingListCouponAdded(
-    val itemId: String,
+    val itemId: String
 ) : AnalyticsEvent(
     "shopping_list_coupon_added",
     mutableMapOf<String, String>().apply {
@@ -1539,7 +1538,7 @@ data class ShoppingListCouponAdded(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ShoppingListItemDelete(
-    val itemId: String,
+    val itemId: String
 ) : AnalyticsEvent(
     "shopping_list_item_delete",
     mutableMapOf<String, String>().apply {
@@ -1549,7 +1548,7 @@ data class ShoppingListItemDelete(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ShoppingListQuantityActive(
-    val quantity: String,
+    val quantity: String
 ) : AnalyticsEvent(
     "shopping_list_quantity_active",
     mutableMapOf<String, String>().apply {
@@ -1559,7 +1558,7 @@ data class ShoppingListQuantityActive(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class ShoppingListQuantityCompleted(
-    val quantity: String,
+    val quantity: String
 ) : AnalyticsEvent(
     "shopping_list_quantity_completed",
     mutableMapOf<String, String>().apply {
@@ -1570,7 +1569,7 @@ data class ShoppingListQuantityCompleted(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class OrderConfirmationToastView(
     val fulfillmentMethod: String,
-    val orderId: String,
+    val orderId: String
 ) : AnalyticsEvent(
     "order_confirmation_toast_view",
     mutableMapOf<String, String>().apply {
@@ -1581,7 +1580,7 @@ data class OrderConfirmationToastView(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class OidcSigninStart(
-    val signInNotSignUp: Int,
+    val signInNotSignUp: Int
 ) : AnalyticsEvent(
     "oidc_signin_start",
     mutableMapOf<String, String>().apply {
@@ -1633,7 +1632,7 @@ data object LocationPermissionsPopupView : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class LocationPermissionsPopupTap(
-    val tapType: String,
+    val tapType: String
 ) : AnalyticsEvent(
     "location_permissions_popup_tap",
     mutableMapOf<String, String>().apply {
@@ -1649,7 +1648,7 @@ data object LocationSettingsPopupView : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class LocationSettingsPopupTap(
-    val tapType: String,
+    val tapType: String
 ) : AnalyticsEvent(
     "location_settings_popup_tap",
     mutableMapOf<String, String>().apply {
@@ -1666,7 +1665,7 @@ data object StoreDetailsFlyerTap : AnalyticsEvent(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class FulfillmentChange(
     val fulfillmentMethod: String,
-    val changeType: String,
+    val changeType: String
 ) : AnalyticsEvent(
     "fulfillment_change",
     mutableMapOf<String, String>().apply {
@@ -1683,7 +1682,7 @@ data object StoreDirectionsTap : AnalyticsEvent(
 
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class StoreDetailsPhoneTap(
-    val department: String,
+    val department: String
 ) : AnalyticsEvent(
     "store_details_phone_tap",
     mutableMapOf<String, String>().apply {
@@ -1694,7 +1693,7 @@ data class StoreDetailsPhoneTap(
 // DO NOT EDIT - This file is auto-generated - see bin/generate_analytics.sh
 data class StoreDetailsHoursTap(
     val tapType: String,
-    val department: String,
+    val department: String
 ) : AnalyticsEvent(
     "store_details_hours_tap",
     mutableMapOf<String, String>().apply {

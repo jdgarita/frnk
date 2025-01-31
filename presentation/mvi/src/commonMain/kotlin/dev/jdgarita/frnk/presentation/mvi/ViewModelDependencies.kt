@@ -6,7 +6,7 @@ import dev.jdgarita.frnk.presentation.resources.FrnkStringProvider
 import dev.jdgarita.frnk.util.common.Formatters
 
 data class ViewModelDependencies(
-    //todo provide AppConfigurationProvider
+    // todo provide AppConfigurationProvider
     // val appConfigurationProvider: AppConfigurationProvider,
     val logger: FrnkLogger,
     val formatters: Formatters,

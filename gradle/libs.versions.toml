@@ -10,6 +10,9 @@ uuid = "0.8.2"
 koin-core = "3.5.4"
 kotlinx-datetime = "0.6.0"
 
+plugin-ktLint-ktLint = "11.4.2"
+plugin-ktLint-jlleitschuh = "0.49.1"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -20,6 +23,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
 plugin-kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
+plugin-ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "plugin-ktLint-ktLint" }
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

@@ -30,9 +30,7 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
-            //put your multiplatform dependencies here
-        }
+        commonMain.dependencies {}
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
