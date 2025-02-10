@@ -34,7 +34,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.uuid)
             implementation(project(":presentation:frnk-resources"))
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

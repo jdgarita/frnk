@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization)
 
             implementation(project(":util:common"))
         }

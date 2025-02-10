@@ -34,7 +34,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.koin.core)
             implementation(libs.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization)
 
             implementation(project(":domain:framework-domain"))
             implementation(project(":presentation:component-core"))

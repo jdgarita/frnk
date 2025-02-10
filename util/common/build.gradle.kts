@@ -32,7 +32,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization)
             implementation(libs.kotlinx.datetime)
             with(dependencies.create(libs.touchlab.kermit.get())) {
                 api("$group:$name:$version") {

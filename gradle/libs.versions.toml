@@ -4,7 +4,7 @@ kotlin = "2.0.21"
 android-minSdk = "24"
 android-compileSdk = "34"
 coroutines = "1.8.1"
-kotlinx-serialization = "1.7.0-RC"
+kotlinx-serialization = "1.7.3"
 plugin-touchlab-kermit = "2.0.2"
 uuid = "0.8.2"
 koin-core = "3.5.4"
@@ -16,7 +16,7 @@ plugin-ktLint-jlleitschuh = "0.49.1"
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "plugin-touchlab-kermit"}
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
