@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Frnk"
 include(":common")
+include(":ui:framework-ui")
 include(":domain:framework-domain")
 include(":presentation:mvi")
 include(":presentation:component-core")
