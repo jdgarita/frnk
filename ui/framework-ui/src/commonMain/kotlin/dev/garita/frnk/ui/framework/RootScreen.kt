@@ -93,11 +93,14 @@ fun RootScreen(
 private fun checkIfItemSelected(
     bottomBarDestination: String?,
     currentDestinationRoute: String?
-): Boolean {
-    return if ((currentDestinationRoute?.contains("Home") == true || currentDestinationRoute?.contains("Details") == true) && bottomBarDestination?.contains(
-            "Home"
-        ) == true
-    ) true
-    else if (currentDestinationRoute?.contains(bottomBarDestination.toString()) == true) true
-    else false
+): Boolean = when {
+    (
+        currentDestinationRoute?.contains("Home") == true ||
+            currentDestinationRoute?.contains("Details") == true
+        ) && bottomBarDestination?.contains(
+        "Home"
+    ) == true -> true
+
+    currentDestinationRoute?.contains(bottomBarDestination.toString()) == true -> true
+    else -> false
 }
