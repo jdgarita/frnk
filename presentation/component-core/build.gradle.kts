@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.uuid)
-            implementation(project(":presentation:frnk-resources"))
+            implementation(project(":frnk:presentation:frnk-resources"))
             implementation(libs.kotlinx.serialization)
         }
         commonTest.dependencies {

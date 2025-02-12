@@ -38,8 +38,8 @@ kotlin {
         }
 
         commonMain.dependencies {
-            implementation(project(":presentation:mvi"))
-            implementation(project(":presentation:component-core"))
+            implementation(project(":frnk:presentation:mvi"))
+            implementation(project(":frnk:presentation:component-core"))
             implementation(libs.compose.navigation)
             implementation(libs.kotlinx.serialization)
             implementation(compose.runtime)

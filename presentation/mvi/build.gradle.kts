@@ -36,10 +36,10 @@ kotlin {
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization)
 
-            implementation(project(":domain:framework-domain"))
-            implementation(project(":presentation:component-core"))
-            implementation(project(":presentation:frnk-resources"))
-            implementation(project(":util:common"))
+            implementation(project(":frnk:domain:framework-domain"))
+            implementation(project(":frnk:presentation:component-core"))
+            implementation(project(":frnk:presentation:frnk-resources"))
+            implementation(project(":frnk:util:common"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

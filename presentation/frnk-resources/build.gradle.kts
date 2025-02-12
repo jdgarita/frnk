@@ -35,7 +35,7 @@ kotlin {
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization)
 
-            implementation(project(":util:common"))
+            implementation(project(":frnk:util:common"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

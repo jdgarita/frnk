@@ -16,11 +16,11 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Frnk"
-include(":common")
-include(":ui:framework-ui")
-include(":domain:framework-domain")
-include(":presentation:mvi")
-include(":presentation:component-core")
-include(":presentation:frnk-resources")
-include(":util:common")
-include(":util:di")
+include(":frnk:common")
+include(":frnk:ui:framework-ui")
+include(":frnk:domain:framework-domain")
+include(":frnk:presentation:mvi")
+include(":frnk:presentation:component-core")
+include(":frnk:presentation:frnk-resources")
+include(":frnk:util:common")
+include(":frnk:util:di")
