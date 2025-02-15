@@ -59,7 +59,7 @@ fun RootScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = currentDestinationRoute ?: "No Title"
+                            text = parseTopBarTitle(currentDestinationRoute)
                         )
                     },
                     navigationIcon = {
@@ -82,8 +82,8 @@ fun RootScreen(
                 bottomBarDestinationList.forEach { destination ->
                     NavigationBarItem(
                         selected = checkIfItemSelected(
-                            bottomBarDestination = currentDestinationRoute,
-                            currentDestinationRoute = destination.label
+                            currentDestinationRoute = currentDestinationRoute,
+                            bottomBarDestination = destination.label
                         ),
                         label = { Text(destination.label) },
                         icon = {
@@ -133,4 +133,11 @@ private fun checkIfItemSelected(
 
     currentDestinationRoute?.contains(bottomBarDestination.toString()) == true -> true
     else -> false
+}
+
+private fun parseTopBarTitle(route: String?): String {
+    return if (route?.contains("Home") == true) "Home"
+    else if (route?.contains("Saved") == true) "Favorites"
+    else if (route?.contains("Joke") == true) " Joke"
+    else "Food Recipes"
 }
