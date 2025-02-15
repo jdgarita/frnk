@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
-    kotlin("plugin.serialization")
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -35,9 +35,6 @@ kotlin {
             implementation(libs.uuid)
             implementation(project(":frnk:presentation:frnk-resources"))
             implementation(libs.kotlinx.serialization)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }
