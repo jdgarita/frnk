@@ -13,12 +13,12 @@ fun RootNavigationGraph(
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Root
+        startDestination = InternalScreen.Root
     ) {
-        composable<Screen.Root> {
-            root { navController.navigate(Screen.Settings) }
+        composable<InternalScreen.Root> {
+            root { navController.navigate(InternalScreen.Settings) }
         }
-        composable<Screen.Settings> {
+        composable<InternalScreen.Settings> {
             settings { navController.navigateUp() }
 //            SettingsScreen(
 //                navigateBack = {

@@ -8,27 +8,32 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootScreen(
     navigateToSettings: () -> Unit,
-    navigationBar: @Composable (navController: NavHostController) -> Unit,
+    bottomBarDestinationList: List<BottomBarDestination>,
     bottomNavigationGraph: @Composable (navController: NavHostController, paddingValues: PaddingValues) -> Unit
 ) {
     val navController = rememberNavController()
@@ -73,7 +78,32 @@ fun RootScreen(
             }
         },
         bottomBar = {
-            navigationBar(navController)
+            NavigationBar {
+                bottomBarDestinationList.forEach { destination ->
+                    NavigationBarItem(
+                        selected = checkIfItemSelected(
+                            bottomBarDestination = currentDestinationRoute,
+                            currentDestinationRoute = destination.label
+                        ),
+                        label = { Text(destination.label) },
+                        icon = {
+                            Icon(
+                                imageVector = destination.icon,
+                                contentDescription = null
+                            )
+                        },
+                        onClick = {
+                            navController.navigate(destination.screen) {
+                                popUpTo(navController.graph.findStartDestination().route!!) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
         }
     ) { padding ->
         val animatedTopPadding by animateDpAsState(
