@@ -136,8 +136,13 @@ private fun checkIfItemSelected(
 }
 
 private fun parseTopBarTitle(route: String?): String {
-    return if (route?.contains("Home") == true) "Home"
-    else if (route?.contains("Saved") == true) "Favorites"
-    else if (route?.contains("Joke") == true) " Joke"
-    else "Food Recipes"
+    return if (route?.contains("Home") == true) {
+        "Home"
+    } else if (route?.contains("Saved") == true) {
+        "Favorites"
+    } else if (route?.contains("Joke") == true) {
+        " Joke"
+    } else {
+        "Food Recipes"
+    }
 }
