@@ -1,3 +1,4 @@
+import dev.jdgarita.frnk.config.dependencies.Deps
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -38,8 +39,8 @@ kotlin {
         }
 
         commonMain.dependencies {
-            implementation(project(":frnk:presentation:mvi"))
-            implementation(project(":frnk:presentation:component-core"))
+            implementation(project(path = Deps.Main.Frnk.presentationMvi))
+            implementation(project(path = Deps.Main.Frnk.presentationComponentCore))
             implementation(libs.compose.navigation)
             implementation(libs.kotlinx.serialization)
             implementation(compose.runtime)

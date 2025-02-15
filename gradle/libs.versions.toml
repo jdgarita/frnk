@@ -11,6 +11,7 @@ koin-core = "3.5.4"
 kotlinx-datetime = "0.6.0"
 compose-multiplatform = "1.7.1"
 navigation = "2.8.0-alpha10"
+kotlin-dsl = "5.1.2"
 
 plugin-ktLint-ktLint = "11.4.2"
 plugin-ktLint-jlleitschuh = "0.49.1"
@@ -19,7 +20,7 @@ plugin-ktLint-jlleitschuh = "0.49.1"
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "plugin-touchlab-kermit"}
+touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "plugin-touchlab-kermit" }
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -27,6 +28,7 @@ compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-co
 
 plugin-kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 plugin-ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "plugin-ktLint-ktLint" }
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -34,3 +36,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-dsl = { id = "org.gradle.kotlin.kotlin-dsl", version.ref = "kotlin-dsl" }

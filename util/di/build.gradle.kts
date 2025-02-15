@@ -33,8 +33,6 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.koin.core)
         }
-        commonTest.dependencies {
-        }
     }
 }
 

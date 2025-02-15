@@ -1,3 +1,4 @@
+import dev.jdgarita.frnk.config.dependencies.Deps
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -36,10 +37,10 @@ kotlin {
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization)
 
-            implementation(project(":frnk:domain:framework-domain"))
-            implementation(project(":frnk:presentation:component-core"))
-            implementation(project(":frnk:presentation:frnk-resources"))
-            implementation(project(":frnk:util:common"))
+            implementation(project(path = Deps.Main.Frnk.domainFramework))
+            implementation(project(path = Deps.Main.Frnk.presentationComponentCore))
+            implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
+            implementation(project(path = Deps.Main.Frnk.utilCommon))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

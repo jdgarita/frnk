@@ -1,3 +1,4 @@
+import dev.jdgarita.frnk.config.dependencies.Deps
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -34,7 +35,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization)
-            implementation(project(":frnk:util:di"))
+            implementation(project(path = Deps.Main.Frnk.utilDi))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

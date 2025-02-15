@@ -1,3 +1,4 @@
+import dev.jdgarita.frnk.config.dependencies.Deps
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -33,7 +34,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.uuid)
-            implementation(project(":frnk:presentation:frnk-resources"))
+            implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
             implementation(libs.kotlinx.serialization)
         }
     }

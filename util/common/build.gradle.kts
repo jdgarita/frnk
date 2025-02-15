@@ -40,8 +40,6 @@ kotlin {
                 }
             }
         }
-        commonTest.dependencies {
-        }
     }
 }
 
