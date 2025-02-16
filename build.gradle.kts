@@ -1,5 +1,5 @@
 plugins {
-    //trick: for the same plugin versions in all sub-modules
+    // trick: for the same plugin versions in all sub-modules
     id("dependencies")
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
