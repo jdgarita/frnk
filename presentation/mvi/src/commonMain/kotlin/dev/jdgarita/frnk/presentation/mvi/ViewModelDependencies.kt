@@ -11,6 +11,5 @@ data class ViewModelDependencies(
     val logger: FrnkLogger,
     val formatters: Formatters,
     val stringProvider: FrnkStringProvider,
-    val viewModelProvider: ViewModelProvider,
     val screenNavigationTracker: ScreenNavigationTracker
 )

@@ -36,6 +36,8 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization)
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.runtime.compose)
 
             implementation(project(path = Deps.Main.Frnk.domainFramework))
             implementation(project(path = Deps.Main.Frnk.presentationComponentCore))

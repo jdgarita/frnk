@@ -4,6 +4,7 @@ import dev.jdgarita.frnk.presentation.componentCore.FrnkBottomSheetViewState
 import dev.jdgarita.frnk.presentation.componentCore.FrnkDialogViewState
 import dev.jdgarita.frnk.presentation.componentCore.FrnkSpinnerViewState
 import dev.jdgarita.frnk.presentation.componentCore.ToastAlertViewState
+import dev.jdgarita.frnk.presentation.componentCore.ViewState
 import kotlinx.serialization.Serializable
 
 /**

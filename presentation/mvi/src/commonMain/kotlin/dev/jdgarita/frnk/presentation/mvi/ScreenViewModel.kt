@@ -6,12 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * Represents a view model for an entire screen
  */
-interface ScreenViewModel<
-    TArgs : Arguments,
-    TIntent : Intent,
-    TViewState : ScreenViewState<*>,
-    TExternalEvent : ExternalEvent
-    > : MviViewModel<TArgs, TIntent, TViewState, TExternalEvent>
+abstract class ScreenViewModel : MviViewModel()
 
 /**
  * Represents the state of a screen
