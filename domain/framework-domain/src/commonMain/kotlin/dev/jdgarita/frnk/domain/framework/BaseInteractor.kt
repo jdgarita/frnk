@@ -1,9 +1,9 @@
 package dev.jdgarita.frnk.domain.framework
 
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Base class for all interactors
