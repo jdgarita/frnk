@@ -31,7 +31,7 @@ import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RootScreen(
+fun Navigation(
     navigateToSettings: () -> Unit,
     bottomBarDestinationList: List<BottomBarDestination>,
     bottomNavigationGraph: @Composable (navController: NavHostController, paddingValues: PaddingValues) -> Unit
