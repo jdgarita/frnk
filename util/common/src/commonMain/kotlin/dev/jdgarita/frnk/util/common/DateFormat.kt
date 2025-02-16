@@ -1,13 +1,11 @@
 package dev.jdgarita.frnk.util.common
 
-import kotlin.js.JsExport
 import kotlinx.serialization.Serializable
 
 /**
- * Swiftly supported date formats.
+ * Frnk supported date formats.
  * If you need to add a new one - make sure to also add a test to [DefaultDateFormatterTest]
  */
-@JsExport
 @Serializable(with = DateFormatSerializer::class)
 sealed class DateFormat(val format: String) {
     data object MonthDaySingleDigit : DateFormat("M/d") // 7/31
