@@ -1,10 +1,7 @@
 package dev.garita.frnk.ui.framework
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -43,39 +40,28 @@ fun RootScreen(
             backstackEntry?.destination?.route
         }
     }
-    val isTopBarVisible by remember {
-        derivedStateOf {
-            currentDestinationRoute?.contains("Details") == false
-        }
-    }
 
     Scaffold(
         topBar = {
-            AnimatedVisibility(
-                visible = isTopBarVisible,
-                enter = slideInVertically(initialOffsetY = { -it }),
-                exit = slideOutVertically(targetOffsetY = { -it })
-            ) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = parseTopBarTitle(currentDestinationRoute)
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                navigateToSettings()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = null
-                            )
+            TopAppBar(
+                title = {
+                    Text(
+                        text = bottomBarDestinationList.labelBasedOnRoute(currentDestinationRoute)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navigateToSettings()
                         }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = null
+                        )
                     }
-                )
-            }
+                }
+            )
         },
         bottomBar = {
             NavigationBar {
@@ -107,7 +93,7 @@ fun RootScreen(
         }
     ) { innerPadding ->
         val animatedTopPadding by animateDpAsState(
-            targetValue = if (isTopBarVisible) innerPadding.calculateTopPadding() else 0.dp,
+            targetValue = 0.dp,
             animationSpec = tween(durationMillis = 300)
         )
         val modifiedPadding = PaddingValues(
@@ -135,14 +121,5 @@ private fun checkIfItemSelected(
     else -> false
 }
 
-private fun parseTopBarTitle(route: String?): String {
-    return if (route?.contains("Home") == true) {
-        "Home"
-    } else if (route?.contains("Saved") == true) {
-        "Favorites"
-    } else if (route?.contains("Joke") == true) {
-        " Joke"
-    } else {
-        "Food Recipes"
-    }
-}
+private fun List<BottomBarDestination>.labelBasedOnRoute(route: String?): String =
+    this.find { route?.contains(it.label) == true }?.label ?: "Invalid title"
