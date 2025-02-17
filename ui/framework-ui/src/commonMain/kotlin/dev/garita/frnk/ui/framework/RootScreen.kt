@@ -1,10 +1,6 @@
 package dev.garita.frnk.ui.framework
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,8 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -92,17 +86,7 @@ fun RootScreen(
             }
         }
     ) { innerPadding ->
-        val animatedTopPadding by animateDpAsState(
-            targetValue = 0.dp,
-            animationSpec = tween(durationMillis = 300)
-        )
-        val modifiedPadding = PaddingValues(
-            start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
-            top = animatedTopPadding,
-            end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
-            bottom = innerPadding.calculateBottomPadding()
-        )
-        bottomNavigationGraph(navController, modifiedPadding)
+        bottomNavigationGraph(navController, innerPadding)
     }
 }
 
