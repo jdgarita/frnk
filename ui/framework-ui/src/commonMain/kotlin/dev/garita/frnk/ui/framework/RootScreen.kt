@@ -105,16 +105,16 @@ fun RootScreen(
                 }
             }
         }
-    ) { padding ->
+    ) { innerPadding ->
         val animatedTopPadding by animateDpAsState(
-            targetValue = if (isTopBarVisible) padding.calculateTopPadding() else 0.dp,
+            targetValue = if (isTopBarVisible) innerPadding.calculateTopPadding() else 0.dp,
             animationSpec = tween(durationMillis = 300)
         )
         val modifiedPadding = PaddingValues(
-            start = padding.calculateStartPadding(LocalLayoutDirection.current),
+            start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
             top = animatedTopPadding,
-            end = padding.calculateEndPadding(LocalLayoutDirection.current),
-            bottom = padding.calculateBottomPadding()
+            end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
+            bottom = innerPadding.calculateBottomPadding()
         )
         bottomNavigationGraph(navController, modifiedPadding)
     }
