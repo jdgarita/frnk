@@ -36,7 +36,6 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.sentry.kotlin.multiplatform)
-            implementation(libs.kotlin.enviroment.variable)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -7,9 +7,9 @@ import io.sentry.kotlin.multiplatform.SentryOptions
 class CrashReporter {
 
     // Application context is only needed for Android targets
-    fun initializeSentry() {
+    fun initializeSentry(key: String) {
         val configuration: (SentryOptions) -> Unit = {
-            it.dsn = EnvVar.get("SENTRY") { "default value" }
+            it.dsn = key
             println("JD test: ${it.dsn}")
             // Add common configuration here
         }
