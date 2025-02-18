@@ -1,6 +1,5 @@
 package dev.jdgarita.frnk
 
-import dev.scottpierce.envvar.EnvVar
 import io.sentry.kotlin.multiplatform.Sentry
 import io.sentry.kotlin.multiplatform.SentryOptions
 
