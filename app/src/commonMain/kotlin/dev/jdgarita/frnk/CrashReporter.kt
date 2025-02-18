@@ -1,0 +1,26 @@
+package dev.jdgarita.frnk
+
+import dev.scottpierce.envvar.EnvVar
+import io.sentry.kotlin.multiplatform.Sentry
+import io.sentry.kotlin.multiplatform.SentryOptions
+
+class CrashReporter {
+
+    // Application context is only needed for Android targets
+    fun initializeSentry() {
+        val configuration: (SentryOptions) -> Unit = {
+            it.dsn = EnvVar.get("SENTRY") { "default value" }
+            println("JD test: ${it.dsn}")
+            // Add common configuration here
+        }
+        Sentry.init(configuration)
+    }
+
+    fun captureError() {
+        try {
+            throw Exception("This is a test.")
+        } catch (e: Exception) {
+            Sentry.captureException(e)
+        }
+    }
+}

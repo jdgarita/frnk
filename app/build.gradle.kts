@@ -26,11 +26,18 @@ kotlin {
             baseName = "app"
             xcf.add(this)
             isStatic = true
+            export("io.sentry:sentry-kotlin-multiplatform:0.11.0")
         }
     }
 
     sourceSets {
-        commonMain.dependencies {}
+        all {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        }
+        commonMain.dependencies {
+            implementation(libs.sentry.kotlin.multiplatform)
+            implementation(libs.kotlin.enviroment.variable)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
