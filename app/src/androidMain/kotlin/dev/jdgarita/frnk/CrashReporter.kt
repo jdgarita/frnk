@@ -9,8 +9,6 @@ class CrashReporter {
     fun initializeSentry(key: String) {
         val configuration: (SentryOptions) -> Unit = {
             it.dsn = key
-            println("JD test: ${it.dsn}")
-            // Add common configuration here
         }
         Sentry.init(configuration)
     }
