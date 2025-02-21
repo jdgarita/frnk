@@ -1,4 +1,3 @@
-import dev.jdgarita.frnk.config.dependencies.Deps
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
@@ -24,7 +23,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "app"
+            baseName = "subs"
             xcf.add(this)
             isStatic = true
         }
@@ -35,19 +34,21 @@ kotlin {
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
         commonMain.dependencies {
-            api(project(path = Deps.Main.Frnk.subs))
+            api(libs.purchases.core)
+            api(libs.purchases.datetime)
+            api(libs.purchases.either)
+            api(libs.purchases.result)
         }
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
+
         }
         androidMain.dependencies {
-            implementation(libs.sentry.kotlin.multiplatform)
         }
     }
 }
 
 android {
-    namespace = "dev.jdgarita.frnk"
+    namespace = "dev.jdgarita.frnk.subs"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()

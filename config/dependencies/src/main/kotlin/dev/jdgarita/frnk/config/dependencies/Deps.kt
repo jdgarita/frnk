@@ -15,6 +15,7 @@ object Deps {
             const val uiFramework = "$platformModulePrefix:ui:framework-ui"
             const val utilDi = "$platformModulePrefix:util:di"
             const val utilCommon = "$platformModulePrefix:util:common"
+            const val subs = "$platformModulePrefix:subs"
         }
     }
 
