@@ -40,7 +40,6 @@ kotlin {
             api(libs.purchases.result)
         }
         commonTest.dependencies {
-
         }
         androidMain.dependencies {
         }
