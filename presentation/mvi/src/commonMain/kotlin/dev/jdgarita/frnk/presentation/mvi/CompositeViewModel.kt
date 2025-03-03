@@ -1,5 +1,6 @@
 package dev.jdgarita.frnk.presentation.mvi
 
+import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
@@ -27,11 +28,9 @@ abstract class CompositeViewModel<
     TExternalEvent : ExternalEvent
     >(
     childViewModels: List<MviViewModel<out Arguments, *, *, *>>,
-    singleThreadDispatcher: CoroutineDispatcher,
     private val viewModelDependencies: ViewModelDependencies,
     modelStateFactory: ModelStateFactory<TModelState>
 ) : BaseFrnkMviModel<TModelState, TArgs, TIntent, TViewState, TExternalEvent>(
-    singleThreadDispatcher = singleThreadDispatcher,
     modelStateFactory = modelStateFactory,
     viewModelDependencies = viewModelDependencies
 ),

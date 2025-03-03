@@ -29,11 +29,9 @@ abstract class BaseFrnkMviModel<
     TViewState : ViewStateCommon<TViewState>,
     TExternalEvent : ExternalEvent
     >(
-    singleThreadDispatcher: CoroutineDispatcher,
     modelStateFactory: ModelStateFactory<TModelState>,
     private val viewModelDependencies: ViewModelDependencies
 ) : BaseMviModel<TModelState, TArgs, TIntent, TViewState, TExternalEvent>(
-    singleThreadDispatcher,
     modelStateFactory
 ),
     FrnkMviModel<TArgs, TIntent, TViewState, TExternalEvent>,
@@ -69,7 +67,8 @@ abstract class BaseFrnkMviModel<
         }
 
         (this as? ScreenViewModel<*, *, *, *>)?.let {
-            screenName = viewModelDependencies.screenNavigationTracker.currentScreen?.name
+            screenName = "screen name"
+           // screenName = viewModelDependencies.screenNavigationTracker.currentScreen?.name
             // viewModelDependencies.logger.breadcrumb("+ $screenName")
         }
 

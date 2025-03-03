@@ -50,29 +50,29 @@ interface CompositeStateCommon<T> : StateCommon<T> {
 
 fun MviViewModel<*, *, *, *>.mapCommonState(
     state: StateCommon<*>,
-    stringProvider: FrnkStringProvider
+   // stringProvider: FrnkStringProvider
 ): CommonViewState {
     val displayError: CommonDisplayError? = if (this is ScreenViewModel) {
         when (state) {
             is CompositeStateCommon<*> -> {
                 val compositeError = state.commonState.error
                 val childrenError = state.childrenViewState.commonDisplayError
-                compositeError?.asEmptyStateDisplayError(stringProvider = stringProvider) ?: childrenError
+                compositeError?.asEmptyStateDisplayError() ?: childrenError
             }
 
             else -> {
-                state.commonState.error?.asEmptyStateDisplayError(stringProvider = stringProvider)
+                state.commonState.error?.asEmptyStateDisplayError()
             }
         }
     } else {
         state.commonState.error?.let { error ->
             when (error) {
                 is Error.Network -> {
-                    error.asEmptyStateDisplayError(stringProvider = stringProvider)
+                    error.asEmptyStateDisplayError()
                 }
 
                 else -> {
-                    error.asAlertDisplayError(stringProvider = stringProvider)
+                    error.asAlertDisplayError()
                 }
             }
         }

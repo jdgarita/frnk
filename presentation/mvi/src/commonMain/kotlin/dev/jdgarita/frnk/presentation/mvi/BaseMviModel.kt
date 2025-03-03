@@ -1,5 +1,7 @@
 package dev.jdgarita.frnk.presentation.mvi
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dev.jdgarita.frnk.util.common.Log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -34,23 +36,23 @@ abstract class BaseMviModel<
     TViewState : ViewState,
     TExternalEvent : ExternalEvent
     >(
-    singleThreadDispatcher: CoroutineDispatcher,
     modelStateFactory: ModelStateFactory<TModelState>
 ) : MviViewModel<TArgs, TIntent, TViewState, TExternalEvent>,
+    ViewModel(),
     LifecycleAware<TArgs>,
     ModelInternal<TModelState, TArgs, TIntent, TViewState> {
 
-    /**
-     * Scope tied to the lifetime of the attached view.  This scope is active as long as a view is
-     * attached
-     */
-    private val viewScope = CoroutineScope(singleThreadDispatcher + SupervisorJob())
-
-    /**
-     * Scope tied to the LifecycleState when the ViewModel is in the [LifecyleState.ACTIVE] state.
-     * Cancelled as soon as the state exits [LifecyleState.ACTIVE]
-     */
-    private val activeScope = CoroutineScope(singleThreadDispatcher + SupervisorJob())
+//    /**
+//     * Scope tied to the lifetime of the attached view.  This scope is active as long as a view is
+//     * attached
+//     */
+//    private val viewScope = CoroutineScope(singleThreadDispatcher + SupervisorJob())
+//
+//    /**
+//     * Scope tied to the LifecycleState when the ViewModel is in the [LifecyleState.ACTIVE] state.
+//     * Cancelled as soon as the state exits [LifecyleState.ACTIVE]
+//     */
+//    private val activeScope = CoroutineScope(singleThreadDispatcher + SupervisorJob())
 
     /**
      * Ensures state update loop happens atomically
@@ -149,12 +151,12 @@ abstract class BaseMviModel<
     /**
      * Launch a coroutine that is active while the ViewModel state is [LifecyleState.ATTACHED] or [LifecyleState.ACTIVE]
      */
-    protected fun launchAttached(block: suspend () -> Unit) = viewScope.launch { block() }
+    protected fun launchAttached(block: suspend () -> Unit) = viewModelScope.launch { block() }
 
     /**
      * Launch a coroutine that is active only when the ViewModel state is [LifecyleState.ACTIVE]
      */
-    protected fun launchActive(block: suspend () -> Unit) = activeScope.launch { block() }
+    protected fun launchActive(block: suspend () -> Unit) = viewModelScope.launch { block() }
 
     private var _lifecycleState: LifecyleState = LifecyleState.UNATTACHED
     override val lifecycleState: LifecyleState
@@ -188,7 +190,7 @@ abstract class BaseMviModel<
         _lifecycleState = LifecyleState.ATTACHED
 
         onInactive()
-        activeScope.coroutineContext.cancelChildren()
+        viewModelScope.coroutineContext.cancelChildren()
     }
 
     final override fun detachView() {
@@ -197,8 +199,8 @@ abstract class BaseMviModel<
 
         onDetached()
 
-        activeScope.coroutineContext.cancelChildren()
-        viewScope.coroutineContext.cancelChildren()
+        viewModelScope.coroutineContext.cancelChildren()
+        viewModelScope.coroutineContext.cancelChildren()
     }
 
     final override fun subscribeExternalEvents(onEvent: (ExternalEvent) -> Unit) {

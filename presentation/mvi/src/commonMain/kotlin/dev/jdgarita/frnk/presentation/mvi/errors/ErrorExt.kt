@@ -10,16 +10,16 @@ import dev.jdgarita.frnk.presentation.resources.color.SemanticColor
 import dev.jdgarita.frnk.presentation.resources.images.SemanticIcon
 
 internal fun Error.asAlertDisplayError(
-    stringProvider: FrnkStringProvider
+    stringProvider: FrnkStringProvider? = null
 ) = CommonDisplayError.Alert(
     alertViewState = InContentAlertViewState.Error(
-        title = stringProvider.string(Strings.common_error),
-        subtitle = stringProvider.string(Strings.common_error_subtitle)
+        title = stringProvider?.string(Strings.common_error) ?: "generic error title",
+        subtitle = stringProvider?.string(Strings.common_error_subtitle)
     )
 )
 
 fun Error.asEmptyStateDisplayError(
-    stringProvider: FrnkStringProvider
+    stringProvider: FrnkStringProvider? = null
 ): CommonDisplayError.EmptyState {
     val (icon, textResId) = when (this) {
         Error.Network -> SemanticIcon.NoWifi to Strings.common_error_no_internet
@@ -30,7 +30,7 @@ fun Error.asEmptyStateDisplayError(
         emptyStateViewState = FrnkEmptyStateViewState(
             icon = icon,
             iconColor = SemanticColor.AdditionalFail,
-            text = stringProvider.string(textResId)
+            text = stringProvider?.string(textResId) ?: "generic error text"
         )
     )
 }
