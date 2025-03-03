@@ -14,9 +14,4 @@ sealed class CommonIntent : Intent {
      * User pressed back.
      */
     data object OnBackPressed : CommonIntent()
-
-    /**
-     * Request app rating.
-     */
-    data object OnAppRatingRequested : CommonIntent()
 }

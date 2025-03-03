@@ -1,12 +1,18 @@
 package dev.jdgarita.frnk.presentation.mvi
 
 import dev.jdgarita.frnk.presentation.componentCore.FrnkTopBarViewState
+import kotlin.js.JsExport
 import kotlinx.serialization.Serializable
 
 /**
  * Represents a view model for an entire screen
  */
-abstract class ScreenViewModel : MviViewModel()
+interface ScreenViewModel<
+    TArgs : Arguments,
+    TIntent : Intent,
+    TViewState : ScreenViewState<*>,
+    TExternalEvent : ExternalEvent
+    > : MviViewModel<TArgs, TIntent, TViewState, TExternalEvent>
 
 /**
  * Represents the state of a screen
@@ -15,6 +21,7 @@ interface ScreenViewState<T> : ViewStateCommon<T> {
     val commonScreenViewState: CommonScreenViewState
 }
 
+@JsExport
 @Serializable
 data class CommonScreenViewState(
     val topBarViewState: FrnkTopBarViewState? = null,

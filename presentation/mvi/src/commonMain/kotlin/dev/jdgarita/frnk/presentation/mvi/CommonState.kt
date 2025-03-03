@@ -48,7 +48,7 @@ interface CompositeStateCommon<T> : StateCommon<T> {
     fun copyCommon(common: CommonState, childrenViewState: CommonViewState): T
 }
 
-fun MviViewModel.mapCommonState(
+fun MviViewModel<*, *, *, *>.mapCommonState(
     state: StateCommon<*>,
     stringProvider: FrnkStringProvider
 ): CommonViewState {
