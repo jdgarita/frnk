@@ -4,7 +4,6 @@ import dev.jdgarita.frnk.domain.framework.error.Error
 import dev.jdgarita.frnk.domain.framework.outcome.Outcome
 import dev.jdgarita.frnk.util.common.Log
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -68,7 +67,7 @@ abstract class BaseFrnkMviModel<
 
         (this as? ScreenViewModel<*, *, *, *>)?.let {
             screenName = "screen name"
-           // screenName = viewModelDependencies.screenNavigationTracker.currentScreen?.name
+            // screenName = viewModelDependencies.screenNavigationTracker.currentScreen?.name
             // viewModelDependencies.logger.breadcrumb("+ $screenName")
         }
 

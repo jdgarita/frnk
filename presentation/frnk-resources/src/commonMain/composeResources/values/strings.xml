@@ -1,0 +1,1349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="account_settings_accessibility_statement">Accessibility Statement</string>
+    <string name="account_settings_app_settings">App Settings</string>
+    <string name="account_settings_cashback_account">Cashback Account</string>
+    <string name="account_settings_cashback_account_add_account">Add account</string>
+    <string name="account_settings_cashback_email">Cashback Email</string>
+    <string name="account_settings_cashback_email_add_email">Add PayPal account</string>
+    <string name="account_settings_cashback_method_no_info_saved">Choose Your Payout Method</string>
+    <string name="account_settings_cashback_method_paypal">PayPal</string>
+    <string name="account_settings_cashback_method_venmo">Venmo</string>
+    <string name="account_settings_contact_us">Contact Us</string>
+    <string name="account_settings_copyright">%1$s v.%2$s\n© %4$s %3$s</string>
+    <string name="account_settings_delete_account">Delete My Account</string>
+    <string name="account_settings_legal">Legal</string>
+    <string name="account_settings_loyalty_id">Loyalty ID: %1$s \n</string>
+    <string name="account_settings_manage_my_account">Manage My Account</string>
+    <string name="account_settings_my_brand_history">My %1$s History</string>
+    <string name="account_settings_navigation_title">Account</string>
+    <string name="account_settings_notification_settings">Notification Settings</string>
+    <string name="account_settings_orders">Orders</string>
+    <string name="account_settings_other">Other</string>
+    <string name="account_settings_other_url_1">FAQ &amp; Policies</string>
+    <string name="account_settings_other_url_2">Privacy Policy</string>
+    <string name="account_settings_other_url_3">Terms of Use</string>
+    <string name="account_settings_other_url_4"></string>
+    <string name="account_settings_other_url_5"></string>
+    <string name="account_settings_other_url_6"></string>
+    <string name="account_settings_other_url_7"></string>
+    <string name="account_settings_other_url_8"></string>
+    <string name="account_settings_payment_methods">Payment Methods</string>
+    <string name="account_settings_phone">Phone Number</string>
+    <string name="account_settings_preferences">Preferences</string>
+    <string name="account_settings_profile">Profile</string>
+    <string name="account_settings_save">Save</string>
+    <string name="account_settings_saved_addresses">Saved Addresses</string>
+    <string name="account_settings_screen_title">Account</string>
+    <string name="account_settings_select_a_store">Select a Store</string>
+    <string name="account_settings_sign_in_or_sign_up">Sign In or Sign Up</string>
+    <string name="account_settings_sign_out">Sign Out</string>
+    <string name="account_settings_support">Support</string>
+    <string name="account_settings_your_information">Your Information</string>
+    <string name="account_settings_your_orders">Your Orders</string>
+    <string name="account_settings_your_store">Your Store</string>
+    <string name="activated_challenges_empty_subtitle">There are no Activated challenges yet, activate some!</string>
+    <string name="activated_challenges_empty_title">No Challenges Yet</string>
+    <string name="activated_challenges_list_headline_title">Activated Challenges</string>
+    <string name="added_rewards_carousel_headline_title">Added Rewards</string>
+    <string name="added_rewards_emptystate_description">No rewards added yet. Scan your member barcode at the register to earn points to spend on rewards!</string>
+    <string name="added_rewards_emptystate_title">Added Rewards</string>
+    <string name="added_rewards_list_count_label">%1$s Added Rewards</string>
+    <string name="added_rewards_navigation_title">Added Rewards</string>
+    <string name="added_to_list">Added to List!</string>
+    <string name="address_error_state">Enter state abbreviation</string>
+    <string name="address_error_zip">Enter a 5-digit zip code</string>
+    <string name="all_coupons_found_grid_headline_with_count">%1$d Coupons Found</string>
+    <string name="all_coupons_grid_headline">Coupons</string>
+    <string name="all_coupons_grid_headline_with_count">%1$d Coupons</string>
+    <string name="all_cpg_offers_grid_headline_with_count">%1$d Cpg Offers</string>
+    <string name="all_rebates_grid_headline_with_count">%1$d Cashback Coupons</string>
+    <string name="all_rewards_emptystate_description">There are no rewards in the marketplace right now.</string>
+    <string name="app_settings_app_permission_description">Enable location and camera access to find nearby stores.</string>
+    <string name="app_settings_app_permission_label">App Permissions</string>
+    <string name="app_settings_title">App Settings</string>
+    <string name="appcard_pin_timeout_description">Please activate your digital loyalty card with a new code sent to your mobile phone number. </string>
+    <string name="appcard_pin_timeout_title">Activate Digital Loyalty Card</string>
+    <string name="auth_phone_number_edit_description">The phone number you entered is already associated with an account. Please sign out of your current account and sign in using the account associated with the phone number to continue. If you need further assistance please contact customer service.</string>
+    <string name="auth_phone_number_edit_title">Phone number already exists</string>
+    <string name="auth_prompt_description">By providing your mobile number and clicking the Continue button, you consent to receiving text messages from our company to verify your phone number and acknowledge that you have read and agreed to our Terms of Use and Privacy Policy. Standard message and data rates may apply. </string>
+    <string name="auth_prompt_title">Sign In or Create New Account</string>
+    <string name="available_challenges_empty_subtitle">There are no Available challenges yet, check back soon!</string>
+    <string name="available_challenges_empty_title">No challenges this week</string>
+    <string name="available_challenges_list_headline_title">Available Challenges</string>
+    <string name="available_rewards_carousel_headline_title">Available Rewards</string>
+    <string name="available_rewards_emptystate_description">There are no available rewards at this time, check back soon!</string>
+    <string name="available_rewards_emptystate_title">Available Rewards</string>
+    <string name="balance_summary_email_connect_cta">Connect Account</string>
+    <string name="balance_summary_email_connect_subtitle">Redeem Cashback and Points with a PayPal account</string>
+    <string name="balance_summary_email_connect_title">Cash Out</string>
+    <string name="balance_summary_email_row">Cashback Email</string>
+    <string name="balance_summary_minimum_redemption_label">%1$s points minimum required to redeem</string>
+    <string name="balance_summary_redeem_cta">Redeem Available Cash</string>
+    <string name="balance_summary_redeem_error_alert">We were unable to redeem your available cash. Please try again soon.</string>
+    <string name="balance_summary_redeem_success_alert">Cashback sent successfully to %1$s via PayPal</string>
+    <string name="balance_summary_total_row">Total Available Cash Out</string>
+    <string name="bottom_navigation_item_cart">Cart</string>
+    <string name="bottom_navigation_item_component_lib">Samples</string>
+    <string name="bottom_navigation_item_deals_home">Deals</string>
+    <string name="bottom_navigation_item_home">Home</string>
+    <string name="bottom_navigation_item_order">Order</string>
+    <string name="bottom_navigation_item_scan">Scan</string>
+    <string name="bottom_navigation_item_shopping_list">List</string>
+    <string name="bottom_navigation_item_wallet">Wallet</string>
+    <string name="bottom_navigation_item_weekly_ads">Weekly Ads</string>
+    <string name="brand_landing_page_recipe_additional_info_title">Comments</string>
+    <string name="brand_landing_page_recipe_calories">Calories</string>
+    <string name="brand_landing_page_recipe_cook_time">Cook Time</string>
+    <string name="brand_landing_page_recipe_description_title">Description</string>
+    <string name="brand_landing_page_recipe_directions">Directions</string>
+    <string name="brand_landing_page_recipe_food_allergies_title">Contains</string>
+    <string name="brand_landing_page_recipe_ingredients_title">Ingredients List</string>
+    <string name="brand_landing_page_recipe_nutrition_info_title">Nutritional Info</string>
+    <string name="brand_landing_page_recipe_preparation_time">Prep Time</string>
+    <string name="brand_landing_page_recipe_servings">Servings</string>
+    <string name="brand_landing_page_recipe_total_time">Total Time</string>
+    <string name="brand_landing_page_recipe_yields">Yields</string>
+    <string name="cart_add_new_address_title">Check Your Address</string>
+    <string name="cart_add_to_title">Add to Cart</string>
+    <!-- Directs customer to add their address -->
+    <string name="cart_add_your_address">Add Your Address</string>
+    <!-- Asks customers to check their address to see if they are within delivery range -->
+    <string name="cart_add_your_address_deliver_groceries_message">Add your address to find out if we can deliver groceries to your door.</string>
+    <!-- Asks customers with a non-ecom enabled home store to add their address and let's them know that they might be eligible for delivery in the future.  -->
+    <string name="cart_add_your_address_subtitle">Add your address and check back soon. We are rolling out more delivery service locations all the time!</string>
+    <!-- Informs customers with a non-ecom enabled home store that they are not currently eligible for delivery.  -->
+    <string name="cart_add_your_address_title">Delivery is not yet available at this store...</string>
+    <!-- Asks customers who choose to keep their non-ecom enabled home store to use Shopping List and Coupons -->
+    <string name="cart_address_eligible_for_delivery_subtitle">Check back soon as we are rolling out more delivery service locations all the time!\nSave more when shopping in store:</string>
+    <string name="cart_checkout_title">Checkout</string>
+    <!-- Customer is asked directed to explore coupons and use the shopping list.  -->
+    <string name="cart_delivery_not_available_subtitle">Check back soon as we are rolling out more delivery service locations all the time!\nCheck out these ways to save when shopping in store:</string>
+    <!-- Customer is outside of delivery range for all e-commerce stores and is therefore not eligible for delivery.  -->
+    <string name="cart_delivery_not_available_title">Delivery is not yet available near you.</string>
+    <string name="cart_eligible_for_delivery_title">See if you\'re eligible for delivery!</string>
+    <!-- Encourage user to change fulfillment method to try out in-store features in the app -->
+    <string name="cart_empty_body">Select a different shopping method or check out these ways to save when shopping in store:</string>
+    <string name="cart_empty_subtitle">Browse product categories for the best online shopping deals for you.</string>
+    <string name="cart_empty_title">Your cart is empty.</string>
+    <!-- Button to proceed with changing store and emptying the cart -->
+    <string name="cart_empty_your_cart_dialog_action_button_text">Empty Cart</string>
+    <!-- Informs customer that switching their store will empty their cart -->
+    <string name="cart_empty_your_cart_dialog_description">Your cart will be emptied if you change your store.</string>
+    <!-- Informs customer that switching their store will empty their cart -->
+    <string name="cart_empty_your_cart_dialog_title">Empty your cart?</string>
+    <!-- Estimated Total -->
+    <string name="cart_est_total_button_text">Est. Total</string>
+    <string name="cart_in_delivery_range">Delivering to your saved address.</string>
+    <!-- Prompts a user to change their store to get delivery -->
+    <string name="cart_in_delivery_range_subtitle">Tap here to change your store.</string>
+    <!-- Informs customer that they can change their story to get delivery.  -->
+    <string name="cart_in_delivery_range_title">We found stores that can deliver to you!</string>
+    <!-- Button for In-Store Coupons -->
+    <string name="cart_in_store_coupons">In-Store Coupons</string>
+    <!-- Alternative option for users who do not want to change their store -->
+    <string name="cart_keep_current_store">Keep My Current Store</string>
+    <!-- Informs customers that manufacturer coupons will not be applied for delivery orders -->
+    <string name="cart_manufacturer_coupons_not_redeemable">Coupons are not redeemable for online orders.</string>
+    <!-- Asks customer to try a different address to see if they can be in delivery range -->
+    <string name="cart_not_in_delivery_range_subtitle">Try a different address.</string>
+    <!-- Informs customer that they are not within delivery range of all ecom enabled stores -->
+    <string name="cart_not_in_delivery_range_title">You\'re out of range of all stores.</string>
+    <string name="cart_order_placed_toast_subtitle">Check order status in the Account tab.</string>
+    <!-- Confirms that the order has been placed -->
+    <string name="cart_order_placed_toast_title">Order Placed!</string>
+    <string name="cart_out_of_delivery_range">You\'re out of range of this store.</string>
+    <!-- User's address is out of delivery range of all E-Com stores -->
+    <string name="cart_out_of_delivery_range_of_any_store">You\'re out of range of any store.</string>
+    <!-- Line item savings in the shopping cart -->
+    <string name="cart_product_card_savings">You save %1$s</string>
+    <!-- Cart subtotal for cart receipt component  -->
+    <plurals name="cart_receipt_subtotal">
+        <item quantity="one">Subtotal (%d item)</item>
+        <item quantity="other">Subtotal (%d items)</item>
+    </plurals>
+    <!-- Title for cart receipt component  -->
+    <string name="cart_receipt_title">Order Summary</string>
+    <!-- Savings total for cart receipt component  -->
+    <string name="cart_receipt_total_savings">Total Savings</string>
+    <string name="cart_select_a_store">Select a Store</string>
+    <string name="cart_select_a_store_subtitle">Select a store to see pricing, limited deals, and more!</string>
+    <string name="cart_select_a_store_title">Find a store near you!</string>
+    <string name="cart_select_nearby_store_subtitle">Your store does not offer delivery. These stores deliver to you:</string>
+    <!-- Informs customers with that they are within delivery range of an ecom store that is not their home store -->
+    <string name="cart_select_nearby_store_title">Select a Nearby Store</string>
+    <!-- String for button to select new ecom- home store on store finder page -->
+    <string name="cart_set_new_store">Set New Store</string>
+    <!-- Button for Shopping List -->
+    <string name="cart_shopping_list">Shopping List</string>
+    <string name="cart_signup_dialog_not_now">Not Now</string>
+    <string name="cart_signup_dialog_signup">Sign Up</string>
+    <string name="cart_signup_dialog_title">Create an account to start shopping, clip coupons, and create a shopping list!</string>
+    <string name="cart_start_shopping">Start Shopping</string>
+    <string name="cart_swipe_to_delete_button_text">Delete</string>
+    <string name="cart_topbar_title">Cart</string>
+    <string name="cash_back_how_it_works_description">Clip a Cashback in app before your purchase. Identify at checkout using your member ID. Cash out your balance to PayPal.</string>
+    <string name="cash_back_how_it_works_title">How Cashback Works</string>
+    <string name="cashback_add_paypal_account_alert_label">Add your PayPal account to get Cashback</string>
+    <string name="cashback_add_paypal_account_dialog_add_button">Add</string>
+    <string name="cashback_add_paypal_account_dialog_title">Add your PayPal account to get Cashback</string>
+    <string name="cashback_balance_cashout_button">Cash Out Your Cashback</string>
+    <string name="cashback_balance_cashout_error">We were unable to cashout your funds. Please try again soon.</string>
+    <string name="cashback_balance_cashout_success_button">Find More Deals</string>
+    <string name="cashback_balance_cashout_success_empty_state">Cashback has been sent to %1$s via PayPal</string>
+    <string name="cashback_balance_cashout_success_topbar">Cashback Sent</string>
+    <string name="cashback_balance_email_row_label">Cashback Email</string>
+    <string name="cashback_balance_expiring_soon_amount_subtitle">%1$s expiring:</string>
+    <string name="cashback_balance_expiring_soon_section_empty_state">You have no Cashback expiring soon. Check out our available offers to start saving!</string>
+    <string name="cashback_balance_expiring_soon_section_header">CASHBACK EXPIRING SOON</string>
+    <string name="cashback_balance_topbar">Cashback Balance</string>
+    <string name="cashback_balance_widget_label">Cashback Balance</string>
+    <string name="cashback_balance_widget_subtitle">%1$s %2$s</string>
+    <string name="cashback_email_email_input_error">The email address you entered isn\'t valid</string>
+    <string name="cashback_email_email_input_label">Email</string>
+    <string name="cashback_email_header">Update your PayPal account to get cash back</string>
+    <string name="cashback_email_save_button">Save</string>
+    <string name="cashback_email_topbar">Cash Back Email</string>
+    <string name="cashback_email_update_email_success">Your PayPal email was updated!</string>
+    <string name="cashback_payment_method_cashout_button">Cashout</string>
+    <string name="cashback_payment_method_paypal_input_hint">Email</string>
+    <string name="cashback_payment_method_paypal_input_label">Add your PayPal account to get Cashback</string>
+    <string name="cashback_payment_method_paypal_saved_alert">Your PayPal email was saved!</string>
+    <string name="cashback_payment_method_paypal_updated_alert">Your PayPal email was updated!</string>
+    <string name="cashback_payment_method_save_button">Save</string>
+    <string name="cashback_payment_method_topbar">Cashback Payment Method</string>
+    <string name="cashback_payment_method_update_button">Update</string>
+    <string name="cashback_payment_method_venmo_input_hint">Email, phone, or handle</string>
+    <string name="cashback_payment_method_venmo_input_label">Add your Venmo account email, phone, or handle to get Cashback</string>
+    <string name="cashback_payment_method_venmo_saved_alert">Your Venmo information was saved!</string>
+    <string name="cashback_payment_method_venmo_updated_alert">Your Venmo information was updated!</string>
+    <string name="cashback_point_based_program_about_content">Welcome! Scan any receipt to earn points, and keep an eye out for special CPG offers to grab bonus points. Complete challenges by purchasing the required CPG products to earn even more points in one go. Plus, enjoy cash back on eligible alcohol purchases, directly deposited into your cashback balance. Start scanning today and make every receipt count towards amazing rewards!</string>
+    <string name="cashback_point_based_program_about_cta">OK</string>
+    <string name="cashback_point_based_program_about_subtitle">Cashback Program Rewards</string>
+    <string name="cashback_point_based_program_about_title">About</string>
+    <string name="cashout_methods_venmo_cashout_success_empty_state">Cashback has been sent to %1$s via Venmo</string>
+    <string name="challenge_activation_add_phone_dialog_title">Add your phone to activate challenges!</string>
+    <string name="challenge_activation_alert_success_title">Challenge activated</string>
+    <string name="challenge_activation_edit_phone_dialog_title">Edit your phone number</string>
+    <string name="challenge_activation_phone_dialog_cta">Done</string>
+    <string name="challenge_activation_phone_dialog_input_label">Phone Number</string>
+    <!-- The text on the CTA shown to the user on the challenge card once a challenge is completed.
+This is for challenges that are linked to point gains. -->
+    <string name="challenge_card_completed_points_issued_cta">View Points</string>
+    <!-- The sub-title shown to the user on the challenge card once a challenge is completed. This show the expiration date of the issues Reward.
+This is for challenges that are linked to point gains. -->
+    <string name="challenge_card_completed_points_issued_subtitle">Points expire %1$s</string>
+    <!-- The title shown to the user on the challenge card once a challenge is completed.
+This is for challenges that are linked to point gains. -->
+    <string name="challenge_card_completed_points_issued_title">Points issued to your card!</string>
+    <!-- The text on the CTA shown to the user on the challenge card once a challenge is completed.
+This is for challenges that are linked to a reward. -->
+    <string name="challenge_card_completed_reward_issued_cta">View Reward</string>
+    <!-- The sub-title shown to the user on the challenge card once a challenge is completed. This show the expiration date of the issues Reward.
+This is for challenges that are linked to a reward. -->
+    <string name="challenge_card_completed_reward_issued_subtitle">Expires %1$s</string>
+    <!-- The title shown to the user on the challenge card once a challenge is completed.
+This is for challenges that are linked to a reward. -->
+    <string name="challenge_card_completed_reward_issued_title">Reward issued to your card!</string>
+    <string name="challenge_completed_success_subtitle">The reward you earned will be issued to your card.</string>
+    <string name="challenge_completed_success_title">Challenge Complete!</string>
+    <string name="challenge_core_activated_end_date_prefix">Ends %1$s</string>
+    <!-- The text on the CTA shown to the user on the challenge core once a challenge is completed.
+This is for challenges that are linked to point gains. -->
+    <string name="challenge_core_completed_points_issued_cta">View Points</string>
+    <!-- The sub-title shown to the user on the challenge core once a challenge is completed. This show the expiration date of the issues Reward.
+This is for challenges that are linked to point gains. -->
+    <string name="challenge_core_completed_points_issued_subtitle">Points expire %1$s</string>
+    <!-- The title shown to the user on the challenge core once a challenge is completed.
+This is for challenges that are linked to point gains. -->
+    <string name="challenge_core_completed_points_issued_title">Points issued to your card!</string>
+    <!-- The text on the CTA shown to the user on the challenge core once a challenge is completed.
+This is for challenges that are linked to a reward. -->
+    <string name="challenge_core_completed_reward_issued_cta">View Reward</string>
+    <!-- The sub-title shown to the user on the challenge core once a challenge is completed. This show the expiration date of the issues Reward.
+This is for challenges that are linked to a reward. -->
+    <string name="challenge_core_completed_reward_issued_subtitle">Expires %1$s</string>
+    <!-- The title shown to the user on the challenge core once a challenge is completed.
+This is for challenges that are linked to a reward. -->
+    <string name="challenge_core_completed_reward_issued_title">Reward issued to your card!</string>
+    <string name="challenge_details_description_message">Activate a challenge then shop in store. Enter your phone number at checkout and track your progress towards the goal. When you complete the challenge a reward will automatically be added to your account.</string>
+    <string name="challenge_details_description_title">How it Works: Challenges</string>
+    <string name="challenge_details_existing_phone_subtitle">Edit your phone</string>
+    <string name="challenge_details_nav_title">Challenge Details</string>
+    <!-- Nearby Stores empty state.
+The challenge detail pages shows the participant locations in a 10mi radius. -->
+    <string name="challenge_details_nearby_stores_empty_state">There are no participating stores within a 10 mi radius of you at this time.</string>
+    <string name="challenge_details_nearby_stores_title">Nearby Participant Stores</string>
+    <string name="challenge_details_no_existing_phone_title">Add your phone to activate challenges</string>
+    <string name="challenge_details_terms_and_conditions_title">Terms and Conditions</string>
+    <!-- Is the headline of the Challenge List shown in the "view all" challenges screen -->
+    <plurals name="challenge_list_headline">
+        <item quantity="one">%d Challenge</item>
+        <item quantity="other">%d Challenges</item>
+    </plurals>
+    <!-- The screen that the user access to "view all" the available and activated challenges -->
+    <string name="challenge_list_screen_nav_title">Challenges</string>
+    <string name="challenge_phone_invalid_number_error">Invalid phone number</string>
+    <string name="challenge_phone_number_updated_success_title">Phone number updated</string>
+    <string name="challenge_store_available">Available at your store</string>
+    <string name="challenge_store_unavailable">Not available at your store</string>
+    <string name="challenges_activate_cta">Activate</string>
+    <string name="challenges_activating_cta">Activating...</string>
+    <string name="challenges_activation_error_cta">Try Again</string>
+    <string name="challenges_active_cta">Active</string>
+    <string name="challenges_carousel_empty">No Challenges Yet</string>
+    <string name="challenges_complete_cta">Complete</string>
+    <string name="challenges_point_based_program_about_content">Welcome! Scan any receipt to earn points, and keep an eye out for special CPG offers to grab bonus points. Complete challenges by purchasing the required CPG products to earn even more points in one go. Plus, enjoy cash back on eligible alcohol purchases, directly deposited into your cashback balance. Start scanning today and make every receipt count towards amazing rewards!</string>
+    <string name="challenges_point_based_program_about_cta">OK</string>
+    <string name="challenges_point_based_program_about_subtitle">Challenges Program Rewards</string>
+    <string name="challenges_point_based_program_about_title">About</string>
+    <string name="challenges_progress_text">%1$s%2$s%3$s</string>
+    <string name="challenges_tag_active">Active</string>
+    <string name="challenges_tag_complete">Completed</string>
+    <string name="clipped_coupons_coupons_grid_headline">Clipped Coupons</string>
+    <string name="clipped_coupons_emptystate_browse_coupons_cta">Browse Coupons</string>
+    <string name="clipped_coupons_emptystate_description">No coupons clipped just yet. Explore our coupon catalog for savings on your favorites!</string>
+    <string name="clipped_coupons_emptystate_title">Clip &amp; Save</string>
+    <string name="clipped_coupons_grid_headline">Clipped Coupons</string>
+    <string name="clipped_coupons_grid_headline_with_count">%1$d Clipped Coupons</string>
+    <string name="clipped_coupons_topbar">Clipped Coupons</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_close">Close</string>
+    <string name="common_content_description_back">Back</string>
+    <string name="common_content_done">Done</string>
+    <string name="common_content_next">Next</string>
+    <string name="common_display_all">View All</string>
+    <string name="common_doordash">DoorDash</string>
+    <string name="common_empty"></string>
+    <string name="common_error">Something went wrong.</string>
+    <string name="common_error_cta">Try Again</string>
+    <string name="common_error_field_required">Field Required</string>
+    <!-- Informs user that they have no internet connection and need to refresh their screen.  -->
+    <string name="common_error_internet_refresh">No Internet Connection. Pull to Refresh.</string>
+    <string name="common_error_no_internet">No Internet connection.</string>
+    <string name="common_error_refresh">Something went wrong. Pull to refresh.</string>
+    <string name="common_error_subtitle">Pull to Refresh</string>
+    <string name="common_instacart">Instacart</string>
+    <string name="common_no">No</string>
+    <string name="common_ok">OK</string>
+    <string name="common_skip">Skip</string>
+    <string name="common_uber_eats">Uber Eats</string>
+    <string name="common_yes">Yes</string>
+    <string name="complete_challenges_empty_subtitle">There are no Complete challenges yet, activate a challenge and make qualifying purchases to complete it!</string>
+    <string name="complete_challenges_empty_title">No challenges this week</string>
+    <string name="complete_challenges_list_headline_title">Complete Challenges</string>
+    <string name="complete_shopper_account_back_icon_content_desc">Back</string>
+    <string name="complete_shopper_account_email_validation_error_message">Please enter a valid email format: example@email.com</string>
+    <string name="complete_shopper_account_rewards_terms_button">Rewards Program Terms</string>
+    <string name="complete_shopper_account_sign_up_button">Sign Up</string>
+    <string name="complete_shopper_account_skip">Skip</string>
+    <string name="complete_shopper_account_terms_of_use_button">Terms of Use</string>
+    <string name="complete_shopper_account_title">Profile</string>
+    <string name="complete_shopper_account_zipcode_validation_error_message">Please enter a valid zip code format.</string>
+    <string name="copy_access_token_label">Copy Access Token to Clipboard</string>
+    <string name="coupon_activation_add_phone_dialog_title">Add your phone to clip coupons</string>
+    <string name="coupon_activation_phone_dialog_cta">Update</string>
+    <string name="coupon_activation_phone_dialog_input_label">Phone Number</string>
+    <string name="coupon_category_menu_screen_title">Coupon Categories</string>
+    <string name="coupon_category_no_coupons">There are no coupons here yet. Keep exploring for more deals!</string>
+    <string name="coupon_category_unknown_category">Category you are looking for doesn\'t exist</string>
+    <string name="coupon_clipped_success_confirmation_toast">Coupon has been successfully clipped. Enjoy your savings!</string>
+    <string name="coupon_core_details_header">Coupon Details</string>
+    <string name="coupon_core_details_rebate_header">Cashback</string>
+    <string name="coupon_core_details_title">Coupon Details</string>
+    <string name="coupon_core_expiry_prefix">Expires %1$s</string>
+    <string name="coupon_cta_available">Clip Coupon</string>
+    <string name="coupon_cta_clipped">Clipped</string>
+    <string name="coupon_cta_expired">Expired</string>
+    <string name="coupon_cta_failed">Try Again</string>
+    <string name="coupon_cta_redeemed">Redeemed</string>
+    <string name="coupon_details_active_state_expiry_prefix">Expires %1$s</string>
+    <string name="coupon_details_cash_back_email_update_title">Add your PayPal or Venmo account to get cashback</string>
+    <string name="coupon_details_cash_back_nav_title">Cashback Details</string>
+    <string name="coupon_details_category_button_text">See All %1$s Coupons</string>
+    <string name="coupon_details_clip_button_available_text">Clip Coupon</string>
+    <string name="coupon_details_clip_button_clipped_text">Clipped</string>
+    <string name="coupon_details_clip_button_error_text">Try Again</string>
+    <string name="coupon_details_clip_button_expired_text">Expired</string>
+    <string name="coupon_details_clip_button_redeemed_text">Redeemed</string>
+    <string name="coupon_details_clip_success_title">Coupon clipped</string>
+    <string name="coupon_details_empty_category_button_text">See All Coupons</string>
+    <string name="coupon_details_expired_state_expiry_prefix">Expired %1$s</string>
+    <string name="coupon_details_no_existing_phone_title">Add your phone to activate Cashback Coupons</string>
+    <string name="coupon_details_qualifying_products">Qualified Products</string>
+    <string name="coupon_details_scan_button_text">Scan</string>
+    <string name="coupon_details_scan_header_text">Scan an item to see if it qualifies</string>
+    <string name="coupon_details_scan_locked_submission_dialog_close_button">Close</string>
+    <string name="coupon_details_scan_locked_submission_dialog_primary_button">Contact Support</string>
+    <string name="coupon_details_scan_locked_submission_dialog_text">There seems to be an unexpected error when trying to process your receipt, please reach out to support so that we can look into it.</string>
+    <string name="coupon_details_scan_locked_submission_dialog_title">Unable to Scan Receipt</string>
+    <string name="coupon_details_select_store_dialog_subtitle">Select a store in order to clip and redeem your coupons.</string>
+    <string name="coupon_details_select_store_dialog_title">Select a Store</string>
+    <string name="coupon_details_terms_and_conditions_title">Terms and Conditions</string>
+    <string name="coupon_details_terms_title">Terms &amp; Conditions</string>
+    <string name="coupon_flag_expiring">Expiring</string>
+    <string name="coupon_flag_featured">Featured</string>
+    <string name="coupon_flag_new">New</string>
+    <string name="coupon_list_select_store_dialog_subtitle">Select a store in order to clip and redeem your coupons.</string>
+    <string name="coupon_list_select_store_dialog_title">Select a Store</string>
+    <string name="coupon_phone_invalid_number_error">Invalid phone number</string>
+    <string name="coupon_phone_number_updated_success_title">Phone number updated</string>
+    <plurals name="coupon_plural">
+        <item quantity="one">%d Coupon</item>
+        <item quantity="other">%d Coupons</item>
+    </plurals>
+    <string name="coupon_select_store_dialog_cta">Select</string>
+    <string name="coupons_carousel_empty_state_button">Browse Coupons</string>
+    <string name="coupons_container_no_coupons">No coupons found</string>
+    <!-- Body of benefits to user to log in or create their account to clip coupons and redeem them for purchases.  -->
+    <string name="coupons_signin_dialog_body">Log in to your account in order to clip and redeem your coupons.</string>
+    <string name="coupons_signin_dialog_not_now">Not Now</string>
+    <string name="coupons_signin_dialog_signin">Sign In</string>
+    <string name="coupons_signin_dialog_signup">Sign Up</string>
+    <string name="coupons_signin_dialog_signup_or_signin">Sign Up or Sign In</string>
+    <string name="coupons_signin_dialog_title">Create an Account to clip coupons, create shopping lists, and earn rewards!</string>
+    <string name="cpg_bonus_point_offers_title">Bonus Point Offers</string>
+    <string name="cpg_offer_details_how_it_works_description">Scan a receipt with a qualifying product after a purchase and then cash out your balance to PayPal.</string>
+    <string name="cpg_offer_details_how_it_works_headline">How Cashback Works</string>
+    <string name="cpg_offer_details_nav_title">Deal Details</string>
+    <string name="cpg_offer_details_terms_headline">Terms and Conditions</string>
+    <string name="cpg_offers_empty_list_title">There are no deals here yet. Keep exploring for more deals!</string>
+    <string name="cpg_offers_list_nav_title">CPG Offers</string>
+    <string name="cpg_offers_list_redeemed_label">Redeemed CPG Offers</string>
+    <string name="crash_app_label">Crash App</string>
+    <string name="deal_details_scan_button_text">Scan a Receipt</string>
+    <string name="deals_details_headline_message">Enter your phone number at checkout to receive this discount.</string>
+    <string name="deals_details_no_existing_phone_title">Add your phone to activate Cash Back Coupons</string>
+    <string name="deals_list_empty_title">No deals found</string>
+    <string name="deals_list_headline_title">Deals</string>
+    <string name="deals_point_based_program_about_content">Welcome! Scan any receipt to earn points, and keep an eye out for special CPG offers to grab bonus points. Complete challenges by purchasing the required CPG products to earn even more points in one go. Plus, enjoy cash back on eligible alcohol purchases, directly deposited into your cashback balance. Start scanning today and make every receipt count towards amazing rewards!</string>
+    <string name="deals_point_based_program_about_cta">OK</string>
+    <string name="deals_point_based_program_about_subtitle">Program Rewards</string>
+    <string name="deals_point_based_program_about_title">About</string>
+    <string name="deals_terms_and_conditions_label">Terms and Conditions</string>
+    <string name="debug_menu_copy_configuration_button_label">Copy App Configuration to Clipboard</string>
+    <!-- The description to show in the dialog that appears after selecting an environment from the environment switcher. -->
+    <string name="debug_menu_environment_switch_dialog_description">Please restart the app to apply the new settings.</string>
+    <!-- The title to show in the dialog that appears after selecting an environment from the environment switcher. -->
+    <string name="debug_menu_environment_switch_dialog_title">Environment Changed to %1$s</string>
+    <string name="debug_menu_title">Debug Menu</string>
+    <string name="delete_account_in_progress">Deleting your account...</string>
+    <string name="delete_account_landing_cancel_button_text">Not Now</string>
+    <string name="delete_account_landing_confirm_button_text">Delete Account</string>
+    <string name="delete_account_landing_headline">Are you sure?</string>
+    <string name="delete_account_landing_text">Your clipped coupons, loyalty balance, and app data will all be lost if you delete your account.</string>
+    <string name="delete_account_navigation_title">Delete My Account</string>
+    <string name="delete_account_request_sent_contact_us_text">Change your mind? Contact Us:</string>
+    <string name="delete_account_request_sent_headline">Request Sent</string>
+    <string name="delete_account_request_sent_home_button_text">Go to Home Screen</string>
+    <string name="delete_account_request_sent_text">Your account will take up to 45 days to be fully deleted.</string>
+    <string name="download_app_only_feature_title">Unlock this feature with our app</string>
+    <!-- Text to display when user enters mobile web experience on retailer's app to promote downloading of the app.  -->
+    <string name="download_app_smart_banner">Download the app for fresh savings!</string>
+    <!-- Download button for "Download Smart Banner" for mobile web properties.  -->
+    <string name="download_smart_banner">Download</string>
+    <string name="email_already_exists_error_sign_in">Sign In</string>
+    <string name="email_already_exists_error_subtitle">This email address is already linked to an account. Would you like to sign in with the phone number for that account? or please enter a different email address if you would like to create a new account.</string>
+    <!-- Email Magic link initiate email request page for authentication description -->
+    <string name="email_magic_link_description">We\'ll send a link to your inbox so that you can get logged in. </string>
+    <!-- CTA to send email login link to user's inbox from initial Magic Link request page -->
+    <string name="email_magic_link_send_button">Send Email Login Link </string>
+    <!-- Email Email Link sent page description -->
+    <string name="email_magic_link_sent_description">If you don\'t see the email in your inbox, please check your spam folder. If you still cannot find the email, please click the button below. </string>
+    <!-- Email Magic Link Sent page title -->
+    <string name="email_magic_link_sent_title">We\'ve sent a link to your email address. Please click on the link to sign in into your account. </string>
+    <!-- Email Magic Link initial email request page for authentication -->
+    <string name="email_magic_link_title">Sign In with Your Email</string>
+    <string name="empty_rewards_cta">Browse Rewards</string>
+    <string name="enter_loyalty_id_continue">Continue</string>
+    <string name="enter_loyalty_id_dialog_id_already_registered_reenter_card_number">Reenter your loyalty card number</string>
+    <string name="enter_loyalty_id_dialog_id_already_registered_signin_different_number">Sign in with different Phone Number</string>
+    <string name="enter_loyalty_id_dialog_id_already_registered_subtitle">Try to sign in with different phone number or visit your store for further assistance.</string>
+    <string name="enter_loyalty_id_dialog_id_already_registered_title">This Loyalty ID is registered</string>
+    <string name="enter_loyalty_id_input_label">Loyalty ID</string>
+    <string name="enter_loyalty_id_no_loyalty_card_button">How to get Loyalty ID</string>
+    <string name="enter_loyalty_id_no_loyalty_card_title">Don\'t have a Loyalty ID?</string>
+    <string name="enter_loyalty_id_scan_button">Scan your loyalty card</string>
+    <string name="enter_loyalty_id_separator">or</string>
+    <string name="enter_loyalty_id_subtitle">You can find it on the back of your membership card</string>
+    <string name="enter_loyalty_id_title">Enter your Loyalty ID</string>
+    <string name="enter_loyalty_id_toast_invalid_id_subtitle">Please check if you inputted your Loyalty number correctly and try again</string>
+    <string name="enter_loyalty_id_toast_invalid_id_title">Invalid Loyalty number</string>
+    <string name="enter_loyalty_id_topbar">Connect Loyalty Card</string>
+    <string name="expired_challenges_empty_subtitle">There are no Expired challenges yet, check back soon!</string>
+    <string name="expired_challenges_empty_title">No challenges this week</string>
+    <string name="expired_challenges_list_headline_title">Expired Challenges</string>
+    <string name="expired_coupons_and_rewards_headline">Expired Coupons and Rewards</string>
+    <string name="expired_coupons_emptystate_description">No expired coupons just yet. Clip some and scan your member barcode at the register to redeem them!</string>
+    <string name="expired_coupons_emptystate_title">Clip &amp; Save</string>
+    <string name="expired_coupons_grid_headline">Expired Coupons</string>
+    <string name="expired_coupons_grid_headline_with_count">%1$d Expired Coupons</string>
+    <!-- Empty state on the "Expired Rewards" screen on the wallet. -->
+    <string name="expired_rewards_emptystate_description">No expired rewards.</string>
+    <!-- Headline of the expired rewards section on the wallet.
+This headline count the # of rewards that were expired for that user. -->
+    <plurals name="expired_rewards_list_headline">
+        <item quantity="one">%d Reward</item>
+        <item quantity="other">%d Rewards</item>
+    </plurals>
+    <string name="flipp_flyer_details_product_date">Valid %1$s - %2$s</string>
+    <string name="flipp_flyer_details_product_negative_price">-$%.2f</string>
+    <string name="flipp_flyer_details_product_positive_price">$%.2f</string>
+    <string name="flyer_details_coupons_title">Coupons</string>
+    <string name="flyer_details_page_indicator">Page %1$d/%2$d</string>
+    <string name="flyer_details_pan_zoom_instructions">Pinch to Zoom &amp; Scroll</string>
+    <string name="flyer_details_product_title">Product</string>
+    <string name="flyer_details_share_content">Check out this week\'s ad from %1$s %2$s</string>
+    <string name="flyer_details_share_preview_title">%1$s, %2$s</string>
+    <string name="flyer_details_topbar">Weekly Ad</string>
+    <string name="flyer_details_view_all_coupons_button">View Qualifying Coupons</string>
+    <string name="flyer_details_view_all_products_button">View Qualifying Products</string>
+    <string name="flyer_fullscreen_page_indicator">%1$d/%2$d</string>
+    <string name="flyer_item_product_not_found">Product is unavailable in app</string>
+    <!-- Confirms that the link for the weekly circular has been copied -->
+    <string name="flyer_notification_copied">The link to this Weekly Circular has been copied to the clipboard</string>
+    <string name="flyers_interactive_side_panel_title">All Deals</string>
+    <string name="flyers_interactive_tap_product_title">Offer Details</string>
+    <string name="flyers_interactive_tap_qualifying_products">Qualifying Products</string>
+    <string name="flyers_list_emptystate_description">No ads this week.</string>
+    <string name="flyers_list_error_description">Something went wrong. Please try again later or contact support via the Account page.</string>
+    <string name="flyers_list_from_to_date">%1$s - %2$s</string>
+    <string name="flyers_list_setyourstore_button">Continue</string>
+    <string name="flyers_list_setyourstore_description">Select a store to see your weekly ad and special deals from your store.</string>
+    <string name="flyers_list_setyourstore_title">Set Your Store</string>
+    <string name="flyers_list_topbar">Weekly Ads</string>
+    <string name="flyers_print">Print</string>
+    <string name="flyers_share">Share</string>
+    <string name="force_update_hard_update_confirmation_label">Update</string>
+    <string name="force_update_hard_update_description">Please update to the latest version of the app to continue using it.</string>
+    <string name="force_update_hard_update_title">Update Required</string>
+    <string name="force_update_soft_update_cancellation_label">Skip</string>
+    <string name="force_update_soft_update_confirmation_label">Update</string>
+    <string name="force_update_soft_update_description">Please update to the latest version of the app to continue using it.</string>
+    <string name="force_update_soft_update_title">Update Recommended</string>
+    <string name="fulfillment_selector_address_not_found_body">We couldn\'t find the address you entered. Edit the address or enter a new one and try again.</string>
+    <string name="fulfillment_selector_address_not_found_title">Address Not Found</string>
+    <string name="fulfillment_selector_cart_change_body">Are you sure you want to change stores?</string>
+    <!-- Warns user that their cart might change when they switch stores -->
+    <string name="fulfillment_selector_cart_change_title">Some items may be unavailable at your new store</string>
+    <!-- Updates with selected fulfillment and store -->
+    <string name="fulfillment_selector_confirm">Shop This Store</string>
+    <!-- Customer is ordering online for delivery -->
+    <string name="fulfillment_selector_delivery">Delivery</string>
+    <string name="fulfillment_selector_delivery_add_address">Add New Address</string>
+    <string name="fulfillment_selector_delivery_add_delivery_address">Add delivery address</string>
+    <string name="fulfillment_selector_delivery_add_delivery_address_message">Enter your delivery address to see available options for your location.</string>
+    <string name="fulfillment_selector_delivery_address_changes_not_saved_warning">Your changes will not be saved.</string>
+    <string name="fulfillment_selector_delivery_address_label">Address*</string>
+    <string name="fulfillment_selector_delivery_address_label_label">Address Label*</string>
+    <string name="fulfillment_selector_delivery_address_not_saved_warning">This address will not be saved.</string>
+    <string name="fulfillment_selector_delivery_address_removed_warning">This address will be removed.</string>
+    <string name="fulfillment_selector_delivery_address_second_line_label">Address Second Line</string>
+    <!-- label for text box -->
+    <string name="fulfillment_selector_delivery_apt_floor_suite_label">Apt, Floor, Suite (Optional)</string>
+    <string name="fulfillment_selector_delivery_city_label">City*</string>
+    <string name="fulfillment_selector_delivery_confirm_address">Confirm Delivery Address</string>
+    <!-- When a delivery address is only partially verified, we will ask the user to confirm it -->
+    <string name="fulfillment_selector_delivery_confirm_address_title">Confirm Address</string>
+    <string name="fulfillment_selector_delivery_confirmation_message">Are you sure?</string>
+    <string name="fulfillment_selector_delivery_delivery_instructions_label">Delivery instructions</string>
+    <string name="fulfillment_selector_delivery_edit_address">Edit Address</string>
+    <string name="fulfillment_selector_delivery_first_name_label">First Name*</string>
+    <string name="fulfillment_selector_delivery_last_name_label">Last Name*</string>
+    <string name="fulfillment_selector_delivery_leave_confirm_message">Are you sure you want to leave?</string>
+    <string name="fulfillment_selector_delivery_leave_text">Leave</string>
+    <string name="fulfillment_selector_delivery_mobile_phone_label">Mobile Phone Number*</string>
+    <string name="fulfillment_selector_delivery_no_results">There are no stores within 25 miles of your search. Explore our pickup locations for convenient shopping!</string>
+    <string name="fulfillment_selector_delivery_no_saved_addresses">No saved addresses. Add an address to shop delivery.</string>
+    <string name="fulfillment_selector_delivery_original">Original Address</string>
+    <string name="fulfillment_selector_delivery_pickup_stores_button">Explore Pickup Stores</string>
+    <string name="fulfillment_selector_delivery_recommended">Recommended Address</string>
+    <string name="fulfillment_selector_delivery_remove">Remove</string>
+    <string name="fulfillment_selector_delivery_remove_address">Remove Address</string>
+    <string name="fulfillment_selector_delivery_saved_addresses">Saved Addresses</string>
+    <string name="fulfillment_selector_delivery_select_your_address">Select Your Address</string>
+    <string name="fulfillment_selector_delivery_state_label">State*</string>
+    <string name="fulfillment_selector_delivery_use_this_address">Use This Address</string>
+    <string name="fulfillment_selector_delivery_your_delivery_address">Your Delivery Address</string>
+    <string name="fulfillment_selector_delivery_zip_code_label">Zip Code*</string>
+    <string name="fulfillment_selector_directions_button">Get Directions</string>
+    <string name="fulfillment_selector_directions_button_99_mi">99+ mi</string>
+    <string name="fulfillment_selector_directions_button_mi">Get Directions: %1$s mi</string>
+    <string name="fulfillment_selector_directions_button_mi_only">%1$s mi</string>
+    <string name="fulfillment_selector_distance_format">%.2f mi</string>
+    <string name="fulfillment_selector_enter_delivery_address_message">Enter a delivery address to see available options for your location.</string>
+    <!-- Customer is shopping in-store -->
+    <string name="fulfillment_selector_instore">In-Store</string>
+    <!-- Asks user to select Delivery or Pickup to access cart -->
+    <string name="fulfillment_selector_instore_cart_warning_both">Select %1$s or %2$s to shop in app!</string>
+    <!-- Asks user to select delivery/pickup when the retailer only supports 1 -->
+    <string name="fulfillment_selector_instore_cart_warning_one">Select %1$s to shop in app!</string>
+    <!-- Asks user to enable location -->
+    <string name="fulfillment_selector_location">Use current location</string>
+    <string name="fulfillment_selector_location_search">Current Location</string>
+    <!-- Title for map view in fulfillment selector -->
+    <string name="fulfillment_selector_map_title">Map</string>
+    <string name="fulfillment_selector_map_title_delivery">Select your delivery store</string>
+    <string name="fulfillment_selector_map_title_instore">Select your store</string>
+    <string name="fulfillment_selector_map_title_pickup">Select your pickup store</string>
+    <string name="fulfillment_selector_my_store">My Store</string>
+    <!-- Customer is ordering online for pickup -->
+    <string name="fulfillment_selector_pickup">Pickup</string>
+    <string name="fulfillment_selector_save">Save</string>
+    <!-- filler message in search bar -->
+    <string name="fulfillment_selector_search">City, State, or ZIP code</string>
+    <!-- Title for list of stores -->
+    <string name="fulfillment_selector_stores_list">Stores in the Area</string>
+    <!-- Asks the customer to select their fulfillment method and store -->
+    <string name="fulfillment_selector_title">How are you shopping?</string>
+    <string name="homepage_searchbar_content_description_scan">Scan</string>
+    <string name="homepage_searchbar_content_description_search">Search</string>
+    <string name="homepage_shop_weekly_ad">Weekly Ad</string>
+    <string name="homepage_shop_weekly_ad_desc">View Weekly Ad for Your Store</string>
+    <string name="identity_code_verification_code_error_text">Please enter a valid code, or resend code to try again.</string>
+    <string name="identity_code_verification_expired_error_text">Your code has expired. Please request a new one.</string>
+    <string name="identity_code_verification_headline_text">Almost there...</string>
+    <string name="identity_code_verification_invalid_error_text">Invalid code. Please try again.</string>
+    <string name="identity_code_verification_label_text">Code</string>
+    <string name="identity_code_verification_message_text">A code has been sent to your phone. Enter the code below to confirm it\'s you.</string>
+    <string name="identity_code_verification_resend_button_text">Get a New Code %1$s</string>
+    <string name="identity_code_verification_resend_label_text">Didn\'t receive a code?</string>
+    <string name="identity_code_verification_retry_button_text">Try Again</string>
+    <string name="identity_code_verification_submit_button_text">Continue</string>
+    <string name="identity_code_verification_title_text">Confirmation</string>
+    <string name="identity_forgot_password_content">A code has been sent to your email address. Be sure to check your inbox and spam folders.</string>
+    <string name="identity_forgot_password_header">Go Check Your Email</string>
+    <string name="identity_forgot_password_link">Forgot your password?</string>
+    <string name="identity_forgot_password_resend_button_text">Resend Email</string>
+    <string name="identity_forgot_password_sign_in_button_text">Sign In</string>
+    <string name="identity_phone_signin_expired_sms_code_error">Expired SMS code</string>
+    <string name="identity_phone_signin_greeting">Welcome!</string>
+    <string name="identity_phone_signin_invalid_credentials_error">Invalid credentials</string>
+    <string name="identity_phone_signin_invalid_number_error">Invalid phone number</string>
+    <string name="identity_phone_signin_invalid_sms_code_error">Invalid SMS code</string>
+    <string name="identity_phone_signin_network_error">Network failure</string>
+    <string name="identity_phone_signin_phone_continue_button_text">Continue</string>
+    <string name="identity_phone_signin_phone_informative_label">We\'ll send you an SMS code to confirm your phone number.</string>
+    <string name="identity_phone_signin_phone_invalid_number_error">Please enter a valid phone number</string>
+    <string name="identity_phone_signin_phone_number_label">Mobile Phone Number</string>
+    <string name="identity_phone_signin_title_text">Sign up</string>
+    <string name="identity_phone_signin_token_refresh_failed_error">Token refresh failed</string>
+    <string name="identity_phone_signin_too_many_requests_error">Too many requests</string>
+    <string name="identity_signin_password_text">Password</string>
+    <string name="identity_skip_auth_api_error_description">We weren\'t able to skip ahead.</string>
+    <string name="identity_skip_auth_api_error_title">Please try again.</string>
+    <string name="identity_skip_confirmation_text">If you skip registration, you cannot participate in this store\'s offers.</string>
+    <string name="identity_skip_confirmation_title">Are you sure?</string>
+    <string name="identity_tenant_sign_in_account_text_format">Account Phone Number:\n%1$s</string>
+    <string name="identity_tenant_sign_in_content">It\'s been a while, enter your password to confirm your identity.</string>
+    <string name="identity_tenant_sign_in_header">Nice to see you again!</string>
+    <string name="identity_welcome_get_started_button_text">Get Started</string>
+    <string name="identity_welcome_header_text">Welcome to Our New App Experience!</string>
+    <string name="inbox_empty_state_description">Come back soon.</string>
+    <string name="inbox_empty_state_title">No new messages</string>
+    <string name="inbox_screen_title">Inbox</string>
+    <string name="inbox_swipe_to_delete_button_text">Delete</string>
+    <string name="inprogress_challenges_empty_subtitle">There are no In Progress challenges yet, activate a challenge and start making qualifying purchases to complete it!</string>
+    <string name="inprogress_challenges_empty_title">No challenges this week</string>
+    <string name="inprogress_challenges_list_headline_title">In Progress Challenges</string>
+    <string name="keytile_destination_coupons">Coupons</string>
+    <!-- Tile navigation will have List as an option -->
+    <string name="keytile_destination_list">List</string>
+    <string name="keytile_destination_products">Products</string>
+    <string name="keytile_destination_rebates">Rebates</string>
+    <string name="keytile_destination_shop">Shop</string>
+    <string name="keytile_destination_weekly_ads">Weekly Ad</string>
+    <!-- Provides instructions on how to enable location services
+[%1$s] = AppName -->
+    <string name="location_services_android_body">Turn on Location Services in Settings &gt; Apps &gt; %1$s &gt; Permissions &gt; Location to use this feature.</string>
+    <string name="location_services_app_always_allow">Always Allow</string>
+    <string name="location_services_app_body">Allow us to use your location to help you find your nearest store and local deals.</string>
+    <string name="location_services_app_dont_allow">Don\'t Allow</string>
+    <string name="location_services_app_title">Allow \"%1$s\" to access your location?</string>
+    <string name="location_services_app_while_using_app">While Using the App</string>
+    <string name="location_services_device_dismiss">Dismiss</string>
+    <string name="location_services_device_settings">Settings</string>
+    <!-- Informs user that location services is turned off -->
+    <string name="location_services_device_title">Location Services Off</string>
+    <!-- Provides instructions on how to enable location services -->
+    <string name="location_services_iOS_body">Turn on Location Services in Settings &gt; %1$s &gt; Location to use this feature.</string>
+    <string name="loyalty_card_added_rewards_caption">Added\nRewards</string>
+    <string name="loyalty_card_banner_subtitle_above_threshold">You\'ve unlocked exclusive deals and rewards!</string>
+    <string name="loyalty_card_banner_subtitle_below_threshold">Shop to earn points &amp; unlock FREE Groceries or Cash Off.</string>
+    <string name="loyalty_card_banner_title_above_threshold">Congratulations!</string>
+    <string name="loyalty_card_banner_title_below_threshold">Rewards Await!</string>
+    <string name="loyalty_card_barcode_bottom_sheet_title">Scan at checkout</string>
+    <string name="loyalty_card_barcode_empty_sheet_title">No loyalty ID available</string>
+    <string name="loyalty_card_clipped_coupons_caption">Clipped\nCoupons</string>
+    <string name="loyalty_card_count_error_placeholder">--</string>
+    <string name="loyalty_card_expiring_points">%1$s %2$s expiring:</string>
+    <string name="loyalty_card_greeting_no_username">Hi!</string>
+    <string name="loyalty_card_greeting_with_username">Hi,\n%1$s!</string>
+    <string name="loyalty_card_no_barcode">The barcode is not available</string>
+    <string name="loyalty_card_no_loyalty_id">The loyalty ID is not available</string>
+    <string name="loyalty_card_points_empty">0</string>
+    <string name="loyalty_card_points_for_next_level">%1$s %2$s to next reward</string>
+    <!-- Label for the currency that is used in the loyalty Point program -->
+    <string name="loyalty_card_points_label">points</string>
+    <string name="loyalty_rewards_empty_cta_text">All Rewards</string>
+    <string name="loyalty_rewards_empty_title">No Rewards found</string>
+    <string name="manage_my_account_error_unknown">Something went wrong. Please try again later or contact support via the Account page.</string>
+    <string name="maps_apps_apple">Apple Maps</string>
+    <string name="maps_apps_body">Select your preferred app to get directions</string>
+    <string name="maps_apps_google">Google Maps</string>
+    <string name="maps_apps_title">Choose Maps App</string>
+    <string name="maps_apps_waze">Waze</string>
+    <string name="modal_create_account_body">Get access to place online orders, clip coupons, and earn rewards!</string>
+    <string name="modal_create_account_button">Create Account</string>
+    <string name="modal_create_account_title">Create an Account</string>
+    <string name="my_clipped_coupons_button_text">My Clipped Coupons</string>
+    <string name="no_loyalty_card_about_retailer_button">About %1$s Loyalty</string>
+    <string name="no_loyalty_card_continue_button">Continue</string>
+    <string name="no_loyalty_card_continue_without_account_subtitle">Use the shopping list and explore the weekly ads without an account for now by clicking continue.</string>
+    <string name="no_loyalty_card_continue_without_account_title">Continue Without an Account</string>
+    <string name="no_loyalty_card_get_physical_card_title">Get a physical loyalty card at your local store:</string>
+    <string name="notification_settings_enable_push_notification_description">Get notified of sales, new app features, and more.</string>
+    <string name="notification_settings_enable_push_notification_label">Enable push notifications</string>
+    <string name="notification_settings_title">Notification Settings</string>
+    <string name="order_banner_list_delivery_title">Delivery</string>
+    <string name="order_banner_list_grocery_delivery_title">Order Groceries</string>
+    <string name="order_banner_list_order_title">Order</string>
+    <string name="order_banner_list_pickup_title">Pick Up</string>
+    <string name="order_web_view_delivery_bakery_desserts_title">Bakery &amp; Desserts</string>
+    <string name="order_web_view_delivery_catering_title">Catering</string>
+    <string name="order_web_view_delivery_flowers_gifts_title">Flowers &amp; Gifts</string>
+    <string name="order_web_view_pick_up_bakery_desserts_title">Bakery &amp; Desserts</string>
+    <string name="order_web_view_pick_up_catering_title">Catering</string>
+    <string name="order_web_view_pick_up_flowers_gifts_title">Flowers &amp; Gifts</string>
+    <string name="paginated_flyer_details_tab_coupons">Coupons</string>
+    <string name="paginated_flyer_details_tab_products">Products</string>
+    <string name="point_balance_summary_label">Points Balance</string>
+    <string name="point_balance_summary_quantity">%1$s (%2$s)</string>
+    <string name="point_balance_summary_total_label">Total Available Cash Out</string>
+    <string name="points_history_activity_challenge_completed_label">Challenge Completed</string>
+    <string name="points_history_activity_instore_purchase_label">In-store Purchase</string>
+    <string name="points_history_activity_points_cashout_label">Cashed Out %1$s</string>
+    <string name="points_history_activity_points_expired_label">Points Expired</string>
+    <string name="points_history_activity_receipt_scanned_label">Receipt Scanned</string>
+    <string name="points_history_activity_reward_purchased_label">Reward Purchased</string>
+    <string name="points_history_activity_support_adjustment_label">Balance Adjustment</string>
+    <string name="points_history_details_challenge_completed_error">Unable to load the challenge</string>
+    <string name="points_history_details_challenge_completed_subtitle">Points earned due to a challenge completed</string>
+    <string name="points_history_details_challenge_completed_title">Challenge Completed</string>
+    <string name="points_history_details_instore_purchase_subtitle">Points earned on a purchase made</string>
+    <string name="points_history_details_instore_purchase_title">In-store Purchase</string>
+    <string name="points_history_details_points_cashout_description">%1$s points were redeemed for %2$s</string>
+    <string name="points_history_details_points_cashout_subtitle">Points redeemed</string>
+    <string name="points_history_details_points_cashout_title">Cashed Out</string>
+    <string name="points_history_details_points_earned">points earned %1$s</string>
+    <string name="points_history_details_points_expired">points expired %1$s</string>
+    <string name="points_history_details_points_expired_description">Points expired %1$s days after they were earned due to the program terms and conditions</string>
+    <string name="points_history_details_points_expired_subtitle">Points expiration</string>
+    <string name="points_history_details_points_expired_title">Points Expired</string>
+    <string name="points_history_details_points_expiring">Expiring:</string>
+    <string name="points_history_details_points_redeemed">points redeemed %1$s</string>
+    <string name="points_history_details_receipt_scanned_description">Points added due to receipt scanning</string>
+    <string name="points_history_details_receipt_scanned_subtitle">Points added</string>
+    <string name="points_history_details_receipt_scanned_title">Receipt Scanned</string>
+    <string name="points_history_details_reward_purchased_error">Unable to load the reward</string>
+    <string name="points_history_details_reward_purchased_subtitle">Points used to buy this reward</string>
+    <string name="points_history_details_reward_purchased_title">Reward Purchased</string>
+    <string name="points_history_details_running_balance">Running Balance</string>
+    <string name="points_history_details_support_adjustment_subtitle">Adjustment made by a customer support agent due to</string>
+    <string name="points_history_details_support_adjustment_title">Balance Adjustment</string>
+    <string name="points_history_expiration_tab">Expiration</string>
+    <string name="points_history_expiring_soon_amount_subtitle">%1$s expiring:</string>
+    <string name="points_history_expiring_soon_section_empty_state">No points expiring soon! Check out the available deals and challenges to start saving.</string>
+    <string name="points_history_expiring_soon_section_header">POINTS EXPIRING IN THE NEXT 3 MONTHS</string>
+    <string name="points_history_history_section_empty_state">No recent points activity!</string>
+    <string name="points_history_history_section_header">RECENT POINTS ACTIVITY</string>
+    <string name="points_history_history_tab">History</string>
+    <string name="points_history_points_label">points</string>
+    <string name="points_history_topbar">Points</string>
+    <string name="price_sponsored">Sponsored</string>
+    <!-- Informs customer what the real price is for products in the enhanced circular -->
+    <string name="product_card_actual_price_label">Current price</string>
+    <string name="product_card_aisle_text">Aisle %1$s</string>
+    <string name="product_card_coupons_banner">Coupons</string>
+    <!-- Customers will not see a date range for promotions that are already expired because that data is unavailable  -->
+    <string name="product_card_offer_expired_label">Current Price</string>
+    <string name="product_card_price_expiration_label">Valid %1$s - %2$s</string>
+    <!-- default string when pricing feature flag false  -->
+    <string name="product_card_price_off">Visit Store for Pricing</string>
+    <string name="product_card_select_a_store_label">Select a Store</string>
+    <string name="product_category_menu_screen_title">Product Categories</string>
+    <string name="product_details_add_to_cart">Add to Cart</string>
+    <string name="product_details_eligible_program_fsa">FSA</string>
+    <string name="product_details_eligible_program_hsa">HSA</string>
+    <string name="product_details_eligible_program_snap">SNAP</string>
+    <string name="product_details_eligible_programs">Eligible For</string>
+    <string name="product_details_error_general">Something went wrong. Please try again later or contact support via the Account page.</string>
+    <string name="product_details_error_no_network">No Internet Connection.</string>
+    <string name="product_details_qualifying_coupons">In-Store Coupons</string>
+    <string name="product_details_qualifying_rebates">Qualifying Cashback</string>
+    <string name="product_details_select_a_store_button">Select a Store for Pricing</string>
+    <string name="product_details_share_content">Check out the %1$s from %2$s %3$s</string>
+    <string name="product_details_title">Product Details</string>
+    <string name="product_merchandised_shop_subcategories_title">Browse by Subcategories</string>
+    <plurals name="product_plural">
+        <item quantity="one">product</item>
+        <item quantity="other">products</item>
+    </plurals>
+    <plurals name="product_plural_with_quantity">
+        <item quantity="one">%d product</item>
+        <item quantity="other">%d products</item>
+    </plurals>
+    <string name="product_top_categories_title">Top Categories</string>
+    <string name="product_unavailable_error">Item is unavailable</string>
+    <string name="products_list_empty_text">No products found</string>
+    <string name="products_list_headline">%1$d Products</string>
+    <string name="products_on_sale_for_you_headline">On Sale for You</string>
+    <string name="products_price_unavailable_label">Price Unavailable</string>
+    <string name="products_share_content_description">Share</string>
+    <string name="products_unavailable_at_store_label">Unavailable at this store</string>
+    <string name="push_notification_prompt_be_the_first">Be the first to learn about new deals and coupons! Opt in to receive alerts and offers.</string>
+    <string name="push_notification_prompt_enable_notifications">Enable Notifications</string>
+    <string name="push_notification_prompt_enable_notifications_failed">Try Again</string>
+    <string name="push_notification_prompt_not_now">Not Now</string>
+    <string name="push_notification_prompt_stay_in_the_know">Stay in the Know</string>
+    <string name="rebate_available_redemptions">Available redemptions: %d</string>
+    <string name="rebate_list_claimed_nav_title">Clipped Coupons</string>
+    <string name="rebate_list_nav_title">Cashback Coupons</string>
+    <string name="rebate_list_redeemed_nav_title">Redeemed Coupons</string>
+    <string name="rebates_list_composite_clipped_label">Clipped Coupons</string>
+    <string name="rebates_list_composite_redeemed_label">Redeemed Coupons</string>
+    <plurals name="receipt_scan_camera_discard_dialog_description">
+        <item quantity="one">Are you sure you want to discard %d scan?</item>
+        <item quantity="other">Are you sure you want to discard %d scans?</item>
+    </plurals>
+    <string name="receipt_scan_camera_discard_dialog_negative_cta">Cancel</string>
+    <string name="receipt_scan_camera_discard_dialog_positive_cta">Discard</string>
+    <string name="receipt_scan_camera_discard_dialog_title">Discard Scans</string>
+    <string name="receipt_scan_camera_help_label_1">Make sure you have sufficient lighting</string>
+    <string name="receipt_scan_camera_help_label_2">Flatten the receipt</string>
+    <string name="receipt_scan_camera_help_label_3">Get the receipt in frame, and if it\'s too long, take multiple photos</string>
+    <string name="receipt_scan_camera_help_label_4">Push the button. Profit!</string>
+    <string name="receipt_scan_camera_help_title">How It Works</string>
+    <string name="receipt_scan_camera_permission_required_cta">Open Settings</string>
+    <string name="receipt_scan_camera_permission_required_message">We\'ll need permission to access your camera when the app is in use to scan barcodes, QR codes and more...</string>
+    <string name="receipt_scan_camera_permission_required_title">Camera access required</string>
+    <string name="receipt_scan_camera_tip_label">Position the receipt in view</string>
+    <string name="receipt_scan_camera_toast_subtitle">Submit or review your images</string>
+    <string name="receipt_scan_camera_toast_title">There is a maximum of %1$s photos that you can send</string>
+    <string name="receipt_scan_cta_button_short_text">Scan</string>
+    <string name="receipt_scan_cta_button_text">Scan a Receipt</string>
+    <string name="receipt_scan_submit_cta_primary_text">Send</string>
+    <string name="receipt_scan_submit_cta_secondary_text_double">(%1$s/%2$s)</string>
+    <string name="receipt_scan_submit_cta_secondary_text_single">(%1$s)</string>
+    <string name="receipt_scan_upload_discard_dialog_negative_cta">Cancel</string>
+    <string name="receipt_scan_upload_discard_dialog_positive_cta">Discard</string>
+    <string name="receipt_scan_upload_discard_dialog_subtitle">Your receipts haven\'t been sent yet. Are you sure you want to discard them?</string>
+    <string name="receipt_scan_upload_discard_dialog_title">Discard Scans</string>
+    <string name="receipt_scan_upload_error_cta_negative">Close</string>
+    <string name="receipt_scan_upload_error_cta_positive">Try Again</string>
+    <string name="receipt_scan_upload_error_duplicate">This receipt has already been scanned</string>
+    <string name="receipt_scan_upload_error_duplicate_cta">Close</string>
+    <string name="receipt_scan_upload_error_inelegible">The transaction date is not within the eligible scan window</string>
+    <string name="receipt_scan_upload_error_inelegible_cta">Close</string>
+    <string name="receipt_scan_upload_error_location">The location shopped is not a participating location</string>
+    <string name="receipt_scan_upload_error_location_cta">Close</string>
+    <string name="receipt_scan_upload_error_locked_submission">There seems to be an unexpected error when trying to process your receipt, please reach out to support so that we can look into it.</string>
+    <string name="receipt_scan_upload_error_locked_submission_cta">Contact Support</string>
+    <string name="receipt_scan_upload_error_missing_info">This image has insufficient information, scan full receipt, try again</string>
+    <string name="receipt_scan_upload_error_no_eligible_state">Cashback Unavailable</string>
+    <string name="receipt_scan_upload_error_no_eligible_state_cta">Close</string>
+    <string name="receipt_scan_upload_error_no_valid_items">We couldn\'t detect any items from your receipt. Please reach out to customer support for assistance.</string>
+    <string name="receipt_scan_upload_error_quality">Image quality not sufficient, try again</string>
+    <string name="receipt_scan_upload_error_unknown">Unknown error, please try again</string>
+    <string name="receipt_scan_upload_primary_cta_success">Got it!</string>
+    <string name="receipt_scan_upload_subtitle_cleanup">Cleaning up</string>
+    <string name="receipt_scan_upload_subtitle_done_success">Your CashBack is just around the corner. Processing your receipt now!</string>
+    <string name="receipt_scan_upload_subtitle_error_duplicate">It looks like you\'ve already scanned this receipt. Duplicate submissions are not allowed.</string>
+    <string name="receipt_scan_upload_subtitle_error_inelegible">Receipts must be scanned within the eligibility period. This receipt is outside the timeframe.</string>
+    <string name="receipt_scan_upload_subtitle_error_location">This store is not part of our participating locations. Please ensure the receipt is valid.</string>
+    <string name="receipt_scan_upload_subtitle_error_missing_info">The receipt is missing some important information. Please scan the entire receipt again.</string>
+    <string name="receipt_scan_upload_subtitle_error_no_valid_items">No qualifying items were detected. Check your purchase and try again, or contact support.</string>
+    <string name="receipt_scan_upload_subtitle_error_processed">Your receipt cannot be processed. Contact customer support for assistance.</string>
+    <string name="receipt_scan_upload_subtitle_error_quality">The receipt image is too blurry to process. Please retake the photo and try again.</string>
+    <string name="receipt_scan_upload_subtitle_error_unknown">Something went wrong while processing your receipt. Please try again later or contact support.</string>
+    <string name="receipt_scan_upload_subtitle_no_eligible_state">The receipt you submitted is from a state that is not eligible for this rebate.</string>
+    <string name="receipt_scan_upload_subtitle_not_started">Preparing to upload</string>
+    <string name="receipt_scan_upload_subtitle_polling">Processing your receipts</string>
+    <string name="receipt_scan_upload_subtitle_reading">Loading files</string>
+    <string name="receipt_scan_upload_subtitle_uploading">Uploading your receipts \n%1$s</string>
+    <string name="receipt_scan_upload_title_in_progress">Sending...</string>
+    <string name="receipt_scan_upload_title_success">Receipt submitted successfully! Check back in an hour to see your progress.</string>
+    <string name="recipes_screen_cook_time">Cook Time</string>
+    <string name="recipes_screen_directions">Directions</string>
+    <string name="recipes_screen_ingredients">Ingredients</string>
+    <string name="recipes_screen_prep_time">Prep Time</string>
+    <string name="recipes_screen_print_button">Print Recipe</string>
+    <string name="recipes_screen_recipe_tips">Tips</string>
+    <string name="recipes_screen_total_time">Total Time</string>
+    <string name="redeemed_coupons_clip_and_scan_empty_state_description">No redemptions yet! Check out our savings opportunities and start redeeming your offers today.</string>
+    <string name="redeemed_coupons_emptystate_browse_coupons_cta">Browse Coupons</string>
+    <string name="redeemed_coupons_emptystate_description">No coupons redeemed in-store just yet. Scan your member barcode at the register to redeem coupons you\'ve clipped.</string>
+    <string name="redeemed_coupons_emptystate_title">Redeem &amp; Save</string>
+    <string name="redeemed_coupons_grid_headline">Redeemed Coupons</string>
+    <string name="redeemed_coupons_grid_headline_with_count">%1$d Redeemed Coupons</string>
+    <string name="redeemed_coupons_scan_only_empty_state_description">No redemptions yet! Check out our savings opportunities and start redeeming your offers today.</string>
+    <string name="redeemed_cpg_offers_list_nav_title">Redeemed CPG Offers</string>
+    <!-- Empty state on the "Redeemed Rewards" screen on the wallet. -->
+    <string name="redeemed_rewards_emptystate_description">You have no rewards redeemed yet. Keep shopping to earn!</string>
+    <string name="redeemed_rewards_emptystate_title">Redeemed Rewards</string>
+    <!-- Headline of the redeemed rewards section on the wallet.
+This headline count the # of rewards that were redeemed for that user. -->
+    <plurals name="redeemed_rewards_list_headline">
+        <item quantity="one">%d Reward</item>
+        <item quantity="other">%d Rewards</item>
+    </plurals>
+    <string name="redeemed_rewards_navigation_title">Redeemed Rewards</string>
+    <string name="refine_bottom_sheet_apply_cta">Apply</string>
+    <string name="refine_bottom_sheet_brand_subtitle">Brand</string>
+    <string name="refine_bottom_sheet_button_clear_cta">Clear All</string>
+    <string name="refine_bottom_sheet_title">Refine</string>
+    <string name="refine_bottom_sheet_toggle_available_at_your_store">Available at Your Store</string>
+    <string name="removed_from_list">Removed from List.</string>
+    <!-- Retry attempt to send magic link email to user.  -->
+    <string name="resend_magic_link_button">Resend Login Link</string>
+    <string name="reward_activate_alert_cancel">Not Now</string>
+    <string name="reward_activate_alert_confirm">Use Points</string>
+    <string name="reward_activate_alert_subtitle">You cannot return a reward once you use your points.</string>
+    <string name="reward_activate_alert_title">Are you sure?</string>
+    <string name="reward_activation_confirmation_activate">Use Points</string>
+    <string name="reward_activation_confirmation_cancel">Not Now</string>
+    <string name="reward_activation_confirmation_description">You cannot return a reward once you use your points</string>
+    <string name="reward_activation_confirmation_title">Are you sure?</string>
+    <string name="reward_cta_added">Added</string>
+    <!-- CTA to activate or purchase a reward using points -->
+    <string name="reward_cta_available">Use %1$s %2$s</string>
+    <string name="reward_cta_error">Try Again</string>
+    <string name="reward_cta_expired">Expired</string>
+    <string name="reward_cta_locked">%1$s %2$s</string>
+    <string name="reward_cta_redeemed">Redeemed</string>
+    <string name="reward_cta_used">Used</string>
+    <plurals name="reward_currency_plural">
+        <item quantity="one">point</item>
+        <item quantity="other">points</item>
+    </plurals>
+    <string name="reward_detail_navigation_title">Reward Details</string>
+    <string name="reward_detail_not_found_subtitle">This reward was not found, or no longer exists.</string>
+    <string name="reward_detail_not_found_title">Reward Not Found</string>
+    <string name="reward_details_expired_date">Expired %1$s</string>
+    <string name="reward_details_expiring_date">exp. %1$s</string>
+    <string name="reward_details_how_it_works_description">First, use your loyalty points to activate this reward. Then simply make your purchase, and at checkout, either scan your unique barcode or provide your phone number to redeem your well-deserved reward.</string>
+    <string name="reward_details_how_it_works_description_additional">HowItWorksTopDescription Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="reward_details_how_it_works_title">How it Works: Rewards</string>
+    <string name="reward_details_how_it_works_title_additional">HowItWorksTopTitle Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <!-- Nearby Stores empty state.
+The reward detail pages shows the participant locations in a 10mi radius. -->
+    <string name="reward_details_nearby_stores_empty_state">There are no participating stores within a 10 mi radius of you at this time.</string>
+    <string name="reward_details_nearby_stores_title">Nearby Participant Stores</string>
+    <string name="reward_details_terms_and_conditions_description">TermsAndConditionsDescription Lorem ipsum dolor sit amet</string>
+    <string name="reward_details_terms_and_conditions_description_additional">TermsAndConditionsTopDescription Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="reward_details_terms_and_conditions_title">Terms &amp; Conditions</string>
+    <string name="reward_details_topbar_title">Reward Details</string>
+    <string name="reward_list_empty">There are no rewards in the marketplace right now.</string>
+    <plurals name="reward_plural">
+        <item quantity="one">reward</item>
+        <item quantity="other">rewards</item>
+    </plurals>
+    <string name="reward_store_available">Available at your store</string>
+    <string name="reward_store_unavailable">Not available at your store</string>
+    <plurals name="reward_use_currency_plural">
+        <item quantity="one">Use %d point</item>
+        <item quantity="other">Use %d points</item>
+    </plurals>
+    <string name="rewards_card_expiry_prefix">Exp. %1$s</string>
+    <string name="rewards_carousel_title">Rewards Marketplace</string>
+    <string name="rewards_history_headline">Rewards History</string>
+    <string name="rewards_history_tab_title_expired">Expired</string>
+    <string name="rewards_history_tab_title_redeemed">Redeemed</string>
+    <string name="rewards_list_count_label">%1$s Rewards</string>
+    <string name="rewards_navigation_title">Rewards Marketplace</string>
+    <string name="scan_permission_always_denied_button_text">System Preferences</string>
+    <string name="scan_permission_always_denied_description">Enable camera in Settings &gt; %1$s &gt; Camera to use this feature.</string>
+    <string name="scan_permission_always_denied_title">Camera disabled</string>
+    <string name="scan_permission_dialog_always_denied_desc">Enable camera access in Settings to use this feature.</string>
+    <string name="scan_permission_dialog_always_denied_no">Cancel</string>
+    <string name="scan_permission_dialog_always_denied_title">Camera disabled</string>
+    <string name="scan_permission_dialog_always_denied_yes">System Preferences</string>
+    <string name="scan_permission_request_button_text">Continue</string>
+    <string name="scan_permission_request_description">We\'ll need permission to access your camera when the app is in use to scan barcodes, QR codes and more...</string>
+    <string name="scan_permission_request_title">Camera access required</string>
+    <string name="scan_scanner_flashlight_toggle_text">Flashlight</string>
+    <string name="scan_scanner_loyalty_ready_title">Scan a barcode on your loyalty card</string>
+    <string name="scan_scanner_not_found_subtitle">Try searching for products by name or category</string>
+    <string name="scan_scanner_not_found_title">Product not found</string>
+    <string name="scan_scanner_ready_description">If barcode is not detected, please try a different camera angle or lighting.</string>
+    <string name="scan_scanner_ready_title">Scan a product barcode</string>
+    <string name="scan_scanner_unknown_error_title">Something went wrong</string>
+    <!-- Error message for when a user attempts to scan an item without an active internet connection.  -->
+    <string name="scanner_no_connection">No connection. Please try again.</string>
+    <string name="search_bar_default_hint">Search</string>
+    <string name="search_clear_history">Clear History</string>
+    <string name="search_content_description">Search</string>
+    <string name="search_empty_result_text">We\'re sorry, we couldn\'t find results for that search. Please try another search!</string>
+    <string name="search_empty_result_title">No results for \'%1$s\'</string>
+    <string name="search_history_header_text">Previous Searches</string>
+    <string name="search_results_coupons_headline">%1$d Coupons Found</string>
+    <string name="search_results_products_headline">%1$d Products Found</string>
+    <string name="search_search_history">Search History</string>
+    <string name="search_store_screen_clear_search_button">Clear</string>
+    <string name="search_store_screen_filter_list">List</string>
+    <string name="search_store_screen_filter_map">Map</string>
+    <string name="search_store_screen_title">Store Locator</string>
+    <string name="share_cashback_coupon_details_share_content">Check out this %1$s Cashback Coupon from %2$s</string>
+    <string name="share_challenge_details_share_content">Check out this %1$s Challenge from %2$s</string>
+    <string name="share_coupon_details_share_content">Check out this %1$s Coupon from %2$s</string>
+    <string name="shopping_list_abandon_dialog_body">Your selected items will not be changed</string>
+    <string name="shopping_list_abandon_dialog_confirm">Leave</string>
+    <string name="shopping_list_abandon_dialog_title">Are you sure you want to leave?</string>
+    <string name="shopping_list_add_cart">Add to Cart</string>
+    <string name="shopping_list_add_item">Add \"%1$s\"</string>
+    <string name="shopping_list_add_to_cart_success">Added to Cart</string>
+    <string name="shopping_list_add_to_cart_success_subtitle">Items successfully added to your shopping cart.</string>
+    <string name="shopping_list_clear_all">Clear All</string>
+    <plurals name="shopping_list_completed_item_quantity">
+        <item quantity="one">%d completed item</item>
+        <item quantity="other">%d completed items</item>
+    </plurals>
+    <!-- Subtitle for Completed Items section on Shopping List -->
+    <string name="shopping_list_completed_title">Completed Items</string>
+    <string name="shopping_list_delete_all_items">Delete All Items</string>
+    <string name="shopping_list_delete_all_items_confirmation_label">Delete</string>
+    <string name="shopping_list_delete_all_items_dialog_description">All active and completed items will be deleted.</string>
+    <string name="shopping_list_delete_all_items_dialog_title">Are you sure?</string>
+    <!-- Delete Item -->
+    <string name="shopping_list_delete_item">Delete</string>
+    <string name="shopping_list_edit">Edit Your List</string>
+    <string name="shopping_list_edit_item">Edit Item</string>
+    <string name="shopping_list_error_toast_subtitle">Tap to sync your shopping list.</string>
+    <string name="shopping_list_error_toast_title">Something went wrong</string>
+    <string name="shopping_list_find_an_item">Find an Item</string>
+    <string name="shopping_list_find_items">Find items</string>
+    <string name="shopping_list_find_product">Find Product</string>
+    <!-- Tells customers to delete items from their shopping list -->
+    <string name="shopping_list_full_error_subtitle">There are %1$s items in your list. Delete some items to keep shopping.</string>
+    <!-- Toast telling customer that their shopping list is full -->
+    <string name="shopping_list_full_error_title">Your List is Full!</string>
+    <string name="shopping_list_instruction_description_1">Simply type, browse the app, or scan a product to add to list.</string>
+    <string name="shopping_list_instruction_description_2">Check off items as you shop, ensuring you\'ve made the most of your trip.</string>
+    <string name="shopping_list_instruction_description_3">See which products have available coupons to maximize your savings.</string>
+    <string name="shopping_list_instruction_title_1">Quick Creation</string>
+    <string name="shopping_list_instruction_title_2">Never Forget</string>
+    <string name="shopping_list_instruction_title_3">Discover Coupons</string>
+    <string name="shopping_list_item_coupon_text">Coupons</string>
+    <plurals name="shopping_list_item_quantity">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="shopping_list_most_recent">Most Recent</string>
+    <plurals name="shopping_list_multi_select">
+        <item quantity="one">%d item selected</item>
+        <item quantity="other">%d items selected</item>
+    </plurals>
+    <string name="shopping_list_no_aisle_headline">Misc</string>
+    <string name="shopping_list_no_category_headline">Others %d</string>
+    <string name="shopping_list_no_internet_connection_message">Product info and prices will update when you connect to internet.</string>
+    <string name="shopping_list_product_description">%1$s - %2$s</string>
+    <string name="shopping_list_sale_tag">SALE</string>
+    <string name="shopping_list_search_bar_hint">Add an Item</string>
+    <string name="shopping_list_search_for">Search for \"%1$s\"</string>
+    <string name="shopping_list_search_results_headline">%1$s Results for \"%2$s\"</string>
+    <string name="shopping_list_searchbar_content_description_scan">Scan</string>
+    <string name="shopping_list_searchbar_content_description_search">Search</string>
+    <string name="shopping_list_select_all">Select All</string>
+    <string name="shopping_list_settings">List Settings</string>
+    <!-- Shopping List shared button -->
+    <string name="shopping_list_share">Share List</string>
+    <string name="shopping_list_share_completed_item">[x] %1$s</string>
+    <string name="shopping_list_share_content">My List for %1$s</string>
+    <string name="shopping_list_share_list">Share Your List</string>
+    <string name="shopping_list_sorting_aisle">Aisle</string>
+    <string name="shopping_list_sorting_category">Category</string>
+    <string name="shopping_list_sorting_menu_headline">Sort By</string>
+    <string name="shopping_list_top_bar_title">List</string>
+    <string name="shopping_list_uncheck_all_items">Uncheck All</string>
+    <!-- Shopping List unselect all from multi-select -->
+    <string name="shopping_list_unselect_all">Unselect All</string>
+    <string name="store_details_languages">Languages</string>
+    <string name="store_details_payment_methods">In-Store Payment Methods</string>
+    <string name="store_details_screen_amenities">Amenities</string>
+    <string name="store_details_screen_button_directions">Directions</string>
+    <string name="store_details_screen_button_my_store">My Store</string>
+    <string name="store_details_screen_button_set_as_my_store">Set as my Store</string>
+    <string name="store_details_screen_button_update_my_store">Update My Store</string>
+    <string name="store_details_screen_button_weekly_adds">Weekly Ads</string>
+    <string name="store_details_screen_department_closed">%1$s closed</string>
+    <string name="store_details_screen_department_hide_hours">Hide %1$s hours</string>
+    <!-- Department open until -->
+    <string name="store_details_screen_department_timetable_open">%1$s open until %2$s</string>
+    <!-- See department hours -->
+    <string name="store_details_screen_department_timetable_see_hours">See %1$s hours</string>
+    <string name="store_details_screen_pharmacy_timetable_closed">Pharmacy closed</string>
+    <string name="store_details_screen_pharmacy_timetable_hide_hours">Hide pharmacy hours</string>
+    <string name="store_details_screen_pharmacy_timetable_open">Pharmacy open until %1$s</string>
+    <string name="store_details_screen_pharmacy_timetable_see_hours">See pharmacy hours</string>
+    <string name="store_details_screen_store_timetable_closed">Store closed</string>
+    <string name="store_details_screen_store_timetable_hide_hours">Hide store hours</string>
+    <string name="store_details_screen_store_timetable_open">Store open until %1$s</string>
+    <string name="store_details_screen_store_timetable_see_hours">See store hours</string>
+    <string name="store_details_screen_timetable_friday">Fri</string>
+    <string name="store_details_screen_timetable_monday">Mon</string>
+    <string name="store_details_screen_timetable_saturday">Sat</string>
+    <string name="store_details_screen_timetable_sunday">Sun</string>
+    <string name="store_details_screen_timetable_thursday">Thu</string>
+    <string name="store_details_screen_timetable_tuesday">Tue</string>
+    <string name="store_details_screen_timetable_unknown">Unknown</string>
+    <string name="store_details_screen_timetable_wednesday">Wed</string>
+    <!-- Marker for special hours  -->
+    <string name="store_details_special_hours">Special Hours</string>
+    <string name="store_details_ways_to_shop">Ways to Shop</string>
+    <string name="store_details_ways_to_shop_delivery">Delivery</string>
+    <string name="store_details_ways_to_shop_instore">In-Store</string>
+    <string name="store_details_ways_to_shop_mto">Made to Order</string>
+    <string name="store_details_ways_to_shop_pickup_curbside">Curbside Pickup</string>
+    <string name="store_details_ways_to_shop_pickup_instore">In-Store Pickup</string>
+    <!-- Alternative to Store Details -->
+    <string name="store_locator_card_learn_more">Learn More</string>
+    <string name="store_locator_loading">...</string>
+    <string name="store_locator_location_permission_message">We use this to show you nearby stores</string>
+    <string name="store_locator_location_permission_positive">Settings</string>
+    <string name="store_locator_location_permission_title">We need your location</string>
+    <string name="store_locator_no_location_alert_message_android">Explain how to go to settings</string>
+    <string name="store_locator_no_location_alert_message_ios">Enable Share My Location in Settings &gt; iCloud &gt; Share My Location to use this feature.</string>
+    <string name="store_locator_no_location_alert_negative_button">Not now</string>
+    <string name="store_locator_no_location_alert_positive_button_android">System preferences</string>
+    <string name="store_locator_no_location_alert_positive_button_ios">System preferences</string>
+    <string name="store_locator_no_location_alert_title">Share My Location Disabled</string>
+    <string name="store_locator_search_hint">Search by Zip Code or City</string>
+    <string name="store_locator_search_in_progress">Searching...</string>
+    <string name="store_locator_search_list_no_results_message">There are no stores within 25 miles of your search. Try a different city or zip code.</string>
+    <!-- Button to find nearest stores -->
+    <string name="store_locator_search_map_find_nearest_stores">Find Nearest Stores</string>
+    <string name="store_locator_search_map_no_results_50mi_title">No stores found within 50 miles.</string>
+    <string name="store_locator_search_map_no_results_message">Try searching a different area</string>
+    <string name="store_locator_search_map_no_results_title">No stores found in this area</string>
+    <string name="store_locator_search_store_closed_all_day">Closed All Day</string>
+    <string name="store_locator_search_store_closed_now">Closed</string>
+    <string name="store_locator_search_store_closes_at">Closes at %1$s</string>
+    <string name="store_locator_search_store_closing_soon">Closing Soon</string>
+    <string name="store_locator_search_store_open_24_hours">Open 24 Hours</string>
+    <string name="store_locator_search_store_open_now">Open Now</string>
+    <string name="store_locator_search_store_opens_at">Opens at %1$s</string>
+    <string name="store_locator_search_store_summary_hours">Hours: %1$s - %2$s</string>
+    <string name="store_locator_see_all_stores">See All Stores</string>
+    <string name="store_locator_select_store">Select a Store</string>
+    <string name="store_locator_share_your_location_acknowledged">Continue</string>
+    <string name="store_locator_share_your_location_approved">Enable Location Services</string>
+    <string name="store_locator_share_your_location_disapproved">Not Now</string>
+    <string name="store_locator_share_your_location_header">Share Your Location</string>
+    <string name="store_locator_share_your_location_info">Enable location services to find your nearest stores.</string>
+    <string name="store_locator_store_button_when_is_not_users_store">Update My Store</string>
+    <string name="store_locator_store_button_when_is_users_store">My Store</string>
+    <string name="store_locator_store_button_when_no_store_set">Set as my Store</string>
+    <string name="swiftly_platform">Swiftly</string>
+    <string name="swiftly_platform_with_param">Hello, %1$s! You have %2$d new messages.</string>
+    <!-- strapi "Sign in / Sign up" -->
+    <string name="top_nav_login_signup">Sign In / Sign Up</string>
+    <string name="unclaimed_coupons_emptystate_description">More coupons will be available soon!</string>
+    <string name="unclaimed_coupons_emptystate_title">Stay tuned</string>
+    <string name="unclaimed_coupons_grid_headline">Available Coupons</string>
+    <string name="unclaimed_coupons_grid_headline_with_count">%1$d Available Coupons</string>
+    <string name="used_rewards_carousel_headline_title">Used Rewards</string>
+    <string name="vertical_list_rebates_empty_state">There are no Cashback deals here yet. Keep exploring for more deals!</string>
+    <string name="verticals_challenges_list_header">Available Points: %1$s</string>
+    <string name="verticals_deals_list_header">Available Points: %1$s</string>
+    <string name="verticals_rebates_list_header">Available Cashback: %1$s</string>
+    <string name="wallet_about_title">About Rewards</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_10_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_10_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_11_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_11_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_12_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_12_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_13_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_13_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_14_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_14_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_15_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_15_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_1_description">Create an account so you can save big on your next shopping trip.</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_1_title">Sign Up</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_2_description">Clip digital coupons in the app and load them to your digital wallet. Maximize your savings.</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_2_title">Clip</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_3_description">Provide your loyalty ID at checkout and your coupons are automatically applied to your purchase.</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_3_title">Save</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_4_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_4_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_5_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_5_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_6_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_6_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_7_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_7_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_8_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or loginv -->
+    <string name="wallet_anonymous_narrative_8_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_9_description"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_narrative_9_title"></string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_signin">Sign In</string>
+    <!-- Wallet onboarding screen for anonymous users.
+Encourage the user to sign up or login -->
+    <string name="wallet_anonymous_signup">Sign Up</string>
+    <string name="wallet_bottom_navigation_external_url_title_1"></string>
+    <string name="wallet_bottom_navigation_external_url_title_2"></string>
+    <string name="wallet_bottom_navigation_external_url_title_3"></string>
+    <string name="wallet_bottom_navigation_external_url_title_4"></string>
+    <string name="wallet_bottom_navigation_external_url_title_5"></string>
+    <string name="wallet_cash_back_row_subtitle">%1$s expiring soon</string>
+    <string name="wallet_cash_back_row_title">Cashback</string>
+    <string name="wallet_challenges_row_title">More Ways to Save</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_10_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_10_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_11_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_11_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_12_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_12_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_13_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_13_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_14_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_14_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_15_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_15_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_1_description">Create an account so you can save big on your next shopping trip.</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_1_title">Sign Up</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_2_description">Clip digital coupons in the app and load them to your digital wallet. Maximize your savings.</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_2_title">Clip</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_3_description">Provide your loyalty ID at checkout and your coupons are automatically applied to your purchase.</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_3_title">Save</string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_4_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_4_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_5_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_5_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_6_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_6_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_7_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_7_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_8_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_8_title"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_9_description"></string>
+    <!-- About Rewards page: explain to the user how the points & rewards program works -->
+    <string name="wallet_explainer_narrative_9_title"></string>
+    <string name="wallet_menu_added_rewards">Added Rewards</string>
+    <string name="wallet_menu_clipped_coupons">Clipped Coupons</string>
+    <string name="wallet_menu_points_history">Points History</string>
+    <string name="wallet_menu_redeemed_coupons">Redeemed Coupons</string>
+    <string name="wallet_menu_redeemed_rewards">Redeemed Rewards</string>
+    <string name="wallet_menu_rewards_history">Rewards History</string>
+    <!-- User action to enable user to call retailer's customer support to get assistance for loyalty ID creation/attachment failure during account creation -->
+    <string name="wallet_no_loyalty_id_contact_support_call">Call Support</string>
+    <!-- User action to dismiss loyalty ID creation error message -->
+    <string name="wallet_no_loyalty_id_contact_support_cancel">I\'ll Wait</string>
+    <!-- Error message description for when user's newly created account does not have a loyalty ID successfully attached.  -->
+    <string name="wallet_no_loyalty_id_contact_support_description">We unfortunately could not establish your account. A message has been sent to the customer service team, and it will be resolved within 48 hours. Please call support if you need additional assistance.</string>
+    <!-- Error message displayed to users when a loyalty ID was not successfully added to their account. -->
+    <string name="wallet_no_loyalty_id_contact_support_title">Contact Support</string>
+    <!-- Instructions for user to pull down to refresh to try retrieving the loyalty ID for the account.  -->
+    <string name="wallet_no_loyalty_id_error_description">Pull to refresh in 1-2 minutes</string>
+    <!-- An error message when a loyalty ID has not successfully been tied to the account.  -->
+    <string name="wallet_no_loyalty_id_error_title">Something went wrong establishing your account.</string>
+    <string name="wallet_scan_card_button_text">Scan Card</string>
+    <string name="wallet_static_image_webview_title">Earn Rewards</string>
+    <!-- asks the customer to try again when a recoverable web view error occurs -->
+    <string name="web_view_error_recoverable">Something unexpected happened. Try again.</string>
+    <!-- Tells customer to try again at a later time when an unrecoverable web error occurs -->
+    <string name="web_view_error_unrecoverable">Something went wrong. Please try again later.</string>
+    <string name="yields">Yields</string>
+</resources>

@@ -13,6 +13,7 @@ object Deps {
             const val presentationComponentCore = "$platformModulePrefix:presentation:component-core"
             const val presentationFrnkResources = "$platformModulePrefix:presentation:frnk-resources"
             const val uiFramework = "$platformModulePrefix:ui:framework-ui"
+            const val uiComponentLibrary = "$platformModulePrefix:ui:component-library"
             const val utilDi = "$platformModulePrefix:util:di"
             const val utilCommon = "$platformModulePrefix:util:common"
             const val subs = "$platformModulePrefix:subs"

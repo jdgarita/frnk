@@ -5,9 +5,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.serialization)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -27,29 +27,38 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "resources"
+            baseName = "ui.componentLibrary"
             xcf.add(this)
             isStatic = true
         }
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(libs.coroutines.core)
-            implementation(libs.kotlinx.serialization)
-            implementation(compose.foundation)
-            implementation(compose.components.resources)
+        androidMain.dependencies {
+            implementation(compose.preview)
+        }
 
-            implementation(project(path = Deps.Main.Frnk.utilCommon))
+        commonMain.dependencies {
+            implementation(project(path = Deps.Main.Frnk.presentationMvi))
+            implementation(project(path = Deps.Main.Frnk.presentationComponentCore))
+            implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
+            implementation(libs.compose.navigation)
+            implementation(libs.kotlinx.serialization)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
         }
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.presentation.resources"
+    namespace = "dev.jdgarita.frnk.ui.framework"
     compileSdk = 35
     defaultConfig {
         minSdk = 24

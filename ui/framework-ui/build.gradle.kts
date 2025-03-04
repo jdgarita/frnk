@@ -41,6 +41,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(path = Deps.Main.Frnk.presentationMvi))
             implementation(project(path = Deps.Main.Frnk.presentationComponentCore))
+            implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
             implementation(libs.compose.navigation)
             implementation(libs.kotlinx.serialization)
             implementation(compose.runtime)
@@ -48,7 +49,6 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
             implementation(compose.ui)
-            implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
         }
         commonTest.dependencies {

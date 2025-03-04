@@ -1,7 +1,5 @@
 package dev.jdgarita.frnk.presentation.mvi
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 
@@ -126,6 +124,7 @@ abstract class CompositeViewModel<
                         bottomSheetViewState = bottomSheetViewState,
                         appRatingVisible = appRatingVisible
                     )
+
                     commonStates.any { it.dataLoadState == LoadState.Failed } -> {
                         val stateWithDisplayError = commonStates.firstOrNull { it.commonDisplayError != null }
                         CommonViewState(
@@ -137,6 +136,7 @@ abstract class CompositeViewModel<
                             appRatingVisible = appRatingVisible
                         )
                     }
+
                     commonStates.all { it.dataLoadState == LoadState.Loaded } -> {
                         CommonViewState(
                             dataLoadState = LoadState.Loaded,
@@ -146,6 +146,7 @@ abstract class CompositeViewModel<
                             appRatingVisible = appRatingVisible
                         )
                     }
+
                     else -> CommonViewState(
                         dataLoadState = LoadState.Initialized,
                         toastAlertViewState = toastAlertViewState,
@@ -235,6 +236,7 @@ abstract class CompositeViewModel<
                     }
                 }
             }
+
             else -> Unit // Already handled via super
         }
     }
