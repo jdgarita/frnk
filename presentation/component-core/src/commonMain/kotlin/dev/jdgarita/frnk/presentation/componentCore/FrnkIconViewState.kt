@@ -1,6 +1,5 @@
 package dev.jdgarita.frnk.presentation.componentCore
 
-import dev.jdgarita.frnk.presentation.resources.SemanticTypography
 import dev.jdgarita.frnk.presentation.resources.color.SemanticColor
 import dev.jdgarita.frnk.presentation.resources.images.SemanticIcon
 import kotlinx.serialization.Serializable

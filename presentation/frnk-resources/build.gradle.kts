@@ -6,8 +6,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
@@ -37,9 +35,6 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.coroutines.core)
             implementation(libs.kotlinx.serialization)
-            implementation(compose.foundation)
-            implementation(compose.components.resources)
-
             implementation(project(path = Deps.Main.Frnk.utilCommon))
         }
         commonTest.dependencies {

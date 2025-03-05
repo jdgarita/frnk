@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 sealed class FrnkTopBarViewState : ViewState {
     override val id: String = ViewState.DEFAULT_ID
     abstract val trailingContent: List<TopBarTrailingContent>?
-    abstract val frnkDropdownMenuViewState: FrnkDropdownMenuViewState?
 
     @Serializable
     data class Simple(
@@ -15,14 +14,12 @@ sealed class FrnkTopBarViewState : ViewState {
         val backButton: Boolean = false,
         val backButtonStyle: BackButtonStyle = BackButtonStyle.Back,
         val onBackButtonClick: () -> Unit = {},
-        override val trailingContent: List<TopBarTrailingContent>? = null,
-        override val frnkDropdownMenuViewState: FrnkDropdownMenuViewState? = null
+        override val trailingContent: List<TopBarTrailingContent>? = null
     ) : FrnkTopBarViewState()
 
     @Serializable
     data class WithLogo(
-        override val trailingContent: List<TopBarTrailingContent>?,
-        override val frnkDropdownMenuViewState: FrnkDropdownMenuViewState? = null
+        override val trailingContent: List<TopBarTrailingContent>?
     ) : FrnkTopBarViewState() {
         val logo: FrnkLogoViewState = FrnkLogoViewState(logoType = FrnkLogoType.Standard)
     }
@@ -46,7 +43,6 @@ sealed class TopBarTrailingContent {
     ) : TopBarTrailingContent()
 
     data class ShareSheet(
-        val swiftlyShareSheetViewState: FrnkShareSheetViewState,
         override val onTap: (id: String) -> Unit = {}
     ) : TopBarTrailingContent()
 }

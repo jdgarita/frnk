@@ -13,7 +13,7 @@
     <string name="account_settings_copyright">%1$s v.%2$s\n© %4$s %3$s</string>
     <string name="account_settings_delete_account">Delete My Account</string>
     <string name="account_settings_legal">Legal</string>
-    <string name="account_settings_loyalty_id">Loyalty ID: %1$s \n</string>
+    <string name="account_settings_loyalty_id">Loyalty ID: %1$s \n</string>@
     <string name="account_settings_manage_my_account">Manage My Account</string>
     <string name="account_settings_my_brand_history">My %1$s History</string>
     <string name="account_settings_navigation_title">Account</string>

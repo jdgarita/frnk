@@ -1,13 +1,8 @@
 package dev.jdgarita.frnk.presentation.mvi
 
 import dev.jdgarita.frnk.domain.framework.error.Error
-import dev.jdgarita.frnk.presentation.componentCore.FrnkBottomSheetViewState
-import dev.jdgarita.frnk.presentation.componentCore.FrnkDialogViewState
 import dev.jdgarita.frnk.presentation.componentCore.FrnkSpinnerViewState
-import dev.jdgarita.frnk.presentation.componentCore.ToastAlertViewState
-import dev.jdgarita.frnk.presentation.mvi.errors.asAlertDisplayError
 import dev.jdgarita.frnk.presentation.mvi.errors.asEmptyStateDisplayError
-import dev.jdgarita.frnk.presentation.resources.FrnkStringProvider
 
 /**
  * CommonState is meant to hold data that is universally common across all
@@ -21,9 +16,6 @@ import dev.jdgarita.frnk.presentation.resources.FrnkStringProvider
 data class CommonState(
     val dataLoadState: LoadState = LoadState.Initialized,
     val error: Error? = null,
-    val toastAlertViewState: ToastAlertViewState? = null,
-    val dialogViewState: FrnkDialogViewState? = null,
-    val bottomSheetViewState: FrnkBottomSheetViewState? = null,
     val appRatingVisible: Boolean = false,
     val spinnerViewState: FrnkSpinnerViewState? = null,
     val hasSuccessfullyLoaded: Boolean = false
@@ -49,8 +41,8 @@ interface CompositeStateCommon<T> : StateCommon<T> {
 }
 
 fun MviViewModel<*, *, *, *>.mapCommonState(
-    state: StateCommon<*>,
-   // stringProvider: FrnkStringProvider
+    state: StateCommon<*>
+    // stringProvider: FrnkStringProvider
 ): CommonViewState {
     val displayError: CommonDisplayError? = if (this is ScreenViewModel) {
         when (state) {
@@ -65,51 +57,8 @@ fun MviViewModel<*, *, *, *>.mapCommonState(
             }
         }
     } else {
-        state.commonState.error?.let { error ->
-            when (error) {
-                is Error.Network -> {
-                    error.asEmptyStateDisplayError()
-                }
-
-                else -> {
-                    error.asAlertDisplayError()
-                }
-            }
-        }
+        state.commonState.error?.asEmptyStateDisplayError()
     }
-
-    val toastAlertViewState: ToastAlertViewState? = when {
-        state is CompositeStateCommon<*> ->
-            state.commonState.toastAlertViewState
-                ?: state.childrenViewState.toastAlertViewState
-
-        else -> state.commonState.toastAlertViewState
-    }
-
-    val dialogViewState: FrnkDialogViewState? = when {
-        state is CompositeStateCommon<*> ->
-            state.commonState.dialogViewState
-                ?: state.childrenViewState.dialogViewState
-
-        else -> state.commonState.dialogViewState
-    }
-
-    val bottomSheetViewState: FrnkBottomSheetViewState? = when {
-        state is CompositeStateCommon<*> ->
-            state.commonState.bottomSheetViewState
-                ?: state.childrenViewState.bottomSheetViewState
-
-        else -> state.commonState.bottomSheetViewState
-    }
-
-    val appRatingVisible: Boolean = when {
-        state is CompositeStateCommon<*> ->
-            state.commonState.appRatingVisible ||
-                state.childrenViewState.appRatingVisible
-
-        else -> state.commonState.appRatingVisible
-    }
-
     val spinnerViewState: FrnkSpinnerViewState? = when {
         state is CompositeStateCommon<*> ->
             state.commonState.spinnerViewState ?: state.childrenViewState.spinnerViewState
@@ -119,10 +68,6 @@ fun MviViewModel<*, *, *, *>.mapCommonState(
     return CommonViewState(
         dataLoadState = state.commonState.dataLoadState,
         commonDisplayError = displayError,
-        toastAlertViewState = toastAlertViewState,
-        dialogViewState = dialogViewState,
-        bottomSheetViewState = bottomSheetViewState,
-        appRatingVisible = appRatingVisible,
         spinnerViewState = spinnerViewState
     )
 }

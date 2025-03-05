@@ -1,7 +1,7 @@
 // DO NOT EDIT - This file is auto-generated - see bin/generate_string_enums.sh
 @file:Suppress("ktlint")
 
-package dev.jdgarita.frnk.presentation.resources
+package dev.jdgarita.frnk.presentation.resources.text
 
 enum class Strings {
     account_settings_accessibility_statement,
@@ -483,7 +483,9 @@ enum class Strings {
     fulfillment_selector_delivery_your_delivery_address,
     fulfillment_selector_delivery_zip_code_label,
     fulfillment_selector_directions_button,
+    fulfillment_selector_directions_button_99_mi,
     fulfillment_selector_directions_button_mi,
+    fulfillment_selector_directions_button_mi_only,
     fulfillment_selector_distance_format,
     fulfillment_selector_enter_delivery_address_message,
     fulfillment_selector_instore,
@@ -492,6 +494,9 @@ enum class Strings {
     fulfillment_selector_location,
     fulfillment_selector_location_search,
     fulfillment_selector_map_title,
+    fulfillment_selector_map_title_delivery,
+    fulfillment_selector_map_title_instore,
+    fulfillment_selector_map_title_pickup,
     fulfillment_selector_my_store,
     fulfillment_selector_pickup,
     fulfillment_selector_save,

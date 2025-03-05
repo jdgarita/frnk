@@ -102,57 +102,28 @@ abstract class CompositeViewModel<
                 val commonStates = viewStates.map { (it as ViewStateCommon<*>).commonViewState }
                 val loadingStates = commonStates.filter { it.dataLoadState is LoadState.Loading }
                 val isRefreshing = loadingStates.any { (it.dataLoadState as LoadState.Loading).isRefreshing }
-                // Assumption: there is only one toast alert view state in the children view states
-                val toastAlertViewState = commonStates
-                    .firstOrNull { it.toastAlertViewState != null }
-                    ?.toastAlertViewState
-                // Assumption: there is only one dialog in the children view states
-                val dialogViewState = commonStates
-                    .firstOrNull { it.dialogViewState != null }
-                    ?.dialogViewState
-                // Assumption: there is only one bottom sheet in the children view states
-                val bottomSheetViewState = commonStates
-                    .firstOrNull { it.bottomSheetViewState != null }
-                    ?.bottomSheetViewState
-                val appRatingVisible = commonStates.any { it.appRatingVisible }
 
                 when {
                     loadingStates.isNotEmpty() -> CommonViewState(
-                        dataLoadState = LoadState.Loading(isRefreshing),
-                        toastAlertViewState = toastAlertViewState,
-                        dialogViewState = dialogViewState,
-                        bottomSheetViewState = bottomSheetViewState,
-                        appRatingVisible = appRatingVisible
+                        dataLoadState = LoadState.Loading(isRefreshing)
                     )
 
                     commonStates.any { it.dataLoadState == LoadState.Failed } -> {
                         val stateWithDisplayError = commonStates.firstOrNull { it.commonDisplayError != null }
                         CommonViewState(
                             dataLoadState = LoadState.Failed,
-                            commonDisplayError = stateWithDisplayError?.commonDisplayError,
-                            toastAlertViewState = toastAlertViewState,
-                            dialogViewState = dialogViewState,
-                            bottomSheetViewState = bottomSheetViewState,
-                            appRatingVisible = appRatingVisible
+                            commonDisplayError = stateWithDisplayError?.commonDisplayError
                         )
                     }
 
                     commonStates.all { it.dataLoadState == LoadState.Loaded } -> {
                         CommonViewState(
-                            dataLoadState = LoadState.Loaded,
-                            toastAlertViewState = toastAlertViewState,
-                            dialogViewState = dialogViewState,
-                            bottomSheetViewState = bottomSheetViewState,
-                            appRatingVisible = appRatingVisible
+                            dataLoadState = LoadState.Loaded
                         )
                     }
 
                     else -> CommonViewState(
-                        dataLoadState = LoadState.Initialized,
-                        toastAlertViewState = toastAlertViewState,
-                        dialogViewState = dialogViewState,
-                        bottomSheetViewState = bottomSheetViewState,
-                        appRatingVisible = appRatingVisible
+                        dataLoadState = LoadState.Initialized
                     )
                 }
             }.collect { commonViewState ->

@@ -6,14 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.swiftly.platform.resources.AndroidSwiftlyStringProvider
-import com.swiftly.platform.resources.SwiftlyStringProvider
-import org.koin.mp.KoinPlatform
 
 internal val LocalSwiftlyColor = staticCompositionLocalOf { ComposeFrnkColor.default }
 internal val LocalSwiftlyShapes = staticCompositionLocalOf { ComposeFrnkShape.default }
-internal val LocalSwiftlyStringProvider =
-    staticCompositionLocalOf { KoinPlatform.getKoin().get<SwiftlyStringProvider>() }
 
 object FrnkTheme {
     val colors: ComposeFrnkColor
@@ -39,8 +34,7 @@ fun FrnkTheme(
     content: @Composable () -> Unit
 ) {
     CompositionLocalProvider(
-        LocalSwiftlyColor provides color,
-        LocalSwiftlyStringProvider provides AndroidSwiftlyStringProvider(context)
+        LocalSwiftlyColor provides color
     ) {
         MaterialTheme(
             content = content

@@ -1,9 +1,6 @@
 package dev.jdgarita.frnk.presentation.mvi
 
-import dev.jdgarita.frnk.presentation.componentCore.FrnkBottomSheetViewState
-import dev.jdgarita.frnk.presentation.componentCore.FrnkDialogViewState
 import dev.jdgarita.frnk.presentation.componentCore.FrnkSpinnerViewState
-import dev.jdgarita.frnk.presentation.componentCore.ToastAlertViewState
 import kotlinx.serialization.Serializable
 
 /**
@@ -13,19 +10,11 @@ import kotlinx.serialization.Serializable
 data class CommonViewState(
     val dataLoadState: LoadState = LoadState.Initialized,
     val commonDisplayError: CommonDisplayError? = null,
-    val toastAlertViewState: ToastAlertViewState? = null,
-    val dialogViewState: FrnkDialogViewState? = null,
-    val bottomSheetViewState: FrnkBottomSheetViewState? = null,
-    val appRatingVisible: Boolean = false,
     val spinnerViewState: FrnkSpinnerViewState? = null
 ) {
     constructor() : this(
         dataLoadState = LoadState.Initialized,
         commonDisplayError = null,
-        toastAlertViewState = null,
-        dialogViewState = null,
-        bottomSheetViewState = null,
-        appRatingVisible = false,
         spinnerViewState = null
     )
 
@@ -35,10 +24,6 @@ data class CommonViewState(
     ) : this(
         dataLoadState = dataLoadState,
         commonDisplayError = commonDisplayError,
-        toastAlertViewState = null,
-        dialogViewState = null,
-        bottomSheetViewState = null,
-        appRatingVisible = false,
         spinnerViewState = null
     )
 }

@@ -1,8 +1,10 @@
 package dev.jdgarita.frnk.presentation.componentCore
 
 import dev.jdgarita.frnk.presentation.resources.color.SemanticColor
+import kotlin.js.JsExport
 import kotlinx.serialization.Serializable
 
+@JsExport
 @Serializable
 data class FrnkSpinnerViewState(
     override val id: String = ViewState.UNIQUE_ID

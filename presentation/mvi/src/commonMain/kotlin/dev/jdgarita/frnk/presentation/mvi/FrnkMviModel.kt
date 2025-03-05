@@ -94,10 +94,6 @@ abstract class BaseFrnkMviModel<
             // viewModelDependencies.logger.breadcrumb("- $screenName")
         }
 
-        modelState.commonState.toastAlertViewState?.let {
-            updateCommonState { it.copy(toastAlertViewState = null) }
-        }
-
         super.onInactive()
     }
 

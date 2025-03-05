@@ -824,14 +824,10 @@ interface ComposeFrnkColor {
 }
 
 val SemanticColor.lightColor: Color
-    get() = with(SwiftlyColorResources.shared.get(this).light) {
-        Color(alpha = floatAlpha, red = floatR, green = floatG, blue = floatB)
-    }
+    get() = Color.LightGray
 
 val SemanticColor.darkColor: Color
-    get() = with(FrnkColorResources.shared.get(this).dark) {
-        Color(alpha = floatAlpha, red = floatR, green = floatG, blue = floatB)
-    }
+    get() = Color.DarkGray
 
 @Composable
 fun SemanticColor.toThemeColor(): Color {

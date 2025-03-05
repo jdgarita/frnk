@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.presentation.resources
+package dev.jdgarita.frnk.presentation.componentCore
 
 import kotlin.experimental.ExperimentalObjCName
 import kotlin.native.ObjCName
