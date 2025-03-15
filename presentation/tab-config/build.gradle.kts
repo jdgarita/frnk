@@ -50,9 +50,9 @@ kotlin {
 
 android {
     namespace = "dev.jdgarita.frnk.presentation.tabconfig"
-    compileSdk = 35
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
-        minSdk = 24
+        minSdk = libs.versions.android.minSdk.get().toInt()
     }
 
     compileOptions {
