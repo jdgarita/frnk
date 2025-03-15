@@ -35,7 +35,18 @@ kotlin {
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
         commonMain.dependencies {
+            api(project(path = Deps.Main.Frnk.presentationFramework))
+            api(project(path = Deps.Main.Frnk.presentationHomeApi))
+            api(project(path = Deps.Main.Frnk.uiFramework))
+            api(project(path = Deps.Main.Frnk.utilDi))
             api(project(path = Deps.Main.Frnk.subs))
+
+            implementation(project(path = Deps.Main.Frnk.dataFramework))
+            implementation(project(path = Deps.Main.Frnk.domainFramework))
+            implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
+            implementation(project(path = Deps.Main.Frnk.presentationMvi))
+            implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
+            implementation(project(path = Deps.Main.Frnk.utilCommon))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
