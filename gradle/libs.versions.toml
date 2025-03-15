@@ -1,8 +1,9 @@
 [versions]
-agp = "8.8.2"
+agp = "8.9.0"
 kotlin = "2.1.20-RC2"
 android-minSdk = "24"
 android-compileSdk = "35"
+androidx-activityCompose = "1.9.3"
 coroutines = "1.8.1"
 kotlinEnvVar = "1.0.5"
 kotlinx-serialization = "1.7.3"
@@ -16,13 +17,15 @@ navigation = "2.9.0-alpha14"
 kotlin-dsl = "5.1.2"
 androidx-lifecycle = "2.9.0-alpha03"
 
-plugin-ktLint-ktLint = "11.4.2"
 plugin-ktLint-jlleitschuh = "0.49.1"
+ktlint = "12.1.2"
+ktlint-jlleitschuh = "0.49.1"
 
 purchases-kmp = "1.5.1+13.18.1"
 kotlinStdlib = "2.1.20-RC2"
 runner = "1.5.2"
 core = "1.5.0"
+cupertino-adaptive = "0.1.0-alpha04"
 junit = "1.1.5"
 
 [libraries]
@@ -31,6 +34,7 @@ androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", nam
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlin-enviroment-variable = { module = "dev.scottpierce:kotlin-env-var", version.ref = "kotlinEnvVar" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 compose-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
@@ -38,11 +42,14 @@ sentry-kotlin-multiplatform = { module = "io.sentry:sentry-kotlin-multiplatform"
 touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "plugin-touchlab-kermit" }
 uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
+cupertino-adaptive = { group = "io.github.alexzhirkevich", name = "cupertino-adaptive", version.ref = "cupertino-adaptive" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-core" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin-core" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
 
 plugin-kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
-plugin-ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "plugin-ktLint-ktLint" }
+plugin-ktlint-gradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # Required
@@ -59,10 +66,12 @@ androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 
 [plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-dsl = { id = "org.gradle.kotlin.kotlin-dsl", version.ref = "kotlin-dsl" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
