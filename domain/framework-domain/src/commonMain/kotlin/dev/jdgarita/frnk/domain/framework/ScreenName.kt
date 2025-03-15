@@ -5,13 +5,7 @@
 package dev.jdgarita.frnk.domain.framework
 
 enum class ScreenName {
-    // Generated from
-    // https://dev.azure.com/prestoq/Retailer%20Platform/_wiki/wikis/Retail%20Platform/12718/Platform-3.0-Screen-Names
-    // These screen names are important and are used for analytics and ads tracking, etc.  Do not invent a screen name
-    // and add it to this file.  The wiki needs to be updated with the screen and tracked properly.
-    // =======================================================================
-    // == DO NOT ADD TO THIS FILE UNLESS THE SCREEN NAME EXISTS IN THE WIKI ==
-    // =======================================================================
+    Test,
     Splash,
     PushNotificationPrompt,
     Welcome,

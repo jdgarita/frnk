@@ -41,7 +41,9 @@ kotlin {
         commonMain.dependencies {
             implementation(project(path = Deps.Main.Frnk.presentationMvi))
             implementation(project(path = Deps.Main.Frnk.presentationComponentCore))
+            implementation(project(path = Deps.Main.Frnk.presentationTabConfig))
             implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
+            implementation(project(path = Deps.Main.Frnk.presentationFramework))
             implementation(libs.compose.navigation)
             implementation(libs.kotlinx.serialization)
             implementation(libs.compose.backhandler)
