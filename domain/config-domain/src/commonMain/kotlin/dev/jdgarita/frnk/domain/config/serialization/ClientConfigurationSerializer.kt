@@ -15,7 +15,7 @@ import kotlinx.serialization.serializer
 internal object ClientConfigurationSerializer : KSerializer<ClientConfiguration> {
 
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor(
-        "TenantConfiguration",
+        "ClientConfiguration",
         serializer<ClientConfiguration>().descriptor
     ) {
         element("siteId", String.serializer().descriptor)
