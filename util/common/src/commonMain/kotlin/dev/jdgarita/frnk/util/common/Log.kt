@@ -21,7 +21,7 @@ fun Logger.eCompat(e: Throwable, attrs: Map<String, String>) = e(attributesToStr
 
 fun Logger.attributesToString(attr: Map<String, String>): String = attr.entries.joinToString(" ")
 
-fun Logger.configureSlog(config: LoggerConfig, tag: String) {
+fun Logger.configureLog(config: LoggerConfig, tag: String) {
     Log = Logger(config, tag)
 }
 
