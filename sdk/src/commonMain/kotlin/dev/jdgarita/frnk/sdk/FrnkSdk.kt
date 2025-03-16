@@ -1,11 +1,9 @@
 package dev.jdgarita.frnk.sdk
 
-import com.swiftly.platform.framework.config.AppConfiguration
-import com.swiftly.platform.framework.config.InternalConfiguration
-import com.swiftly.platform.framework.ui.navigation.NavigationConfiguration
-
+import dev.jdgarita.frnk.domain.config.AppConfiguration
+import dev.jdgarita.frnk.presentation.framework.navigation.NavigationConfiguration
 /**
- * The Swiftly SDK.
+ * The Frnk SDK.
  */
 interface FrnkSdk {
 
@@ -15,7 +13,6 @@ interface FrnkSdk {
      */
     fun initialize(
         appConfiguration: AppConfiguration,
-        internalConfiguration: InternalConfiguration,
         navigationConfiguration: NavigationConfiguration
     ): FrnkSdk
 }
