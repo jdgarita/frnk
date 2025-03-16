@@ -1,23 +1,23 @@
 package dev.jdgarita.frnk.domain.config
 
+import dev.jdgarita.frnk.domain.config.ext.getBuildType
 import kotlinx.serialization.Serializable
 
 @Serializable
-@AppConfiguration
 data class AppConfiguration(
     val packageConfiguration: PackageConfiguration,
     val platformConfiguration: PlatformConfiguration,
-    val sdkConfiguration: SdkConfiguration = SdkConfiguration.default(),
+    val clientConfiguration: ClientConfiguration,
+    val sdkConfiguration: SdkConfiguration = SdkConfiguration.default()
 ) {
     val serviceEnvironmentConfiguration: ServiceEnvironmentConfiguration
-        get() = when (tenantConfiguration.serviceEnvironment) {
+        get() = when (clientConfiguration.serviceEnvironment) {
             ServiceEnvironment.DEV -> ServiceEnvironmentConfiguration.DEV
-            ServiceEnvironment.PPE -> ServiceEnvironmentConfiguration.PPE
             ServiceEnvironment.PROD -> ServiceEnvironmentConfiguration.PROD
         }
 
     val buildType: FrnkBuildType
-        get() = getBuildType(tenantConfiguration, packageConfiguration)
+        get() = getBuildType(clientConfiguration)
 
-    companion object {}
+    companion object
 }
