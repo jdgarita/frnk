@@ -8,7 +8,9 @@ object Deps {
 
         object Frnk {
             const val app = "$platformModulePrefix:app"
+            const val sdk = "$platformModulePrefix:sdk"
             const val domainFramework = "$platformModulePrefix:domain:framework-domain"
+            const val domainConfig = "$platformModulePrefix:domain:config-domain"
             const val dataFramework = "$platformModulePrefix:data:framework-data"
             const val presentationMvi = "$platformModulePrefix:presentation:mvi"
             const val presentationTabConfig = "$platformModulePrefix:presentation:tab-config"
