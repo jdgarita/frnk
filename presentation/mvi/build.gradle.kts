@@ -43,6 +43,7 @@ kotlin {
             implementation(project(path = Deps.Main.Frnk.presentationComponentCore))
             implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
             implementation(project(path = Deps.Main.Frnk.utilCommon))
+            implementation(project(path = Deps.Main.Frnk.utilDi))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
