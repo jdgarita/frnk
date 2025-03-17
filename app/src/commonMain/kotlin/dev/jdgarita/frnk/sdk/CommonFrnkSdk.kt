@@ -16,7 +16,6 @@ object CommonFrnkSdk : BaseCommonFrnkSdk() {
         CommonPresentationMviKoinModuleProvider().modules
             .plus(externalModules)
 
-
     fun initialize(
         appConfiguration: AppConfiguration,
         navigationConfiguration: NavigationConfiguration,
@@ -26,7 +25,7 @@ object CommonFrnkSdk : BaseCommonFrnkSdk() {
 
         initialize(
             appConfiguration = appConfiguration,
-            navigationConfiguration = navigationConfiguration,
+            navigationConfiguration = navigationConfiguration
         )
     }
 }
