@@ -1,3 +1,15 @@
 package dev.jdgarita.frnk.sdk
 
-object CommonFrnkSdk
+import dev.jdgarita.frnk.domain.config.AppConfiguration
+import dev.jdgarita.frnk.presentation.framework.navigation.NavigationConfiguration
+import dev.jdgarita.frnk.presentation.mvi.koin.CommonPresentationMviKoinModuleProvider
+import org.koin.core.module.Module
+
+object CommonFrnkSdk : BaseCommonFrnkSdk() {
+
+    override fun getModules(
+        appConfiguration: AppConfiguration,
+        navigationConfiguration: NavigationConfiguration
+    ): List<Module> =
+        CommonPresentationMviKoinModuleProvider().modules
+}
