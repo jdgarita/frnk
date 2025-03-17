@@ -35,6 +35,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(path = Deps.Main.Frnk.domainConfig))
             implementation(project(path = Deps.Main.Frnk.presentationFramework))
+            implementation(project(path = Deps.Main.Frnk.utilCommon))
             implementation(libs.touchlab.kermit)
         }
     }
