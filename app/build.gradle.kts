@@ -49,6 +49,8 @@ kotlin {
             implementation(project(path = Deps.Main.Frnk.presentationMvi))
             implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
             implementation(project(path = Deps.Main.Frnk.utilCommon))
+
+            implementation(libs.koin.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
