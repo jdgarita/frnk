@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.presentation.mvi
 
 import dev.jdgarita.frnk.presentation.componentCore.FrnkTopBarViewState
-import kotlin.js.JsExport
 import kotlinx.serialization.Serializable
 
 /**
@@ -21,7 +20,6 @@ interface ScreenViewState<T> : ViewStateCommon<T> {
     val commonScreenViewState: CommonScreenViewState
 }
 
-@JsExport
 @Serializable
 data class CommonScreenViewState(
     val topBarViewState: FrnkTopBarViewState? = null,
