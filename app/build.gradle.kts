@@ -40,6 +40,7 @@ kotlin {
             api(project(path = Deps.Main.Frnk.uiFramework))
             api(project(path = Deps.Main.Frnk.utilDi))
             api(project(path = Deps.Main.Frnk.subs))
+            api(project(path = Deps.Main.Frnk.sdk))
 
             implementation(project(path = Deps.Main.Frnk.dataFramework))
             implementation(project(path = Deps.Main.Frnk.domainFramework))
