@@ -7,9 +7,26 @@ import org.koin.core.module.Module
 
 object CommonFrnkSdk : BaseCommonFrnkSdk() {
 
+    private lateinit var externalModules: List<Module>
+
     override fun getModules(
         appConfiguration: AppConfiguration,
         navigationConfiguration: NavigationConfiguration
     ): List<Module> =
         CommonPresentationMviKoinModuleProvider().modules
+            .plus(externalModules)
+
+
+    fun initialize(
+        appConfiguration: AppConfiguration,
+        navigationConfiguration: NavigationConfiguration,
+        modules: List<Module> = emptyList()
+    ) {
+        externalModules = modules
+
+        initialize(
+            appConfiguration = appConfiguration,
+            navigationConfiguration = navigationConfiguration,
+        )
+    }
 }
