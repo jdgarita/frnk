@@ -37,6 +37,7 @@ kotlin {
             implementation(project(path = Deps.Main.Frnk.presentationFramework))
             implementation(project(path = Deps.Main.Frnk.utilCommon))
             implementation(libs.touchlab.kermit)
+            implementation(libs.koin.core)
         }
     }
 }
