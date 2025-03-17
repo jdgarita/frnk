@@ -44,6 +44,7 @@ kotlin {
 
             implementation(project(path = Deps.Main.Frnk.dataFramework))
             implementation(project(path = Deps.Main.Frnk.domainFramework))
+            implementation(project(path = Deps.Main.Frnk.domainConfig))
             implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
             implementation(project(path = Deps.Main.Frnk.presentationMvi))
             implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
