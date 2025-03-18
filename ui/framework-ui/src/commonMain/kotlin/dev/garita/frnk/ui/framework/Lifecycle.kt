@@ -8,6 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.jdgarita.frnk.presentation.framework.navigation.NavigationRouter
 import dev.jdgarita.frnk.presentation.mvi.Arguments
 import dev.jdgarita.frnk.presentation.mvi.ExternalEvent
 import dev.jdgarita.frnk.presentation.mvi.MviViewModel
@@ -22,7 +23,7 @@ import dev.jdgarita.frnk.presentation.mvi.MviViewModel
  */
 @Composable
 fun <T : Arguments, E : ExternalEvent> RememberLifecycle(
-    // navigationRouter: NavigationRouter,
+    navigationRouter: NavigationRouter,
     viewModel: MviViewModel<T, *, *, E>,
     arguments: T,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
@@ -32,7 +33,7 @@ fun <T : Arguments, E : ExternalEvent> RememberLifecycle(
     DisposableEffect(lifecycleOwner) {
         viewModel.attachView(arguments)
         viewModel.subscribeExternalEvents { event ->
-            // navigationRouter.handleExternalEvent(event)
+             navigationRouter.handleExternalEvent(event)
         }
 
         val observer = LifecycleEventObserver { _, event ->
