@@ -1,5 +1,7 @@
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
+apply(from = "settings.shared.gradle.kts")
+
 pluginManagement {
     includeBuild("config")
     repositories {
@@ -17,19 +19,3 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Frnk"
-include(":app")
-include(":ui:framework-ui")
-include(":ui:component-library")
-include(":domain:framework-domain")
-include(":presentation:mvi")
-include(":presentation:component-core")
-include(":presentation:frnk-resources")
-include(":util:common")
-include(":util:di")
-include(":data:framework-data")
-include(":subs")
-include(":presentation:framework-presentation")
-include(":presentation:home-presentation-api")
-include(":presentation:tab-config")
-include(":sdk")
-include(":domain:config-domain")
