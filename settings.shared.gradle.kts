@@ -25,15 +25,27 @@ include(
 
 project("$platformModulePrefix:app").projectDir = File("${platformPathPrefix}app")
 project("$platformModulePrefix:presentation:mvi").projectDir = File("${platformPathPrefix}presentation/mvi")
-project("$platformModulePrefix:presentation:framework-presentation").projectDir = File("${platformPathPrefix}presentation/framework-presentation")
-project("$platformModulePrefix:presentation:tab-config").projectDir = File("${platformPathPrefix}presentation/tab-config")
+project("$platformModulePrefix:presentation:framework-presentation").projectDir = File(
+    "${platformPathPrefix}presentation/framework-presentation"
+)
+project("$platformModulePrefix:presentation:tab-config").projectDir = File(
+    "${platformPathPrefix}presentation/tab-config"
+)
 project("$platformModulePrefix:data:framework-data").projectDir = File("${platformPathPrefix}data/framework-data")
-project("$platformModulePrefix:presentation:home-presentation-api").projectDir = File("${platformPathPrefix}presentation/home-presentation-api")
-project("$platformModulePrefix:presentation:component-core").projectDir = File("${platformPathPrefix}presentation/component-core")
+project("$platformModulePrefix:presentation:home-presentation-api").projectDir = File(
+    "${platformPathPrefix}presentation/home-presentation-api"
+)
+project("$platformModulePrefix:presentation:component-core").projectDir = File(
+    "${platformPathPrefix}presentation/component-core"
+)
 project("$platformModulePrefix:ui:component-library").projectDir = File("${platformPathPrefix}ui/component-library")
-project("$platformModulePrefix:presentation:frnk-resources").projectDir = File("${platformPathPrefix}presentation/frnk-resources")
+project("$platformModulePrefix:presentation:frnk-resources").projectDir = File(
+    "${platformPathPrefix}presentation/frnk-resources"
+)
 project("$platformModulePrefix:ui:framework-ui").projectDir = File("${platformPathPrefix}ui/framework-ui")
 project("$platformModulePrefix:util:di").projectDir = File("${platformPathPrefix}util/di")
 project("$platformModulePrefix:util:common").projectDir = File("${platformPathPrefix}util/common")
-project("$platformModulePrefix:domain:framework-domain").projectDir = File("${platformPathPrefix}domain/framework-domain")
+project("$platformModulePrefix:domain:framework-domain").projectDir = File(
+    "${platformPathPrefix}domain/framework-domain"
+)
 project("$platformModulePrefix:domain:config-domain").projectDir = File("${platformPathPrefix}domain/config-domain")
