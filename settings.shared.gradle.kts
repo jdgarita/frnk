@@ -14,6 +14,7 @@ include(
     "$platformModulePrefix:ui:component-library",
     "$platformModulePrefix:presentation:frnk-resources",
     "$platformModulePrefix:ui:framework-ui",
+    "$platformModulePrefix:ui:identity-ui",
     "$platformModulePrefix:util:di",
     "$platformModulePrefix:util:common",
     "$platformModulePrefix:domain:framework-domain",
@@ -43,6 +44,7 @@ project("$platformModulePrefix:presentation:frnk-resources").projectDir = File(
     "${platformPathPrefix}presentation/frnk-resources"
 )
 project("$platformModulePrefix:ui:framework-ui").projectDir = File("${platformPathPrefix}ui/framework-ui")
+project("$platformModulePrefix:ui:identity-ui").projectDir = File("${platformPathPrefix}ui/identity-ui")
 project("$platformModulePrefix:util:di").projectDir = File("${platformPathPrefix}util/di")
 project("$platformModulePrefix:util:common").projectDir = File("${platformPathPrefix}util/common")
 project("$platformModulePrefix:domain:framework-domain").projectDir = File(
