@@ -41,12 +41,14 @@ kotlin {
             api(project(path = Deps.Main.Frnk.utilDi))
             api(project(path = Deps.Main.Frnk.subs))
             api(project(path = Deps.Main.Frnk.sdk))
+            api(project(path = Deps.Main.Frnk.presentationMvi))
+            api(project(path = Deps.Main.Frnk.domainFramework))
+            api(project(path = Deps.Main.Frnk.presentationComponentCore))
+            api(project(path = Deps.Main.Frnk.presentationFrnkResources))
+
 
             implementation(project(path = Deps.Main.Frnk.dataFramework))
-            implementation(project(path = Deps.Main.Frnk.domainFramework))
             implementation(project(path = Deps.Main.Frnk.domainConfig))
-            implementation(project(path = Deps.Main.Frnk.presentationFrnkResources))
-            implementation(project(path = Deps.Main.Frnk.presentationMvi))
             implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
             implementation(project(path = Deps.Main.Frnk.utilCommon))
 
