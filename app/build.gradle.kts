@@ -45,9 +45,9 @@ kotlin {
             api(project(path = Deps.Main.Frnk.domainFramework))
             api(project(path = Deps.Main.Frnk.presentationComponentCore))
             api(project(path = Deps.Main.Frnk.presentationFrnkResources))
+            api(project(path = Deps.Main.Frnk.domainConfig))
 
             implementation(project(path = Deps.Main.Frnk.dataFramework))
-            implementation(project(path = Deps.Main.Frnk.domainConfig))
             implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
             implementation(project(path = Deps.Main.Frnk.utilCommon))
 
