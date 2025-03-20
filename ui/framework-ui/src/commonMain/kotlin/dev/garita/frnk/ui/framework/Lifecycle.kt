@@ -33,7 +33,7 @@ fun <T : Arguments, E : ExternalEvent> RememberLifecycle(
     DisposableEffect(lifecycleOwner) {
         viewModel.attachView(arguments)
         viewModel.subscribeExternalEvents { event ->
-             navigationRouter.handleExternalEvent(event)
+            navigationRouter.handleExternalEvent(event)
         }
 
         val observer = LifecycleEventObserver { _, event ->

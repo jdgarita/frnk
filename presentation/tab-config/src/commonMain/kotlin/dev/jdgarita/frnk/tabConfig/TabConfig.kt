@@ -11,12 +11,12 @@ sealed class TabConfig(
     val text: SemanticText,
     val navigationContext: NavigationContext
 ) {
-    data object Home: TabConfig(
+    data object Home : TabConfig(
         icon = SemanticIcon.TabHome,
         // text = Strings.bottom_navigation_item_home.asSemanticText(),
         text = "Home".asSemanticText(),
         navigationContext = HomeNavigationContext
-    );
+    )
 
     companion object {
         fun getConfigFor(

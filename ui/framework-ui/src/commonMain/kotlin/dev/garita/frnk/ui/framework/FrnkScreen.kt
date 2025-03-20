@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import dev.garita.frnk.ui.componentLibrary.FrnkTheme
+import dev.jdgarita.frnk.presentation.framework.navigation.NavigationRouter
 import dev.jdgarita.frnk.presentation.mvi.Arguments
 import dev.jdgarita.frnk.presentation.mvi.CommonDisplayError
 import dev.jdgarita.frnk.presentation.mvi.CommonIntent
@@ -52,6 +53,7 @@ fun <
     > FrnkScreen(
     viewModel: MviViewModelWrapper<TArguments, *, TViewState, TExternalEvent>,
     arguments: TArguments,
+    navigationRouter: NavigationRouter,
     backgroundColor: Color = FrnkTheme.colors.layoutSurfaceLow,
     additionalTopBarContent: @Composable (ColumnScope.(TViewState) -> Unit)? = null,
     content: @Composable ColumnScope.(TViewState) -> Unit
@@ -62,6 +64,7 @@ fun <
 
     RememberLifecycle(
         viewModel = viewModel,
+        navigationRouter = navigationRouter,
         arguments = arguments
     )
 
@@ -112,6 +115,7 @@ fun <
     > FrnkListScreen(
     viewModel: MviViewModelWrapper<TArguments, *, TViewState, TExternalEvent>,
     arguments: TArguments,
+    navigationRouter: NavigationRouter,
     modifier: Modifier = Modifier,
     backgroundColor: Color = FrnkTheme.colors.layoutSurfaceLow,
     listState: LazyListState = rememberLazyListState(),
@@ -124,7 +128,8 @@ fun <
 
     RememberLifecycle(
         viewModel = viewModel,
-        arguments = arguments
+        arguments = arguments,
+        navigationRouter = navigationRouter
     )
 
     BackHandler {
