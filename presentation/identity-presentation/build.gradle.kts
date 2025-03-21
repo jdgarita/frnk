@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.androidLibrary)
 }
 
-
 kotlin {
     androidTarget {
         compilations.all {
@@ -41,6 +40,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 implementation(project(path = Deps.Main.Frnk.presentationMvi))
+                implementation(project(path = Deps.Main.Frnk.presentationFramework))
                 implementation(project(path = Deps.Main.Frnk.domainFramework))
                 implementation(libs.coroutines.core)
                 implementation(libs.koin.core)
