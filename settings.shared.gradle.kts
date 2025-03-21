@@ -11,6 +11,7 @@ include(
     "$platformModulePrefix:presentation:tab-config",
     "$platformModulePrefix:data:framework-data",
     "$platformModulePrefix:presentation:home-presentation-api",
+    "$platformModulePrefix:presentation:home-presentation",
     "$platformModulePrefix:presentation:component-core",
     "$platformModulePrefix:ui:component-library",
     "$platformModulePrefix:presentation:frnk-resources",
@@ -21,7 +22,6 @@ include(
     "$platformModulePrefix:domain:framework-domain",
     "$platformModulePrefix:domain:config-domain",
     "$platformModulePrefix:subs",
-
     "$platformModulePrefix:sdk"
 )
 
@@ -39,6 +39,9 @@ project("$platformModulePrefix:presentation:tab-config").projectDir = File(
 project("$platformModulePrefix:data:framework-data").projectDir = File("${platformPathPrefix}data/framework-data")
 project("$platformModulePrefix:presentation:home-presentation-api").projectDir = File(
     "${platformPathPrefix}presentation/home-presentation-api"
+)
+project("$platformModulePrefix:presentation:home-presentation").projectDir = File(
+    "${platformPathPrefix}presentation/home-presentation"
 )
 project("$platformModulePrefix:presentation:component-core").projectDir = File(
     "${platformPathPrefix}presentation/component-core"
