@@ -15,6 +15,8 @@ object Deps {
             const val presentationMvi = "$platformModulePrefix:presentation:mvi"
             const val presentationTabConfig = "$platformModulePrefix:presentation:tab-config"
             const val presentationHomeApi = "$platformModulePrefix:presentation:home-presentation-api"
+            const val presentationHome = "$platformModulePrefix:presentation:home-presentation"
+            const val presentationIdentity= "$platformModulePrefix:presentation:identity-presentation"
             const val presentationComponentCore = "$platformModulePrefix:presentation:component-core"
             const val presentationFrnkResources = "$platformModulePrefix:presentation:frnk-resources"
             const val presentationFramework = "$platformModulePrefix:presentation:framework-presentation"
