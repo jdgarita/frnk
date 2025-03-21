@@ -40,6 +40,7 @@ kotlin {
 
         commonMain.dependencies {
             implementation(project(path = Deps.Main.Frnk.uiFramework))
+            implementation(project(path = Deps.Main.Frnk.presentationIdentity))
             implementation(libs.compose.navigation)
             implementation(libs.kotlinx.serialization)
             implementation(libs.koin.core)
