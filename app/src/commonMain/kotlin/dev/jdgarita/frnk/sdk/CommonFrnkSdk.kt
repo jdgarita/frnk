@@ -4,6 +4,7 @@ import dev.jdgarita.frnk.domain.config.AppConfiguration
 import dev.jdgarita.frnk.presentation.framework.navigation.NavigationConfiguration
 import dev.jdgarita.frnk.presentation.identity.koin.CommonIdentityPresentationKoinModuleProvider
 import dev.jdgarita.frnk.presentation.mvi.koin.CommonPresentationMviKoinModuleProvider
+import dev.jdgarita.frnk.ui.identity.koin.CommonIdentityUIKoinModuleProvider
 import org.koin.core.module.Module
 
 object CommonFrnkSdk : BaseCommonFrnkSdk() {
@@ -16,6 +17,7 @@ object CommonFrnkSdk : BaseCommonFrnkSdk() {
     ): List<Module> =
         CommonPresentationMviKoinModuleProvider().modules +
             CommonIdentityPresentationKoinModuleProvider().modules +
+            CommonIdentityUIKoinModuleProvider().modules +
             externalModules
 
     fun initialize(
