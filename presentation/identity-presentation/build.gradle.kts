@@ -43,6 +43,7 @@ kotlin {
                 implementation(project(path = Deps.Main.Frnk.presentationFramework))
                 implementation(project(path = Deps.Main.Frnk.domainFramework))
                 implementation(libs.coroutines.core)
+                implementation(libs.koin.compose.viewmodel)
                 implementation(libs.koin.core)
             }
         }
