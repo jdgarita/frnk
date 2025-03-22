@@ -7,6 +7,7 @@ include(
     "$platformModulePrefix:presentation:mvi",
     "$platformModulePrefix:presentation:framework-presentation",
     "$platformModulePrefix:presentation:identity-presentation",
+    "$platformModulePrefix:presentation:identity-presentation-api",
 
     "$platformModulePrefix:presentation:tab-config",
     "$platformModulePrefix:data:framework-data",
@@ -32,6 +33,9 @@ project("$platformModulePrefix:presentation:framework-presentation").projectDir 
 )
 project("$platformModulePrefix:presentation:identity-presentation").projectDir = File(
     "${platformPathPrefix}presentation/identity-presentation"
+)
+project("$platformModulePrefix:presentation:identity-presentation-api").projectDir = File(
+    "${platformPathPrefix}presentation/identity-presentation-api"
 )
 project("$platformModulePrefix:presentation:tab-config").projectDir = File(
     "${platformPathPrefix}presentation/tab-config"
