@@ -41,6 +41,7 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
                 implementation(project(path = Deps.Main.Frnk.presentationMvi))
                 implementation(project(path = Deps.Main.Frnk.presentationFramework))
+                implementation(project(path = Deps.Main.Frnk.presentationIdentityApi))
                 implementation(project(path = Deps.Main.Frnk.domainFramework))
                 implementation(libs.coroutines.core)
                 implementation(libs.koin.compose.viewmodel)
