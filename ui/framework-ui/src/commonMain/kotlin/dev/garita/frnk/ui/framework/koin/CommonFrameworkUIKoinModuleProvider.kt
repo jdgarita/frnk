@@ -16,3 +16,4 @@ class CommonFrameworkUIKoinModuleProvider : KoinModuleProvider {
 }
 
 val navigationContextConfigsQualifier = StringQualifier("NavigationContextConfigs")
+val navigationEventHandlersQualifier = StringQualifier("NavigationEventHandlers")
