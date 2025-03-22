@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.presentation.identity
+package dev.jdgarita.frnk.presentation.identity.splash
 
 
 import dev.jdgarita.frnk.presentation.mvi.Arguments
