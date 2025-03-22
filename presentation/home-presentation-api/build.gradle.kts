@@ -24,7 +24,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "home-presentation"
+            baseName = "home-presentation-api"
             xcf.add(this)
             isStatic = true
         }
@@ -65,7 +65,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.stdlib)
                 implementation(project(Deps.Main.Frnk.presentationMvi))
                 implementation(project(Deps.Main.Frnk.presentationFramework))
             }
@@ -74,7 +73,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.presentation.homeApi"
+    namespace = "dev.jdgarita.frnk.presentation.home-api"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
