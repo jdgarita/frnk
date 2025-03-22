@@ -37,6 +37,7 @@ kotlin {
         commonMain.dependencies {
             api(project(path = Deps.Main.Frnk.presentationFramework))
             api(project(path = Deps.Main.Frnk.presentationHomeApi))
+            api(project(path = Deps.Main.Frnk.presentationIdentity))
             api(project(path = Deps.Main.Frnk.uiFramework))
             api(project(path = Deps.Main.Frnk.utilDi))
             api(project(path = Deps.Main.Frnk.subs))
