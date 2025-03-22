@@ -17,7 +17,7 @@ class SplashNavigationRouter(
     coroutineDispatcher: CoroutineDispatcher,
     private val navigationContextSwitcher: NavigationContextSwitcher,
     screenNavigationTracker: ScreenNavigationTracker,
-    private val authorizedFlowStartEvent: ExternalEvent,
+    private val authorizedFlowStartEvent: ExternalEvent
 ) : BaseNavigationRouter<NavigationRouterResult>(
     coroutineDispatcher = coroutineDispatcher,
     navigationContextSwitcher = navigationContextSwitcher,

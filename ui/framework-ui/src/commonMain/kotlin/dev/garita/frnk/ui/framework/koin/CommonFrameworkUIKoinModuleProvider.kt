@@ -10,7 +10,6 @@ class CommonFrameworkUIKoinModuleProvider : KoinModuleProvider {
     override val modules: List<Module>
         get() = listOf(
             module {
-
             }
         )
 }

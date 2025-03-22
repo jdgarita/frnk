@@ -1,6 +1,5 @@
 package dev.jdgarita.frnk.presentation.identity.splash
 
-
 import dev.jdgarita.frnk.presentation.mvi.Arguments
 import dev.jdgarita.frnk.presentation.mvi.CommonScreenViewState
 import dev.jdgarita.frnk.presentation.mvi.CommonViewState

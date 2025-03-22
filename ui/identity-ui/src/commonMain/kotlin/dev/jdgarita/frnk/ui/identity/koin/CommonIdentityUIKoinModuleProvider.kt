@@ -24,7 +24,6 @@ class CommonIdentityUIKoinModuleProvider : KoinModuleProvider {
                     SplashNavigationEventHandler()
                 }
 
-
                 /*Context Configs*/
                 intoSetSingle<SplashNavigationContextConfig, NavigationContextConfig>(
                     setQualifier = navigationContextConfigsQualifier

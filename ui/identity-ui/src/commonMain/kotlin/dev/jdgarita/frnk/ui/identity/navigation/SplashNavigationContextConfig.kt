@@ -36,7 +36,6 @@ class SplashNavigationContextConfig : NavigationContextConfig {
         navigationRouter: NavigationRouter,
         startDestination: String
     ) {
-
         navGraphBuilder.navigation(
             startDestination = SplashDestination.Splash.name,
             route = SplashDestination.ROUTE

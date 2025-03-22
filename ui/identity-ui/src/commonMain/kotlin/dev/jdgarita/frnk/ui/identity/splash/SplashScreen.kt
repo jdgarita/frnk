@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import dev.jdgarita.frnk.presentation.identity.splash.SplashViewModelWrapper
 import dev.jdgarita.frnk.presentation.identity.splash.SplashViewState
 
-
 @Composable
 fun SplashScreen(
     viewModel: SplashViewModelWrapper

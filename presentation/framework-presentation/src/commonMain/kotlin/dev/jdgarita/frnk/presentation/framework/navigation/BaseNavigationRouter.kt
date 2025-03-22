@@ -7,6 +7,7 @@ import dev.jdgarita.frnk.presentation.mvi.CommonExternalEvent
 import dev.jdgarita.frnk.presentation.mvi.ExternalEvent
 import dev.jdgarita.frnk.util.common.Log
 import dev.jdgarita.frnk.util.common.ext.truncate
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.reflect.KClass
 
 /**
  * @param navigationResult - we now handle the [UserActionEvent.BackPress] event in the base class so we don't need to
@@ -129,7 +129,7 @@ abstract class BaseNavigationRouter<TResult : NavigationRouterResult>(
         screen: NavigationScreen,
         navigationType: NavigationType,
         screenAttributes: Map<String, String> = emptyMap(),
-        ignoreIfMatchesLast: Boolean = false,
+        ignoreIfMatchesLast: Boolean = false
     ): String {
         if (ignoreIfMatchesLast && navigationScreenStack.lastOrNull().matchesName(screen)) {
             return navigationScreenStack.last().id

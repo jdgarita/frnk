@@ -39,7 +39,7 @@ class DefaultSplashViewModel(
 
     override fun mapViewState(currentState: SplashModelState): SplashViewState = SplashViewState(
         commonViewState = mapCommonState(currentState)
-        //todo map logoViewState
+        // todo map logoViewState
     )
 
     override suspend fun handleIntent(
