@@ -50,6 +50,7 @@ kotlin {
 
             implementation(project(path = Deps.Main.Frnk.dataFramework))
             implementation(project(path = Deps.Main.Frnk.uiComponentLibrary))
+            implementation(project(path = Deps.Main.Frnk.uiIdentity))
             implementation(project(path = Deps.Main.Frnk.utilCommon))
 
             implementation(libs.koin.core)
