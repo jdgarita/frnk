@@ -73,7 +73,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.presentation.home-api"
+    namespace = "dev.jdgarita.frnk.presentation.home.api"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()

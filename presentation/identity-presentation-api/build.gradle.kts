@@ -42,7 +42,7 @@ kotlin {
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.presentation.identity-api"
+    namespace = "dev.jdgarita.frnk.presentation.identity.api"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
