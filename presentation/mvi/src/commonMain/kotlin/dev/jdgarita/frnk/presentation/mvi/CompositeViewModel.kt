@@ -207,8 +207,6 @@ abstract class CompositeViewModel<
                     }
                 }
             }
-
-            else -> Unit // Already handled via super
         }
     }
 
