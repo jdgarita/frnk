@@ -38,7 +38,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.stdlib)
                 implementation(project(path = Deps.Main.Frnk.presentationMvi))
                 implementation(project(path = Deps.Main.Frnk.domainFramework))
                 implementation(libs.coroutines.core)

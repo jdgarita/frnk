@@ -41,7 +41,6 @@ kotlin {
                 implementation(project(Deps.Main.Frnk.presentationFramework))
                 implementation(project(Deps.Main.Frnk.presentationFrnkResources))
                 implementation(project(Deps.Main.Frnk.presentationHomeApi))
-                implementation(libs.kotlin.stdlib)
                 // Add KMP dependencies here
             }
         }
