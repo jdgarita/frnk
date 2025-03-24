@@ -33,6 +33,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.kotlin.stdlib)
                 implementation(project(Deps.Main.Frnk.presentationMvi))
                 implementation(project(Deps.Main.Frnk.presentationFramework))
             }
