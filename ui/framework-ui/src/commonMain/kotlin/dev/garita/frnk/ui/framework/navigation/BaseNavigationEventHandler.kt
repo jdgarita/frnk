@@ -19,7 +19,6 @@ abstract class BaseNavigationEventHandler : NavigationEventHandler {
             NavigationType.FULL_SCREEN -> handleFullScreen(event.screen, navController)
             NavigationType.DISMISS -> handleDismiss(navController)
             NavigationType.CLEAR_STACK -> handleClearStack(navController)
-            else -> false
         }
     }
 
