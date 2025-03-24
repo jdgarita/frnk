@@ -1,6 +1,7 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.jdgarita.frnk.presentation.framework.navigation
 
-import com.benasher44.uuid.uuid4
 import dev.jdgarita.frnk.domain.framework.ScreenName
 import dev.jdgarita.frnk.domain.framework.ScreenNavigationTracker
 import dev.jdgarita.frnk.presentation.mvi.CommonExternalEvent
@@ -8,6 +9,8 @@ import dev.jdgarita.frnk.presentation.mvi.ExternalEvent
 import dev.jdgarita.frnk.util.common.Log
 import dev.jdgarita.frnk.util.common.ext.truncate
 import kotlin.reflect.KClass
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -135,7 +138,7 @@ abstract class BaseNavigationRouter<TResult : NavigationRouterResult>(
             return navigationScreenStack.last().id
         }
         val screenEntry = ScreenEntry(
-            uuid4().toString(),
+            "${Uuid.random()}",
             screen
         )
         screenNavigationTracker.onScreenChanged(screen.screenName, screenAttributes)

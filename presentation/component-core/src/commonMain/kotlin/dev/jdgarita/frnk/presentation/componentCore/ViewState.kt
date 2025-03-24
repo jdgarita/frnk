@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.presentation.componentCore
 
-import com.benasher44.uuid.uuid4
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Represents a view state for a component.
@@ -26,6 +27,7 @@ interface ViewState {
          */
         const val DEFAULT_ID = ""
 
-        val UNIQUE_ID get() = uuid4().toString()
+        @OptIn(ExperimentalUuidApi::class)
+        val UNIQUE_ID get() = "${Uuid.random()}"
     }
 }

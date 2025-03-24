@@ -9,7 +9,6 @@ kotlinEnvVar = "1.0.5"
 kotlinx-serialization = "1.7.3"
 plugin-touchlab-kermit = "2.0.2"
 sentryKotlinMultiplatform = "0.11.0"
-uuid = "0.8.2"
 koin-core = "4.1.0-Beta5"
 kotlinx-datetime = "0.6.0"
 compose-multiplatform = "1.8.0-alpha04"
@@ -40,7 +39,6 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 compose-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
 sentry-kotlin-multiplatform = { module = "io.sentry:sentry-kotlin-multiplatform", version.ref = "sentryKotlinMultiplatform" }
 touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "plugin-touchlab-kermit" }
-uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-core" }
 cupertino-adaptive = { group = "io.github.alexzhirkevich", name = "cupertino-adaptive", version.ref = "cupertino-adaptive" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-core" }
