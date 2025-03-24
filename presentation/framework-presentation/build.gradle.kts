@@ -41,6 +41,7 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
                 implementation(project(path = Deps.Main.Frnk.presentationMvi))
                 implementation(project(path = Deps.Main.Frnk.domainFramework))
+                implementation(project(path = Deps.Main.Frnk.utilCommon))
                 implementation(libs.coroutines.core)
                 implementation(libs.koin.core)
             }
