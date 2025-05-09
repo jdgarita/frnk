@@ -22,6 +22,5 @@ interface ScreenViewState<T> : ViewStateCommon<T> {
 
 @Serializable
 data class CommonScreenViewState(
-    val topBarViewState: FrnkTopBarViewState? = null,
-    val pullToRefreshEnabled: Boolean = false
+    val topBarViewState: FrnkTopBarViewState? = null
 )
