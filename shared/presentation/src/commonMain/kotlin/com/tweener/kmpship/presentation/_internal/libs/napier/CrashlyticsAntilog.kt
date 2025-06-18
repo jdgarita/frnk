@@ -1,0 +1,22 @@
+package com.tweener.kmpship.presentation._internal.libs.napier
+
+import com.tweener.firebase.crashlytics.FirebaseCrashlyticsService
+import io.github.aakira.napier.Antilog
+import io.github.aakira.napier.LogLevel
+
+/**
+ * @author Vivien Mahe
+ * @since 21/09/2023
+ */
+class CrashlyticsAntilog(
+    private val firebaseCrashlyticsService: FirebaseCrashlyticsService,
+) : Antilog() {
+
+    override fun performLog(priority: LogLevel, tag: String?, throwable: Throwable?, message: String?) {
+        // send only warning and error logs
+        if (priority < LogLevel.WARNING) return
+
+        message?.let { firebaseCrashlyticsService.getCrashlytics().log(it) }
+        throwable?.let { firebaseCrashlyticsService.getCrashlytics().recordException(it) }
+    }
+}

@@ -1,0 +1,137 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+update_fastlane
+
+require 'base64'
+
+require 'dotenv'
+Dotenv.load(File.expand_path("../../.env", __dir__))
+
+default_platform(:ios)
+
+platform :ios do
+    desc "Build and release to the App Store"
+    lane :release do |options|
+        # 1. Update Info.plist with versionName
+        version = extract_version_from_kotlin
+
+        set_info_plist_value(
+            path: "../iosApp/iosApp/Info.plist",
+            key: "CFBundleShortVersionString",
+            value: version
+        )
+
+        # 2. Install provisioning profile
+        install_provisioning_profile
+
+        # 3. Install distribution certificate
+        install_distribution_certificate
+
+        # 4. Build the app
+        build_app(
+            project: "iosApp.xcodeproj",
+            scheme: "iosApp",
+            configuration: "Release",
+            export_method: "app-store",
+            export_options: {
+                provisioningProfiles: {
+                    "com.tweener.kmpship" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
+                }
+            },
+        )
+
+        # 5. Decode API key from base64 and write to file
+        api_key = app_store_connect_api_key(
+            key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+            issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+            key_filepath: write_api_key_file
+        )
+
+        # 6. Load all localized release notes
+        localized_notes = {}
+        Dir["fastlane/metadata/*/release_notes.txt"].each do |path|
+            locale = path.split("/")[-2] # Extract 'en-US', 'fr-FR', etc.
+            notes = File.read(path).strip
+            localized_notes[locale] = notes unless notes.empty?
+        end
+
+        # 7. Upload to App Store
+        upload_to_app_store(
+            api_key: api_key,
+            release_notes: localized_notes,
+            run_precheck_before_submit: false,
+            skip_screenshots: true,
+            skip_metadata: true,
+            submit_for_review: true,
+            automatic_release: false # Set to true if you want to release automatically after approval
+        )
+    end
+end
+
+# Helper to write p8 from base64 and return the path
+def write_api_key_file
+  path = "/tmp/app_store_key.p8"
+
+  if ENV["APP_STORE_CONNECT_API_KEY_B64"]
+    File.write(path, Base64.decode64(ENV["APP_STORE_CONNECT_API_KEY_B64"]))
+    return path
+  else
+    UI.user_error!("APP_STORE_CONNECT_API_KEY_B64 is not set")
+  end
+end
+
+# Decode and install the provisioning profile
+def install_provisioning_profile
+  profile_data = ENV["IOS_PROVISIONING_PROFILE"]
+  UI.user_error!("Missing IOS_PROVISIONING_PROFILE env var") unless profile_data
+
+  decoded = Base64.decode64(profile_data)
+  tmp_profile_path = "/tmp/profile.mobileprovision"
+  File.write(tmp_profile_path, decoded)
+
+  uuid = decoded.match(/<key>UUID<\/key>\s*<string>([-A-Z0-9]+)<\/string>/i)&.captures&.first
+  UI.user_error!("Could not extract UUID from provisioning profile") unless uuid
+
+  final_path = File.expand_path("~/Library/MobileDevice/Provisioning Profiles/#{uuid}.mobileprovision")
+  FileUtils.mkdir_p(File.dirname(final_path))
+  FileUtils.cp(tmp_profile_path, final_path)
+
+  UI.message("✅ Installed provisioning profile: #{uuid}")
+end
+
+# Install the iOS Distribution certificate from base64
+def install_distribution_certificate
+  cert_data = ENV["IOS_APP_CERTIFICATE_P12_B64"]
+  cert_password = ENV["IOS_APP_CERTIFICATE_P12_PASSWORD"]
+  UI.user_error!("Missing IOS_APP_CERTIFICATE_P12_B64 or IOS_APP_CERTIFICATE_P12_PASSWORD") unless cert_data && cert_password
+
+  p12_path = "/tmp/cert.p12"
+  File.write(p12_path, Base64.decode64(cert_data))
+  import_certificate(p12_path, cert_password)
+end
+
+# Import certificate to keychain
+def import_certificate(p12_path, password)
+  UI.message("🔐 Importing certificate to login keychain...")
+  sh("security import #{p12_path} -k ~/Library/Keychains/login.keychain-db -P #{password} -T /usr/bin/codesign")
+end
+
+def extract_version_from_kotlin
+  content = File.read("../../buildSrc/src/main/kotlin/ProjectConfiguration.kt")
+  match = content.match(/versionName\s*=\s*"(.+?)"/)
+  version = match[1] if match
+  UI.user_error!("❌ Could not find versionName in ProjectConfiguration.kt") unless version
+  UI.message("🔍 Detected versionName: #{version}")
+  version
+end

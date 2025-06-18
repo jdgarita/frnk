@@ -1,26 +1,27 @@
+import gradle.tasks.renameProject.RenameProjectTask
+
 plugins {
-    // trick: for the same plugin versions in all sub-modules
-    id("dependencies")
-    alias(libs.plugins.androidLibrary) apply false
-    alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.serialization) apply false
+    alias(libs.plugins.android.application).apply(false)
+    alias(libs.plugins.android.library).apply(false)
+    alias(libs.plugins.jetbrains.compose).apply(false)
+    alias(libs.plugins.jetbrains.compose.compiler).apply(false)
+    alias(libs.plugins.kotlin.android).apply(false)
+    alias(libs.plugins.kotlin.multiplatform).apply(false)
+    alias(libs.plugins.kotlin.serialization).apply(false)
+    alias(libs.plugins.google.services).apply(false)
+    alias(libs.plugins.firebase.crashlytics).apply(false)
+    alias(libs.plugins.firebase.performance).apply(false)
+    alias(libs.plugins.ksp).apply(false)
+    alias(libs.plugins.google.play.publisher).apply(false)
 }
 
-buildscript {
-    dependencies {
-        classpath(libs.plugin.ktlint.gradle)
-    }
+tasks.register("clean", Delete::class) {
+    delete(rootProject.layout.buildDirectory)
 }
 
-gradle.beforeProject {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
-
-    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-        version.set(rootProject.libs.versions.plugin.ktLint.jlleitschuh.get())
-        filter {
-            exclude { element ->
-                element.file.path.contains("generated/")
-            }
-        }
-    }
+tasks.register<RenameProjectTask>("renameProject") {
+    projectName.set(project.findProperty("projectName")?.toString())
+    packageName.set(project.findProperty("packageName")?.toString())
+    dryRun.set(project.hasProperty("dryRun"))
+    projectDir.set(layout.projectDirectory)
 }
