@@ -21,7 +21,7 @@ abstract class RenameProjectTask @Inject constructor(objects: ObjectFactory) : D
         private const val PROJECT_NAME_TASK_PARAM = "projectName"
         private const val PACKAGE_NAME_TASK_PARAM = "packageName"
 
-        internal const val ACTUAL_PROJECT_NAME = "kmpship"
+        internal const val ACTUAL_PROJECT_NAME = "frnk"
     }
 
     @get:Input

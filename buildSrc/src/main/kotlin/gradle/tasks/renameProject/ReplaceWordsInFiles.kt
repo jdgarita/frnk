@@ -28,9 +28,9 @@ class ReplaceWordsInFiles {
         private const val REPLACE_WORDS_IN_FILES_FILENAME = "ReplaceWordsInFiles.kt"
         private const val DELETE_EXISTING_MODULE_FILENAME = "DeleteExistingModuleDirectory.kt"
 
-        private const val ACTUAL_PROJECT_NAME = "KMPShip"
+        private const val ACTUAL_PROJECT_NAME = "frnk"
         private const val ACTUAL_PROJECT_CONFIGURATION_OBJECT = "MyProject" // For ProjectConfiguration.kt
-        private const val ACTUAL_PACKAGE_NAME_CONFIGURATION_OBJECT = "com.tweener.kmpship" // For ProjectConfiguration.kt
+        private const val ACTUAL_PACKAGE_NAME_CONFIGURATION_OBJECT = "dev.jdgarita.frnk" // For ProjectConfiguration.kt
 
         private const val BUILD_SRC_DIR = "buildSrc"
         private const val BUILD_DIR = "build"
