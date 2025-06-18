@@ -1,0 +1,22 @@
+package dev.jdgarita.frnk.presentation.screen.profile.ui.screen
+
+import androidx.compose.runtime.Composable
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.jdgarita.frnk.presentation._internal.kotlinextensions.findRootNavigator
+import dev.jdgarita.frnk.presentation.screen.favorites.FavoritesViewModel
+import dev.jdgarita.frnk.presentation.screen.profile.ui.template.ProfileTemplate
+import org.koin.compose.koinInject
+
+/**
+ * @author Vivien Mahe
+ * @since 19/02/2024
+ */
+
+@Composable
+fun ProfileScreen() {
+    val viewModel: FavoritesViewModel = koinInject()
+    val navigator = LocalNavigator.currentOrThrow.findRootNavigator()
+
+    ProfileTemplate()
+}

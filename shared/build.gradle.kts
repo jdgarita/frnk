@@ -12,11 +12,11 @@ plugins {
 }
 
 android {
-    namespace = ProjectConfiguration.MyProject.packageName
-    compileSdk = ProjectConfiguration.MyProject.Android.compileSDK
+    namespace = ProjectConfiguration.Frnk.packageName
+    compileSdk = ProjectConfiguration.Frnk.Android.compileSDK
 
     defaultConfig {
-        minSdk = ProjectConfiguration.MyProject.Android.minSDK
+        minSdk = ProjectConfiguration.Frnk.Android.minSDK
     }
 
     buildFeatures {
@@ -93,13 +93,13 @@ kotlin {
 }
 
 buildkonfig {
-    packageName = ProjectConfiguration.MyProject.packageName
+    packageName = ProjectConfiguration.Frnk.packageName
 
     // Release
     defaultConfigs {
         buildConfigField(BOOLEAN, "DEBUG", "false")
-        buildConfigField(STRING, "VERSION_NAME", ProjectConfiguration.MyProject.versionName)
-        buildConfigField(STRING, "APPLICATION_ID", ProjectConfiguration.MyProject.Android.applicationId)
+        buildConfigField(STRING, "VERSION_NAME", ProjectConfiguration.Frnk.versionName)
+        buildConfigField(STRING, "APPLICATION_ID", ProjectConfiguration.Frnk.Android.applicationId)
 
         buildConfigField(STRING, "GOOGLE_SIGN_IN_WEB_CLIENT_ID", Secrets.getLocalPropertyOrEnvVar("GOOGLE_SIGN_IN_WEB_CLIENT_ID", rootDir) ?: "")
 

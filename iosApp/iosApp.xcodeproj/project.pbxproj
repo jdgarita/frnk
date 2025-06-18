@@ -252,7 +252,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# \"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n\n# https://youtrack.jetbrains.com/issue/KTIJ-28408/Conflicting-BUILDDIR-env-variable-exported-for-build-phase-scripts-in-Android-Studio\n\napp_folders=$(find ~/Library/Developer/Xcode/DerivedData -type d -name \"KMPShip-*\")\n\nif [ -n \"$app_folders\" ]; then\n    # Sort the folders by modification time and get the newest one\n    newest_folder=$(ls -td $app_folders | head -n 1)\n\n    if [ -e \"$newest_folder/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" ]; then\n        echo \"Crashlytics run file found: $newest_folder/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n        $newest_folder/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\n    else\n        echo \"Crashlytics run file not found in $newest_folder\"\n    fi\nelse\n    echo \"No folders with prefix 'KMPShip-' found in DerivedData directory\"\nfi\n";
+			shellScript = "# \"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n\n# https://youtrack.jetbrains.com/issue/KTIJ-28408/Conflicting-BUILDDIR-env-variable-exported-for-build-phase-scripts-in-Android-Studio\n\napp_folders=$(find ~/Library/Developer/Xcode/DerivedData -type d -name \"Frnk-*\")\n\nif [ -n \"$app_folders\" ]; then\n    # Sort the folders by modification time and get the newest one\n    newest_folder=$(ls -td $app_folders | head -n 1)\n\n    if [ -e \"$newest_folder/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" ]; then\n        echo \"Crashlytics run file found: $newest_folder/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n        $newest_folder/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\n    else\n        echo \"Crashlytics run file not found in $newest_folder\"\n    fi\nelse\n    echo \"No folders with prefix 'Frnk-' found in DerivedData directory\"\nfi\n";
 		};
 		9A237C4C2D157B0F008EF9DD /* Install GoogleService plist */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -434,7 +434,7 @@
 					"-framework",
 					shared,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tweener.kmpship;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.jdgarita.frnk;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -474,7 +474,7 @@
 					"-framework",
 					shared,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.tweener.kmpship;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.jdgarita.frnk;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

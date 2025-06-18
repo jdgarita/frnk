@@ -16,7 +16,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "KMPShip"
+rootProject.name = "Frnk"
 include(":androidApp")
 include(":shared")
 include(":shared:data")

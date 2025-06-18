@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = ProjectConfiguration.MyProject.packageName + ".data"
-    compileSdk = ProjectConfiguration.MyProject.Android.compileSDK
+    namespace = ProjectConfiguration.Frnk.packageName + ".data"
+    compileSdk = ProjectConfiguration.Frnk.Android.compileSDK
 
     defaultConfig {
-        minSdk = ProjectConfiguration.MyProject.Android.minSDK
+        minSdk = ProjectConfiguration.Frnk.Android.minSDK
     }
 
     compileOptions {

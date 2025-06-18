@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = ProjectConfiguration.MyProject.packageName + ".core"
-    compileSdk = ProjectConfiguration.MyProject.Android.compileSDK
+    namespace = ProjectConfiguration.Frnk.packageName + ".core"
+    compileSdk = ProjectConfiguration.Frnk.Android.compileSDK
 
     defaultConfig {
-        minSdk = ProjectConfiguration.MyProject.Android.minSDK
+        minSdk = ProjectConfiguration.Frnk.Android.minSDK
     }
 
     compileOptions {

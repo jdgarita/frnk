@@ -12,15 +12,15 @@ plugins {
 }
 
 android {
-    namespace = ProjectConfiguration.MyProject.Android.namespace
-    compileSdk = ProjectConfiguration.MyProject.Android.compileSDK
+    namespace = ProjectConfiguration.Frnk.Android.namespace
+    compileSdk = ProjectConfiguration.Frnk.Android.compileSDK
 
     defaultConfig {
-        applicationId = ProjectConfiguration.MyProject.Android.applicationId
-        minSdk = ProjectConfiguration.MyProject.Android.minSDK
-        targetSdk = ProjectConfiguration.MyProject.Android.targetSDK
+        applicationId = ProjectConfiguration.Frnk.Android.applicationId
+        minSdk = ProjectConfiguration.Frnk.Android.minSDK
+        targetSdk = ProjectConfiguration.Frnk.Android.targetSDK
         versionCode = Secrets.getVersionPropertyOrEnvVar(key = BumpVersionCodeTask.VERSION_CODE_PROPERTY, rootDir = rootDir)!!.toInt()
-        versionName = ProjectConfiguration.MyProject.versionName
+        versionName = ProjectConfiguration.Frnk.versionName
     }
 
     buildFeatures {

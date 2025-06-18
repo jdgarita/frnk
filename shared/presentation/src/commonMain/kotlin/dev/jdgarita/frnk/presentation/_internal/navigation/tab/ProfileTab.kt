@@ -1,0 +1,42 @@
+package dev.jdgarita.frnk.presentation._internal.navigation.tab
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
+import dev.jdgarita.frnk.presentation._internal.navigation.MainScreenTab
+import dev.jdgarita.frnk.presentation.screen.profile.ui.screen.ProfileScreen
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
+
+/**
+ * @author Vivien Mahe
+ * @since 19/02/2024
+ */
+
+object ProfileTab : Tab {
+
+    private val mainScreenTab = MainScreenTab.PROFILE
+
+    @OptIn(ExperimentalResourceApi::class)
+    override val options: TabOptions
+        @Composable
+        get() {
+            val title = stringResource(resource = mainScreenTab.title)
+            val icon = rememberVectorPainter(mainScreenTab.icon)
+
+            return remember {
+                TabOptions(
+                    index = mainScreenTab.index,
+                    title = title,
+                    icon = icon,
+                )
+            }
+        }
+
+    @Composable
+    override fun Content() {
+        ProfileScreen()
+    }
+}

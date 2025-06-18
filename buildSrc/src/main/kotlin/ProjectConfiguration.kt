@@ -7,8 +7,8 @@ import org.gradle.api.JavaVersion
 
 object ProjectConfiguration {
 
-    object MyProject {
-        const val packageName = "com.tweener.kmpship"
+    object Frnk {
+        const val packageName = "dev.jdgarita.frnk"
         const val versionName = "1.0"
 
         object Android {
