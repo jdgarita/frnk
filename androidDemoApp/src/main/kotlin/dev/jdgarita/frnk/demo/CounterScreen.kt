@@ -33,28 +33,39 @@ import dev.jdgarita.frnk.ui.mvi.UiState
 
 // --- MVI contract ----------------------------------------------------------
 
-private data class CounterState(val count: Int = 0) : UiState
+private data class CounterState(
+    val count: Int = 0,
+) : UiState
 
 private sealed interface CounterAction : UiAction {
     data object Increment : CounterAction
+
     data object Decrement : CounterAction
+
     data object Reset : CounterAction
 }
 
 private sealed interface CounterEffect : UiEffect {
-    data class ShowToast(val message: String) : CounterEffect
+    data class ShowToast(
+        val message: String,
+    ) : CounterEffect
 }
 
 // --- ViewModel -------------------------------------------------------------
 
-private class CounterViewModel : MviViewModel<CounterState, CounterAction, CounterEffect>(
-    initialState = CounterState(),
-) {
-    override fun reduce(current: CounterState, action: CounterAction): CounterState = when (action) {
-        CounterAction.Increment -> current.copy(count = current.count + 1)
-        CounterAction.Decrement -> current.copy(count = (current.count - 1).coerceAtLeast(0))
-        CounterAction.Reset -> CounterState()
-    }
+private class CounterViewModel :
+    MviViewModel<CounterState, CounterAction, CounterEffect>(
+        initialState = CounterState(),
+    ) {
+    override fun reduce(
+        current: CounterState,
+        action: CounterAction,
+    ): CounterState =
+        when (action) {
+            CounterAction.Increment -> current.copy(count = current.count + 1)
+            CounterAction.Decrement -> current.copy(count = (current.count - 1).coerceAtLeast(0))
+            CounterAction.Reset -> CounterState()
+        }
 
     override suspend fun onAction(action: CounterAction) {
         val count = state.value.count
@@ -82,9 +93,10 @@ fun CounterScreen() {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF0E1116)),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color(0xFF0E1116)),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -143,5 +155,4 @@ private fun CounterRow(
     }
 }
 
-private fun Modifier.pill(color: Color): Modifier =
-    this.clip(RoundedCornerShape(50)).background(color)
+private fun Modifier.pill(color: Color): Modifier = this.clip(RoundedCornerShape(50)).background(color)

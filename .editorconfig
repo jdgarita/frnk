@@ -12,6 +12,9 @@ trim_trailing_whitespace = true
 [*.{kt,kts}]
 ktlint_standard_filename = disabled
 ktlint_standard_no-wildcard-imports = enabled
+# Compose @Composable functions are PascalCase by convention; ktlint's standard
+# function-naming rule doesn't understand @Composable, so disable it.
+ktlint_standard_function-naming = disabled
 ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true
 

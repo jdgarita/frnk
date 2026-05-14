@@ -20,8 +20,9 @@ fun AppButton(
     content: @Composable () -> Unit,
 ) {
     Box(
-        modifier = modifier
-            .clickable(onClick = onClick)
-            .padding(contentPadding),
+        modifier =
+            modifier
+                .clickable(onClick = onClick)
+                .padding(contentPadding),
     ) { content() }
 }

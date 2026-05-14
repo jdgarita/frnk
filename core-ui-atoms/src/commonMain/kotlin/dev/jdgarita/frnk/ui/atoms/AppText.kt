@@ -9,6 +9,10 @@ import androidx.compose.ui.Modifier
  * text wrapper or use BasicText directly.
  */
 @Composable
-fun AppText(text: String, modifier: Modifier = Modifier) {
-    androidx.compose.foundation.text.BasicText(text = text, modifier = modifier)
+fun AppText(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    androidx.compose.foundation.text
+        .BasicText(text = text, modifier = modifier)
 }

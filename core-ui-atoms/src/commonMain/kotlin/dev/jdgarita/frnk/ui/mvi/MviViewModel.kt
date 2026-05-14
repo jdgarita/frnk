@@ -25,17 +25,17 @@ import kotlinx.coroutines.launch
 abstract class MviViewModel<S : UiState, A : UiAction, E : UiEffect>(
     initialState: S,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<S> = _state.asStateFlow()
 
     private val _effects = Channel<E>(capacity = Channel.BUFFERED)
     val effects: Flow<E> = _effects.consumeAsFlow()
 
-    private val _actions = MutableSharedFlow<A>(
-        extraBufferCapacity = 64,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
+    private val _actions =
+        MutableSharedFlow<A>(
+            extraBufferCapacity = 64,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
     val actions: Flow<A> = _actions.asSharedFlow()
 
     /** Dispatch a user/system action. */
@@ -49,7 +49,10 @@ abstract class MviViewModel<S : UiState, A : UiAction, E : UiEffect>(
     }
 
     /** Pure reducer: given current state + action, return next state. */
-    protected abstract fun reduce(current: S, action: A): S
+    protected abstract fun reduce(
+        current: S,
+        action: A,
+    ): S
 
     /** Hook for impure work (network, db) triggered by an action. Optional. */
     protected open suspend fun onAction(action: A) = Unit

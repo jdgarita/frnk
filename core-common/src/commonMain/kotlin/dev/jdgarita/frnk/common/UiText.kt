@@ -6,6 +6,12 @@ package dev.jdgarita.frnk.common
  * rendering happens on the platform side.
  */
 sealed interface UiText {
-    data class Raw(val value: String) : UiText
-    data class Resource(val key: String, val args: List<Any> = emptyList()) : UiText
+    data class Raw(
+        val value: String,
+    ) : UiText
+
+    data class Resource(
+        val key: String,
+        val args: List<Any> = emptyList(),
+    ) : UiText
 }

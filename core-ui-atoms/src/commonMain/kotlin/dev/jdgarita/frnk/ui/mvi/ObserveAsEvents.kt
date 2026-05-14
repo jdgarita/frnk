@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.collectLatest
  * without leaking emissions across recompositions.
  */
 @Composable
-fun <E : UiEffect> ObserveAsEvents(effects: Flow<E>, onEvent: (E) -> Unit) {
+fun <E : UiEffect> ObserveAsEvents(
+    effects: Flow<E>,
+    onEvent: (E) -> Unit,
+) {
     LaunchedEffect(effects) {
         effects.collectLatest { onEvent(it) }
     }

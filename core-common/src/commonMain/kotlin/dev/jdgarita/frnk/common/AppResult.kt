@@ -7,8 +7,13 @@ package dev.jdgarita.frnk.common
  * Renamed from `Result` to avoid clashing with kotlin.Result in callers.
  */
 sealed interface AppResult<out D, out E : AppError> {
-    data class Success<out D>(val data: D) : AppResult<D, Nothing>
-    data class Failure<out E : AppError>(val error: E) : AppResult<Nothing, E>
+    data class Success<out D>(
+        val data: D,
+    ) : AppResult<D, Nothing>
+
+    data class Failure<out E : AppError>(
+        val error: E,
+    ) : AppResult<Nothing, E>
 }
 
 interface AppError {
@@ -18,10 +23,11 @@ interface AppError {
 inline fun <D, E : AppError, R> AppResult<D, E>.fold(
     onSuccess: (D) -> R,
     onFailure: (E) -> R,
-): R = when (this) {
-    is AppResult.Success -> onSuccess(data)
-    is AppResult.Failure -> onFailure(error)
-}
+): R =
+    when (this) {
+        is AppResult.Success -> onSuccess(data)
+        is AppResult.Failure -> onFailure(error)
+    }
 
 inline fun <D, E : AppError, R> AppResult<D, E>.map(transform: (D) -> R): AppResult<R, E> =
     when (this) {

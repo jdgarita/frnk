@@ -10,8 +10,13 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
 
-internal class KtorNetworkClient(private val client: HttpClient) : NetworkClient {
-    override suspend fun <T> get(path: String, deserializer: (String) -> T): AppResult<T, NetworkError> =
+internal class KtorNetworkClient(
+    private val client: HttpClient,
+) : NetworkClient {
+    override suspend fun <T> get(
+        path: String,
+        deserializer: (String) -> T,
+    ): AppResult<T, NetworkError> =
         runCatching {
             val response = client.get(path)
             if (response.status.isSuccess()) {
@@ -21,7 +26,11 @@ internal class KtorNetworkClient(private val client: HttpClient) : NetworkClient
             }
         }.getOrElse { AppResult.Failure(NetworkError.Unknown(it.message ?: "unknown")) }
 
-    override suspend fun <T> post(path: String, body: String, deserializer: (String) -> T): AppResult<T, NetworkError> =
+    override suspend fun <T> post(
+        path: String,
+        body: String,
+        deserializer: (String) -> T,
+    ): AppResult<T, NetworkError> =
         runCatching {
             val response = client.post(path) { setBody(body) }
             if (response.status.isSuccess()) {

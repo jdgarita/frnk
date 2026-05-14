@@ -7,5 +7,7 @@ package dev.jdgarita.frnk.ui.mvi
  *  - [UiEffect] : one-shot side effect (navigation, snackbar, toast).
  */
 interface UiState
+
 interface UiAction
+
 interface UiEffect
