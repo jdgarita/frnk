@@ -1,117 +1,44 @@
-import gradle.Secrets
-import gradle.tasks.bumpVersionCode.BumpVersionCodeTask
-
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
-    alias(libs.plugins.firebase.performance)
-    alias(libs.plugins.jetbrains.compose.compiler)
-    alias(libs.plugins.google.play.publisher)
+    alias(libs.plugins.compose.compiler)
+}
+
+// Pin both Kotlin and Java to JDK 17 regardless of the launcher JVM (Android
+// Studio bundles 21, the CLI here is on 17). Without this, the Kotlin task
+// inherits the launcher's JVM target and AGP's javac (forced to 17 by
+// compileOptions below) disagrees.
+kotlin {
+    jvmToolchain(17)
 }
 
 android {
-    namespace = ProjectConfiguration.Frnk.Android.namespace
-    compileSdk = ProjectConfiguration.Frnk.Android.compileSDK
-
+    namespace = "dev.jdgarita.frnk.android"
+    compileSdk = ProjectConfiguration.Android.COMPILE_SDK
     defaultConfig {
-        applicationId = ProjectConfiguration.Frnk.Android.applicationId
-        minSdk = ProjectConfiguration.Frnk.Android.minSDK
-        targetSdk = ProjectConfiguration.Frnk.Android.targetSDK
-        versionCode = Secrets.getVersionPropertyOrEnvVar(key = BumpVersionCodeTask.VERSION_CODE_PROPERTY, rootDir = rootDir)!!.toInt()
-        versionName = ProjectConfiguration.Frnk.versionName
+        minSdk = ProjectConfiguration.Android.MIN_SDK
+        consumerProguardFiles("consumer-rules.pro")
     }
-
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    signingConfigs {
-        create("default") {
-            storeFile = file("$projectDir/config/keystore/my_app.keystore")
-            keyAlias = Secrets.getLocalPropertyOrEnvVar(key = "KEY_ALIAS_RELEASE", rootDir = rootDir)
-            keyPassword = Secrets.getLocalPropertyOrEnvVar(key = "KEY_PASSWORD_RELEASE", rootDir = rootDir)
-            storePassword = Secrets.getLocalPropertyOrEnvVar(key = "STORE_PASSWORD_RELEASE", rootDir = rootDir)
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            isDebuggable = false
-
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-
-        getByName("debug") {
-            isDebuggable = true
-        }
-    }
-
+    buildFeatures { compose = true }
     compileOptions {
-        sourceCompatibility = ProjectConfiguration.Compiler.javaCompatibility
-        targetCompatibility = ProjectConfiguration.Compiler.javaCompatibility
-
-        isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = ProjectConfiguration.Compiler.jvmTarget
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 dependencies {
-    implementation(project(":shared"))
+    api(project(":core-common"))
+    api(project(":core-network-api"))
+    api(project(":core-network-impl"))
+    api(project(":core-database-api"))
+    api(project(":core-database-impl"))
+    api(project(":core-ui-atoms"))
 
-    coreLibraryDesugaring(libs.android.desugarjdklibs)
-
-    // Tweener
-    implementation(libs.tweener.czan)
-
-    // Android
-    implementation(libs.android.splashscreen)
-    implementation(libs.android.activity)
-    implementation(libs.android.activity.compose)
-    implementation(libs.android.accompanist.permissions)
-
-    // Firebase
-    implementation(platform(libs.android.firebase.bom))
-    implementation(libs.android.firebase.analytics)
-    implementation(libs.android.firebase.performance)
-
-    // DI
-    implementation(libs.koin.core)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    implementation(libs.gitlive.firebase.app)
+    implementation(libs.gitlive.firebase.auth)
 }
-
-// region Google Play Publisher
-
-tasks.register<BumpVersionCodeTask>("bumpVersionCode") {
-    versionPropertiesFile.set(rootProject.layout.projectDirectory.file(BumpVersionCodeTask.VERSION_PROPERTIES_FILE))
-}
-
-afterEvaluate {
-    tasks.named("publishReleaseBundle") {
-        dependsOn("bumpVersionCode")
-    }
-}
-
-play {
-    serviceAccountCredentials.set(file("google-play-uploader.json"))
-    track.set("internal") // or beta, production
-    defaultToAppBundles.set(true)
-}
-
-// endregion Google Play Publisher

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <!-- Notification channels -->
-    <string name="notification_channel_breaking_news">Breaking news notifications</string>
-    <string name="notification_channel_daily_news">Daily news notifications</string>
-
-</resources>

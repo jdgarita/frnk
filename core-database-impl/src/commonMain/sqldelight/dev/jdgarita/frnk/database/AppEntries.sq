@@ -1,0 +1,13 @@
+CREATE TABLE AppEntry (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+put:
+INSERT OR REPLACE INTO AppEntry(key, value) VALUES (?, ?);
+
+get:
+SELECT value FROM AppEntry WHERE key = ?;
+
+remove:
+DELETE FROM AppEntry WHERE key = ?;

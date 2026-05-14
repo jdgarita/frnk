@@ -1,27 +1,16 @@
-import org.gradle.api.JavaVersion
-
 /**
- * @author Vivien Mahe
- * @since 23/07/2022
+ * Single source of truth for shared project-level constants. Modules read
+ * these values to avoid drift between Android namespaces, package IDs, and
+ * iOS framework names.
  */
-
 object ProjectConfiguration {
+    const val PACKAGE_NAME = "dev.jdgarita.frnk"
+    const val IOS_FRAMEWORK_NAME = "FrnkKit"
+    const val DATABASE_CLASS_NAME = "FrnkDB"
 
-    object Frnk {
-        const val packageName = "dev.jdgarita.frnk"
-        const val versionName = "1.0"
-
-        object Android {
-            const val applicationId = packageName
-            const val namespace = "$packageName.android"
-            const val compileSDK = 35
-            const val targetSDK = compileSDK
-            const val minSDK = 24
-        }
-    }
-
-    object Compiler {
-        val javaCompatibility = JavaVersion.VERSION_21
-        val jvmTarget = javaCompatibility.toString()
+    object Android {
+        const val MIN_SDK = 26
+        const val TARGET_SDK = 35
+        const val COMPILE_SDK = 35
     }
 }
