@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="frnk demo"
-        android:allowBackup="false"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:name=".DemoApplication"
+        android:label="Frnk Demo"
+        android:theme="@style/Theme.FrnkDemo"
+        android:allowBackup="true">
         <activity
-            android:name=".DemoActivity"
-            android:exported="true">
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FrnkDemo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

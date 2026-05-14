@@ -2,49 +2,33 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.compose)
 }
 
 kotlin {
-    androidTarget {
-        compilations.all {
-            kotlinOptions.jvmTarget = "17"
-        }
-    }
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
-        it.binaries.framework {
-            baseName = "core_ui_atoms"
-            isStatic = true
-        }
-    }
+    jvmToolchain(17)
+    androidTarget()
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "core_ui_atoms" } }
     sourceSets {
         commonMain.dependencies {
-            api(project(":core-common"))
+            api(projects.coreUiApi)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)
-            api(libs.compose.unstyled)
-            api(libs.androidx.lifecycle.viewmodel)
-            api(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.immutable)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-        }
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.turbine)
-            implementation(libs.assertk)
+            api(libs.koin.compose)
+            api(libs.koin.compose.viewmodel)
+
+            implementation(libs.compose.unstyled.core)
+            implementation(libs.compose.unstyled.theming)
+            implementation(libs.compose.unstyled.platformtheme)
+            implementation(libs.composables.core)
+
         }
     }
 }
 
 android {
-    namespace = "dev.jdgarita.frnk.ui.atoms"
-    compileSdk = ProjectConfiguration.Android.COMPILE_SDK
-    defaultConfig { minSdk = ProjectConfiguration.Android.MIN_SDK }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+    namespace = "${ProjectConfiguration.GROUP_ID}.ui.atoms"
+    compileSdk = ProjectConfiguration.COMPILE_SDK
+    defaultConfig { minSdk = ProjectConfiguration.MIN_SDK }
 }
