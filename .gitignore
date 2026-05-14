@@ -1,34 +1,49 @@
-# Gradle files
+# Gradle
 .gradle/
 build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
 
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-output.json
-
-# IntelliJ
-*.iml
+# IntelliJ / Android Studio
 .idea/
+.claude/
+*.iml
+*.iws
+*.ipr
+out/
 .kotlin/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
 
-# Keystore files
-*.jks
+# Local config & secrets
+local.properties
+keystore.properties
 *.keystore
-
-# Google Services (e.g. APIs or Firebase)
+*.jks
 google-services.json
+GoogleService-Info.plist
+fastlane/.env*
 
-# Android Profiling
-*.hprof
+# OS
+.DS_Store
+Thumbs.db
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+DerivedData/
+**/Pods/
+
+# SwiftPM
+.swiftpm/
+.build/
+
+# CocoaPods (if reintroduced later)
+Podfile.lock
+
+# Kotlin Multiplatform
+*.kexe
+*.kexe.dSYM/
+
+# CI artifacts
+reports/
+test-results/
