@@ -63,10 +63,7 @@ git add frnk && git commit -m "Pin frnk to v0.1.0"
 
 **2. Wire it into the consumer's `settings.gradle.kts`:**
 ```kotlin
-pluginManagement {
-    includeBuild("frnk")
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
-}
+includeBuild("../frnk")
 
 dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
@@ -75,6 +72,8 @@ dependencyResolutionManagement {
 rootProject.name = "MyApp"
 include(":app")
 ```
+
+> `includeBuild` belongs at the top level of `settings.gradle.kts`, not inside `pluginManagement` — frnk ships libraries, not Gradle plugins, so the host's normal `implementation(...)` dependency on `dev.jdgarita.frnk:androidApp` is what triggers the composite-build substitution.
 
 **3. Declare the dependency in the consumer's app module:**
 ```kotlin
@@ -88,13 +87,18 @@ dependencies {
 ```kotlin
 import dev.jdgarita.frnk.shared.BackendChoice
 import dev.jdgarita.frnk.shared.initializeFrnk
+import dev.jdgarita.frnk.database.impl.DatabaseContext
 import org.koin.android.ext.koin.androidContext
+
+DatabaseContext.application = applicationContext
 
 initializeFrnk(backend = BackendChoice.Supabase) {
     androidContext(this@MyApp)
-    modules(myAppModule, sqlDelightSchemaModule)
+    modules(hostDatabaseModule, hostFeatureModules)   // host-defined; see docs/HOST_INTEGRATION.md
 }
 ```
+
+> The toolkit owns the driver factory, not the schema. The host defines `hostDatabaseModule` against the injected `SqlDriverFactory` — see [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) for the full pattern.
 
 For iOS, the `FrnkKit.xcframework` produced by `:iosApp:assembleFrnkKitReleaseXCFramework` lands at `iosApp/build/XCFrameworks/release/FrnkKit.xcframework` for SPM consumption. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)`.
 
