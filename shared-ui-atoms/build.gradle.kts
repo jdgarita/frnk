@@ -22,10 +22,9 @@ kotlin {
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
 
-            implementation(libs.compose.unstyled.core)
+            implementation(libs.compose.unstyled.primitives)
             implementation(libs.compose.unstyled.theming)
             implementation(libs.compose.unstyled.platformtheme)
-            implementation(libs.composables.core)
         }
     }
 }

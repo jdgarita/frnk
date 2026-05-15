@@ -1,6 +1,6 @@
 # shared-ui-atoms
 
-Compose Multiplatform atoms layered on top of `:shared-ui-api`. Headless, theme-able primitives built on `composables/core` (`com.composables:core`) and `compose-unstyled` — **not** Material3. New atoms must stay unopinionated about look-and-feel.
+Compose Multiplatform atoms layered on top of `:shared-ui-api`. Headless, theme-able primitives built on `compose-unstyled` 2.x (`com.composables:composeunstyled-primitives` + `:composeunstyled-theming`) — **not** Material3. New atoms must stay unopinionated about look-and-feel.
 
 ## Contents
 
@@ -12,7 +12,7 @@ Compose Multiplatform atoms layered on top of `:shared-ui-api`. Headless, theme-
 - `api(projects.sharedUiApi)` — atoms expose the same MVI types feature ViewModels use.
 - `api(compose.runtime / foundation / ui)` so downstream modules don't redeclare Compose deps.
 - `api(koin.compose, koin.compose.viewmodel)` — `koinViewModel()` works at call sites without extra wiring.
-- `implementation(compose-unstyled.{core,theming,platformtheme}, composables.core)` — kept `implementation` so the consumer surface stays slim.
+- `implementation(compose-unstyled.{primitives,theming,platformtheme})` — kept `implementation` so the consumer surface stays slim.
 
 ## Rules
 
