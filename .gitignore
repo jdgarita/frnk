@@ -39,6 +39,8 @@ DerivedData/
 
 # CocoaPods (if reintroduced later)
 Podfile.lock
+iosDemoApp/iosDemoApp.xcodeproj/xcuserdata/
+iosDemoApp/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Kotlin Multiplatform
 *.kexe

@@ -5,22 +5,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import dev.jdgarita.frnk.ui.atoms.ProvideToolkitTheme
-import dev.jdgarita.frnk.ui.atoms.ToolkitColors
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ProvideToolkitTheme(
-                // Demonstrate host-side override of default tokens.
-                colors =
-                    ToolkitColors(
-                        primary =
-                            androidx.compose.ui.graphics
-                                .Color(0xFF0A84FF),
-                        onPrimary = androidx.compose.ui.graphics.Color.White,
-                    ),
-            ) {
+            ProvideToolkitTheme(colors = demoBlueColors()) {
                 DemoScreen(onEffect = ::handleEffect)
             }
         }

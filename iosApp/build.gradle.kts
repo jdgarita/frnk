@@ -8,7 +8,7 @@ plugins {
 
 kotlin {
     val xcf = XCFramework(ProjectConfiguration.IOS_FRAMEWORK_NAME)
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { t ->
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { t ->
         t.binaries.framework {
             baseName = ProjectConfiguration.IOS_FRAMEWORK_NAME
             xcf.add(this)

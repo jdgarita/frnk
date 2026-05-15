@@ -32,8 +32,29 @@
                           iosApp     (FrnkKit XCFramework)
                                          ▲
                                          │
+                          ┌─────────────────────────────┐
+                          │        shared-demo          │
+                          │  Compose DemoScreen + MVI   │
+                          │  + Koin demoModule +        │
+                          │    fakes + MainViewController│
+                          │  (DemoKit XCFramework)      │
+                          └──────────────┬──────────────┘
+                                         ▼
                               androidDemoApp / iosDemoApp
 ```
+
+The production toolkit ends at `androidApp` / `iosApp` (`FrnkKit.xcframework`).
+`:shared-demo` and its `DemoKit.xcframework` are demo-only — a parity layer for
+the two smoke harnesses (`androidDemoApp`, `iosDemoApp`). Downstream consumers
+never depend on `:shared-demo`.
+
+`:shared-demo` deliberately depends only on the `*-api` modules plus
+`shared-ui-atoms` — **not** `:shared`. This keeps `DemoKit.xcframework` free of
+the Firebase / RevenueCat / SQLite native cinterop references that would
+otherwise force iosDemoApp to ship `PurchasesHybridCommon` + Firebase pods just
+to launch. The demo binds fakes (`FakeEntitlementManager`,
+`LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never touches a real
+SDK, so it boots on a clean simulator with no extra setup.
 
 `:shared` is the single consumer-facing surface. `androidApp` and `iosApp` each depend on `:shared` only — they re-export it for downstream apps and add nothing else.
 
@@ -84,7 +105,7 @@ fun initializeFrnk(
 
 ## iOS native dependency contract
 
-`:shared` bundles `shared-monetization-revenuecat` (and `shared-backend-firebase`), which cinterop with the native `PurchasesHybridCommon` (and Firebase) frameworks. The toolkit does NOT ship those native frameworks inside `FrnkKit.xcframework` — the consumer Xcode project must bring them in via CocoaPods or SPM (`pod 'PurchasesHybridCommon'`, `pod 'FirebaseAuth'`, etc.). The `:iosApp` framework binaries use `linkerOpts("-undefined", "dynamic_lookup")` so the toolkit's link succeeds locally; the symbols resolve when the consumer's iOS app links. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)` to start Koin.
+`:shared` bundles `shared-monetization-revenuecat` (and `shared-backend-firebase`), which cinterop with the native `PurchasesHybridCommon` (and Firebase) frameworks. The toolkit does NOT ship those native frameworks inside `FrnkKit.xcframework` — the consumer Xcode project must bring them in via CocoaPods or SPM (`pod 'PurchasesHybridCommon'`, `pod 'FirebaseAuth'`, etc.). `:iosApp` framework binaries use `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)` to start Koin. `iosDemoApp` does NOT consume `FrnkKit.xcframework` — it uses `DemoKit.xcframework` from `:shared-demo`, which excludes those native cinterops by design and so requires no pods at all. Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
 
 ## Consuming via composite build (includeBuild)
 

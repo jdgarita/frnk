@@ -1,11 +1,11 @@
 package dev.jdgarita.frnk.demo
 
-import android.util.Log
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.utils.PrintLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,21 +50,21 @@ class LoggingAnalyticsTracker : AnalyticsTracker {
         event: ToolkitEvent,
         params: Map<String, Any?>,
     ) {
-        Log.d(TAG, "${event.key} $params")
+        PrintLogger.d(TAG, "${event.key} $params")
     }
 
     override fun trackCustom(
         name: String,
         params: Map<String, Any?>,
     ) {
-        Log.d(TAG, "$name $params")
+        PrintLogger.d(TAG, "$name $params")
     }
 
     override fun setUserProperty(
         key: String,
         value: String?,
     ) {
-        Log.d(TAG, "user[$key] = $value")
+        PrintLogger.d(TAG, "user[$key] = $value")
     }
 
     companion object {
@@ -77,14 +77,18 @@ class LoggingCrashReporter : CrashReporter {
         throwable: Throwable,
         extras: Map<String, String>,
     ) {
-        Log.e("Crash", "$extras", throwable)
+        PrintLogger.e(TAG, "$extras", throwable)
     }
 
     override fun setUserId(id: String?) {
-        Log.d("Crash", "userId=$id")
+        PrintLogger.d(TAG, "userId=$id")
     }
 
     override fun log(message: String) {
-        Log.d("Crash", message)
+        PrintLogger.d(TAG, message)
+    }
+
+    companion object {
+        private const val TAG = "Crash"
     }
 }

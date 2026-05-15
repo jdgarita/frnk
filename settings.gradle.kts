@@ -40,6 +40,7 @@ include(
     ":shared-backend-supabase",
     ":shared-monetization-api",
     ":shared-monetization-revenuecat",
+    ":shared-demo",
     ":androidApp",
     ":iosApp",
     ":androidDemoApp",

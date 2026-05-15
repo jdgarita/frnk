@@ -27,6 +27,8 @@ android {
 dependencies {
     // Toolkit surface. :androidApp re-exports :shared which aggregates every api + impl module.
     implementation(projects.androidApp)
+    // Shared demo Composable + MVI + Koin module (also consumed by iosDemoApp).
+    implementation(projects.sharedDemo)
 
     // Compose runtime + UI primitives (multiplatform artifacts).
     implementation(compose.runtime)

@@ -23,6 +23,7 @@ Day-to-day:
 ./gradlew ktlintFormat                      # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                          # full build of every target — only when producing release artifacts
 ./gradlew :iosApp:assembleFrnkKitReleaseXCFramework  # produce iosApp/build/XCFrameworks/release/FrnkKit.xcframework
+./gradlew :shared-demo:assembleDemoKitDebugXCFramework  # produce shared-demo/build/XCFrameworks/debug/DemoKit.xcframework (iosDemoApp consumes this)
 ./gradlew clean
 ```
 
@@ -55,6 +56,8 @@ The point is swap-ability and parallel compilation. **Do not** add a third-party
 - The MVI engine: `MviContract` (`UiState` / `UiAction` / `UiEffect` markers), `MviViewModel<S, A, E>` (StateFlow + action SharedFlow + effect Channel), and `ObserveAsEvents` for one-shot effects in composables. New screens subclass `MviViewModel`, write a pure reducer, and override `onAction` for side-effectful work.
 
 **Public entry points** are `androidApp` (a KMP-Android library via `com.android.kotlin.multiplatform.library`, **not** an application) and `iosApp` (a KMP target producing the fat `FrnkKit` XCFramework via `XCFramework("FrnkKit")`). Both depend on `:shared` only and re-export it. Downstream consumers depend on `dev.jdgarita.frnk:androidApp` / the XCFramework — that's it.
+
+**`:shared-demo` is demo-only.** A KMP module that owns the cross-platform `DemoScreen` composable, `DemoViewModel` (MVI), `demoModule` (Koin bindings with `FakeEntitlementManager` + logging fakes), and an iOS `MainViewController()` factory that Swift mounts via `UIViewControllerRepresentable`. It produces its own `DemoKit.xcframework`. Critically, `:shared-demo` does **not** depend on `:shared` — only the `*-api` modules + `shared-ui-atoms`. This keeps `DemoKit.xcframework` free of Firebase / RevenueCat / SQLite native cinterops, so `iosDemoApp` boots on a clean simulator with no CocoaPods. `androidDemoApp` and `iosDemoApp` share `bootstrapDemoKoin()` as their single Koin entry point — it installs only `demoModule`, so the demo screen exercises `FeatureGate` against the fake `EntitlementManager` without any real backend init. Production consumers never touch `:shared-demo`; they use `FrnkKit.xcframework` from `:iosApp`.
 
 **iOS linker quirk.** The `iosApp` framework binaries set `linkerOpts("-undefined", "dynamic_lookup")` because `:shared` bundles `shared-monetization-revenuecat`, which cinterops the native `PurchasesHybridCommon` framework — and that native framework is expected to be supplied by the consumer Xcode project via CocoaPods or SPM. Deferring symbol resolution lets the toolkit's XCFramework link locally; the consumer app's own link step resolves PurchasesHybridCommon (and any Firebase native pods) at integration time.
 
