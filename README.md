@@ -108,22 +108,30 @@ Demo apps additionally need:
 ## 🔧 Common commands
 
 ```bash
-./gradlew ktlintCheck                       # lint — CI gates on this
-./gradlew ktlintFormat                      # auto-fix style
-./gradlew assemble                          # build every target
-./gradlew allTests                          # run commonTest across all KMP modules
-./gradlew :shared-database-impl:allTests    # run a single module's tests
-./gradlew :iosApp:assembleXCFramework       # produce FrnkKit.xcframework
+./gradlew compileDebugKotlinAndroid           # fast compile-only check (what CI runs); modules build in parallel
+./gradlew testDebugUnitTest                   # commonTest + androidUnitTest across all KMP modules
+./gradlew :shared-database-impl:testDebugUnitTest   # run a single module's tests
+./gradlew ktlintFormat                        # auto-fix style (also runs from the pre-commit hook)
+./gradlew assemble                            # full build of every target (Android library + iOS frameworks)
+./gradlew :iosApp:assembleFrnkKitReleaseXCFramework   # produce FrnkKit.xcframework
 ./gradlew clean
 ```
 
 Shared constants (package name, min/compile/target SDK, iOS framework name `FrnkKit`, database class `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt` — read from there rather than hardcoding.
 
-## 🧪 CI & quality
+## 🎨 Style: pre-commit hook, not CI
 
-`.github/workflows/main.yml` is the authoritative pipeline. It gates on:
+Ktlint is enforced via a **git pre-commit hook** at `.githooks/pre-commit`. It runs `./gradlew ktlintFormat` against staged Kotlin files and re-stages the fixes, so commits land already-formatted and CI doesn't burn time on style.
 
-- **`ktlint`** — `./gradlew ktlintCheck` (failures block merges; the plugin runs with `ignoreFailures.set(false)` across all projects)
-- **`build & test`** — `./gradlew assemble allTests`
+Installation is automatic: the root build registers `installGitHooks`, wired to `prepareKotlinBuildScriptModel`, so it runs on IDE sync. To install on a fresh checkout without opening the IDE: `./gradlew installGitHooks`. To bypass for one commit: `SKIP_KTLINT=1 git commit ...` or `git commit --no-verify`.
+
+## 🧪 CI
+
+`.github/workflows/main.yml` is the authoritative pipeline — a single job that runs:
+
+1. `./gradlew compileDebugKotlinAndroid --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain`
+2. `./gradlew testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidUnitTest`
+
+`assemble`, `allTests`, and `ktlintCheck` are intentionally out — they duplicate work the local pre-commit hook (style) and downstream consumer builds (release assembly, iOS link) already cover.
 
 Every `*-impl` module ships `commonTest` and platform-specific (`androidUnitTest`, `iosTest`) source sets so concrete implementations are validated before consumers see them.

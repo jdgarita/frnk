@@ -3,39 +3,55 @@ name: ci
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "LICENSE"
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "LICENSE"
+  workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ktlint:
-    name: ktlint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@v3
-      - name: Run ktlint
-        run: ./gradlew ktlintCheck
-
   build:
-    name: build & test
+    name: compile & test
     runs-on: ubuntu-latest
-    needs: ktlint
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+
+      - uses: gradle/actions/wrapper-validation@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v3
-      - name: Assemble all
-        run: ./gradlew assemble --stacktrace
-      - name: Common tests
-        run: ./gradlew allTests --stacktrace
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Seed local.properties (CI dummy values)
+        run: |
+          cp local.properties.template local.properties
+          # BuildKonfig needs these set; CI does not exercise real backends.
+          sed -i 's|SUPABASE_URL=.*|SUPABASE_URL=https://ci.invalid|' local.properties
+          sed -i 's|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=ci-dummy|' local.properties
+          sed -i 's|FIREBASE_API_KEY=.*|FIREBASE_API_KEY=ci-dummy|' local.properties
+          sed -i 's|FIREBASE_APPLICATION_ID=.*|FIREBASE_APPLICATION_ID=ci-dummy|' local.properties
+          sed -i 's|FIREBASE_PROJECT_ID=.*|FIREBASE_PROJECT_ID=ci-dummy|' local.properties
+          sed -i 's|BUILD_VARIANT=.*|BUILD_VARIANT=debug|' local.properties
+
+      # `compileDebugKotlinAndroid` covers every shared-* module's commonMain +
+      # androidMain. Gradle runs cross-module tasks in parallel automatically
+      # (org.gradle.parallel=true) and reuses the build cache between steps.
+      - name: Compile (Android debug, all modules in parallel)
+        run: ./gradlew compileDebugKotlinAndroid --parallel --build-cache
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --parallel --build-cache

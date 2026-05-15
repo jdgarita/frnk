@@ -23,3 +23,22 @@ allprojects {
         filter { exclude { it.file.path.contains("build/") } }
     }
 }
+
+// Points git at .githooks/ so the pre-commit ktlintFormat hook activates for every clone.
+// `git config core.hooksPath` is idempotent — re-runs are no-ops.
+val gitDirExists = rootProject.file(".git").exists()
+val hooksDirExists = rootProject.file(".githooks").isDirectory
+val rootDirPath = rootDir
+
+val installGitHooks by tasks.registering(Exec::class) {
+    group = "git hooks"
+    description = "Configure git to use .githooks/ as the hooks directory."
+    workingDir = rootDirPath
+    commandLine("git", "config", "core.hooksPath", ".githooks")
+    enabled = gitDirExists && hooksDirExists
+}
+
+// Auto-run on IDE sync so contributors don't have to remember a manual step.
+tasks
+    .matching { it.name == "prepareKotlinBuildScriptModel" }
+    .configureEach { dependsOn(installGitHooks) }

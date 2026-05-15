@@ -17,12 +17,12 @@ cp local.properties.template local.properties   # then fill in Supabase/Firebase
 
 Day-to-day:
 ```bash
-./gradlew ktlintCheck                       # lint — CI gates on this before assembling
-./gradlew ktlintFormat                      # auto-fix style
-./gradlew assemble                          # build every target (Android library + iOS frameworks)
-./gradlew allTests                          # run commonTest across all KMP modules
-./gradlew :shared-database-impl:allTests    # run a single module's tests
-./gradlew :iosApp:assembleXCFramework       # produce iosApp/build/XCFrameworks/release/FrnkKit.xcframework
+./gradlew compileDebugKotlinAndroid         # fast compile-only check (what CI runs); Gradle parallelises across modules
+./gradlew testDebugUnitTest                 # commonTest + androidUnitTest across all KMP modules (what CI runs)
+./gradlew :shared-database-impl:testDebugUnitTest   # run a single module's tests
+./gradlew ktlintFormat                      # auto-fix style (also runs from the pre-commit hook)
+./gradlew assemble                          # full build of every target — only when producing release artifacts
+./gradlew :iosApp:assembleFrnkKitReleaseXCFramework  # produce iosApp/build/XCFrameworks/release/FrnkKit.xcframework
 ./gradlew clean
 ```
 
@@ -57,11 +57,15 @@ The point is swap-ability and parallel compilation. **Do not** add a third-party
 
 **iOS linker quirk.** The `iosApp` framework binaries set `linkerOpts("-undefined", "dynamic_lookup")` because `:shared` bundles `shared-monetization-revenuecat`, which cinterops the native `PurchasesHybridCommon` framework — and that native framework is expected to be supplied by the consumer Xcode project via CocoaPods or SPM. Deferring symbol resolution lets the toolkit's XCFramework link locally; the consumer app's own link step resolves PurchasesHybridCommon (and any Firebase native pods) at integration time.
 
-## Ktlint is enforced
+## Ktlint runs locally, not in CI
 
-`./build.gradle.kts` applies the ktlint plugin to **all** projects with `ignoreFailures.set(false)`. CI (`.github/workflows/main.yml`) runs `ktlintCheck` as a gating job before `assemble allTests` — a style violation will fail PRs. Run `./gradlew ktlintFormat` before committing.
+`./build.gradle.kts` applies the ktlint plugin to **all** projects with `ignoreFailures.set(false)`. Style is enforced via a **git pre-commit hook** (`.githooks/pre-commit`) that runs `./gradlew ktlintFormat` and re-stages the fixed files — so commits land already-formatted and CI no longer needs a separate ktlint job.
 
-Note: there are two CI workflow files (`main.yml` and the older `KtlintCheck.yml`) both triggering on push to `main` — they overlap, and `main.yml` is the authoritative pipeline.
+The hook activates automatically: the root build registers an `installGitHooks` task that points `core.hooksPath` at `.githooks/`, and it's wired to `prepareKotlinBuildScriptModel` so IDE sync (or any `./gradlew` invocation that triggers it) installs the hook. To install manually: `./gradlew installGitHooks`. To bypass for one commit: `SKIP_KTLINT=1 git commit ...` or `git commit --no-verify`.
+
+## CI
+
+`.github/workflows/main.yml` is a single job that runs `compileDebugKotlinAndroid` followed by `testDebugUnitTest`, both with `--parallel --build-cache`. Compile covers `commonMain`+`androidMain` for every shared module (iOS targets are skipped on Linux runners). Tests cover `commonTest`+`androidUnitTest`. No `assemble`, no `allTests`, no `ktlintCheck` — those are heavier than what CI needs to gate merges.
 
 ## Conventions to follow when adding code
 

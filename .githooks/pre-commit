@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Auto-format Kotlin sources with ktlint before each commit and re-stage the fixes.
+# Skips itself when no Kotlin files are staged so non-Kotlin commits stay fast.
+set -e
+
+STAGED_KT=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.kts?$' || true)
+if [ -z "$STAGED_KT" ]; then
+  exit 0
+fi
+
+if [ -n "${SKIP_KTLINT:-}" ]; then
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+echo "[pre-commit] ./gradlew ktlintFormat"
+./gradlew --quiet ktlintFormat
+
+# Re-stage any of the originally-staged Kotlin files that ktlintFormat rewrote.
+while IFS= read -r file; do
+  [ -n "$file" ] && [ -f "$file" ] && git add -- "$file"
+done <<< "$STAGED_KT"

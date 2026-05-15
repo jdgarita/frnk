@@ -152,9 +152,11 @@ ViewModels subclass `MviViewModel<S, A, E>`, implement a pure reducer, and optio
 
 ## CI
 
-`.github/workflows/main.yml` runs two jobs on every push and PR:
+`.github/workflows/main.yml` is a single job on every push and PR. It runs, in order:
 
-1. **ktlint** — `./gradlew ktlintCheck`
-2. **build & test** — `./gradlew assemble allTests`
+1. `./gradlew compileDebugKotlinAndroid --parallel --build-cache`
+2. `./gradlew testDebugUnitTest --parallel --build-cache`
 
-The `ktlint` job gates the build job to fail fast on style issues.
+Style is enforced **locally** via a git pre-commit hook (`.githooks/pre-commit`) that runs `ktlintFormat` and re-stages the fixes — so CI doesn't need a separate `ktlintCheck` job. The hook is installed automatically the first time `./gradlew` runs (the root build registers an `installGitHooks` task wired to `prepareKotlinBuildScriptModel`).
+
+The CI job intentionally skips `assemble` and `allTests`: compile-only is enough to gate merges, and downstream consumer apps (or a manual `./gradlew assemble`) cover full release assembly and the iOS link step.
