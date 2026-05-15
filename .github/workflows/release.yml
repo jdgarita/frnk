@@ -1,0 +1,83 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: publish github release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag and version
+        id: ver
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          case "$VERSION" in
+            *-*) echo "prerelease=--prerelease" >> "$GITHUB_OUTPUT" ;;
+            *)   echo "prerelease=" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Verify Frnk.VERSION matches tag
+        run: |
+          FILE="shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt"
+          EXPECTED="${{ steps.ver.outputs.version }}"
+          ACTUAL=$(grep -oE 'VERSION = "[^"]+"' "$FILE" | sed -E 's/VERSION = "(.*)"/\1/')
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Tag is v$EXPECTED but $FILE has VERSION = \"$ACTUAL\". Bump Frnk.VERSION before tagging."
+            exit 1
+          fi
+
+      - name: Extract changelog section
+        id: notes
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          # Trim leading/trailing blank lines.
+          sed -i -e '/./,$!d' -e ':a' -e '/^\n*$/{$d;N;ba' -e '}' release_notes.md || true
+          if [ -s release_notes.md ]; then
+            echo "has_section=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_section=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No [$VERSION] section in CHANGELOG.md; falling back to GitHub auto-generated notes"
+          fi
+
+      - name: Create release (from CHANGELOG)
+        if: steps.notes.outputs.has_section == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --title "${{ steps.ver.outputs.tag }}" \
+            --notes-file release_notes.md \
+            ${{ steps.ver.outputs.prerelease }}
+
+      - name: Create release (auto-generated notes)
+        if: steps.notes.outputs.has_section == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            --title "${{ steps.ver.outputs.tag }}" \
+            --generate-notes \
+            ${{ steps.ver.outputs.prerelease }}
