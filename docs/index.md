@@ -35,13 +35,14 @@ Kotlin 2.3.21 · Compose Multiplatform 1.10.3 · Koin 4.2.1 · SQLDelight 2.3.2 
 
 ## Consume it
 
-Add as a submodule, pin to a release tag, wire into the consumer's `settings.gradle.kts` as a composite build:
+Add as a sibling Git submodule, pin to a release tag, wire it into the consumer's `settings.gradle.kts` as a composite build:
 
 ```kotlin
 // settings.gradle.kts (consumer app)
-pluginManagement {
-    includeBuild("frnk")
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
+includeBuild("../frnk")
+
+dependencyResolutionManagement {
+    repositories { google(); mavenCentral() }
 }
 ```
 
@@ -54,15 +55,17 @@ dependencies {
 
 ```kotlin
 // Application.onCreate
+DatabaseContext.application = applicationContext
+
 initializeFrnk(backend = BackendChoice.Supabase) {
     androidContext(this@MyApp)
-    modules(myAppModule, sqlDelightSchemaModule)
+    modules(hostDatabaseModule, hostFeatureModules)   // host-defined; see HOST_INTEGRATION
 }
 ```
 
 For iOS, `./gradlew :iosApp:assembleFrnkKitReleaseXCFramework` produces `FrnkKit.xcframework` for SPM consumption; Swift calls `FrnkKitKt.bootstrapFrnkKit(backend:)`.
 
-Full integration guide: [`docs/HOST_INTEGRATION.md`](https://github.com/jdgarita/frnk/blob/main/docs/HOST_INTEGRATION.md).
+Full integration guide — including how to define `hostDatabaseModule` against the injected `SqlDriverFactory`, override UI tokens, and map `ToolkitRoute`s — lives in [`docs/HOST_INTEGRATION.md`](https://github.com/jdgarita/frnk/blob/main/docs/HOST_INTEGRATION.md).
 
 ## Documentation
 
