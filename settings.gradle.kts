@@ -1,19 +1,20 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex(".*google.*")
+                includeGroupByRegex(".*android.*")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
-plugins {
-    // Auto-provisions JDK 17 from the Foojay disco API when the JVM toolchain
-    // requests a JDK Gradle can't find locally. Keeps Android Studio (bundled
-    // JDK 21) and the CLI in sync without forcing a system-wide install.
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
-}
-
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
@@ -21,20 +22,24 @@ dependencyResolutionManagement {
     }
 }
 
+plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0" }
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "frnk"
 
-// --- core ------------------------------------------------------------------
-include(":core-common")
-include(":core-network-api")
-include(":core-network-impl")
-include(":core-database-api")
-include(":core-database-impl")
-include(":core-ui-atoms")
-
-// --- public entry points ---------------------------------------------------
-include(":androidApp")
-include(":iosApp")
-
-// --- internal demos --------------------------------------------------------
-include(":androidDemoApp")
-include(":iosDemoApp")
+include(
+    ":core-utils",
+    ":core-ui-api",
+    ":core-ui-atoms",
+    ":core-database-api",
+    ":core-database-impl",
+    ":core-backend-api",
+    ":core-backend-firebase",
+    ":core-backend-supabase",
+    ":core-monetization-api",
+    ":core-monetization-revenuecat",
+    ":androidApp",
+    ":iosApp",
+    ":androidDemoApp",
+)
