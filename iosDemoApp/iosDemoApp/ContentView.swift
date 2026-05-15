@@ -2,22 +2,12 @@ import DemoKit
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject private var backendStore: BackendStore
     @State private var toastMessage: String?
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            VStack(spacing: 0) {
-                BackendPicker(current: $backendStore.current) { choice in
-                    backendStore.select(choice)
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
-
-                ComposeViewController(onEffect: handleEffect)
-                    .id(backendStore.versionTag)
-                    .ignoresSafeArea(edges: .bottom)
-            }
+            ComposeViewController(onEffect: handleEffect)
+                .ignoresSafeArea()
 
             if let message = toastMessage {
                 ToastBanner(text: message)
@@ -29,9 +19,8 @@ struct ContentView: View {
     }
 
     private func handleEffect(_ effect: DemoEffect) {
-        // Kotlin nested data classes (DemoEffect.Toast / DemoEffect.Navigate) are
-        // bridged to Swift as flattened top-level types `DemoEffectToast` /
-        // `DemoEffectNavigate` that conform to the DemoEffect protocol.
+        // Kotlin nested data classes (DemoEffect.Toast / DemoEffect.Navigate) are bridged
+        // to Swift as flattened top-level types that conform to the DemoEffect protocol.
         switch effect {
         case let toast as DemoEffectToast:
             show(toast.message)
@@ -49,22 +38,6 @@ struct ContentView: View {
                 toastMessage = nil
             }
         }
-    }
-}
-
-private struct BackendPicker: View {
-    @Binding var current: BackendChoice
-    let onSelect: (BackendChoice) -> Void
-
-    var body: some View {
-        Picker("Backend", selection: Binding(
-            get: { current },
-            set: { onSelect($0) }
-        )) {
-            Text("Supabase").tag(BackendChoice.supabase)
-            Text("Firebase").tag(BackendChoice.firebase)
-        }
-        .pickerStyle(.segmented)
     }
 }
 

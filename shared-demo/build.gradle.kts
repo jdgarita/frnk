@@ -21,17 +21,26 @@ kotlin {
             baseName = "DemoKit"
             xcf.add(this)
             isStatic = true
-            export(projects.shared)
-            // :shared bundles RevenueCat + Firebase impls whose cinterop references native
-            // iOS frameworks (PurchasesHybridCommon, etc.). iosDemoApp brings those in via
-            // CocoaPods; defer resolution so this framework links without them.
-            linkerOpts("-undefined", "dynamic_lookup")
+            // Only api-only toolkit modules are exported. The demo deliberately does NOT
+            // depend on :shared (which would drag in shared-backend-firebase /
+            // shared-monetization-revenuecat / shared-database-impl and their native
+            // cinterops). DemoKit.xcframework therefore has no Firebase / RevenueCat /
+            // SQLite symbols and the iosDemoApp links and launches without any CocoaPods.
+            export(projects.sharedUtils)
+            export(projects.sharedUiApi)
+            export(projects.sharedUiAtoms)
+            export(projects.sharedBackendApi)
+            export(projects.sharedMonetizationApi)
         }
     }
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.shared)
+            api(projects.sharedUtils)
+            api(projects.sharedUiApi)
+            api(projects.sharedUiAtoms)
+            api(projects.sharedBackendApi)
+            api(projects.sharedMonetizationApi)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)

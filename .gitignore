@@ -37,10 +37,8 @@ DerivedData/
 .swiftpm/
 .build/
 
-# CocoaPods
+# CocoaPods (if reintroduced later)
 Podfile.lock
-iosDemoApp/Pods/
-iosDemoApp/iosDemoApp.xcworkspace/
 iosDemoApp/iosDemoApp.xcodeproj/xcuserdata/
 iosDemoApp/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
 

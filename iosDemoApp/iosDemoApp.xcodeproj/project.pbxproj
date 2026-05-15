@@ -10,7 +10,6 @@
 		AA00000000000000000040 /* iosDemoAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000030 /* iosDemoAppApp.swift */; };
 		AA00000000000000000041 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000031 /* ContentView.swift */; };
 		AA00000000000000000042 /* ComposeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000032 /* ComposeViewController.swift */; };
-		AA00000000000000000043 /* BackendStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000033 /* BackendStore.swift */; };
 		AA00000000000000000044 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000035 /* Assets.xcassets */; };
 		AA00000000000000000045 /* DemoKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA00000000000000000036 /* DemoKit.xcframework */; };
 		AA00000000000000000046 /* DemoKit.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AA00000000000000000036 /* DemoKit.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -34,12 +33,10 @@
 		AA00000000000000000030 /* iosDemoAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosDemoAppApp.swift; sourceTree = "<group>"; };
 		AA00000000000000000031 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AA00000000000000000032 /* ComposeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeViewController.swift; sourceTree = "<group>"; };
-		AA00000000000000000033 /* BackendStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendStore.swift; sourceTree = "<group>"; };
 		AA00000000000000000034 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA00000000000000000035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA00000000000000000036 /* DemoKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DemoKit.xcframework; path = "../shared-demo/build/XCFrameworks/debug/DemoKit.xcframework"; sourceTree = SOURCE_ROOT; };
 		AA00000000000000000037 /* iosDemoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosDemoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA00000000000000000038 /* GoogleService-Info.plist.template */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist.template"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,10 +74,8 @@
 				AA00000000000000000030 /* iosDemoAppApp.swift */,
 				AA00000000000000000031 /* ContentView.swift */,
 				AA00000000000000000032 /* ComposeViewController.swift */,
-				AA00000000000000000033 /* BackendStore.swift */,
 				AA00000000000000000035 /* Assets.xcassets */,
 				AA00000000000000000034 /* Info.plist */,
-				AA00000000000000000038 /* GoogleService-Info.plist.template */,
 			);
 			path = iosDemoApp;
 			sourceTree = "<group>";
@@ -189,7 +184,6 @@
 				AA00000000000000000040 /* iosDemoAppApp.swift in Sources */,
 				AA00000000000000000041 /* ContentView.swift in Sources */,
 				AA00000000000000000042 /* ComposeViewController.swift in Sources */,
-				AA00000000000000000043 /* BackendStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -222,11 +216,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-undefined",
-					"dynamic_lookup",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.jdgarita.frnk.demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -263,11 +252,6 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-undefined",
-					"dynamic_lookup",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.jdgarita.frnk.demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plist version="1.0">
-  <dict>
-    <key>_comment</key>
-    <string>Drop your real GoogleService-Info.plist from the Firebase console next to this template (gitignored).</string>
-  </dict>
-</plist>
