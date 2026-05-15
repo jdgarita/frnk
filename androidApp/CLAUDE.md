@@ -1,6 +1,6 @@
 # androidApp
 
-The Android consumer entry point for the toolkit. **This is an `com.android.library`, not an application** — `androidApp/build.gradle.kts` applies `alias(libs.plugins.android.library)`, not `application`. The shipping product is this library; the Android smoke app is `:androidDemoApp`.
+The Android consumer entry point for the toolkit. **This is a KMP-Android library, not an application** — `androidApp/build.gradle.kts` applies `alias(libs.plugins.android.kotlin.multiplatform.library)` (AGP 9's `com.android.kotlin.multiplatform.library`), not `application`. The shipping product is this library; the Android smoke app is `:androidDemoApp`.
 
 ## Purpose
 

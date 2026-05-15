@@ -30,9 +30,10 @@ Day-to-day:
 
 ## Toolchain pinning (don't fight it)
 
-- **JDK 17** everywhere. Android Studio bundles JDK 21; the Foojay resolver in `settings.gradle.kts` auto-provisions 17, and `androidApp` explicitly calls `kotlin { jvmToolchain(17) }` because AGP's javac and the Kotlin task would otherwise disagree about target. Don't change this without changing both sides.
-- **Kotlin 2.0.21 + AGP 8.7.0.** AGP is one minor ahead of the version KMP 2.0.21 was tested against (8.5). The compatibility warning is suppressed in `gradle.properties` (`kotlin.mpp.androidGradlePluginCompatibility.nowarn=true`) — don't "fix" that line.
-- Shared constants (package name, min/compile/target SDK, iOS framework name `FrnkKit`, database class name `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt`. Read from there rather than hardcoding.
+- **JDK 17** everywhere. Android Studio bundles JDK 21; the Foojay resolver in `settings.gradle.kts` auto-provisions 17, and every KMP module explicitly calls `kotlin { jvmToolchain(17) }` because AGP's javac and the Kotlin task would otherwise disagree about target. Don't change this without changing both sides.
+- **Kotlin 2.3.21 + AGP 9.2.1 + Gradle 9.5.1.** AGP 9 forbids combining `org.jetbrains.kotlin.multiplatform` with `com.android.library` in the same subproject — every KMP-Android module here applies `com.android.kotlin.multiplatform.library` (alias `libs.plugins.android.kotlin.multiplatform.library`) and configures the Android side via `kotlin { android { … } }`, not a top-level `android {}` block. Compile/min SDK live inside that nested block.
+- `:androidDemoApp` (the only `com.android.application`) uses AGP 9's **built-in Kotlin** — it does **not** apply `kotlin.android`. Don't re-add that plugin.
+- Shared constants (package name, min/compile/target SDK, iOS framework name `FrnkKit`, database class name `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt`. Read from there rather than hardcoding. AGP 9 caps compileSdk at 36.
 
 ## Architecture you need to respect
 
@@ -53,7 +54,7 @@ The point is swap-ability and parallel compilation. **Do not** add a third-party
 - Headless Compose components built on `compose-unstyled` (`com.composables:core`).
 - The MVI engine: `MviContract` (`UiState` / `UiAction` / `UiEffect` markers), `MviViewModel<S, A, E>` (StateFlow + action SharedFlow + effect Channel), and `ObserveAsEvents` for one-shot effects in composables. New screens subclass `MviViewModel`, write a pure reducer, and override `onAction` for side-effectful work.
 
-**Public entry points** are `androidApp` (an `com.android.library`, **not** an application) and `iosApp` (a KMP target producing the fat `FrnkKit` XCFramework via `XCFramework("FrnkKit")`). Both depend on `:shared` only and re-export it. Downstream consumers depend on `dev.jdgarita.frnk:androidApp` / the XCFramework — that's it.
+**Public entry points** are `androidApp` (a KMP-Android library via `com.android.kotlin.multiplatform.library`, **not** an application) and `iosApp` (a KMP target producing the fat `FrnkKit` XCFramework via `XCFramework("FrnkKit")`). Both depend on `:shared` only and re-export it. Downstream consumers depend on `dev.jdgarita.frnk:androidApp` / the XCFramework — that's it.
 
 **iOS linker quirk.** The `iosApp` framework binaries set `linkerOpts("-undefined", "dynamic_lookup")` because `:shared` bundles `shared-monetization-revenuecat`, which cinterops the native `PurchasesHybridCommon` framework — and that native framework is expected to be supplied by the consumer Xcode project via CocoaPods or SPM. Deferring symbol resolution lets the toolkit's XCFramework link locally; the consumer app's own link step resolves PurchasesHybridCommon (and any Firebase native pods) at integration time.
 
@@ -65,7 +66,7 @@ The hook activates automatically: the root build registers an `installGitHooks` 
 
 ## CI
 
-`.github/workflows/main.yml` is a single job that runs `compileDebugKotlinAndroid` followed by `testDebugUnitTest`, both with `--parallel --build-cache`. Compile covers `commonMain`+`androidMain` for every shared module (iOS targets are skipped on Linux runners). Tests cover `commonTest`+`androidUnitTest`. No `assemble`, no `allTests`, no `ktlintCheck` — those are heavier than what CI needs to gate merges.
+`.github/workflows/main.yml` is a single job that runs `compileAndroidMain :androidDemoApp:compileDebugKotlin` followed by `testDebugUnitTest`, both with `--parallel --build-cache`. Compile covers `commonMain`+`androidMain` for every shared module (iOS targets are skipped on Linux runners) plus the demo app's Kotlin. The `compileAndroidMain` task name comes from the AGP 9 KMP-Android plugin — `compileDebugKotlinAndroid` no longer exists for KMP modules. Tests cover `commonTest`+`androidUnitTest`. No `assemble`, no `allTests`, no `ktlintCheck` — those are heavier than what CI needs to gate merges.
 
 ## Conventions to follow when adding code
 

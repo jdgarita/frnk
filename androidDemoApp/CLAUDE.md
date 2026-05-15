@@ -13,7 +13,7 @@ Internal smoke harness for the toolkit on Android. **Not shipped.** Used to manu
 
 ## Build quirks
 
-- `lint.checkReleaseBuilds = false` and `lint.abortOnError = false` — AGP 8.7's bundled lint crashes on Kotlin 2.2.20 module metadata (`NonNullableMutableLiveDataDetector` → `IncompatibleClassChangeError`). The build.gradle.kts has a TODO to revert once AGP 8.8+ is in.
+- This is the only module that applies `com.android.application`. It does **not** apply `kotlin.android` — AGP 9's built-in Kotlin support compiles its sources. Don't re-add the `kotlin.android` plugin.
 - `release` build type has `isMinifyEnabled = false`. This is a harness; release-mode validation belongs in a real consumer app.
 - Depends on `projects.androidApp` (which re-exports `:shared`). **Do not** add direct `projects.shared*` deps here — the harness should consume the toolkit the same way a real downstream app does.
 

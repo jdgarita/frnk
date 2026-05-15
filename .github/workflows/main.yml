@@ -47,11 +47,12 @@ jobs:
           sed -i 's|FIREBASE_PROJECT_ID=.*|FIREBASE_PROJECT_ID=ci-dummy|' local.properties
           sed -i 's|BUILD_VARIANT=.*|BUILD_VARIANT=debug|' local.properties
 
-      # `compileDebugKotlinAndroid` covers every shared-* module's commonMain +
-      # androidMain. Gradle runs cross-module tasks in parallel automatically
-      # (org.gradle.parallel=true) and reuses the build cache between steps.
-      - name: Compile (Android debug, all modules in parallel)
-        run: ./gradlew compileDebugKotlinAndroid --parallel --build-cache
+      # `compileAndroidMain` covers every KMP module's commonMain + androidMain
+      # under the AGP 9 KMP-Android plugin (com.android.kotlin.multiplatform.library).
+      # `:androidDemoApp:compileDebugKotlin` covers the pure-Android smoke harness.
+      # Gradle parallelises across modules automatically (org.gradle.parallel=true).
+      - name: Compile (Android, all modules in parallel)
+        run: ./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache
 
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --parallel --build-cache
