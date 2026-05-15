@@ -12,7 +12,7 @@ kotlin {
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
     }
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_ui_atoms" } }
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_ui_atoms" } }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUiApi)

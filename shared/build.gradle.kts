@@ -12,7 +12,6 @@ kotlin {
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
     }
-    iosX64()
     iosArm64()
     iosSimulatorArm64()
     sourceSets {

@@ -23,6 +23,7 @@ Day-to-day:
 ./gradlew ktlintFormat                      # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                          # full build of every target — only when producing release artifacts
 ./gradlew :iosApp:assembleFrnkKitReleaseXCFramework  # produce iosApp/build/XCFrameworks/release/FrnkKit.xcframework
+./gradlew :shared-demo:assembleDemoKitDebugXCFramework  # produce shared-demo/build/XCFrameworks/debug/DemoKit.xcframework (iosDemoApp consumes this)
 ./gradlew clean
 ```
 
@@ -55,6 +56,8 @@ The point is swap-ability and parallel compilation. **Do not** add a third-party
 - The MVI engine: `MviContract` (`UiState` / `UiAction` / `UiEffect` markers), `MviViewModel<S, A, E>` (StateFlow + action SharedFlow + effect Channel), and `ObserveAsEvents` for one-shot effects in composables. New screens subclass `MviViewModel`, write a pure reducer, and override `onAction` for side-effectful work.
 
 **Public entry points** are `androidApp` (a KMP-Android library via `com.android.kotlin.multiplatform.library`, **not** an application) and `iosApp` (a KMP target producing the fat `FrnkKit` XCFramework via `XCFramework("FrnkKit")`). Both depend on `:shared` only and re-export it. Downstream consumers depend on `dev.jdgarita.frnk:androidApp` / the XCFramework — that's it.
+
+**`:shared-demo` is demo-only.** A KMP module that owns the cross-platform `DemoScreen` composable, `DemoViewModel` (MVI), `demoModule` (Koin bindings with `FakeEntitlementManager` + logging fakes), the runtime `swapBackend(...)` helper, and an iOS `MainViewController()` factory that Swift mounts via `UIViewControllerRepresentable`. It produces its own `DemoKit.xcframework` (api-exports `:shared`, so iosDemoApp imports a single framework). `androidDemoApp` and `iosDemoApp` share `bootstrapDemoKoin(BackendChoice)` as their single Koin entry point. Production consumers never touch `:shared-demo`.
 
 **iOS linker quirk.** The `iosApp` framework binaries set `linkerOpts("-undefined", "dynamic_lookup")` because `:shared` bundles `shared-monetization-revenuecat`, which cinterops the native `PurchasesHybridCommon` framework — and that native framework is expected to be supplied by the consumer Xcode project via CocoaPods or SPM. Deferring symbol resolution lets the toolkit's XCFramework link locally; the consumer app's own link step resolves PurchasesHybridCommon (and any Firebase native pods) at integration time.
 

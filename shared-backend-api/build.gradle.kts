@@ -10,7 +10,7 @@ kotlin {
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
     }
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_backend_api" } }
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_backend_api" } }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUtils)

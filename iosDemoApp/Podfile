@@ -1,0 +1,18 @@
+platform :ios, '15.0'
+use_frameworks!
+inhibit_all_warnings!
+
+target 'iosDemoApp' do
+  # RevenueCat's native iOS framework. :shared bundles
+  # shared-monetization-revenuecat whose cinterop references these symbols; the
+  # `-undefined dynamic_lookup` flag on DemoKit.xcframework defers resolution to
+  # this app's link step.
+  pod 'PurchasesHybridCommon', '~> 13.38'
+
+  # Firebase native iOS frameworks. Required for BackendChoice.Firebase. Drop a
+  # real GoogleService-Info.plist into iosDemoApp/iosDemoApp/ before switching
+  # to the Firebase backend at runtime.
+  pod 'FirebaseCore'
+  pod 'FirebaseAuth'
+  pod 'FirebaseFirestore'
+end

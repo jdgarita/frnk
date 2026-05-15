@@ -10,7 +10,7 @@ kotlin {
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
     }
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_monetization_revenuecat" } }
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_monetization_revenuecat" } }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedMonetizationApi)

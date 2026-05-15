@@ -37,8 +37,12 @@ DerivedData/
 .swiftpm/
 .build/
 
-# CocoaPods (if reintroduced later)
+# CocoaPods
 Podfile.lock
+iosDemoApp/Pods/
+iosDemoApp/iosDemoApp.xcworkspace/
+iosDemoApp/iosDemoApp.xcodeproj/xcuserdata/
+iosDemoApp/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Kotlin Multiplatform
 *.kexe

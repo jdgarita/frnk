@@ -11,7 +11,7 @@ kotlin {
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
     }
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_backend_firebase" } }
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_backend_firebase" } }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedBackendApi)
