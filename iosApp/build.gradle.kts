@@ -13,20 +13,15 @@ kotlin {
             baseName = ProjectConfiguration.IOS_FRAMEWORK_NAME
             xcf.add(this)
             isStatic = true
-            export(projects.coreUtils)
-            export(projects.coreUiApi)
-            export(projects.coreUiAtoms)
-            export(projects.coreDatabaseApi)
-            export(projects.coreBackendApi)
-            export(projects.coreMonetizationApi)
+            export(projects.shared)
+            // Bundled impls (RevenueCat, Firebase) reference native iOS frameworks
+            // (PurchasesHybridCommon, etc.) that the host app provides via CocoaPods / SPM.
+            // Defer symbol resolution so the toolkit's XCFramework links without those
+            // native deps present.
+            linkerOpts("-undefined", "dynamic_lookup")
         }
     }
     sourceSets.iosMain.dependencies {
-        api(projects.coreUtils)
-        api(projects.coreUiApi)
-        api(projects.coreUiAtoms)
-        api(projects.coreDatabaseApi)
-        api(projects.coreBackendApi)
-        api(projects.coreMonetizationApi)
+        api(projects.shared)
     }
 }
