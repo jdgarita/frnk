@@ -1419,6 +1419,13 @@ android {
     }
     buildFeatures { compose = true }
     buildTypes { getByName("release") { isMinifyEnabled = false } }
+    lint {
+        // AGP 8.7's bundled lint uses Kotlin Analysis API 2.0 and crashes on Kotlin 2.2.20
+        // module metadata. The demo is a smoke harness, not a shipping app. Bump AGP to 8.8+
+        // to re-enable release lint.
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 }
 
 dependencies {

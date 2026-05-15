@@ -23,6 +23,14 @@ android {
     buildTypes {
         getByName("release") { isMinifyEnabled = false }
     }
+    lint {
+        // AGP 8.7's bundled lint embeds Kotlin Analysis API 2.0 and crashes on the project's
+        // Kotlin 2.2.20 module metadata (NonNullableMutableLiveDataDetector hits
+        // IncompatibleClassChangeError). This is a smoke harness, not a shipping app —
+        // skipping release lint is the right scope. Bump AGP to 8.8+ to re-enable.
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 }
 
 dependencies {
