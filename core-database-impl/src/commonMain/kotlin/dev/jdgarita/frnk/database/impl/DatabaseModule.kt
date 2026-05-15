@@ -5,7 +5,8 @@ import dev.jdgarita.frnk.database.SqlDriverFactory
 import org.koin.dsl.module
 
 /** Provides default impls. Host apps still inject their schema directly into their own DI graph. */
-val databaseModule = module {
-    single<SqlDriverFactory> { defaultSqlDriverFactory() }
-    single<KeyValueStore> { defaultKeyValueStore() }
-}
+val databaseModule =
+    module {
+        single<SqlDriverFactory> { defaultSqlDriverFactory() }
+        single<KeyValueStore> { defaultKeyValueStore() }
+    }

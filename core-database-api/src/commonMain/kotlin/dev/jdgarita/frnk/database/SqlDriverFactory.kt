@@ -9,5 +9,8 @@ import app.cash.sqldelight.db.SqlSchema
  * The toolkit does NOT own the schema — the host injects it.
  */
 fun interface SqlDriverFactory {
-    fun create(schema: SqlSchema<QueryResult.Value<Unit>>, name: String): SqlDriver
+    fun create(
+        schema: SqlSchema<QueryResult.Value<Unit>>,
+        name: String,
+    ): SqlDriver
 }

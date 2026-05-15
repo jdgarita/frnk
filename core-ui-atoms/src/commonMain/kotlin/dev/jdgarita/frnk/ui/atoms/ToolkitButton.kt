@@ -23,10 +23,11 @@ fun ToolkitButton(
     BasicText(
         text = label,
         style = typography.button.copy(color = colors.onPrimary),
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.primary)
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(colors.primary)
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = 20.dp, vertical = 12.dp),
     )
 }

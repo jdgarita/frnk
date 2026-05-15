@@ -9,7 +9,16 @@ import kotlinx.coroutines.flow.flowOf
 
 internal class FirebaseAuthService : AuthService {
     override val currentUser: Flow<AuthUser?> = flowOf(null)
-    override suspend fun signIn(email: String, password: String): AppResult<AuthUser, CommonError> = TODO("wire dev.gitlive:firebase-auth")
-    override suspend fun signUp(email: String, password: String): AppResult<AuthUser, CommonError> = TODO("wire dev.gitlive:firebase-auth")
+
+    override suspend fun signIn(
+        email: String,
+        password: String,
+    ): AppResult<AuthUser, CommonError> = TODO("wire dev.gitlive:firebase-auth")
+
+    override suspend fun signUp(
+        email: String,
+        password: String,
+    ): AppResult<AuthUser, CommonError> = TODO("wire dev.gitlive:firebase-auth")
+
     override suspend fun signOut(): AppResult<Unit, CommonError> = TODO("wire dev.gitlive:firebase-auth")
 }

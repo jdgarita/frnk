@@ -3,7 +3,10 @@ package dev.jdgarita.frnk.backend.firebase
 import dev.jdgarita.frnk.backend.CrashReporter
 
 internal class FirebaseCrashReporter : CrashReporter {
-    override fun recordException(throwable: Throwable, extras: Map<String, String>) {
+    override fun recordException(
+        throwable: Throwable,
+        extras: Map<String, String>,
+    ) {
         // TODO: Firebase.crashlytics.recordException(throwable); extras.forEach { setCustomKey(it.key, it.value) }
     }
 

@@ -21,8 +21,9 @@ import kotlinx.coroutines.launch
  *
  * Override [onIntent] to perform side-effectful work and emit new state via [setState].
  */
-abstract class MviViewModel<S : UiState, I : UiIntent, E : UiEffect>(initial: S) : ViewModel() {
-
+abstract class MviViewModel<S : UiState, I : UiIntent, E : UiEffect>(
+    initial: S,
+) : ViewModel() {
     private val _state = MutableStateFlow(initial)
     val state: StateFlow<S> = _state.asStateFlow()
 
@@ -38,11 +39,19 @@ abstract class MviViewModel<S : UiState, I : UiIntent, E : UiEffect>(initial: S)
         }
     }
 
-    fun send(intent: I) { _intents.tryEmit(intent) }
+    fun send(intent: I) {
+        _intents.tryEmit(intent)
+    }
 
-    protected fun setState(reducer: S.() -> S) { _state.value = _state.value.reducer() }
+    protected fun setState(reducer: S.() -> S) {
+        _state.value = _state.value.reducer()
+    }
+
     protected fun currentState(): S = _state.value
-    protected suspend fun emit(effect: E) { _effects.send(effect) }
+
+    protected suspend fun emit(effect: E) {
+        _effects.send(effect)
+    }
 
     protected abstract suspend fun onIntent(intent: I)
 }

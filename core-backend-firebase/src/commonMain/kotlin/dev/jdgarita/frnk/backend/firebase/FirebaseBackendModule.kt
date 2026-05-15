@@ -7,9 +7,10 @@ import dev.jdgarita.frnk.backend.RemoteData
 import org.koin.dsl.module
 
 /** Host picks ONE of firebase/supabase modules to satisfy the backend-api contracts. */
-val firebaseBackendModule = module {
-    single<AuthService> { FirebaseAuthService() }
-    single<AnalyticsTracker> { FirebaseAnalyticsTracker() }
-    single<CrashReporter> { FirebaseCrashReporter() }
-    single<RemoteData> { FirestoreRemoteData() }
-}
+val firebaseBackendModule =
+    module {
+        single<AuthService> { FirebaseAuthService() }
+        single<AnalyticsTracker> { FirebaseAnalyticsTracker() }
+        single<CrashReporter> { FirebaseCrashReporter() }
+        single<RemoteData> { FirestoreRemoteData() }
+    }

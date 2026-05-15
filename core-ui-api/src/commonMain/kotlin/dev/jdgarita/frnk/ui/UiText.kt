@@ -5,6 +5,12 @@ package dev.jdgarita.frnk.ui
  * toolkit can surface errors without coupling to platform resource systems.
  */
 sealed interface UiText {
-    data class Raw(val value: String) : UiText
-    data class Resource(val key: String, val args: List<Any?> = emptyList()) : UiText
+    data class Raw(
+        val value: String,
+    ) : UiText
+
+    data class Resource(
+        val key: String,
+        val args: List<Any?> = emptyList(),
+    ) : UiText
 }

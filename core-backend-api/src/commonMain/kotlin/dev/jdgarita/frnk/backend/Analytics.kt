@@ -6,12 +6,25 @@ package dev.jdgarita.frnk.backend
  * extra events through the same instance via [trackCustom].
  */
 interface AnalyticsTracker {
-    fun track(event: ToolkitEvent, params: Map<String, Any?> = emptyMap())
-    fun trackCustom(name: String, params: Map<String, Any?> = emptyMap())
-    fun setUserProperty(key: String, value: String?)
+    fun track(
+        event: ToolkitEvent,
+        params: Map<String, Any?> = emptyMap(),
+    )
+
+    fun trackCustom(
+        name: String,
+        params: Map<String, Any?> = emptyMap(),
+    )
+
+    fun setUserProperty(
+        key: String,
+        value: String?,
+    )
 }
 
-enum class ToolkitEvent(val key: String) {
+enum class ToolkitEvent(
+    val key: String,
+) {
     AppOpened("App_Opened"),
     PaywallViewed("Paywall_Viewed"),
     PaywallDismissed("Paywall_Dismissed"),
@@ -23,7 +36,12 @@ enum class ToolkitEvent(val key: String) {
 }
 
 interface CrashReporter {
-    fun recordException(throwable: Throwable, extras: Map<String, String> = emptyMap())
+    fun recordException(
+        throwable: Throwable,
+        extras: Map<String, String> = emptyMap(),
+    )
+
     fun setUserId(id: String?)
+
     fun log(message: String)
 }

@@ -7,11 +7,14 @@ import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.database.SqlDriverFactory
 
 /** Host MUST set this from its Application.onCreate before Koin starts. */
-object DatabaseContext { lateinit var application: Context }
-
-actual fun defaultSqlDriverFactory(): SqlDriverFactory = SqlDriverFactory { schema, name ->
-    AndroidSqliteDriver(schema, DatabaseContext.application, name)
+object DatabaseContext {
+    lateinit var application: Context
 }
+
+actual fun defaultSqlDriverFactory(): SqlDriverFactory =
+    SqlDriverFactory { schema, name ->
+        AndroidSqliteDriver(schema, DatabaseContext.application, name)
+    }
 
 actual fun defaultKeyValueStore(): KeyValueStore {
     val prefs = DatabaseContext.application.getSharedPreferences("frnk_toolkit", Context.MODE_PRIVATE)

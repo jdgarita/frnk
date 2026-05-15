@@ -23,9 +23,10 @@ fun ToolkitTextField(
         value = value,
         onValueChange = onValueChange,
         textStyle = style,
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, colors.outline, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, colors.outline, RoundedCornerShape(8.dp))
+                .padding(horizontal = 12.dp, vertical = 10.dp),
     )
 }

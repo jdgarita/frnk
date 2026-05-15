@@ -3,7 +3,6 @@ package dev.jdgarita.frnk.monetization
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 
 /**
  * Gatekeeper used everywhere in the toolkit to decide whether to expose a Pro behaviour.
@@ -29,6 +28,7 @@ class FeatureGate(
 
     companion object {
         const val PAYWALL_ROUTE_KEY = "toolkit/paywall"
+
         /** Host can override by replacing the bound FeatureGate. */
         private val freeFeatures = emptySet<Feature>()
     }

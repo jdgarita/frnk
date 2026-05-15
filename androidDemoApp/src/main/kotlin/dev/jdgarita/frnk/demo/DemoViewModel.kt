@@ -20,15 +20,26 @@ data class DemoState(
 
 sealed interface DemoIntent : UiIntent {
     data object Increment : DemoIntent
+
     data object Decrement : DemoIntent
-    data class EmailChanged(val value: String) : DemoIntent
+
+    data class EmailChanged(
+        val value: String,
+    ) : DemoIntent
+
     data object TogglePro : DemoIntent
+
     data object RequestUpgrade : DemoIntent
 }
 
 sealed interface DemoEffect : UiEffect {
-    data class Navigate(val routeKey: String) : DemoEffect
-    data class Toast(val message: String) : DemoEffect
+    data class Navigate(
+        val routeKey: String,
+    ) : DemoEffect
+
+    data class Toast(
+        val message: String,
+    ) : DemoEffect
 }
 
 class DemoViewModel(
@@ -36,7 +47,6 @@ class DemoViewModel(
     private val analytics: AnalyticsTracker,
     private val entitlements: FakeEntitlementManager,
 ) : MviViewModel<DemoState, DemoIntent, DemoEffect>(DemoState()) {
-
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
         gate.isPro

@@ -22,7 +22,6 @@ kotlin {
             implementation(libs.compose.unstyled.theming)
             implementation(libs.compose.unstyled.platformtheme)
             implementation(libs.composables.core)
-
         }
     }
 }

@@ -42,14 +42,20 @@ data class ToolkitStrings(
     val genericError: String = "Something went wrong",
 )
 
-val LocalToolkitColors      = staticCompositionLocalOf { ToolkitColors() }
-val LocalToolkitTypography  = staticCompositionLocalOf { ToolkitTypography() }
-val LocalToolkitStrings     = staticCompositionLocalOf { ToolkitStrings() }
+val LocalToolkitColors = staticCompositionLocalOf { ToolkitColors() }
+val LocalToolkitTypography = staticCompositionLocalOf { ToolkitTypography() }
+val LocalToolkitStrings = staticCompositionLocalOf { ToolkitStrings() }
 
 object ToolkitTheme {
-    val colors:     ToolkitColors     @Composable @ReadOnlyComposable get() = LocalToolkitColors.current
-    val typography: ToolkitTypography @Composable @ReadOnlyComposable get() = LocalToolkitTypography.current
-    val strings:    ToolkitStrings    @Composable @ReadOnlyComposable get() = LocalToolkitStrings.current
+    val colors: ToolkitColors
+        @Composable @ReadOnlyComposable
+        get() = LocalToolkitColors.current
+    val typography: ToolkitTypography
+        @Composable @ReadOnlyComposable
+        get() = LocalToolkitTypography.current
+    val strings: ToolkitStrings
+        @Composable @ReadOnlyComposable
+        get() = LocalToolkitStrings.current
 }
 
 @Composable

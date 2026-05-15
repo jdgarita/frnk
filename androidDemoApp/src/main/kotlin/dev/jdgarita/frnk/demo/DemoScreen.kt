@@ -42,10 +42,11 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     val typography = ToolkitTheme.typography
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.surface)
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(colors.surface)
+                .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         BasicText("Frnk Toolkit Demo", style = typography.title.copy(color = colors.onSurface))
@@ -83,7 +84,10 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
 }
 
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
+private fun Section(
+    title: String,
+    content: @Composable () -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(
             title,

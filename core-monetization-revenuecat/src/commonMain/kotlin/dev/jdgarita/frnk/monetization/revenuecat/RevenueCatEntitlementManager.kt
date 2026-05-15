@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 internal class RevenueCatEntitlementManager : EntitlementManager {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
+
     override suspend fun refresh() { /* call Purchases.sharedInstance.getCustomerInfo() */ }
+
     override suspend fun restorePurchases(): Boolean = false
 }

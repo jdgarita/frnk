@@ -13,18 +13,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProvideToolkitTheme(
                 // Demonstrate host-side override of default tokens.
-                colors = ToolkitColors(
-                    primary = androidx.compose.ui.graphics.Color(0xFF0A84FF),
-                    onPrimary = androidx.compose.ui.graphics.Color.White,
-                ),
+                colors =
+                    ToolkitColors(
+                        primary =
+                            androidx.compose.ui.graphics
+                                .Color(0xFF0A84FF),
+                        onPrimary = androidx.compose.ui.graphics.Color.White,
+                    ),
             ) {
                 DemoScreen(onEffect = ::handleEffect)
             }
         }
     }
 
-    private fun handleEffect(effect: DemoEffect) = when (effect) {
-        is DemoEffect.Navigate -> Toast.makeText(this, "Navigate → ${effect.routeKey}", Toast.LENGTH_SHORT).show()
-        is DemoEffect.Toast -> Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
-    }
+    private fun handleEffect(effect: DemoEffect) =
+        when (effect) {
+            is DemoEffect.Navigate -> Toast.makeText(this, "Navigate → ${effect.routeKey}", Toast.LENGTH_SHORT).show()
+            is DemoEffect.Toast -> Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
+        }
 }
