@@ -17,12 +17,12 @@ cp local.properties.template local.properties   # then fill in Supabase/Firebase
 
 Day-to-day:
 ```bash
-./gradlew ktlintCheck                  # lint — CI gates on this before assembling
-./gradlew ktlintFormat                 # auto-fix style
-./gradlew assemble                     # build every target (Android library + iOS frameworks)
-./gradlew allTests                     # run commonTest across all KMP modules
-./gradlew :core-network-impl:allTests  # run a single module's tests
-./gradlew :iosApp:assembleXCFramework  # produce iosApp/build/XCFrameworks/release/FrnkKit.xcframework
+./gradlew ktlintCheck                       # lint — CI gates on this before assembling
+./gradlew ktlintFormat                      # auto-fix style
+./gradlew assemble                          # build every target (Android library + iOS frameworks)
+./gradlew allTests                          # run commonTest across all KMP modules
+./gradlew :shared-database-impl:allTests    # run a single module's tests
+./gradlew :iosApp:assembleXCFramework       # produce iosApp/build/XCFrameworks/release/FrnkKit.xcframework
 ./gradlew clean
 ```
 
@@ -36,20 +36,26 @@ Day-to-day:
 
 ## Architecture you need to respect
 
-**api/impl module split.** Each external-dependency domain has two modules:
+**`:shared` is the only consumer-facing module.** It aggregates every `shared-*` module via `api(...)` — both interfaces and implementations — and exposes `frnkModules(BackendChoice)` + `initializeFrnk()` for one-shot Koin bootstrap. `androidApp` and `iosApp` each depend on `:shared` only, and re-export it.
 
-- `core-network-api` / `core-database-api` — pure-interface, no Ktor / no SQLDelight. Downstream code depends on these.
-- `core-network-impl` / `core-database-impl` — concrete bindings registered via Koin.
+**api/impl module split.** Each domain that pulls in a third-party SDK has two modules:
 
-The point is swap-ability (e.g. replacing Ktor with the Firebase KMP SDK touches only the impl) and parallel compilation. **Do not** add a third-party client dependency to an `*-api` module, and do not call into an `*-impl` package from anywhere except `androidApp` / `iosApp` wiring.
+- `shared-backend-api`, `shared-database-api`, `shared-monetization-api` — pure-interface, no Ktor / no SQLDelight / no RevenueCat. Domain code depends on these.
+- `shared-backend-firebase`, `shared-backend-supabase`, `shared-database-impl`, `shared-monetization-revenuecat` — concrete bindings exposed as Koin modules (`firebaseBackendModule`, `supabaseBackendModule`, `databaseModule`, `revenueCatModule`).
 
-**`core-common` is the root.** It owns `AppResult<D, E : AppError>` (sealed `Success`/`Failure`), `UiText`, and `BuildKonfig`-generated config. Every `*-api` interface returns `AppResult` rather than throwing — preserve this when adding new interfaces, because callers rely on exhaustive `when` for error handling.
+The point is swap-ability and parallel compilation. **Do not** add a third-party SDK dependency to an `*-api` module, and do not call into an `*-impl` package from anywhere except `:shared`'s Koin wiring.
 
-**`core-ui-atoms`** owns:
+**Backend choice is runtime, not compile-time.** `:shared` bundles both `shared-backend-firebase` and `shared-backend-supabase`. `frnkModules(BackendChoice.Supabase)` registers `supabaseBackendModule`; `BackendChoice.Firebase` registers `firebaseBackendModule`. The unchosen backend's Koin module is simply never installed, so its bindings never appear in the graph.
+
+**`shared-utils` is the root.** It owns coroutines + datetime + `BuildKonfig`-generated config. `AppResult<D, E : AppError>` (sealed `Success`/`Failure`) currently lives in `shared-backend-api`. Every `*-api` interface returns `AppResult` rather than throwing — preserve this when adding new interfaces, because callers rely on exhaustive `when` for error handling.
+
+**`shared-ui-atoms`** owns:
 - Headless Compose components built on `compose-unstyled` (`com.composables:core`).
 - The MVI engine: `MviContract` (`UiState` / `UiAction` / `UiEffect` markers), `MviViewModel<S, A, E>` (StateFlow + action SharedFlow + effect Channel), and `ObserveAsEvents` for one-shot effects in composables. New screens subclass `MviViewModel`, write a pure reducer, and override `onAction` for side-effectful work.
 
-**Public entry points** are `androidApp` (an `com.android.library`, **not** an application) and `iosApp` (a KMP target producing the fat `FrnkKit` XCFramework via `XCFramework("FrnkKit")`). Both `api(...)` re-export every core module so a downstream consumer only depends on `dev.jdgarita.frnk:androidApp` / the XCFramework.
+**Public entry points** are `androidApp` (an `com.android.library`, **not** an application) and `iosApp` (a KMP target producing the fat `FrnkKit` XCFramework via `XCFramework("FrnkKit")`). Both depend on `:shared` only and re-export it. Downstream consumers depend on `dev.jdgarita.frnk:androidApp` / the XCFramework — that's it.
+
+**iOS linker quirk.** The `iosApp` framework binaries set `linkerOpts("-undefined", "dynamic_lookup")` because `:shared` bundles `shared-monetization-revenuecat`, which cinterops the native `PurchasesHybridCommon` framework — and that native framework is expected to be supplied by the consumer Xcode project via CocoaPods or SPM. Deferring symbol resolution lets the toolkit's XCFramework link locally; the consumer app's own link step resolves PurchasesHybridCommon (and any Firebase native pods) at integration time.
 
 ## Ktlint is enforced
 
@@ -59,7 +65,7 @@ Note: there are two CI workflow files (`main.yml` and the older `KtlintCheck.yml
 
 ## Conventions to follow when adding code
 
-- New networking call: define the interface + DTOs in `core-network-api`, the Ktor implementation in `core-network-impl/internal/`, register the binding in `NetworkModule.kt`. Return `AppResult`, never throw.
-- New persisted entity: add the `.sq` file under `core-database-impl` (SQLDelight generates into `dev.jdgarita.frnk.database.sql` — set in the database module's `build.gradle.kts`); expose access through an interface in `core-database-api`; bind in `DatabaseModule.kt`.
-- New screen: ViewModel + state/action/effect types in the relevant module (or `core-ui-atoms` for shared infra); compose the UI with atoms from `core-ui-atoms`; collect effects via `ObserveAsEvents`.
-- iOS-visible API surface: anything Swift needs to call must be `export`ed from `iosApp/build.gradle.kts` (currently `core-common`, `core-network-api`, `core-database-api`, `core-ui-atoms`).
+- New backend call: define the interface + DTOs in `shared-backend-api`, add concrete impls in `shared-backend-firebase` **and** `shared-backend-supabase` (both have to satisfy the contract), register the bindings in `FirebaseBackendModule.kt` / `SupabaseBackendModule.kt`. Return `AppResult`, never throw.
+- New persisted entity: add the `.sq` file under `shared-database-impl` (SQLDelight generates into `dev.jdgarita.frnk.database.sql` — set in the database module's `build.gradle.kts`); expose access through an interface in `shared-database-api`; bind in `DatabaseModule.kt`.
+- New screen: ViewModel + state/action/effect types in the relevant module (or `shared-ui-atoms` for shared infra); compose the UI with atoms from `shared-ui-atoms`; collect effects via `ObserveAsEvents`.
+- iOS-visible API surface: everything flows through `:shared`, which `iosApp` already `export`s. Anything Swift needs to call must be in a `shared-*` module that `:shared` `api()`-depends on (which is all of them). No per-module `export(...)` edits required.

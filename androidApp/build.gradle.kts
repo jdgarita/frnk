@@ -9,13 +9,7 @@ kotlin {
     jvmToolchain(17)
     androidTarget()
     sourceSets.androidMain.dependencies {
-        api(projects.coreUtils)
-        api(projects.coreUiApi)
-        api(projects.coreUiAtoms)
-        api(projects.coreDatabaseApi)
-        api(projects.coreBackendApi)
-        api(projects.coreMonetizationApi)
-        // Host apps may include impl modules selectively; toolkit only re-exports API surface here.
+        api(projects.shared)
     }
 }
 

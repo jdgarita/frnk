@@ -6,18 +6,18 @@ plugins {
 kotlin {
     jvmToolchain(17)
     androidTarget()
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "core_ui_api" } }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_monetization_api" } }
     sourceSets {
         commonMain.dependencies {
-            api(projects.coreUtils)
+            api(projects.sharedBackendApi)
             api(libs.kotlinx.coroutines.core)
-            api(libs.androidx.lifecycle.viewmodel)
+            api(libs.koin.core)
         }
     }
 }
 
 android {
-    namespace = "${ProjectConfiguration.GROUP_ID}.ui.api"
+    namespace = "${ProjectConfiguration.GROUP_ID}.monetization.api"
     compileSdk = ProjectConfiguration.COMPILE_SDK
     defaultConfig { minSdk = ProjectConfiguration.MIN_SDK }
 }

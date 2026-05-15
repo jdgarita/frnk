@@ -34,13 +34,8 @@ android {
 }
 
 dependencies {
-    // Toolkit surface. The androidApp aggregator re-exports every public api module.
+    // Toolkit surface. :androidApp re-exports :shared which aggregates every api + impl module.
     implementation(projects.androidApp)
-    implementation(projects.coreUiAtoms)
-    implementation(projects.coreUiApi)
-    implementation(projects.coreMonetizationApi)
-    implementation(projects.coreBackendApi)
-    implementation(projects.coreDatabaseImpl)
 
     // Compose runtime + UI primitives (multiplatform artifacts).
     implementation(compose.runtime)

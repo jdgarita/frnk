@@ -6,10 +6,10 @@ plugins {
 kotlin {
     jvmToolchain(17)
     androidTarget()
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "core_database_impl" } }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_database_impl" } }
     sourceSets {
         commonMain.dependencies {
-            api(projects.coreDatabaseApi)
+            api(projects.sharedDatabaseApi)
             implementation(libs.koin.core)
             implementation(libs.settings.core)
             implementation(libs.settings.coroutines)

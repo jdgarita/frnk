@@ -7,10 +7,10 @@ plugins {
 kotlin {
     jvmToolchain(17)
     androidTarget()
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "core_backend_firebase" } }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_backend_firebase" } }
     sourceSets {
         commonMain.dependencies {
-            api(projects.coreBackendApi)
+            api(projects.sharedBackendApi)
             implementation(libs.koin.core)
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)

@@ -8,10 +8,10 @@ plugins {
 kotlin {
     jvmToolchain(17)
     androidTarget()
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "core_ui_atoms" } }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_ui_atoms" } }
     sourceSets {
         commonMain.dependencies {
-            api(projects.coreUiApi)
+            api(projects.sharedUiApi)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)

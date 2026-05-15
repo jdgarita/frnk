@@ -6,10 +6,10 @@ plugins {
 kotlin {
     jvmToolchain(17)
     androidTarget()
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "core_monetization_revenuecat" } }
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_monetization_revenuecat" } }
     sourceSets {
         commonMain.dependencies {
-            api(projects.coreMonetizationApi)
+            api(projects.sharedMonetizationApi)
             implementation(libs.koin.core)
             implementation(libs.revenuecat.core)
             implementation(libs.revenuecat.result)
