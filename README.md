@@ -32,31 +32,34 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 | `shared-database-impl` | SQLDelight + Multiplatform Settings impl. Exposes `databaseModule`. |
 | `shared-monetization-api` | Entitlement / feature-gate interfaces. |
 | `shared-monetization-revenuecat` | RevenueCat impl. Exposes `revenueCatModule`. |
-| `androidApp` | Public entry point as an `com.android.library`. `api(projects.shared)` — one dep, no surprises. |
+| `androidApp` | Public entry point as a KMP-Android library (`com.android.kotlin.multiplatform.library`). `api(projects.shared)` — one dep, no surprises. |
 | `iosApp` | KMP target producing the fat `FrnkKit.xcframework` (consumed via SPM). `export(projects.shared)`. |
+| `shared-demo` | Demo-only KMP module — bundles `DemoScreen` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `shared-ui-atoms`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
 | `androidDemoApp` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |
 
 ## 🧰 Tech stack
 
-- **Language:** Kotlin 2.0.21
-- **UI:** Compose Multiplatform + `compose-unstyled` (`com.composables:core`)
-- **DI:** Koin
-- **Navigation:** AndroidX Navigation 3 (`androidx.navigation3`)
-- **Persistence:** SQLDelight, Multiplatform Settings / DataStore
-- **Backend:** Supabase + Ktor and GitLive Firebase, both impls bundled — host picks via `BackendChoice`
-- **Monetization:** RevenueCat
-- **Secrets:** BuildKonfig (reads from `local.properties`)
-- **Build:** AGP 8.7.0, JDK 17 (auto-provisioned via Foojay resolver)
+- **Language:** Kotlin 2.3.21
+- **UI:** Compose Multiplatform 1.10.3 + `compose-unstyled` (`com.composables:core`)
+- **DI:** Koin 4.2.1
+- **Navigation:** Compose Multiplatform Navigation 2.9.2 (`org.jetbrains.androidx.navigation`)
+- **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
+- **Backend:** Supabase 3.6.0 + Ktor 3.5.0, and GitLive Firebase 2.4.0 — both impls bundled, host picks via `BackendChoice`
+- **Monetization:** RevenueCat 3.0.1
+- **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
 
 ## 🚀 Consume as a composite build
 
 This toolkit is designed to live alongside the consuming app as a Git submodule.
 
-**1. Add the submodule:**
+**1. Add the submodule and pin it to a release tag:**
 ```bash
 git submodule add git@github.com:jdgarita/frnk.git frnk
-git submodule update --init --recursive
+cd frnk && git checkout v0.1.0 && cd ..    # pin to a published release — see Releases page
+git add frnk && git commit -m "Pin frnk to v0.1.0"
 ```
+
+> The submodule pointer is a commit SHA — checking out a tag records the tagged commit, which is how the consumer locks the toolkit version. To bump later: `cd frnk && git fetch --tags && git checkout vX.Y.Z && cd .. && git add frnk && git commit`.
 
 **2. Wire it into the consumer's `settings.gradle.kts`:**
 ```kotlin
@@ -99,28 +102,33 @@ For iOS, the `FrnkKit.xcframework` produced by `:iosApp:assembleFrnkKitReleaseXC
 
 ## ⚙️ Setup
 
-`local.properties` is gitignored and **required** — `BuildKonfig` fails at configuration time without the keys below.
+The toolkit itself has no required secrets — backend credentials are supplied by the host app at runtime (the Supabase / Firebase clients are configured in your `Application` / `AppDelegate`, not baked into frnk).
+
+`local.properties` is gitignored and only needs `sdk.dir`, which Android Studio writes automatically on first open. From the CLI, copy the template:
 
 ```bash
-cp local.properties.template local.properties
-# then populate SUPABASE_URL, SUPABASE_ANON_KEY, FIREBASE_*, BUILD_VARIANT
+cp local.properties.template local.properties   # then point sdk.dir at your Android SDK
 ```
 
-Demo apps additionally need:
+Demo apps (the internal smoke harnesses) additionally need:
 - **Android:** a valid `google-services.json` in `androidDemoApp/`
 - **iOS:** a valid `GoogleService-Info.plist` in `iosDemoApp/`
 
 ## 🔧 Common commands
 
 ```bash
-./gradlew compileDebugKotlinAndroid           # fast compile-only check (what CI runs); modules build in parallel
-./gradlew testDebugUnitTest                   # commonTest + androidUnitTest across all KMP modules
-./gradlew :shared-database-impl:testDebugUnitTest   # run a single module's tests
-./gradlew ktlintFormat                        # auto-fix style (also runs from the pre-commit hook)
-./gradlew assemble                            # full build of every target (Android library + iOS frameworks)
-./gradlew :iosApp:assembleFrnkKitReleaseXCFramework   # produce FrnkKit.xcframework
+./gradlew compileAndroidMain                          # fast compile-only check across every shared module (what CI runs)
+./gradlew :androidDemoApp:compileDebugKotlin          # compile the demo harness
+./gradlew testDebugUnitTest                           # commonTest + androidUnitTest across all KMP modules
+./gradlew :shared-database-impl:testDebugUnitTest     # run a single module's tests
+./gradlew ktlintFormat                                # auto-fix style (also runs from the pre-commit hook)
+./gradlew assemble                                    # full build of every target (Android library + iOS frameworks)
+./gradlew :iosApp:assembleFrnkKitReleaseXCFramework       # produce FrnkKit.xcframework (consumer-facing)
+./gradlew :shared-demo:assembleDemoKitDebugXCFramework    # produce DemoKit.xcframework (iosDemoApp consumes this)
 ./gradlew clean
 ```
+
+> Under the AGP 9 KMP-Android plugin (`com.android.kotlin.multiplatform.library`), the per-module compile task is `compileAndroidMain` — `compileDebugKotlinAndroid` is the AGP 8 name and no longer exists for KMP-Android modules. The demo app is a plain `com.android.application`, so it keeps `compileDebugKotlin`.
 
 Shared constants (package name, min/compile/target SDK, iOS framework name `FrnkKit`, database class `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt` — read from there rather than hardcoding.
 
@@ -130,11 +138,17 @@ Ktlint is enforced via a **git pre-commit hook** at `.githooks/pre-commit`. It r
 
 Installation is automatic: the root build registers `installGitHooks`, wired to `prepareKotlinBuildScriptModel`, so it runs on IDE sync. To install on a fresh checkout without opening the IDE: `./gradlew installGitHooks`. To bypass for one commit: `SKIP_KTLINT=1 git commit ...` or `git commit --no-verify`.
 
+## 🏷️ Releases & versioning
+
+Releases are cut as Git tags (`vMAJOR.MINOR.PATCH`) on `main`. There are no published artifacts — downstream apps pin via submodule checkout (see above). See [`docs/RELEASING.md`](docs/RELEASING.md) for the maintainer procedure and [`CHANGELOG.md`](CHANGELOG.md) for the history.
+
+Pre-1.0 versioning policy: `0.x.0` may break API, `0.x.y` is additive/fix-only. Once `1.0.0` ships, standard SemVer applies. The current version is exposed at runtime as `dev.jdgarita.frnk.utils.Frnk.VERSION`.
+
 ## 🧪 CI
 
 `.github/workflows/main.yml` is the authoritative pipeline — a single job that runs:
 
-1. `./gradlew compileDebugKotlinAndroid --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain`
+1. `./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain` plus the demo harness
 2. `./gradlew testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidUnitTest`
 
 `assemble`, `allTests`, and `ktlintCheck` are intentionally out — they duplicate work the local pre-commit hook (style) and downstream consumer builds (release assembly, iOS link) already cover.
