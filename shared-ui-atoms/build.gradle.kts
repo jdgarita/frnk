@@ -44,8 +44,13 @@ kotlin {
                 implementation(libs.compose.ui.tooling.preview)
             }
         }
-        getByName("androidMain").dependsOn(commonDebug)
-        getByName("iosArm64Main").dependsOn(commonDebug)
-        getByName("iosSimulatorArm64Main").dependsOn(commonDebug)
+        val androidMain by getting {
+            dependsOn(commonDebug)
+            dependencies {
+                implementation(libs.compose.ui.tooling)
+            }
+        }
+        val iosArm64Main by getting { dependsOn(commonDebug) }
+        val iosSimulatorArm64Main by getting { dependsOn(commonDebug) }
     }
 }

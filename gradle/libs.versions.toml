@@ -72,6 +72,7 @@ compose-unstyled-icon = { module = "com.composables:composeunstyled-icon", versi
 compose-unstyled-separators = { module = "com.composables:composeunstyled-separators", version.ref = "compose-unstyled" }
 
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
 
 
 [plugins]
