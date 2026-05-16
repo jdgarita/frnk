@@ -148,6 +148,10 @@ Releases are cut as Git tags (`vMAJOR.MINOR.PATCH`) on `main`. There are no publ
 
 Pre-1.0 versioning policy: `0.x.0` may break API, `0.x.y` is additive/fix-only. Once `1.0.0` ships, standard SemVer applies. The current version is exposed at runtime as `dev.jdgarita.frnk.utils.Frnk.VERSION`.
 
+## 💖 Sponsor
+
+If frnk saves you time, consider [sponsoring the project on GitHub](https://github.com/sponsors/jdgarita). Sponsorships fund ongoing maintenance, releases, and new modules.
+
 ## 🧪 CI
 
 `.github/workflows/main.yml` is the authoritative pipeline — a single job that runs:
