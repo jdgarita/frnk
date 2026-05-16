@@ -27,6 +27,9 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.theme.Appearance
+import dev.jdgarita.frnk.ui.theme.AppearanceController
+import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.background
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconBack
@@ -58,6 +61,8 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
 
     LaunchedEffect(vm) { vm.effects.collect(onEffect) }
 
+    val appearanceController = LocalAppearanceController.current
+
     Column(
         modifier =
             Modifier
@@ -68,6 +73,16 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
     ) {
         FrnkText(state = FrnkTextState.HeadlineSmall(text = "Frnk Toolkit Demo"))
+
+        FrnkDivider(state = FrnkDividerState.Horizontal())
+
+        Section(title = "Appearance (current: ${appearanceController.appearance.name})") {
+            Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                AppearanceButton(Appearance.Light, "Light", appearanceController)
+                AppearanceButton(Appearance.Dark, "Dark", appearanceController)
+                AppearanceButton(Appearance.System, "System", appearanceController)
+            }
+        }
 
         FrnkDivider(state = FrnkDividerState.Horizontal())
 
@@ -191,4 +206,21 @@ private fun Section(
         FrnkText(state = FrnkTextState.Title(text = title))
         content()
     }
+}
+
+@Composable
+private fun AppearanceButton(
+    target: Appearance,
+    label: String,
+    controller: AppearanceController,
+) {
+    val isCurrent = controller.appearance == target
+    FrnkButton(
+        state =
+            FrnkButtonState(
+                text = label,
+                variant = if (isCurrent) FrnkButtonVariant.Filled else FrnkButtonVariant.Outlined,
+            ),
+        onClick = { controller.appearance = target },
+    )
 }

@@ -216,14 +216,16 @@ private val FrnkPlatformTheme =
         val basePalette = if (isDark) DarkPalette else LightPalette
         val paletteOverrides = if (isDark) config.darkColorOverrides else config.lightColorOverrides
         val palette = basePalette + paletteOverrides
+        val animatedPalette = animateColorPalette(palette)
 
-        properties[colors] = animateColorPalette(palette)
+        properties[colors] = animatedPalette
         properties[textStyles] = DefaultTextStyles + config.textStyleOverrides
         properties[shapes] = DefaultShapes + config.shapeOverrides
         properties[strings] = DefaultFrnkStrings + config.stringOverrides
         properties[icons] = DefaultFrnkIcons + config.iconOverrides
 
         defaultTextStyle = FrnkTypography.bodyLarge
+        defaultContentColor = animatedPalette[onBackground] ?: Color.Unspecified
     }
 
 @Composable
