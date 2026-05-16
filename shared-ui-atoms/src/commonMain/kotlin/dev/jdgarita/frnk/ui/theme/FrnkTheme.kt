@@ -8,6 +8,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -30,34 +31,37 @@ val strings = ThemeProperty<String>("strings")
 val icons = ThemeProperty<ImageVector>("icons")
 // endregion
 
-// region Color tokens
-val primary = ThemeToken<Color>("primary")
-val onPrimary = ThemeToken<Color>("on_primary")
-val primaryContainer = ThemeToken<Color>("primary_container")
-val onPrimaryContainer = ThemeToken<Color>("on_primary_container")
+// region Color tokens.
+// Prefixed with `color` (matching the shape*/string*/icon* conventions) so that
+// callsites importing these tokens don't shadow stdlib functions (`kotlin.error`)
+// or common local variable names (`primary`, `background`, `surface`, `outline`).
+val colorPrimary = ThemeToken<Color>("primary")
+val colorOnPrimary = ThemeToken<Color>("on_primary")
+val colorPrimaryContainer = ThemeToken<Color>("primary_container")
+val colorOnPrimaryContainer = ThemeToken<Color>("on_primary_container")
 
-val secondary = ThemeToken<Color>("secondary")
-val onSecondary = ThemeToken<Color>("on_secondary")
+val colorSecondary = ThemeToken<Color>("secondary")
+val colorOnSecondary = ThemeToken<Color>("on_secondary")
 
-val background = ThemeToken<Color>("background")
-val onBackground = ThemeToken<Color>("on_background")
+val colorBackground = ThemeToken<Color>("background")
+val colorOnBackground = ThemeToken<Color>("on_background")
 
-val surface = ThemeToken<Color>("surface")
-val onSurface = ThemeToken<Color>("on_surface")
-val surfaceVariant = ThemeToken<Color>("surface_variant")
-val onSurfaceVariant = ThemeToken<Color>("on_surface_variant")
+val colorSurface = ThemeToken<Color>("surface")
+val colorOnSurface = ThemeToken<Color>("on_surface")
+val colorSurfaceVariant = ThemeToken<Color>("surface_variant")
+val colorOnSurfaceVariant = ThemeToken<Color>("on_surface_variant")
 
-val outline = ThemeToken<Color>("outline")
-val outlineVariant = ThemeToken<Color>("outline_variant")
+val colorOutline = ThemeToken<Color>("outline")
+val colorOutlineVariant = ThemeToken<Color>("outline_variant")
 
-val error = ThemeToken<Color>("error")
-val onError = ThemeToken<Color>("on_error")
-val warning = ThemeToken<Color>("warning")
-val onWarning = ThemeToken<Color>("on_warning")
-val success = ThemeToken<Color>("success")
-val onSuccess = ThemeToken<Color>("on_success")
+val colorError = ThemeToken<Color>("error")
+val colorOnError = ThemeToken<Color>("on_error")
+val colorWarning = ThemeToken<Color>("warning")
+val colorOnWarning = ThemeToken<Color>("on_warning")
+val colorSuccess = ThemeToken<Color>("success")
+val colorOnSuccess = ThemeToken<Color>("on_success")
 
-val scrim = ThemeToken<Color>("scrim")
+val colorScrim = ThemeToken<Color>("scrim")
 // endregion
 
 // region TextStyle tokens
@@ -83,6 +87,7 @@ val labelSmall = ThemeToken<TextStyle>("label_small")
 // endregion
 
 // region Shape tokens
+val shapeNone = ThemeToken<Shape>("shape_none")
 val shapeExtraSmall = ThemeToken<Shape>("shape_extra_small")
 val shapeSmall = ThemeToken<Shape>("shape_small")
 val shapeMedium = ThemeToken<Shape>("shape_medium")
@@ -107,56 +112,56 @@ class AppearanceController {
 
 val LocalAppearanceController = compositionLocalOf { AppearanceController() }
 
-internal val LocalFrnkThemeConfig = compositionLocalOf { FrnkThemeConfig() }
+internal val LocalFrnkThemeConfig = compositionLocalOf { FrnkThemeConfig.Default }
 
 internal val LightPalette: Map<ThemeToken<Color>, Color> =
     mapOf(
-        primary to FrnkColors.Light.primary,
-        onPrimary to FrnkColors.Light.onPrimary,
-        primaryContainer to FrnkColors.Light.primaryContainer,
-        onPrimaryContainer to FrnkColors.Light.onPrimaryContainer,
-        secondary to FrnkColors.Light.secondary,
-        onSecondary to FrnkColors.Light.onSecondary,
-        background to FrnkColors.Light.background,
-        onBackground to FrnkColors.Light.onBackground,
-        surface to FrnkColors.Light.surface,
-        onSurface to FrnkColors.Light.onSurface,
-        surfaceVariant to FrnkColors.Light.surfaceVariant,
-        onSurfaceVariant to FrnkColors.Light.onSurfaceVariant,
-        outline to FrnkColors.Light.outline,
-        outlineVariant to FrnkColors.Light.outlineVariant,
-        error to FrnkColors.Light.error,
-        onError to FrnkColors.Light.onError,
-        warning to FrnkColors.Light.warning,
-        onWarning to FrnkColors.Light.onWarning,
-        success to FrnkColors.Light.success,
-        onSuccess to FrnkColors.Light.onSuccess,
-        scrim to FrnkColors.Light.scrim,
+        colorPrimary to FrnkColors.Light.primary,
+        colorOnPrimary to FrnkColors.Light.onPrimary,
+        colorPrimaryContainer to FrnkColors.Light.primaryContainer,
+        colorOnPrimaryContainer to FrnkColors.Light.onPrimaryContainer,
+        colorSecondary to FrnkColors.Light.secondary,
+        colorOnSecondary to FrnkColors.Light.onSecondary,
+        colorBackground to FrnkColors.Light.background,
+        colorOnBackground to FrnkColors.Light.onBackground,
+        colorSurface to FrnkColors.Light.surface,
+        colorOnSurface to FrnkColors.Light.onSurface,
+        colorSurfaceVariant to FrnkColors.Light.surfaceVariant,
+        colorOnSurfaceVariant to FrnkColors.Light.onSurfaceVariant,
+        colorOutline to FrnkColors.Light.outline,
+        colorOutlineVariant to FrnkColors.Light.outlineVariant,
+        colorError to FrnkColors.Light.error,
+        colorOnError to FrnkColors.Light.onError,
+        colorWarning to FrnkColors.Light.warning,
+        colorOnWarning to FrnkColors.Light.onWarning,
+        colorSuccess to FrnkColors.Light.success,
+        colorOnSuccess to FrnkColors.Light.onSuccess,
+        colorScrim to FrnkColors.Light.scrim,
     )
 
 internal val DarkPalette: Map<ThemeToken<Color>, Color> =
     mapOf(
-        primary to FrnkColors.Dark.primary,
-        onPrimary to FrnkColors.Dark.onPrimary,
-        primaryContainer to FrnkColors.Dark.primaryContainer,
-        onPrimaryContainer to FrnkColors.Dark.onPrimaryContainer,
-        secondary to FrnkColors.Dark.secondary,
-        onSecondary to FrnkColors.Dark.onSecondary,
-        background to FrnkColors.Dark.background,
-        onBackground to FrnkColors.Dark.onBackground,
-        surface to FrnkColors.Dark.surface,
-        onSurface to FrnkColors.Dark.onSurface,
-        surfaceVariant to FrnkColors.Dark.surfaceVariant,
-        onSurfaceVariant to FrnkColors.Dark.onSurfaceVariant,
-        outline to FrnkColors.Dark.outline,
-        outlineVariant to FrnkColors.Dark.outlineVariant,
-        error to FrnkColors.Dark.error,
-        onError to FrnkColors.Dark.onError,
-        warning to FrnkColors.Dark.warning,
-        onWarning to FrnkColors.Dark.onWarning,
-        success to FrnkColors.Dark.success,
-        onSuccess to FrnkColors.Dark.onSuccess,
-        scrim to FrnkColors.Dark.scrim,
+        colorPrimary to FrnkColors.Dark.primary,
+        colorOnPrimary to FrnkColors.Dark.onPrimary,
+        colorPrimaryContainer to FrnkColors.Dark.primaryContainer,
+        colorOnPrimaryContainer to FrnkColors.Dark.onPrimaryContainer,
+        colorSecondary to FrnkColors.Dark.secondary,
+        colorOnSecondary to FrnkColors.Dark.onSecondary,
+        colorBackground to FrnkColors.Dark.background,
+        colorOnBackground to FrnkColors.Dark.onBackground,
+        colorSurface to FrnkColors.Dark.surface,
+        colorOnSurface to FrnkColors.Dark.onSurface,
+        colorSurfaceVariant to FrnkColors.Dark.surfaceVariant,
+        colorOnSurfaceVariant to FrnkColors.Dark.onSurfaceVariant,
+        colorOutline to FrnkColors.Dark.outline,
+        colorOutlineVariant to FrnkColors.Dark.outlineVariant,
+        colorError to FrnkColors.Dark.error,
+        colorOnError to FrnkColors.Dark.onError,
+        colorWarning to FrnkColors.Dark.warning,
+        colorOnWarning to FrnkColors.Dark.onWarning,
+        colorSuccess to FrnkColors.Dark.success,
+        colorOnSuccess to FrnkColors.Dark.onSuccess,
+        colorScrim to FrnkColors.Dark.scrim,
     )
 
 internal val DefaultTextStyles: Map<ThemeToken<TextStyle>, TextStyle> =
@@ -180,6 +185,7 @@ internal val DefaultTextStyles: Map<ThemeToken<TextStyle>, TextStyle> =
 
 internal val DefaultShapes: Map<ThemeToken<Shape>, Shape> =
     mapOf(
+        shapeNone to FrnkShapes.none,
         shapeExtraSmall to FrnkShapes.extraSmall,
         shapeSmall to FrnkShapes.small,
         shapeMedium to FrnkShapes.medium,
@@ -192,12 +198,29 @@ internal val DefaultShapes: Map<ThemeToken<Shape>, Shape> =
         shapeBottomSheet to FrnkShapes.bottomSheet,
     )
 
+/**
+ * Animates each color in [target] independently with a 450ms tween. Safe to call repeatedly because
+ * `mapValues` walks the map in stable insertion order and `animateColorAsState` remembers its
+ * `targetValue` by slot position, so each token's animation state lives in a deterministic slot.
+ *
+ * **Invariant:** the *key set* of [target] must be identical across recompositions. Adding a new
+ * key (or dropping one) shifts slot positions and restarts the animation for every token below the
+ * change. Today this is safe because [LightPalette]/[DarkPalette] have the same 21 keys and
+ * `FrnkThemeConfig.{light,dark}ColorOverrides` only *replace* existing keys via `Map.plus`. If we
+ * ever start adding new tokens at runtime, rewrite this as an explicit per-token list.
+ */
 @Composable
 private fun animateColorPalette(target: Map<ThemeToken<Color>, Color>): Map<ThemeToken<Color>, Color> =
     target.mapValues { (_, value) ->
         animateColorAsState(targetValue = value, animationSpec = tween(durationMillis = 450)).value
     }
 
+/**
+ * Module-load-time singleton. `buildPlatformTheme` returns a `@Composable (content) -> Unit` whose
+ * body is re-executed on every composition, so reads of `LocalFrnkThemeConfig.current` and
+ * `LocalAppearanceController.current` inside this block always reflect the current providers.
+ * Verified against compose-unstyled 2.0.0 `buildTheme` (the lambda is captured and invoked per call).
+ */
 private val FrnkPlatformTheme =
     buildPlatformTheme {
         defaultComponentInteractiveSize =
@@ -218,22 +241,43 @@ private val FrnkPlatformTheme =
         val palette = basePalette + paletteOverrides
         val animatedPalette = animateColorPalette(palette)
 
+        val fontFamily = config.fontFamily
+        val textStylesForTheme =
+            if (fontFamily == null) {
+                DefaultTextStyles
+            } else {
+                DefaultTextStyles.mapValues { (_, style) -> style.copy(fontFamily = fontFamily) }
+            } + config.textStyleOverrides
+
         properties[colors] = animatedPalette
-        properties[textStyles] = DefaultTextStyles + config.textStyleOverrides
+        properties[textStyles] = textStylesForTheme
         properties[shapes] = DefaultShapes + config.shapeOverrides
         properties[strings] = DefaultFrnkStrings + config.stringOverrides
         properties[icons] = DefaultFrnkIcons + config.iconOverrides
 
-        defaultTextStyle = FrnkTypography.bodyLarge
-        defaultContentColor = animatedPalette[onBackground] ?: Color.Unspecified
+        defaultTextStyle =
+            textStylesForTheme[bodyLarge] ?: FrnkTypography.bodyLarge
+        defaultContentColor = animatedPalette[colorOnBackground] ?: Color.Unspecified
     }
 
+/**
+ * Wraps [content] in the Frnk design system: registers theme tokens, animates between light/dark
+ * palettes, and provides the [appearanceController] so callers can read/mutate
+ * `LocalAppearanceController.current.appearance` to toggle.
+ *
+ * Hosts that need the appearance to survive process death should hoist their own controller with
+ * `rememberSaveable` (or wire it to a `DataStore`-backed flow) and pass it here.
+ */
 @Composable
 fun FrnkTheme(
-    config: FrnkThemeConfig = FrnkThemeConfig(),
+    config: FrnkThemeConfig = FrnkThemeConfig.Default,
+    appearanceController: AppearanceController = remember { AppearanceController() },
     content: @Composable () -> Unit,
 ) {
-    CompositionLocalProvider(LocalFrnkThemeConfig provides config) {
+    CompositionLocalProvider(
+        LocalFrnkThemeConfig provides config,
+        LocalAppearanceController provides appearanceController,
+    ) {
         FrnkPlatformTheme(content)
     }
 }

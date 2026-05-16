@@ -13,7 +13,7 @@ import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.FrnkTheme
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
-import dev.jdgarita.frnk.ui.theme.background
+import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
@@ -30,7 +30,7 @@ internal fun PreviewSurface(
     CompositionLocalProvider(LocalAppearanceController provides controller) {
         FrnkTheme {
             Column(
-                modifier = Modifier.background(Theme[colors][background]).padding(FrnkSpacing.md),
+                modifier = Modifier.background(Theme[colors][colorBackground]).padding(FrnkSpacing.md),
                 verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
             ) {
                 content()

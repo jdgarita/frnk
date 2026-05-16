@@ -10,8 +10,8 @@ import com.composeunstyled.UnstyledHorizontalSeparator
 import com.composeunstyled.UnstyledVerticalSeparator
 import com.composeunstyled.theme.Theme
 import com.composeunstyled.theme.ThemeToken
+import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colors
-import dev.jdgarita.frnk.ui.theme.outline
 
 @Immutable
 sealed class FrnkDividerState(
@@ -20,12 +20,12 @@ sealed class FrnkDividerState(
 ) {
     data class Horizontal(
         override val thickness: Dp = 1.dp,
-        override val color: ThemeToken<Color> = outline,
+        override val color: ThemeToken<Color> = colorOutline,
     ) : FrnkDividerState(thickness, color)
 
     data class Vertical(
         override val thickness: Dp = 1.dp,
-        override val color: ThemeToken<Color> = outline,
+        override val color: ThemeToken<Color> = colorOutline,
     ) : FrnkDividerState(thickness, color)
 }
 

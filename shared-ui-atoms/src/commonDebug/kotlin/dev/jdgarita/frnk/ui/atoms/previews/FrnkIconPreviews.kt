@@ -10,7 +10,8 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconButton
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.theme.Appearance
-import dev.jdgarita.frnk.ui.theme.error
+import dev.jdgarita.frnk.ui.theme.colorError
+import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconClose
@@ -18,7 +19,6 @@ import dev.jdgarita.frnk.ui.theme.iconError
 import dev.jdgarita.frnk.ui.theme.iconSearch
 import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
-import dev.jdgarita.frnk.ui.theme.primary
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
@@ -33,7 +33,7 @@ private fun FrnkIcon_Sizes_Light() {
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "xs",
                         size = FrnkIconSize.xs,
-                        tint = primary,
+                        tint = colorPrimary,
                     ),
             )
             FrnkIcon(
@@ -42,7 +42,7 @@ private fun FrnkIcon_Sizes_Light() {
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "md",
                         size = FrnkIconSize.md,
-                        tint = primary,
+                        tint = colorPrimary,
                     ),
             )
             FrnkIcon(
@@ -51,7 +51,7 @@ private fun FrnkIcon_Sizes_Light() {
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "xl",
                         size = FrnkIconSize.xl,
-                        tint = primary,
+                        tint = colorPrimary,
                     ),
             )
         }
@@ -67,7 +67,7 @@ private fun FrnkIcon_Registry_Dark() {
             FrnkIcon(state = FrnkIconState(Theme[icons][iconClose], "close"))
             FrnkIcon(state = FrnkIconState(Theme[icons][iconSearch], "search"))
             FrnkIcon(state = FrnkIconState(Theme[icons][iconSettings], "settings"))
-            FrnkIcon(state = FrnkIconState(Theme[icons][iconError], "error", tint = error))
+            FrnkIcon(state = FrnkIconState(Theme[icons][iconError], "error", tint = colorError))
         }
     }
 }
@@ -82,7 +82,7 @@ private fun FrnkIconButton_Light() {
                     FrnkIconButtonState(
                         imageVector = Theme[icons][iconBack],
                         contentDescription = "Back",
-                        tint = primary,
+                        tint = colorPrimary,
                     ),
                 onClick = {},
             )

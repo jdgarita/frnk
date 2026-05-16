@@ -18,10 +18,15 @@ import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
+/**
+ * Interactive icon button. [contentDescription] is non-nullable so every call site supplies a
+ * label readable by TalkBack/VoiceOver — an icon button without one is invisible to assistive
+ * tech. Use the plain [FrnkIcon] (which accepts `null`) for decorative cases.
+ */
 @Immutable
 data class FrnkIconButtonState(
     val imageVector: ImageVector,
-    val contentDescription: String?,
+    val contentDescription: String,
     val size: Dp = FrnkIconSize.md,
     val tint: ThemeToken<Color>? = null,
     val contentPadding: PaddingValues = PaddingValues(FrnkSpacing.sm),
@@ -50,6 +55,9 @@ fun FrnkIconButton(
                     contentDescription = state.contentDescription,
                     size = state.size,
                     tint = state.tint,
+                    // Match FrnkButton's 0.4f disabled treatment so the icon visibly dims when
+                    // the button is inactive.
+                    tintAlpha = if (state.enabled) 1f else 0.4f,
                 ),
         )
     }

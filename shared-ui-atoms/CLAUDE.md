@@ -9,8 +9,9 @@ Compose Multiplatform design system: tokens, theme engine, host-configurable the
   - `TypographyTokens.kt` — `FrnkTypography` (Material 3 scale).
   - `SpacingTokens.kt`, `ShapeTokens.kt`, `IconSizeTokens.kt` — Dp + Shape constants.
 - `ui/theme/` — the theme engine.
-  - `FrnkTheme.kt` — `ThemeProperty<T>` + `ThemeToken<T>` declarations for all axes, `LightPalette`/`DarkPalette` maps, `Appearance` enum + `LocalAppearanceController`, and the public `@Composable fun FrnkTheme(config, content)` built on `buildPlatformTheme`.
-  - `FrnkThemeConfig.kt` — immutable host config. Hosts pass `Map`s of token → override for any axis (light colors, dark colors, text styles, shapes, strings, icons). Empty by default.
+  - `FrnkTheme.kt` — `ThemeProperty<T>` + `ThemeToken<T>` declarations for all axes, `LightPalette`/`DarkPalette` maps, `Appearance` enum + `LocalAppearanceController`, and the public `@Composable fun FrnkTheme(config, appearanceController, content)` built on `buildPlatformTheme`. The `appearanceController` defaults to a `remember`-scoped instance and is provided via `CompositionLocalProvider`, so the toggle works zero-config; hosts that need process-death survival can hoist their own controller (e.g. with `rememberSaveable` or a DataStore-backed flow) and pass it in.
+  - **Token naming**: color tokens use the `color` prefix (`colorPrimary`, `colorOnPrimary`, `colorError`, …) so importing them doesn't shadow `kotlin.error()` or common local variable names. Shape tokens use `shape*`, string tokens `string*`, icon tokens `icon*`. Text-style tokens stay unprefixed (`bodyLarge`, `titleMedium`) — they don't collide with anything common.
+  - `FrnkThemeConfig.kt` — immutable host config. Hosts pass `Map`s of token → override for any axis (light colors, dark colors, text styles, shapes, strings, icons) plus an optional `fontFamily: FontFamily?` that's applied to every default text style. Prefer `FrnkThemeConfig.Default` over `FrnkThemeConfig()` at call sites to avoid per-recomposition allocation.
   - `FrnkStrings.kt` / `FrnkIcons.kt` — default toolkit strings and icons + the `ThemeToken<String>` / `ThemeToken<ImageVector>` constants. Hosts override via `FrnkThemeConfig.stringOverrides` / `iconOverrides`.
 - `ui/atoms/` — `Frnk*` atoms, each in its own file with an `@Immutable` `*State` class.
   - `FrnkText.kt` — sealed `FrnkTextState` (Text/Title/TitleMedium/HeadlineSmall/Body/BodyMedium/BodySmall/AppName).
@@ -37,7 +38,7 @@ Compose Multiplatform design system: tokens, theme engine, host-configurable the
 ## Rules
 
 - **No Material3.** Don't add `compose.material3` — atoms wrap `com.composeunstyled.*` headless primitives (`UnstyledButton`, `UnstyledIcon`, `UnstyledHorizontalSeparator`, `UnstyledVerticalSeparator`, `Text`) and resolve styling via `Theme[colors][...]` / `Theme[textStyles][...]`.
-- **Atoms read tokens, not hard-coded values.** Use `Theme[colors][primary]` not `Color(0xFF...)`. Use `FrnkSpacing.md` not `16.dp` for spacing constants.
+- **Atoms read tokens, not hard-coded values.** Use `Theme[colors][colorPrimary]` not `Color(0xFF...)`. Use `FrnkSpacing.md` not `16.dp` for spacing constants.
 - **Atoms are platform-agnostic** — `commonMain` only. No `LocalContext`, `UIViewController`, etc.
 - **Every atom has a `*State` class.** State is `@Immutable`, fields default to sensible values, and callbacks (`onClick`, etc.) are separate parameters on the composable.
 - **Host configuration flows through `FrnkThemeConfig`.** Don't expose ad-hoc setters or extra composition locals for per-axis overrides; that contract is the single entry point.

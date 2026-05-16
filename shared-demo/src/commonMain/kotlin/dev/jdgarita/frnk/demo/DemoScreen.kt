@@ -30,15 +30,15 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
-import dev.jdgarita.frnk.ui.theme.background
+import dev.jdgarita.frnk.ui.theme.colorBackground
+import dev.jdgarita.frnk.ui.theme.colorOnBackground
+import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
-import dev.jdgarita.frnk.ui.theme.onBackground
-import dev.jdgarita.frnk.ui.theme.onSurfaceVariant
-import dev.jdgarita.frnk.ui.theme.primary
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -67,7 +67,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Theme[colors][background])
+                .background(Theme[colors][colorBackground])
                 .verticalScroll(rememberScrollState())
                 .padding(FrnkSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
@@ -93,7 +93,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                 state =
                     FrnkTextState.BodySmall(
                         text = "BodySmall — secondary copy.",
-                        color = onSurfaceVariant,
+                        color = colorOnSurfaceVariant,
                     ),
             )
 
@@ -129,7 +129,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                             imageVector = Theme[icons][iconBack],
                             contentDescription = "Back",
                             size = FrnkIconSize.lg,
-                            tint = primary,
+                            tint = colorPrimary,
                         ),
                 )
                 FrnkIcon(
@@ -138,7 +138,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                             imageVector = Theme[icons][iconCheck],
                             contentDescription = "Check",
                             size = FrnkIconSize.lg,
-                            tint = primary,
+                            tint = colorPrimary,
                         ),
                 )
                 FrnkIconButton(
@@ -146,7 +146,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                         FrnkIconButtonState(
                             imageVector = Theme[icons][iconSettings],
                             contentDescription = "Settings",
-                            tint = onBackground,
+                            tint = colorOnBackground,
                         ),
                     onClick = { onEffect(DemoEffect.Toast("Settings tapped")) },
                 )
@@ -156,7 +156,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                 state =
                     FrnkTextState.Body(
                         text = "Count: ${state.count} • Email field: pending FrnkTextField (v2)",
-                        color = onSurfaceVariant,
+                        color = colorOnSurfaceVariant,
                     ),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -190,7 +190,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                         text =
                             "DemoViewModel = MviViewModel<DemoState, DemoIntent, DemoEffect>.\n" +
                                 "Every interaction above flows: Composable → send(Intent) → reducer → State → recomposition.",
-                        color = onSurfaceVariant,
+                        color = colorOnSurfaceVariant,
                     ),
             )
         }

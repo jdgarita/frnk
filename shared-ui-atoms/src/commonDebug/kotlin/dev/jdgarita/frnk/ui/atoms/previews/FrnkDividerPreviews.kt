@@ -12,7 +12,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.theme.Appearance
-import dev.jdgarita.frnk.ui.theme.primary
+import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
 @Preview
@@ -22,7 +22,7 @@ private fun FrnkDivider_Light() {
         FrnkText(state = FrnkTextState.Body(text = "Above divider"))
         FrnkDivider(state = FrnkDividerState.Horizontal())
         FrnkText(state = FrnkTextState.Body(text = "Below divider"))
-        FrnkDivider(state = FrnkDividerState.Horizontal(thickness = 2.dp, color = primary))
+        FrnkDivider(state = FrnkDividerState.Horizontal(thickness = 2.dp, color = colorPrimary))
         Row(
             modifier = Modifier.height(40.dp),
             horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),

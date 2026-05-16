@@ -14,10 +14,10 @@ import androidx.compose.ui.unit.dp
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.theme.colorOnPrimary
+import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
-import dev.jdgarita.frnk.ui.theme.onPrimary
-import dev.jdgarita.frnk.ui.theme.outline
-import dev.jdgarita.frnk.ui.theme.primary
+import dev.jdgarita.frnk.ui.theme.labelLarge
 import dev.jdgarita.frnk.ui.theme.shapeButton
 import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
@@ -42,25 +42,26 @@ fun FrnkButton(
     modifier: Modifier = Modifier,
 ) {
     val shape = Theme[shapes][shapeButton]
-    val primaryColor = Theme[colors][primary]
-    val onPrimaryColor = Theme[colors][onPrimary]
-    val outlineColor = Theme[colors][outline]
+    val primary = Theme[colors][colorPrimary]
+    val onPrimary = Theme[colors][colorOnPrimary]
 
     val backgroundColor: Color =
         when (state.variant) {
-            FrnkButtonVariant.Filled -> if (state.enabled) primaryColor else primaryColor.copy(alpha = 0.4f)
+            FrnkButtonVariant.Filled -> if (state.enabled) primary else primary.copy(alpha = 0.4f)
             FrnkButtonVariant.Outlined -> Color.Transparent
             FrnkButtonVariant.Ghost -> Color.Transparent
         }
     val contentColor: Color =
         when (state.variant) {
-            FrnkButtonVariant.Filled -> onPrimaryColor
-            FrnkButtonVariant.Outlined -> primaryColor
-            FrnkButtonVariant.Ghost -> primaryColor
+            FrnkButtonVariant.Filled -> onPrimary
+            FrnkButtonVariant.Outlined -> primary
+            FrnkButtonVariant.Ghost -> primary
         }.let { if (state.enabled) it else it.copy(alpha = 0.4f) }
     val border: BorderStroke? =
         if (state.variant == FrnkButtonVariant.Outlined) {
-            BorderStroke(1.dp, if (state.enabled) primaryColor else outlineColor)
+            // Mirror the Filled disabled treatment: fade the brand color rather than swapping in a
+            // neutral outline, so disabled Filled and disabled Outlined read as the same component.
+            BorderStroke(1.dp, if (state.enabled) primary else primary.copy(alpha = 0.4f))
         } else {
             null
         }
@@ -79,7 +80,9 @@ fun FrnkButton(
         contentPadding = PaddingValues(horizontal = FrnkSpacing.md, vertical = FrnkSpacing.sm),
     ) {
         ProvideContentColor(contentColor) {
-            FrnkText(state = FrnkTextState.BodyMedium(text = state.text, color = null))
+            // labelLarge (14sp / Medium) matches the M3 button-label convention. Inherits color
+            // from ProvideContentColor above so the disabled alpha applies uniformly.
+            FrnkText(state = FrnkTextState.Text(text = state.text, style = labelLarge))
         }
     }
 }

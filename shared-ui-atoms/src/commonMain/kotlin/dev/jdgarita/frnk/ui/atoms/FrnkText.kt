@@ -23,6 +23,20 @@ import dev.jdgarita.frnk.ui.theme.textStyles
 import dev.jdgarita.frnk.ui.theme.titleLarge
 import dev.jdgarita.frnk.ui.theme.titleMedium
 
+/**
+ * View state for [FrnkText]. Each subtype picks a sensible default text style; pass a non-null
+ * [style] token to override.
+ *
+ * Variant selection:
+ * - [Text] — **inherit** everything from ambient `LocalTextStyle` / `LocalContentColor` unless you
+ *   pass tokens explicitly. Reach for this when you're already inside a `ProvideTextStyle` or a
+ *   parent like `FrnkButton`/`FrnkIconButton` that supplies the style — using a semantic variant
+ *   like [Body] would clobber the ambient style.
+ * - [Title] / [TitleMedium] / [HeadlineSmall] / [Body] / [BodyMedium] / [BodySmall] — semantic
+ *   variants that default to the matching [dev.jdgarita.frnk.ui.theme.titleLarge],
+ *   [dev.jdgarita.frnk.ui.theme.bodyLarge], etc. token. Use these at top-level callsites.
+ * - [AppName] — renders an [AnnotatedString] (lets the brand name have per-character styling).
+ */
 @Immutable
 sealed class FrnkTextState(
     open val text: String,
@@ -34,6 +48,7 @@ sealed class FrnkTextState(
     open val fontWeight: FontWeight? = null,
     open val style: ThemeToken<TextStyle>? = null,
 ) {
+    /** Inherits from ambient `LocalTextStyle` / `LocalContentColor` unless overridden. */
     data class Text(
         override val text: String,
         override val color: ThemeToken<Color>? = null,
