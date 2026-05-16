@@ -71,6 +71,8 @@ compose-unstyled-button = { module = "com.composables:composeunstyled-button", v
 compose-unstyled-icon = { module = "com.composables:composeunstyled-icon", version.ref = "compose-unstyled" }
 compose-unstyled-separators = { module = "com.composables:composeunstyled-separators", version.ref = "compose-unstyled" }
 
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+
 
 [plugins]
 kotlin-multiplatform               = { id = "org.jetbrains.kotlin.multiplatform",       version.ref = "kotlin" }

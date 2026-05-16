@@ -19,6 +19,13 @@ Compose Multiplatform design system: tokens, theme engine, host-configurable the
   - `FrnkIconButton.kt` — `FrnkIconButtonState`.
   - `FrnkDivider.kt` — sealed `FrnkDividerState` (Horizontal/Vertical).
 
+## Source sets
+
+- `commonMain` — production code (tokens, theme, atoms).
+- `commonDebug` — `@Preview` composables for every atom. Sits between `commonMain` and each platform source set (`androidMain`, `iosArm64Main`, `iosSimulatorArm64Main` all `dependsOn` it). Uses the multiplatform `androidx.compose.ui.tooling.preview.Preview` annotation from `org.jetbrains.compose.ui:ui-tooling-preview`. New preview files go under `src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/`. Wrap content in `PreviewSurface(appearance = ...)` so the preview renders under a real `FrnkTheme` against the chosen palette.
+
+  **Caveat:** AGP 9's `com.android.kotlin.multiplatform.library` plugin has a single `androidMain` compilation (no `compileAndroidDebug`/`compileAndroidRelease` split), so today `commonDebug` sources also end up in release AARs. They're inert `@Composable` functions and R8 strips them — but if you need true debug-only exclusion (size budget, license posture, etc.), promote `commonDebug` to a sibling Gradle module that only the demo / debug consumers depend on.
+
 ## Dependencies
 
 - `api(projects.sharedUiApi)` — atoms expose the same MVI types feature ViewModels use.
