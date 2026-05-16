@@ -94,6 +94,16 @@ private fun FrnkIconButton_Light() {
                     ),
                 onClick = {},
             )
+            FrnkIconButton(
+                state =
+                    FrnkIconButtonState(
+                        imageVector = Theme[icons][iconClose],
+                        contentDescription = "Disabled",
+                        tint = colorPrimary,
+                        enabled = false,
+                    ),
+                onClick = {},
+            )
         }
     }
 }

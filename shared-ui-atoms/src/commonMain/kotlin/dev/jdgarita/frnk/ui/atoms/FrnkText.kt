@@ -141,8 +141,8 @@ sealed class FrnkTextState(
 
 @Composable
 fun FrnkText(
-    modifier: Modifier = Modifier,
     state: FrnkTextState,
+    modifier: Modifier = Modifier,
 ) {
     val styleToken = state.style
     val colorToken = state.color
