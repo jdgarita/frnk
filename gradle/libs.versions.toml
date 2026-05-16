@@ -67,6 +67,9 @@ icons-lucide = { module = "com.composables:icons-lucide-cmp", version.ref = "ico
 compose-unstyled-primitives = { module = "com.composables:composeunstyled-primitives", version.ref = "compose-unstyled" }
 compose-unstyled-theming = { module = "com.composables:composeunstyled-theming", version.ref = "compose-unstyled" }
 compose-unstyled-platformtheme = { module = "com.composables:composeunstyled-platformtheme", version.ref = "compose-unstyled" }
+compose-unstyled-button = { module = "com.composables:composeunstyled-button", version.ref = "compose-unstyled" }
+compose-unstyled-icon = { module = "com.composables:composeunstyled-icon", version.ref = "compose-unstyled" }
+compose-unstyled-separators = { module = "com.composables:composeunstyled-separators", version.ref = "compose-unstyled" }
 
 
 [plugins]

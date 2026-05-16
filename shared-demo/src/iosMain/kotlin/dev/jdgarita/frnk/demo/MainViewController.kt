@@ -1,7 +1,7 @@
 package dev.jdgarita.frnk.demo
 
 import androidx.compose.ui.window.ComposeUIViewController
-import dev.jdgarita.frnk.ui.atoms.ProvideToolkitTheme
+import dev.jdgarita.frnk.ui.theme.FrnkTheme
 import platform.UIKit.UIViewController
 
 /**
@@ -10,7 +10,7 @@ import platform.UIKit.UIViewController
  */
 fun MainViewController(onEffect: (DemoEffect) -> Unit = {}): UIViewController =
     ComposeUIViewController {
-        ProvideToolkitTheme(colors = demoBlueColors()) {
+        FrnkTheme(config = demoBlueThemeConfig()) {
             DemoScreen(onEffect = onEffect)
         }
     }
