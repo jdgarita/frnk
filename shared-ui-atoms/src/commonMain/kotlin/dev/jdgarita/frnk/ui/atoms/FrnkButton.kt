@@ -82,7 +82,7 @@ fun FrnkButton(
         ProvideContentColor(contentColor) {
             // labelLarge (14sp / Medium) matches the M3 button-label convention. Inherits color
             // from ProvideContentColor above so the disabled alpha applies uniformly.
-            FrnkText(state = FrnkTextState.Text(text = state.text, style = labelLarge))
+            FrnkText(state = FrnkTextState.Raw(text = state.text, style = labelLarge))
         }
     }
 }

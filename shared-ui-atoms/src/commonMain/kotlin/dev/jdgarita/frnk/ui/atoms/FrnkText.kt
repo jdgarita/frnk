@@ -28,10 +28,11 @@ import dev.jdgarita.frnk.ui.theme.titleMedium
  * [style] token to override.
  *
  * Variant selection:
- * - [Text] — **inherit** everything from ambient `LocalTextStyle` / `LocalContentColor` unless you
+ * - [Raw] — **inherit** everything from ambient `LocalTextStyle` / `LocalContentColor` unless you
  *   pass tokens explicitly. Reach for this when you're already inside a `ProvideTextStyle` or a
  *   parent like `FrnkButton`/`FrnkIconButton` that supplies the style — using a semantic variant
- *   like [Body] would clobber the ambient style.
+ *   like [Body] would clobber the ambient style. (Named `Raw` rather than `Text` to avoid colliding
+ *   with `com.composeunstyled.Text` at any call site that wildcard-imports the sealed subtypes.)
  * - [Title] / [TitleMedium] / [HeadlineSmall] / [Body] / [BodyMedium] / [BodySmall] — semantic
  *   variants that default to the matching [dev.jdgarita.frnk.ui.theme.titleLarge],
  *   [dev.jdgarita.frnk.ui.theme.bodyLarge], etc. token. Use these at top-level callsites.
@@ -49,7 +50,7 @@ sealed class FrnkTextState(
     open val style: ThemeToken<TextStyle>? = null,
 ) {
     /** Inherits from ambient `LocalTextStyle` / `LocalContentColor` unless overridden. */
-    data class Text(
+    data class Raw(
         override val text: String,
         override val color: ThemeToken<Color>? = null,
         override val colorAlpha: Float = 1f,

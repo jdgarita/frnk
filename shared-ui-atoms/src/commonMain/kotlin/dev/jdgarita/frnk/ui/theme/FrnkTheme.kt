@@ -199,21 +199,31 @@ internal val DefaultShapes: Map<ThemeToken<Shape>, Shape> =
     )
 
 /**
- * Animates each color in [target] independently with a 450ms tween. Safe to call repeatedly because
- * `mapValues` walks the map in stable insertion order and `animateColorAsState` remembers its
- * `targetValue` by slot position, so each token's animation state lives in a deterministic slot.
+ * Animates [base] colors towards (override-or-base) targets with a 450ms tween. The animation
+ * call count is exactly `base.size` on every composition, so `animateColorAsState` slot positions
+ * are stable regardless of what the host puts in [overrides].
  *
- * **Invariant:** the *key set* of [target] must be identical across recompositions. Adding a new
- * key (or dropping one) shifts slot positions and restarts the animation for every token below the
- * change. Today this is safe because [LightPalette]/[DarkPalette] have the same 21 keys and
- * `FrnkThemeConfig.{light,dark}ColorOverrides` only *replace* existing keys via `Map.plus`. If we
- * ever start adding new tokens at runtime, rewrite this as an explicit per-token list.
+ * Any [overrides] entry whose key is *not* in [base] (a custom host-defined `ThemeToken<Color>`)
+ * passes through unanimated and gets merged into the returned map. The 21 bundled `color*` tokens
+ * always animate; custom tokens jump instantly. If we ever want custom tokens to animate too,
+ * rewrite this as an explicit per-token list — driving `animateColorAsState` over a runtime-sized
+ * key set would re-introduce the slot-count footgun.
  */
 @Composable
-private fun animateColorPalette(target: Map<ThemeToken<Color>, Color>): Map<ThemeToken<Color>, Color> =
-    target.mapValues { (_, value) ->
-        animateColorAsState(targetValue = value, animationSpec = tween(durationMillis = 450)).value
-    }
+private fun animateColorPalette(
+    base: Map<ThemeToken<Color>, Color>,
+    overrides: Map<ThemeToken<Color>, Color>,
+): Map<ThemeToken<Color>, Color> {
+    val animated =
+        base.mapValues { (token, baseValue) ->
+            animateColorAsState(
+                targetValue = overrides[token] ?: baseValue,
+                animationSpec = tween(durationMillis = 450),
+            ).value
+        }
+    val extras = overrides.filterKeys { it !in base }
+    return if (extras.isEmpty()) animated else animated + extras
+}
 
 /**
  * Module-load-time singleton. `buildPlatformTheme` returns a `@Composable (content) -> Unit` whose
@@ -238,8 +248,7 @@ private val FrnkPlatformTheme =
             }
         val basePalette = if (isDark) DarkPalette else LightPalette
         val paletteOverrides = if (isDark) config.darkColorOverrides else config.lightColorOverrides
-        val palette = basePalette + paletteOverrides
-        val animatedPalette = animateColorPalette(palette)
+        val animatedPalette = animateColorPalette(basePalette, paletteOverrides)
 
         val fontFamily = config.fontFamily
         val textStylesForTheme =
