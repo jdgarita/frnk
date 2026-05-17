@@ -5,6 +5,7 @@ import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
 import dev.jdgarita.frnk.utils.PrintLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import org.koin.dsl.module
  */
 val demoModule =
     module {
+        includes(onboardingScaffoldModule)
         // Bind the concrete fake so DemoViewModel can ask for it directly (for setPro()),
         // then expose it via the EntitlementManager interface as the same singleton.
         single { FakeEntitlementManager() }

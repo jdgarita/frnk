@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.demo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.composeunstyled.theme.Theme
@@ -27,6 +33,10 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect
+import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
+import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen
+import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
@@ -37,6 +47,7 @@ import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
+import dev.jdgarita.frnk.ui.theme.iconSearch
 import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
@@ -59,15 +70,59 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
-    LaunchedEffect(vm) { vm.effects.collect(onEffect) }
+    // Same rationale as OnboardingScreen: the collector is keyed on `vm`, so wrap onEffect in
+    // rememberUpdatedState so a recomposing caller's new lambda is observed by the long-lived
+    // collector instead of capturing the first-composition lambda forever.
+    val currentOnEffect by rememberUpdatedState(onEffect)
+    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
 
     val appearanceController = LocalAppearanceController.current
+    var showOnboarding by remember { mutableStateOf(false) }
+    // Bump on each open so OnboardingScreen resolves a fresh VM instead of reusing the last
+    // session's page index. Otherwise dismissing on page 3 and reopening would land back on page 3.
+    var onboardingOpenCount by remember { mutableIntStateOf(0) }
 
+    Box(modifier = Modifier.fillMaxSize().background(Theme[colors][colorBackground])) {
+        DemoScreenContent(
+            state = state,
+            appearanceController = appearanceController,
+            onShowOnboarding = {
+                onboardingOpenCount++
+                showOnboarding = true
+            },
+            onEffect = onEffect,
+            onIntent = vm::send,
+        )
+
+        if (showOnboarding) {
+            OnboardingScreen(
+                initialState = demoOnboardingState(),
+                modifier = Modifier.fillMaxSize(),
+                vmKey = "demo-onboarding-$onboardingOpenCount",
+                onEffect = { effect ->
+                    when (effect) {
+                        OnboardingEffect.CloseRequested,
+                        OnboardingEffect.Completed,
+                        -> showOnboarding = false
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun DemoScreenContent(
+    state: DemoState,
+    appearanceController: AppearanceController,
+    onShowOnboarding: () -> Unit,
+    onEffect: (DemoEffect) -> Unit,
+    onIntent: (DemoIntent) -> Unit,
+) {
     Column(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(Theme[colors][colorBackground])
                 .verticalScroll(rememberScrollState())
                 .padding(FrnkSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
@@ -101,11 +156,11 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                 FrnkButton(
                     state = FrnkButtonState(text = "Filled"),
-                    onClick = { vm.send(DemoIntent.Increment) },
+                    onClick = { onIntent(DemoIntent.Increment) },
                 )
                 FrnkButton(
                     state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
-                    onClick = { vm.send(DemoIntent.Decrement) },
+                    onClick = { onIntent(DemoIntent.Decrement) },
                 )
                 FrnkButton(
                     state =
@@ -172,11 +227,11 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                             text = "Toggle Pro",
                             variant = FrnkButtonVariant.Outlined,
                         ),
-                    onClick = { vm.send(DemoIntent.TogglePro) },
+                    onClick = { onIntent(DemoIntent.TogglePro) },
                 )
                 FrnkButton(
                     state = FrnkButtonState(text = "Request Upgrade"),
-                    onClick = { vm.send(DemoIntent.RequestUpgrade) },
+                    onClick = { onIntent(DemoIntent.RequestUpgrade) },
                 )
             }
         }
@@ -194,6 +249,80 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                     ),
             )
         }
+
+        FrnkDivider(state = FrnkDividerState.Horizontal())
+
+        Section(title = "4. Onboarding scaffold") {
+            FrnkText(
+                state =
+                    FrnkTextState.Body(
+                        text =
+                            "Fixed-shape paged tour with configurable pages. " +
+                                "Tap to launch — X or Get Started to dismiss.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            FrnkButton(
+                state = FrnkButtonState(text = "Show Onboarding"),
+                onClick = onShowOnboarding,
+            )
+        }
+    }
+}
+
+@Composable
+private fun demoOnboardingState(): OnboardingScreenState {
+    // Resolve icon tokens once per composition; keys are stable across recompositions unless
+    // the host swaps its FrnkThemeConfig.iconOverrides, so remember rarely invalidates.
+    val checkIcon = Theme[icons][iconCheck]
+    val searchIcon = Theme[icons][iconSearch]
+    val settingsIcon = Theme[icons][iconSettings]
+    return remember(checkIcon, searchIcon, settingsIcon) {
+        OnboardingScreenState(
+            pages =
+                listOf(
+                    OnboardingPageState(
+                        title = FrnkTextState.Title(text = "Welcome to Frnk"),
+                        description =
+                            FrnkTextState.Body(
+                                text = "A Kotlin Multiplatform toolkit to ship polished apps in days, not weeks.",
+                            ),
+                        icon =
+                            FrnkIconState(
+                                imageVector = checkIcon,
+                                contentDescription = null,
+                                size = FrnkIconSize.xxl,
+                                tint = colorPrimary,
+                            ),
+                    ),
+                    OnboardingPageState(
+                        title = FrnkTextState.Title(text = "Search everything"),
+                        description =
+                            FrnkTextState.Body(
+                                text = "Typed, paginated, offline-ready data access across every source.",
+                            ),
+                        icon =
+                            FrnkIconState(
+                                imageVector = searchIcon,
+                                contentDescription = null,
+                                size = FrnkIconSize.xxl,
+                                tint = colorPrimary,
+                            ),
+                    ),
+                    OnboardingPageState(
+                        title = FrnkTextState.Title(text = "Ready when you are"),
+                        description =
+                            FrnkTextState.Body(text = "Tap Get Started to begin your first session."),
+                        icon =
+                            FrnkIconState(
+                                imageVector = settingsIcon,
+                                contentDescription = null,
+                                size = FrnkIconSize.xxl,
+                                tint = colorPrimary,
+                            ),
+                    ),
+                ),
+        )
     }
 }
 

@@ -19,6 +19,11 @@ Compose Multiplatform design system: tokens, theme engine, host-configurable the
   - `FrnkIcon.kt` — `FrnkIconState`.
   - `FrnkIconButton.kt` — `FrnkIconButtonState`.
   - `FrnkDivider.kt` — sealed `FrnkDividerState` (Horizontal/Vertical).
+- `ui/scaffolds/` — higher-than-atom, lower-than-feature page templates with a fixed UI shape and a configurable state class. Each scaffold ships **two** entry points: a stateless `*Content` composable (used by previews and advanced hosts that hoist their own state), and a VM-backed convenience wrapper that resolves a `Mvi`-based ViewModel via Koin (`koinViewModel { parametersOf(initialState) }`). A per-scaffold Koin module (`xxxScaffoldModule`) registers the VM; downstream Koin modules `includes(...)` it. Default copy comes from `FrnkStrings`; hosts override per-token through `FrnkThemeConfig.stringOverrides`.
+  - `OnboardingScreen.kt` — `OnboardingScreen` (VM-backed) + `OnboardingScreenContent` (stateless). Close-X (top-right), `HorizontalPager` (configurable `pagerHeight: Dp? = null` — null fills remaining space, non-null pins exact height), animated pip indicator, Back/Next buttons that flip to "Get Started" on the last page.
+  - `OnboardingScreenState.kt` — `OnboardingPageState` (title/description/icon, all reused atom states), `OnboardingScreenState`, `OnboardingIntent` (PageSelected/NextClicked/PreviousClicked/CloseClicked), `OnboardingEffect` (CloseRequested/Completed).
+  - `OnboardingViewModel.kt` — pure UI-state machine, no injected deps.
+  - `OnboardingScaffoldModule.kt` — `onboardingScaffoldModule` Koin module.
 
 ## Source sets
 
