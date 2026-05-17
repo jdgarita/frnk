@@ -64,6 +64,13 @@ import org.koin.core.parameter.parametersOf
  * page they left off. Hosts that want a fresh flow on every open should change [vmKey] each time
  * the overlay is shown (e.g. `key = "onboarding-$openCounter"` where `openCounter++` on each show).
  *
+ * **VMStore retention:** each distinct [vmKey] creates a permanent slot in the
+ * `ViewModelStoreOwner`'s store until that owner is destroyed — `ViewModelStore` never evicts
+ * keyed VMs when the composable leaves composition. [OnboardingViewModel] is tiny (one Int) so
+ * this is memory-irrelevant for an overlay shown a handful of times per session. Hosts that need
+ * bounded memory (or true single-shot lifecycle) should hoist their own state and call
+ * [OnboardingScreenContent] directly.
+ *
  * Hosts that want full control over state hoisting (or that already use a different DI/MVI stack)
  * should call [OnboardingScreenContent] directly.
  */

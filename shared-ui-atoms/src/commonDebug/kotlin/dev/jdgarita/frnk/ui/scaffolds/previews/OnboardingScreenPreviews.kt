@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.ui.scaffolds.previews
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -23,25 +24,33 @@ import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 
 @Composable
 private fun samplePages(): List<OnboardingPageState> {
-    val pageIcons = listOf(Theme[icons][iconCheck], Theme[icons][iconSearch], Theme[icons][iconSettings])
-    val titles =
-        listOf(
-            "Welcome to Frnk" to "A Kotlin Multiplatform toolkit for building polished, opinionated apps in days, not weeks.",
-            "Search everything" to "One unified surface across your data sources — typed, paginated, and offline-ready.",
-            "Ready when you are" to "Tap Get Started to begin your first session.",
-        )
-    return titles.mapIndexed { i, (title, body) ->
-        OnboardingPageState(
-            title = FrnkTextState.Title(text = title),
-            description = FrnkTextState.Body(text = body),
-            icon =
-                FrnkIconState(
-                    imageVector = pageIcons[i],
-                    contentDescription = null,
-                    size = FrnkIconSize.xxl,
-                    tint = colorPrimary,
-                ),
-        )
+    // Mirror the remember(...) pattern used in DemoScreen.demoOnboardingState(): icon tokens are
+    // stable across recompositions unless the host swaps iconOverrides, so the 3 page allocations
+    // happen once instead of on every preview recomposition.
+    val checkIcon = Theme[icons][iconCheck]
+    val searchIcon = Theme[icons][iconSearch]
+    val settingsIcon = Theme[icons][iconSettings]
+    return remember(checkIcon, searchIcon, settingsIcon) {
+        val pageIcons = listOf(checkIcon, searchIcon, settingsIcon)
+        val titles =
+            listOf(
+                "Welcome to Frnk" to "A Kotlin Multiplatform toolkit for building polished, opinionated apps in days, not weeks.",
+                "Search everything" to "One unified surface across your data sources — typed, paginated, and offline-ready.",
+                "Ready when you are" to "Tap Get Started to begin your first session.",
+            )
+        titles.mapIndexed { i, (title, body) ->
+            OnboardingPageState(
+                title = FrnkTextState.Title(text = title),
+                description = FrnkTextState.Body(text = body),
+                icon =
+                    FrnkIconState(
+                        imageVector = pageIcons[i],
+                        contentDescription = null,
+                        size = FrnkIconSize.xxl,
+                        tint = colorPrimary,
+                    ),
+            )
+        }
     }
 }
 
