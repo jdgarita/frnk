@@ -90,6 +90,14 @@ private fun OnboardingScreen_FirstPage_Dark() {
 
 @Preview
 @Composable
+private fun OnboardingScreen_MiddlePage_Dark() {
+    PreviewSurface(appearance = Appearance.Dark) {
+        OnboardingScreenContent(state = sampleState(1), onIntent = {}, modifier = Modifier.fillMaxSize())
+    }
+}
+
+@Preview
+@Composable
 private fun OnboardingScreen_LastPage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         OnboardingScreenContent(state = sampleState(2), onIntent = {}, modifier = Modifier.fillMaxSize())

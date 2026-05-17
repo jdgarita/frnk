@@ -57,6 +57,12 @@ import org.koin.core.parameter.parametersOf
  * [OnboardingViewModel] from Koin (initialised with [initialState] via `parametersOf`), forwards
  * its state to the stateless renderer, and surfaces one-shot effects to [onEffect].
  *
+ * The [vmKey] parameter scopes the ViewModel inside the host's `ViewModelStore`. By default the
+ * VM is reused for the lifetime of the enclosing `ViewModelStoreOwner` (typically the Activity),
+ * so dismissing and re-opening the overlay reuses the same VM — the user lands back on whichever
+ * page they left off. Hosts that want a fresh flow on every open should change [vmKey] each time
+ * the overlay is shown (e.g. `key = "onboarding-$openCounter"` where `openCounter++` on each show).
+ *
  * Hosts that want full control over state hoisting (or that already use a different DI/MVI stack)
  * should call [OnboardingScreenContent] directly.
  */
@@ -64,9 +70,10 @@ import org.koin.core.parameter.parametersOf
 fun OnboardingScreen(
     initialState: OnboardingScreenState,
     modifier: Modifier = Modifier,
+    vmKey: String? = null,
     onEffect: (OnboardingEffect) -> Unit = {},
 ) {
-    val vm: OnboardingViewModel = koinViewModel { parametersOf(initialState) }
+    val vm: OnboardingViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
     val state by vm.state.collectAsState()
 
     LaunchedEffect(vm) { vm.effects.collect(onEffect) }
@@ -219,8 +226,14 @@ private fun OnboardingPips(
     ) {
         repeat(pageCount) { index ->
             val isActive = index == currentPage
-            val color by animateColorAsState(targetValue = if (isActive) activeColor else inactiveColor)
-            val pipSize by animateDpAsState(targetValue = if (isActive) 10.dp else 8.dp)
+            val color by animateColorAsState(
+                targetValue = if (isActive) activeColor else inactiveColor,
+                label = "pip_color",
+            )
+            val pipSize by animateDpAsState(
+                targetValue = if (isActive) 10.dp else 8.dp,
+                label = "pip_size",
+            )
             Box(
                 modifier =
                     Modifier
