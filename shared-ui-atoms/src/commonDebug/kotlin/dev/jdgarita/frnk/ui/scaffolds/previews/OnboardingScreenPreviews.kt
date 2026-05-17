@@ -58,12 +58,12 @@ private fun samplePages(): List<OnboardingPageState> {
 private fun sampleState(
     pageIndex: Int,
     pagerHeight: Dp? = null,
-): OnboardingScreenState =
-    OnboardingScreenState(
-        pages = samplePages(),
-        currentPageIndex = pageIndex,
-        pagerHeight = pagerHeight,
-    )
+): OnboardingScreenState {
+    val pages = samplePages()
+    return remember(pages, pageIndex, pagerHeight) {
+        OnboardingScreenState(pages = pages, currentPageIndex = pageIndex, pagerHeight = pagerHeight)
+    }
+}
 
 @Preview
 @Composable
