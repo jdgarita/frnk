@@ -12,15 +12,10 @@ class OnboardingViewModel(
 ) : MviViewModel<OnboardingScreenState, OnboardingIntent, OnboardingEffect>(initial) {
     override suspend fun onIntent(intent: OnboardingIntent) {
         when (intent) {
-            is OnboardingIntent.PageSelected -> {
-                val pages = currentState().pages
-                if (pages.isEmpty()) return
+            is OnboardingIntent.PageSelected ->
                 setState { copy(currentPageIndex = intent.index.coerceIn(0, pages.lastIndex)) }
-            }
             OnboardingIntent.NextClicked -> {
-                val s = currentState()
-                if (s.pages.isEmpty()) return
-                if (s.isLastPage) {
+                if (currentState().isLastPage) {
                     emit(OnboardingEffect.Completed)
                 } else {
                     setState { copy(currentPageIndex = currentPageIndex + 1) }

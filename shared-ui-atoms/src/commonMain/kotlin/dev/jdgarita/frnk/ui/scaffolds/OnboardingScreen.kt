@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +77,12 @@ fun OnboardingScreen(
     val vm: OnboardingViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
     val state by vm.state.collectAsState()
 
-    LaunchedEffect(vm) { vm.effects.collect(onEffect) }
+    // The collection coroutine is keyed on `vm`, so it only restarts when the VM identity changes.
+    // Wrap [onEffect] in rememberUpdatedState so a recomposition with a new lambda (e.g. one that
+    // captures fresh outer-scope state) is observed by the long-lived collector — otherwise the
+    // first-composition lambda would be captured forever.
+    val currentOnEffect by rememberUpdatedState(onEffect)
+    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
 
     OnboardingScreenContent(
         state = state,
@@ -91,6 +97,12 @@ fun OnboardingScreen(
  *  - host updates state.currentPageIndex (e.g. via Next/Back) → animate the pager to that page
  *
  * Two separate [LaunchedEffect]s keyed by the source-of-truth on each side prevent a feedback loop.
+ *
+ * **Layout note:** when [OnboardingScreenState.pagerHeight] is `null`, the pager uses
+ * `Modifier.weight(1f)` inside this function's own `Column`, so it fills the **Column's** remaining
+ * vertical space (the area left over after the top-right close button, pips, and button row). This
+ * function provides that `Column`; advanced callers don't need to wrap it in one, and they don't
+ * need to worry about `weight` being a no-op in a non-Column parent.
  */
 @Composable
 fun OnboardingScreenContent(

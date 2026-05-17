@@ -24,6 +24,12 @@ data class OnboardingPageState(
  * for the lifetime of the screen — pass the full list at construction time rather than mutating
  * it through intents.
  *
+ * **Invariant:** [pages] must be non-empty. An onboarding flow with no pages has no meaningful UI
+ * to render (the pager would be empty, the pip row would be empty, and the Next button would have
+ * nothing to advance to) — the constructor rejects the call rather than silently rendering a broken
+ * screen. Because state mutations go through `copy(...)`, which re-runs `init`, the invariant
+ * holds for the lifetime of every [OnboardingScreenState] instance.
+ *
  * [pagerHeight] is the single "configurable size" knob: `null` (default) lets the pager fill the
  * remaining vertical space via `Modifier.weight(1f)`; non-null pins the pager to that exact height,
  * useful when the host wants the buttons to sit above the keyboard or below a hero region.
@@ -35,8 +41,12 @@ data class OnboardingScreenState(
     val pagerHeight: Dp? = null,
     val userScrollEnabled: Boolean = true,
 ) : UiState {
+    init {
+        require(pages.isNotEmpty()) { "OnboardingScreenState requires at least one page." }
+    }
+
     val isFirstPage: Boolean get() = currentPageIndex == 0
-    val isLastPage: Boolean get() = pages.isNotEmpty() && currentPageIndex == pages.lastIndex
+    val isLastPage: Boolean get() = currentPageIndex == pages.lastIndex
 }
 
 sealed interface OnboardingIntent : UiIntent {
