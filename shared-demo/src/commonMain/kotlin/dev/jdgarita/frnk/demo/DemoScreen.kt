@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +70,11 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
-    LaunchedEffect(vm) { vm.effects.collect(onEffect) }
+    // Same rationale as OnboardingScreen: the collector is keyed on `vm`, so wrap onEffect in
+    // rememberUpdatedState so a recomposing caller's new lambda is observed by the long-lived
+    // collector instead of capturing the first-composition lambda forever.
+    val currentOnEffect by rememberUpdatedState(onEffect)
+    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
 
     val appearanceController = LocalAppearanceController.current
     var showOnboarding by remember { mutableStateOf(false) }
