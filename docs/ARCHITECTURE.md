@@ -58,6 +58,10 @@ SDK, so it boots on a clean simulator with no extra setup.
 
 `:shared` is the single consumer-facing surface. `androidApp` and `iosApp` each depend on `:shared` only — they re-export it for downstream apps and add nothing else.
 
+### On-disk layout vs Gradle paths
+
+The diagram above names Gradle projects, not folders. On disk, every `shared-*` module (plus `shared-utils` and `shared-demo`) lives **inside** the `shared/` directory next to the `:shared` aggregator itself. Gradle project paths stay flat (`:shared-ui-atoms`, `projects.sharedUiAtoms`) — `settings.gradle.kts` remaps each module's `projectDir` to `shared/<name>` so the type-safe accessors and `:module` task paths are unaffected by the move. Rule of thumb: a `shared/` prefix for filesystem paths, no prefix for Gradle paths.
+
 ### Why api/impl split
 
 Each domain that pulls in a third-party SDK is split:
@@ -163,7 +167,7 @@ When the toolkit stabilises, you can flip to published artifacts by keeping the 
 
 ## MVI engine
 
-See `shared-ui-atoms/src/commonMain/kotlin/.../ui/mvi/`:
+See `shared/shared-ui-atoms/src/commonMain/kotlin/.../ui/mvi/`:
 
 - `MviContract.kt` — `UiState`, `UiAction`, `UiEffect` markers.
 - `MviViewModel.kt` — abstract base; owns `StateFlow<S>`, action `SharedFlow<A>`, and an effect `Channel<E>` exposed as a flow.
