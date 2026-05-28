@@ -45,3 +45,22 @@ include(
     ":iosApp",
     ":androidDemoApp",
 )
+
+// The shared-* modules physically live under shared/ (the :shared aggregator's
+// directory) for project-tree tidiness, while keeping flat Gradle paths so that
+// type-safe project accessors (projects.sharedUtils, …) stay unchanged.
+listOf(
+    "shared-utils",
+    "shared-ui-api",
+    "shared-ui-atoms",
+    "shared-database-api",
+    "shared-database-impl",
+    "shared-backend-api",
+    "shared-backend-firebase",
+    "shared-backend-supabase",
+    "shared-monetization-api",
+    "shared-monetization-revenuecat",
+    "shared-demo",
+).forEach { name ->
+    project(":$name").projectDir = file("shared/$name")
+}
