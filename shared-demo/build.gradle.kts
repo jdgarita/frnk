@@ -47,6 +47,10 @@ kotlin {
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
             implementation(libs.koin.core)
+            // The demo acts as a host and references a Lucide glyph at the call site (the bottom-nav
+            // middle "Stats" tab). Real consumers only need this if they likewise name Lucide icons
+            // directly; otherwise every icon is overridable through FrnkThemeConfig.
+            implementation(libs.icons.lucide)
         }
     }
 }

@@ -10,7 +10,7 @@ import platform.UIKit.UIViewController
  */
 fun MainViewController(onEffect: (DemoEffect) -> Unit = {}): UIViewController =
     ComposeUIViewController {
-        FrnkTheme(config = demoBlueThemeConfig()) {
+        FrnkTheme(config = demoPurpleThemeConfig()) {
             DemoScreen(onEffect = onEffect)
         }
     }

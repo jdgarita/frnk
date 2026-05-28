@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:name=".DemoApplication"
-        android:label="Frnk Demo"
+        android:label="frnk"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/Theme.FrnkDemo"
         android:allowBackup="true">
         <activity
