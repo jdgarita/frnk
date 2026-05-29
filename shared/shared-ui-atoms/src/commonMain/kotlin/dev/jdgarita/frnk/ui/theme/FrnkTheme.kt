@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.ui.theme
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -283,9 +284,11 @@ fun FrnkTheme(
     appearanceController: AppearanceController = remember { AppearanceController() },
     content: @Composable () -> Unit,
 ) {
+    val indication = config.indication ?: rememberFrnkRipple()
     CompositionLocalProvider(
         LocalFrnkThemeConfig provides config,
         LocalAppearanceController provides appearanceController,
+        LocalIndication provides indication,
     ) {
         FrnkPlatformTheme(content)
     }

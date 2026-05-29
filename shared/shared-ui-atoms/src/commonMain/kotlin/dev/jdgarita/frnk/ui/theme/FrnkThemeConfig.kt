@@ -1,5 +1,6 @@
 package dev.jdgarita.frnk.ui.theme
 
+import androidx.compose.foundation.Indication
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -30,6 +31,14 @@ data class FrnkThemeConfig(
      * just to swap a typeface.
      */
     val fontFamily: FontFamily? = null,
+    /**
+     * The press-feedback [Indication] installed as the ambient `LocalIndication` for the whole theme,
+     * so every interactive atom (and any host `Modifier.clickable` under [FrnkTheme]) reacts to touch.
+     * `null` (the default) uses the bundled Frnk ripple ([rememberFrnkRipple]). Pass a custom
+     * [Indication] to restyle it, or a no-op [Indication] to disable press feedback entirely. Hosts
+     * can also scope `CompositionLocalProvider(LocalIndication provides …)` around a subtree instead.
+     */
+    val indication: Indication? = null,
 ) {
     companion object {
         val Default = FrnkThemeConfig()

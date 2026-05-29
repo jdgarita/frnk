@@ -1,6 +1,8 @@
 package dev.jdgarita.frnk.demo
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
@@ -77,6 +80,8 @@ import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
+import dev.jdgarita.frnk.ui.theme.colorSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
@@ -86,6 +91,9 @@ import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.iconSearch
 import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
+import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
+import dev.jdgarita.frnk.ui.theme.shapeCard
+import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.utils.Frnk
@@ -602,6 +610,46 @@ private fun ComponentsTab(
                         ),
                     onItemSelected = { navIndex = it },
                 )
+            },
+            "Ripple" to {
+                FrnkText(
+                    state =
+                        FrnkTextState.BodySmall(
+                            text =
+                                "Every interactive atom above ripples on press by default — FrnkTheme installs " +
+                                    "the ripple as LocalIndication. Host apps apply the same ripple to their own " +
+                                    "components with rememberFrnkRipple().",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+                val boundedRipple = remember { MutableInteractionSource() }
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(Theme[shapes][shapeCard])
+                            .background(Theme[colors][colorSurfaceVariant])
+                            .clickable(
+                                interactionSource = boundedRipple,
+                                indication = rememberFrnkRipple(),
+                            ) { onEffect(DemoEffect.Toast("Bounded ripple")) }
+                            .padding(FrnkSpacing.md),
+                ) {
+                    FrnkText(state = FrnkTextState.Body(text = "Custom card — bounded ripple (content color)"))
+                }
+                val unboundedRipple = remember { MutableInteractionSource() }
+                Box(
+                    modifier =
+                        Modifier
+                            .clip(Theme[shapes][shapeCard])
+                            .clickable(
+                                interactionSource = unboundedRipple,
+                                indication = rememberFrnkRipple(color = Theme[colors][colorPrimary], bounded = false),
+                            ) { onEffect(DemoEffect.Toast("Unbounded ripple")) }
+                            .padding(FrnkSpacing.md),
+                ) {
+                    FrnkText(state = FrnkTextState.Body(text = "Tap for an unbounded, primary-colored ripple"))
+                }
             },
         )
 
