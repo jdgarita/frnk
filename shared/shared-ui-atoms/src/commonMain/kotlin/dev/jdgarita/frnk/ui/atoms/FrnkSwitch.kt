@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
@@ -28,6 +29,7 @@ import dev.jdgarita.frnk.ui.theme.shapes
 data class FrnkSwitchState(
     val checked: Boolean,
     val enabled: Boolean = true,
+    val skeleton: FrnkSkeleton = FrnkSkeleton(),
 )
 
 private val TrackWidth = 44.dp
@@ -62,10 +64,14 @@ fun FrnkSwitch(
                 .alpha(if (state.enabled) 1f else 0.4f)
                 .size(width = TrackWidth, height = TrackHeight)
                 .clip(Theme[shapes][shapeFull])
-                .background(trackColor)
+                // When the skeleton is on, the placeholder block fully covers the track, but its
+                // antialiased rim sits ~1px inside the clip — enough to reveal a hairline of the brand
+                // track color underneath. Drop the track fill so there's nothing to peek through.
+                .background(if (state.skeleton.enabled) Color.Transparent else trackColor)
+                .frnkSkeleton(state.skeleton)
                 .toggleable(
                     value = state.checked,
-                    enabled = state.enabled,
+                    enabled = state.enabled && !state.skeleton.enabled,
                     role = Role.Switch,
                     onValueChange = onCheckedChange,
                 ),

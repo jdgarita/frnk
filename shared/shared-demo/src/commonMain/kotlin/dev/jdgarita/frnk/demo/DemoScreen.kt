@@ -46,6 +46,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControl
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControlState
+import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkSwitch
 import dev.jdgarita.frnk.ui.atoms.FrnkSwitchState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
@@ -410,6 +411,17 @@ private fun ComponentsTab(
                     state = FrnkTextState.BodySmall(text = "BodySmall", color = colorOnSurfaceVariant),
                 )
                 FrnkText(state = FrnkTextState.AppName(annotated = buildAnnotatedString { append("FrnkKit") }))
+                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+                FrnkText(
+                    state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true)),
+                )
+                FrnkText(
+                    state =
+                        FrnkTextState.Body(
+                            text = "Loading a longer body line of text",
+                            skeleton = FrnkSkeleton(enabled = true),
+                        ),
+                )
             },
             "FrnkButton" to {
                 Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
@@ -434,6 +446,22 @@ private fun ComponentsTab(
                                 text = "Outlined",
                                 variant = FrnkButtonVariant.Outlined,
                                 enabled = false,
+                            ),
+                        onClick = {},
+                    )
+                }
+                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                    FrnkButton(
+                        state = FrnkButtonState(text = "Loading", skeleton = FrnkSkeleton(enabled = true)),
+                        onClick = {},
+                    )
+                    FrnkButton(
+                        state =
+                            FrnkButtonState(
+                                text = "Outlined",
+                                variant = FrnkButtonVariant.Outlined,
+                                skeleton = FrnkSkeleton(enabled = true),
                             ),
                         onClick = {},
                     )
@@ -472,6 +500,32 @@ private fun ComponentsTab(
                         onClick = { onEffect(DemoEffect.Toast("Icon button tapped")) },
                     )
                 }
+                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FrnkIcon(
+                        state =
+                            FrnkIconState(
+                                imageVector = Theme[icons][iconCheck],
+                                contentDescription = null,
+                                size = FrnkIconSize.lg,
+                                tint = colorPrimary,
+                                skeleton = FrnkSkeleton(enabled = true),
+                            ),
+                    )
+                    FrnkIconButton(
+                        state =
+                            FrnkIconButtonState(
+                                imageVector = Theme[icons][iconSettings],
+                                contentDescription = "Settings",
+                                tint = colorOnBackground,
+                                skeleton = FrnkSkeleton(enabled = true),
+                            ),
+                        onClick = {},
+                    )
+                }
             },
             "FrnkDivider" to {
                 FrnkDivider(state = FrnkDividerState.Horizontal())
@@ -501,6 +555,11 @@ private fun ComponentsTab(
                     )
                     FrnkText(state = FrnkTextState.BodySmall(text = "Disabled"))
                 }
+                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+                FrnkSwitch(
+                    state = FrnkSwitchState(checked = true, skeleton = FrnkSkeleton(enabled = true)),
+                    onCheckedChange = {},
+                )
             },
             "FrnkSegmentedControl" to {
                 FrnkSegmentedControl(
@@ -510,6 +569,16 @@ private fun ComponentsTab(
                             selectedIndex = segmentIndex,
                         ),
                     onOptionSelected = { segmentIndex = it },
+                )
+                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+                FrnkSegmentedControl(
+                    state =
+                        FrnkSegmentedControlState(
+                            options = listOf("One", "Two", "Three"),
+                            selectedIndex = 0,
+                            skeleton = FrnkSkeleton(enabled = true),
+                        ),
+                    onOptionSelected = {},
                 )
             },
             "FrnkBottomNavBar" to {
@@ -634,7 +703,7 @@ private fun ComponentRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FrnkText(
-            state = FrnkTextState.Title(text = name),
+            state = FrnkTextState.TitleMedium(text = name),
             modifier = Modifier.weight(1f),
         )
         FrnkIcon(

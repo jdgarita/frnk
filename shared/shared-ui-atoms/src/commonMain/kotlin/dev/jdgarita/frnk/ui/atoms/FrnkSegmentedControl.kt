@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.theme.colorOnSurface
@@ -32,6 +31,7 @@ data class FrnkSegmentedControlState(
     val options: List<String>,
     val selectedIndex: Int,
     val enabled: Boolean = true,
+    val skeleton: FrnkSkeleton = FrnkSkeleton(),
 )
 
 /**
@@ -55,14 +55,20 @@ fun FrnkSegmentedControl(
                 .alpha(if (state.enabled) 1f else 0.4f)
                 .clip(Theme[shapes][shapeFull])
                 .background(Theme[colors][colorSurfaceVariant])
+                .frnkSkeleton(state.skeleton)
                 .padding(FrnkSpacing.xxs),
         horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         state.options.forEachIndexed { index, label ->
             val isSelected = index == selected
+            // Idle segments fade to the track's `colorSurfaceVariant` rather than `Color.Transparent`.
+            // `Color.Transparent` carries black RGB channels, so animating to/from it drags the
+            // crossfade through a dark, muddy intermediate — a visible "flash" on both the outgoing
+            // and incoming segment. Fading between two opaque colors keeps it clean, and since the
+            // track is `colorSurfaceVariant`-filled the idle segment looks identical at rest.
             val segmentColor by animateColorAsState(
-                targetValue = if (isSelected) Theme[colors][colorSurface] else Color.Transparent,
+                targetValue = if (isSelected) Theme[colors][colorSurface] else Theme[colors][colorSurfaceVariant],
                 label = "segment_bg",
             )
             Row(
@@ -71,7 +77,7 @@ fun FrnkSegmentedControl(
                         .weight(1f)
                         .clip(Theme[shapes][shapeFull])
                         .background(segmentColor)
-                        .clickable(enabled = state.enabled) { onOptionSelected(index) }
+                        .clickable(enabled = state.enabled && !state.skeleton.enabled) { onOptionSelected(index) }
                         .padding(vertical = FrnkSpacing.xs),
                 horizontalArrangement = Arrangement.Center,
             ) {

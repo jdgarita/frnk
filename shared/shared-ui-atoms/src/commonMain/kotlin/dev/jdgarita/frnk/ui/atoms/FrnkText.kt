@@ -19,6 +19,7 @@ import dev.jdgarita.frnk.ui.theme.bodyMedium
 import dev.jdgarita.frnk.ui.theme.bodySmall
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.headlineSmall
+import dev.jdgarita.frnk.ui.theme.shapeSmall
 import dev.jdgarita.frnk.ui.theme.textStyles
 import dev.jdgarita.frnk.ui.theme.titleLarge
 import dev.jdgarita.frnk.ui.theme.titleMedium
@@ -48,6 +49,7 @@ sealed class FrnkTextState(
     open val singleLine: Boolean = false,
     open val fontWeight: FontWeight? = null,
     open val style: ThemeToken<TextStyle>? = null,
+    open val skeleton: FrnkSkeleton = FrnkSkeleton(),
 ) {
     /** Inherits from ambient `LocalTextStyle` / `LocalContentColor` unless overridden. */
     data class Raw(
@@ -59,7 +61,8 @@ sealed class FrnkTextState(
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight? = null,
         override val style: ThemeToken<TextStyle>? = null,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class Title(
         override val text: String,
@@ -70,7 +73,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.SemiBold,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class TitleMedium(
         override val text: String,
@@ -81,7 +85,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Medium,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class HeadlineSmall(
         override val text: String,
@@ -92,7 +97,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.SemiBold,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class Body(
         override val text: String,
@@ -103,7 +109,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Normal,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class BodyMedium(
         override val text: String,
@@ -114,7 +121,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Normal,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class BodySmall(
         override val text: String,
@@ -125,7 +133,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Normal,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     data class AppName(
         val annotated: AnnotatedString,
@@ -137,7 +146,8 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = true,
         override val fontWeight: FontWeight = FontWeight.Bold,
-    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style)
+        override val skeleton: FrnkSkeleton = FrnkSkeleton(),
+    ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 }
 
 @Composable
@@ -158,7 +168,7 @@ fun FrnkText(
 
     if (state is FrnkTextState.AppName) {
         Text(
-            modifier = modifier,
+            modifier = modifier.frnkSkeleton(state.skeleton, shape = shapeSmall),
             text = state.annotated,
             color = resolvedColor.copy(alpha = state.colorAlpha),
             style = resolvedStyle,
@@ -169,7 +179,7 @@ fun FrnkText(
         )
     } else {
         Text(
-            modifier = modifier,
+            modifier = modifier.frnkSkeleton(state.skeleton, shape = shapeSmall),
             text = state.text,
             color = resolvedColor.copy(alpha = state.colorAlpha),
             style = resolvedStyle,
