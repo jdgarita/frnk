@@ -126,11 +126,19 @@ implemented**, and there is **no test coverage** and **no navigation system**.
   Organisms layer.
 - **Impact:** Atomic Design (Requirement §3.1) is only partially expressed.
 
-### 3.5 Automated tests (⛔)
-- **Evidence:** a repo-wide search for test files returns **none** — there is no
-  `commonTest`/`androidUnitTest` source anywhere, yet CI runs `testDebugUnitTest`
-  (currently a no-op gate).
-- **Impact:** Requirement §5 unmet; reducers and api logic are unverified.
+### 3.5 Automated tests (🟡 — harness seeded 2026-05-29 via BACKLOG P0-3)
+- **Original finding (⛔):** a repo-wide search for test files returned **none** —
+  no `commonTest` source anywhere, and CI ran `testDebugUnitTest`, which for KMP
+  modules is not even a real task (only `:androidDemoApp` has it), so the gate was a
+  no-op.
+- **Update (P0-3):** `commonTest` is now stood up in `shared-ui-api` (MVI engine
+  reducer/effect test) and `shared-backend-api` (`AppResult.fold` + a reusable
+  `FakeAuthService` test double), each opted in via `withHostTest {}`. CI now runs
+  `testAndroidHostTest :androidDemoApp:testDebugUnitTest` and executes real tests.
+  The earlier `testDebugUnitTest` reference was the root cause of the no-op gate and
+  has been corrected across the docs.
+- **Remaining:** broader coverage (scaffold reducers, `CollapsibleBarsState`, atoms)
+  is still open — see BACKLOG P4-4. Requirement §5 is now partially met.
 
 ---
 

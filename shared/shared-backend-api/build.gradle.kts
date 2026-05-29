@@ -9,12 +9,17 @@ kotlin {
         namespace = "${ProjectConfiguration.GROUP_ID}.backend.api"
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
+        withHostTest {}
     }
     listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_backend_api" } }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUtils)
             api(libs.kotlinx.coroutines.core)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

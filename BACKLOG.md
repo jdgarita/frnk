@@ -16,8 +16,9 @@
 >   `AppResult`.
 > - **Demo rule:** a feature is not done until exercised in `:shared-demo`,
 >   `androidDemoApp`, and `iosDemoApp` (or a written justification of why not).
-> - Must pass `./gradlew compileAndroidMain` and `./gradlew testDebugUnitTest`;
->   pre-commit `ktlintFormat` must leave the tree clean.
+> - Must pass `./gradlew compileAndroidMain` and `./gradlew testAndroidHostTest`
+>   (KMP modules; `:androidDemoApp` uses `testDebugUnitTest`); pre-commit
+>   `ktlintFormat` must leave the tree clean.
 
 Priority tiers: **P0** (protect & unblock) → **P1** (data layer truth) →
 **P2** (navigation & DI completeness) → **P3** (analytics & monetization) →
@@ -53,35 +54,55 @@ instances of the same drift were found and fixed: `CHANGELOG.md` and
       (verified by repo-wide grep: no residual `onAction`/`UiAction`/`ObserveAsEvents`/
       `compileDebugKotlinAndroid` references except the corrected "no longer exists" notes).
 
-### P0-2 — Automated guard against Material / `compose.material*` / `composables:core`
+### P0-2 — Automated guard against Material / `compose.material*` / `composables:core` ✅ DONE (2026-05-29 — resolved as "enforce by convention, not a guard")
 **Description:** Add a build- or CI-level check that fails if any forbidden
 dependency or import appears.
 **Rationale (priority):** The no-Material rule is the project's defining
 constraint and is currently clean — lock that in before the surface grows.
 **Scope:** a Gradle verification task (or a CI grep step) + wire into the build.
+**Resolution:** A `checkForbiddenDeps` Gradle task (resolved-dependency scan +
+Kotlin import scan, wired into CI) was prototyped and **deliberately reverted**.
+Decision: the no-Material constraint is enforced **by convention** — REQUIREMENTS.md
+§4 (NON-NEGOTIABLE), root `CLAUDE.md`, module `CLAUDE.md`s, and code review — rather
+than by an automated build check. No `checkForbiddenDeps` task exists and none should
+be re-added unless this decision is revisited. The tree remains clean of direct
+Material/`composables:core` deps and imports (EVALUATION.md §5).
+**Open follow-up (not blocking):** while prototyping, the Android *resolved* graph
+appeared to pull `androidx.compose.material3` **transitively** via `compose.ui.tooling`
+(the `@Preview` tooling in `shared-ui-atoms` `commonDebug`/`androidMain`). Unverified
+(the test used a bogus version). Direct deps/imports are clean; confirm the transitive
+pull only if it ever becomes load-bearing.
 **Acceptance Criteria:**
-- [ ] A task (e.g. `./gradlew checkForbiddenDeps`) fails the build when
-      `androidx.compose.material`, `material3`, `com.google.android.material`, or
-      `com.composables:core` appear in any module's resolved dependencies or
-      Kotlin imports.
-- [ ] The task passes on the current tree.
-- [ ] It runs in CI (or as a pre-commit step) so violations are caught
-      automatically.
+- [x] Decision recorded: enforce the no-Material rule by convention/docs/review, not
+      an automated guard.
+- [x] Working tree confirmed clean of direct forbidden deps and imports.
+- [N/A] Automated task in CI/pre-commit — intentionally **not** added per the decision above.
 
-### P0-3 — Seed the test harness + first reducer tests
+### P0-3 — Seed the test harness + first reducer tests ✅ DONE (2026-05-29)
 **Description:** Stand up `commonTest` in `shared-ui-api` (and one other module)
-and write the first MVI reducer/`AppResult` tests, so `testDebugUnitTest` stops
-being a no-op gate.
-**Rationale (priority):** CI already runs `testDebugUnitTest` but there are zero
+and write the first MVI reducer/`AppResult` tests, so the unit-test gate stops
+being a no-op.
+**Rationale (priority):** CI ran a unit-test gate but there were zero
 tests; every later task should land with tests, which requires the harness now.
 **Scope:** test source sets + dependencies (kotlin-test, coroutines-test) + a
 `FakeEntitlementManager`/fake backend pattern reusable by later tasks.
+**Key finding:** the unit-test gate was a no-op for a second reason beyond "no
+tests" — the AGP 9 KMP-Android host test task is **`testAndroidHostTest`**, not
+`testDebugUnitTest` (which only exists on `:androidDemoApp`). Each KMP module must
+opt in with `kotlin { android { withHostTest {} } }`. CI and all docs were
+reconciled to `testAndroidHostTest :androidDemoApp:testDebugUnitTest`.
 **Acceptance Criteria:**
-- [ ] At least one `MviViewModel` subclass reducer has a passing unit test
-      (state transition on intent, effect emission).
-- [ ] `AppResult` success/failure folding is unit-tested.
-- [ ] `./gradlew testDebugUnitTest` executes ≥1 test and is green.
-- [ ] A documented fake pattern exists for downstream tasks to reuse.
+- [x] At least one `MviViewModel` subclass reducer has a passing unit test
+      (state transition on intent, effect emission) — `MviViewModelTest` in
+      `shared-ui-api` (2 tests).
+- [x] `AppResult` success/failure folding is unit-tested — added `AppResult.fold(...)`
+      + `AppResultTest` in `shared-backend-api` (4 tests).
+- [x] The unit-test gate executes ≥1 test and is green — `testAndroidHostTest` runs
+      9 tests across the two modules (the task name was corrected from
+      `testDebugUnitTest`, which is the demo app's task).
+- [x] A documented fake pattern exists for downstream tasks to reuse —
+      `FakeAuthService` (+ `FakeAuthServiceTest`, 3 tests) in `shared-backend-api`
+      `commonTest`, documented in that module's `CLAUDE.md`. Reused by P1-2/P1-3.
 
 ---
 

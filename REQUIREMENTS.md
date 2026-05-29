@@ -225,13 +225,17 @@ review regardless of other merits.
 
 - **CI** (`.github/workflows/main.yml`): compile-only gate
   (`compileAndroidMain` + the demo app's `compileDebugKotlin`) followed by
-  `testDebugUnitTest`, both `--parallel --build-cache`. No `assemble`, no
-  `allTests`, no `ktlintCheck` in CI.
+  `testAndroidHostTest` + the demo app's `testDebugUnitTest`, both
+  `--parallel --build-cache`. No `assemble`, no `allTests`, no `ktlintCheck` in CI.
 - **Style** is enforced **locally** by the `.githooks/pre-commit` hook running
   `ktlintFormat` and re-staging — installed automatically via `installGitHooks`.
   Bypass for one commit with `SKIP_KTLINT=1` or `--no-verify`.
-- **Tests:** ViewModels/reducers (pure) and api-layer logic should be covered by
-  `commonTest` + `androidUnitTest`. (Today this is a gap — see `EVALUATION.md`.)
+- **Tests:** ViewModels/reducers (pure) and api-layer logic are covered by
+  `commonTest` + `androidHostTest`. KMP-Android modules run host unit tests under
+  **`testAndroidHostTest`** (not `testDebugUnitTest`) and must opt in with
+  `kotlin { android { withHostTest {} } }`. The shared `FakeAuthService` test double
+  in `shared-backend-api`'s `commonTest` is the canonical fake pattern for `*-api`
+  interfaces.
 - **Bootstrap:** `cp local.properties.template local.properties` and fill
   Supabase/Firebase keys + `BUILD_VARIANT`; `BuildKonfig` fails configuration
   without them.
