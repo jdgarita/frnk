@@ -11,7 +11,7 @@ Pure-interface UI module: MVI engine, navigation route marker, and the `UiText` 
 
 ## Conventions
 
-- **Vocabulary is `UiIntent`, not `UiAction`.** The root `CLAUDE.md` uses "Action" in prose, but the actual marker on disk is `UiIntent`. New code follows the on-disk name.
+- **Vocabulary is `UiIntent`, not `UiAction`.** The marker on disk is `UiIntent`, and the repo's docs (root `CLAUDE.md`, `docs/ARCHITECTURE.md`) use `UiIntent` / `onIntent` consistently. If any external skill or agent prose says "Action" generically, follow the on-disk name.
 - Stick to interfaces and small abstract bases — no concrete repository, no Compose, no third-party UI.
 - `api`-deps: `:shared-utils`, `kotlinx-coroutines`, `androidx.lifecycle.viewmodel` (for the MVI base). Don't add Compose or any backend SDK here.
 - Feature modules that want MVI should depend on **this** module — not on `:shared-ui-atoms` — if they don't need composables.

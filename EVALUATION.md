@@ -1,0 +1,206 @@
+# frnk — Current-State Evaluation
+
+> **Date of analysis:** 2026-05-29
+> **Method:** Static inspection of the working tree (`main` @ `c9c71e4`) against
+> `REQUIREMENTS.md`. Findings are evidence-based — file paths and line markers are
+> cited so each claim is verifiable.
+>
+> Legend: ✅ Done · 🟡 Partial / skeleton · ⛔ Missing · ⚠️ Tech debt / deviation
+
+This document grades the toolkit against `REQUIREMENTS.md`. The remediation work
+is enumerated, prioritized, and given acceptance criteria in `BACKLOG.md`.
+
+---
+
+## 1. Executive summary
+
+`frnk` has a **strong, correct skeleton and an unusually mature design-system /
+build foundation**, with the hard architectural invariants already enforced. The
+risk is concentrated in the **data and integration layers**: the backend impls,
+RevenueCat, and SQLDelight are wired structurally but are **not functionally
+implemented**, and there is **no test coverage** and **no navigation system**.
+
+| Area | Grade | One-line verdict |
+| --- | --- | --- |
+| Module graph & api/impl split | ✅ | Fully realized and enforced |
+| Toolchain pinning (JDK17/Kotlin/AGP9) | ✅ | Correct and documented |
+| `:shared` aggregator + `BackendChoice` | ✅ | Bootstrap present and coherent |
+| Koin DI | ✅ | Per-module Koin modules + assembly |
+| MVI engine | ✅ | Present, Compose-free as required |
+| Design system (tokens/theme/atoms/scaffolds) | ✅ | Substantial; ~10 atoms, 4 scaffolds, skeleton, ripple |
+| **No-Material constraint** | ✅ | Zero violations found |
+| Local preferences (KeyValueStore) | ✅ | Backed by multiplatform-settings |
+| Demo across 3 layers | ✅ | shared-demo + android + ios harnesses present |
+| **Backend (Firebase/Supabase)** | 🟡 | Interfaces real; **impls are `TODO()`** |
+| **Monetization (RevenueCat)** | 🟡 | Gate + fake work; **real manager is a `TODO()` skeleton** |
+| **SQLDelight persistence** | ⛔ | Drivers wired but **no `.sq`, no `FrnkDB`** |
+| **Navigation** | ⛔ | Only a `ToolkitRoute` marker; no NavHost/back stack |
+| **Analytics (PostHog)** | ⛔ | Not present; only no-op + Firebase skeleton |
+| Molecules / Organisms (Atomic Design) | ⛔ | Only atoms + scaffolds exist |
+| **Automated tests** | ⛔ | **Zero test files in the repo** |
+| Documentation accuracy | ⚠️ | `docs/ARCHITECTURE.md` has drifted from code |
+
+---
+
+## 2. The Good — implemented & solid
+
+### 2.1 Architecture & build (✅)
+- The full module graph from `docs/ARCHITECTURE.md` exists on disk, with the
+  flat-Gradle-path / nested-`shared/`-dir reconciliation in
+  `settings.gradle.kts` working as documented.
+- The **api/impl split is real and clean**: `*-api` modules contain only
+  interfaces; no third-party SDK leaks into any `*-api` (verified — backend-api
+  has only `Auth.kt`, `RemoteData.kt`, `Analytics.kt`, `AppResult.kt`).
+- Toolchain is pinned exactly as specified (version catalog: Kotlin 2.3.21, AGP
+  9.2.1; `ProjectConfiguration.kt` holds SDK + framework-name constants).
+
+### 2.2 `:shared` + DI (✅)
+- `:shared` exposes `BackendChoice`, `frnkModules(...)`, `initializeFrnk(...)`
+  (`shared/src/.../shared/`), and the demo path has its own
+  `bootstrapDemoKoin()` in `:shared-demo`.
+- Koin modules exist per concern: `FirebaseBackendModule`,
+  `SupabaseBackendModule`, `DatabaseModule`, `RevenueCatModule`, `demoModule`,
+  plus per-scaffold modules (`BottomNavScaffoldModule`, `OnboardingScaffoldModule`,
+  `SettingsScaffoldModule`).
+
+### 2.3 MVI engine (✅)
+- `shared-ui-api` carries `MviContract.kt`, `MviViewModel.kt`, `ToolkitRoute.kt`,
+  `UiText.kt` — and **no Compose dependency**, satisfying §2.1.
+
+### 2.4 Design system (✅ — the strongest area)
+- **Tokens:** `ColorTokens`, `TypographyTokens`, `SpacingTokens`, `ShapeTokens`,
+  `IconSizeTokens`.
+- **Theme engine:** `FrnkTheme`, `FrnkThemeConfig`, `FrnkStrings`, `FrnkIcons`,
+  `FrnkRipple` (ripple installed as `LocalIndication`).
+- **Atoms (~10):** `FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`,
+  `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkBottomNavBar`,
+  `FrnkTopAppBar`, plus `FrnkSkeleton` + a full `placeholder/` package
+  (Shimmer/Fade/Coordinator).
+- **Scaffolds (4+):** `OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`,
+  `FrnkScreenScaffold`, with `CollapsibleBarsState` scroll coordination and
+  `FeedbackEmailLauncher`.
+- **Previews infra:** dedicated `commonDebug` source set with `PreviewSurface`
+  and per-atom/scaffold preview files.
+- **No-Material constraint holds:** repo-wide search returns zero Material
+  dependencies and zero Material imports; the only matches are comments asserting
+  "no Material3".
+
+### 2.5 shared-utils & local prefs (✅)
+- `PlatformInfo` (expect/actual), `FeedbackEmail`, `Logger`, `DateTimeFormat`.
+- `KeyValueStore` (`shared-database-api`) implemented by `SettingsKeyValueStore`
+  over `multiplatform-settings`, with platform `Defaults` — preferences work.
+
+### 2.6 Demo coverage (✅ structurally)
+- `:shared-demo` (`DemoScreen`, `DemoViewModel`, `demoModule`,
+  `MainViewController`), `androidDemoApp` (`MainActivity`, `DemoApplication`),
+  and `iosDemoApp` (Swift `ComposeViewController`/`ContentView`) all present.
+
+---
+
+## 3. The Gaps — missing entirely
+
+### 3.1 SQLDelight persistence (⛔)
+- **Evidence:** no `.sq` files exist anywhere; `shared-database-impl` wires the
+  Android + native drivers in its `build.gradle.kts` but defines no SQLDelight
+  database. There is no `FrnkDB` despite the name being reserved in config.
+- **Impact:** Requirement §3.4 (relational persistence) is unmet; only key-value
+  prefs work today.
+
+### 3.2 Navigation (⛔)
+- **Evidence:** the only navigation type is the `ToolkitRoute` marker in
+  `shared-ui-api`; `androidx.navigation` is declared in the catalog but there is
+  no `NavHost`, no graph builder, no back-stack ownership. `DemoScreen` does
+  ad-hoc navigation locally.
+- **Impact:** Requirement §3.3 (tailored navigation) is unmet at the toolkit
+  level.
+
+### 3.3 Analytics / PostHog (⛔)
+- **Evidence:** no PostHog dependency or code; analytics today is a no-op
+  (`NoopAnalyticsTracker`) on the Supabase path and a **commented-out skeleton**
+  on the Firebase path.
+- **Impact:** Requirement §3.6 partially unmet (interface exists; no working
+  provider).
+
+### 3.4 Molecules & Organisms (⛔)
+- **Evidence:** the design system has Atoms + Scaffolds but no Molecules or
+  Organisms layer.
+- **Impact:** Atomic Design (Requirement §3.1) is only partially expressed.
+
+### 3.5 Automated tests (⛔)
+- **Evidence:** a repo-wide search for test files returns **none** — there is no
+  `commonTest`/`androidUnitTest` source anywhere, yet CI runs `testDebugUnitTest`
+  (currently a no-op gate).
+- **Impact:** Requirement §5 unmet; reducers and api logic are unverified.
+
+---
+
+## 4. The Tech Debt — deviations & risks
+
+### 4.1 Backend implementations are skeletons (🟡 → ⚠️)
+- **Evidence:** every Firebase/Supabase auth & remote-data method is
+  `= TODO("wire …")`; the Firebase analytics/crash methods are commented-out
+  bodies. The impl modules total ~230 lines — structure without behavior.
+- **Risk:** the toolkit *compiles* and *boots*, which can mask that no real
+  backend call works. Any host calling `AuthService.signIn(...)` against a real
+  backend will hit `TODO()` at runtime (`NotImplementedError`).
+- **Severity:** High for any product that needs auth/remote data; low for the
+  demo (which uses fakes).
+
+### 4.2 RevenueCat manager is a skeleton (🟡 → ⚠️)
+- **Evidence:** `RevenueCatEntitlementManager.kt` is marked
+  `TODO: wire com.revenuecat.purchases.kmp.Purchases. Skeleton kept callable.`
+  The `FeatureGate` + `FakeEntitlementManager` path is functional; the real
+  purchase/offerings/paywall flow does not exist.
+
+### 4.3 Documentation drift (⚠️ → ✅ RESOLVED 2026-05-29 via BACKLOG P0-1)
+- **`docs/ARCHITECTURE.md` references that no longer match code:**
+  - It names `ObserveAsEvents.kt` and `UiAction`/`onAction` in the MVI section,
+    but the code uses `UiIntent` / `onIntent` and has **no `ObserveAsEvents.kt`**
+    in `shared-ui-api`.
+  - It states CI runs `compileDebugKotlinAndroid`, while `CLAUDE.md` and the AGP
+    9 KMP plugin use `compileAndroidMain` (the former task no longer exists for
+    KMP modules).
+- **Risk:** a contributor following `ARCHITECTURE.md` verbatim will reference
+  symbols/tasks that don't exist. Low severity, but it erodes the "source of
+  truth" guarantee.
+
+### 4.4 SQLDelight config without a database (⚠️)
+- Drivers are declared but no SQLDelight Gradle DSL block / `.sq` schema exists.
+  This is dormant config that will confuse anyone who assumes persistence is
+  available.
+
+### 4.5 No CI coverage of iOS or assembly (accepted, by design)
+- CI is compile + unit-test on Linux only; iOS targets and `assemble` are
+  intentionally out of scope (documented). Noted here for completeness, not as a
+  defect — but it means iOS regressions are caught only locally.
+
+---
+
+## 5. Constraint compliance audit (the strict UI rules)
+
+| Constraint (REQUIREMENTS §4) | Result | Evidence |
+| --- | --- | --- |
+| No Material 2/3 dependency | ✅ Pass | Zero hits in `*.kts`/`*.toml` |
+| No Material imports | ✅ Pass | Only comments referencing "no Material3" |
+| Built on `compose-unstyled` granular artifacts | ✅ Pass | Catalog uses `composeunstyled-{primitives,theming,platformtheme,button,icon,separators}` + `icons-lucide-cmp`, not `com.composables:core` |
+| Tokens, not literals, in atoms | ✅ Pass (spot-checked) | Atom docs reference `Theme[colors]`/`Theme[textStyles]`; recommend a lint/review check to keep it true |
+| `@Immutable *State` per component | ✅ Pass (by convention) | Documented and followed in existing atoms |
+
+**No strict-constraint violations were found.** This is the project's cleanest
+area and should be protected with an automated guard (see `BACKLOG.md`).
+
+---
+
+## 6. Recommended focus order (rationale for the backlog)
+
+1. **Protect what's good** — add an automated guard against Material/`core`
+   creeping in, and seed the test harness (currently zero), since both are cheap
+   and prevent regression of the strongest areas.
+2. **Make the data layer real** — SQLDelight + backend impls + RevenueCat are the
+   largest functional gap and the highest product risk.
+3. **Build navigation** — required before most real feature screens can exist.
+4. **Fill analytics (PostHog)** and **grow the design system upward**
+   (Molecules/Organisms) once the foundation is verified.
+5. **Reconcile docs** continuously so the source-of-truth guarantee holds.
+
+This ordering is encoded as priority tiers in `BACKLOG.md`.

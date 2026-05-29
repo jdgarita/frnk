@@ -31,7 +31,7 @@ Initial tagged release of the capability-based KMP toolkit.
 
 - Capability-based module layout with `api` / `impl` split (`shared-backend-api` + `shared-backend-firebase` / `shared-backend-supabase`; `shared-database-api` + `shared-database-impl`; `shared-monetization-api` + `shared-monetization-revenuecat`).
 - `:shared` aggregator module exposing `frnkModules(BackendChoice)` and `initializeFrnk()` for one-shot Koin bootstrap.
-- `shared-ui-atoms` MVI engine (`MviContract`, `MviViewModel`, `ObserveAsEvents`) and headless Compose components built on `compose-unstyled`.
+- `shared-ui-api` MVI engine (`MviContract` with `UiState`/`UiIntent`/`UiEffect`, `MviViewModel`) and `shared-ui-atoms` headless Compose components built on `compose-unstyled`.
 - `AppResult<D, E : AppError>` sealed result type for non-throwing capability APIs.
 - `androidApp` (KMP-Android library) and `iosApp` (`FrnkKit` XCFramework) entry points for downstream consumers.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
