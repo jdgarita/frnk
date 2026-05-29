@@ -35,7 +35,7 @@
 		AA00000000000000000032 /* ComposeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeViewController.swift; sourceTree = "<group>"; };
 		AA00000000000000000034 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA00000000000000000035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AA00000000000000000036 /* DemoKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DemoKit.xcframework; path = "../shared-demo/build/XCFrameworks/debug/DemoKit.xcframework"; sourceTree = SOURCE_ROOT; };
+		AA00000000000000000036 /* DemoKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DemoKit.xcframework; path = "../shared/shared-demo/build/XCFrameworks/debug/DemoKit.xcframework"; sourceTree = SOURCE_ROOT; };
 		AA00000000000000000037 /* iosDemoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosDemoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -51,7 +51,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA00000000000000000002 /* iosDemoApp Project */ = {
+		AA00000000000000000002 = {
 			isa = PBXGroup;
 			children = (
 				AA00000000000000000004 /* iosDemoApp */,
@@ -133,7 +133,7 @@
 				en,
 				Base,
 			);
-			mainGroup = AA00000000000000000002 /* iosDemoApp Project */;
+			mainGroup = AA00000000000000000002;
 			productRefGroup = AA00000000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -198,12 +198,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XLY2T4KH86;
 				ENABLE_PREVIEWS = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../shared-demo/build/XCFrameworks/debug",
+					"$(SRCROOT)/../shared/shared-demo/build/XCFrameworks/debug",
 				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = iosDemoApp/Info.plist;
@@ -216,7 +216,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jdgarita.frnk.demo";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.jdgarita.frnk.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -234,12 +234,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XLY2T4KH86;
 				ENABLE_PREVIEWS = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../shared-demo/build/XCFrameworks/release",
+					"$(SRCROOT)/../shared/shared-demo/build/XCFrameworks/release",
 				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = iosDemoApp/Info.plist;
@@ -252,7 +252,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jdgarita.frnk.demo";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.jdgarita.frnk.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
