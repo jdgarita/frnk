@@ -96,12 +96,12 @@ fun initializeFrnk(
 
 ## Module communication flow
 
-1. A `shared-ui-atoms` MVI ViewModel dispatches an action.
-2. The reducer pure-mutates state; `onAction` calls a `*-api` interface (e.g. `AuthService` from `shared-backend-api`).
+1. A composable dispatches a `UiIntent` via `viewModel.send(intent)`.
+2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `AuthService` from `shared-backend-api`).
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed via `frnkModules(BackendChoice.…)`.
 4. The impl returns an `AppResult<Data, AppError>`.
-5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast).
-6. `ObserveAsEvents` in the composable consumes effects without leaking across recompositions.
+5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.
+6. The composable collects one-shot effects with `LaunchedEffect(vm) { vm.effects.collect(::handleEffect) }`, so they don't leak across recompositions.
 
 ## Result wrapper
 
@@ -167,20 +167,21 @@ When the toolkit stabilises, you can flip to published artifacts by keeping the 
 
 ## MVI engine
 
-See `shared/shared-ui-atoms/src/commonMain/kotlin/.../ui/mvi/`:
+See `shared/shared-ui-api/src/commonMain/kotlin/.../ui/mvi/`:
 
-- `MviContract.kt` — `UiState`, `UiAction`, `UiEffect` markers.
-- `MviViewModel.kt` — abstract base; owns `StateFlow<S>`, action `SharedFlow<A>`, and an effect `Channel<E>` exposed as a flow.
-- `ObserveAsEvents.kt` — Composable helper for one-shot effects.
+- `MviContract.kt` — `UiState`, `UiIntent`, `UiEffect` marker interfaces.
+- `MviViewModel.kt` — abstract base; owns `StateFlow<S>`, an intent `SharedFlow<I>` (replay=0, buffer=16, `DROP_OLDEST`), and a one-shot effect `Channel<E>` (BUFFERED) exposed as `effects`.
 
-ViewModels subclass `MviViewModel<S, A, E>`, implement a pure reducer, and optionally override `onAction` for impure work (network, db).
+ViewModels subclass `MviViewModel<S, I, E>`, reduce state purely with `setState { copy(...) }`, and override `suspend fun onIntent(intent: I)` for impure work (network, db), emitting one-shots via `emit(effect)`. Composables dispatch with `send(intent)` and collect effects via `LaunchedEffect(vm) { vm.effects.collect(::handleEffect) }`.
 
 ## CI
 
-`.github/workflows/main.yml` is a single job on every push and PR. It runs, in order:
+`.github/workflows/main.yml` is a single `compile & test` job on every push and PR to `main` (Markdown, `docs/**`, and `LICENSE` changes are path-ignored). After seeding a dummy `local.properties` so `BuildKonfig` resolves (CI never exercises real backends), it runs, in order:
 
-1. `./gradlew compileDebugKotlinAndroid --parallel --build-cache`
+1. `./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache`
 2. `./gradlew testDebugUnitTest --parallel --build-cache`
+
+`compileAndroidMain` covers `commonMain` + `androidMain` for every KMP module under the AGP 9 KMP-Android plugin (the old `compileDebugKotlinAndroid` task no longer exists for these modules); `:androidDemoApp:compileDebugKotlin` covers the pure-Android smoke harness. iOS targets are skipped on the Linux runner.
 
 Style is enforced **locally** via a git pre-commit hook (`.githooks/pre-commit`) that runs `ktlintFormat` and re-stages the fixes — so CI doesn't need a separate `ktlintCheck` job. The hook is installed automatically the first time `./gradlew` runs (the root build registers an `installGitHooks` task wired to `prepareKotlinBuildScriptModel`).
 
