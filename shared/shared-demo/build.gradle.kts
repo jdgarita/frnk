@@ -44,6 +44,10 @@ kotlin {
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)
+            // Multiplatform BackHandler (androidx.compose.ui.backhandler) — bridges the Android
+            // system back button / predictive-back gesture (and iOS swipe-back) to the demo's
+            // in-app navigation state. Not transitively on compose.ui's Android classpath here.
+            implementation(libs.compose.ui.backhandler)
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
             implementation(libs.koin.core)
