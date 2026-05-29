@@ -1,8 +1,8 @@
 package dev.jdgarita.frnk.backend.firebase
 
-import dev.jdgarita.frnk.backend.AppResult
-import dev.jdgarita.frnk.backend.CommonError
 import dev.jdgarita.frnk.backend.RemoteData
+import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 
 internal class FirestoreRemoteData : RemoteData {
     override suspend fun <T : Any> get(

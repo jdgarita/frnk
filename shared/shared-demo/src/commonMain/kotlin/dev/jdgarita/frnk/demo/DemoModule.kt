@@ -3,17 +3,22 @@ package dev.jdgarita.frnk.demo
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.database.Note
+import dev.jdgarita.frnk.database.NoteStore
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.FeatureGate
 import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
+import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import dev.jdgarita.frnk.utils.PrintLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import kotlin.time.Clock
 
 /**
  * Demo wiring. The point of having a separate module is that a real host would swap these for
@@ -31,7 +36,11 @@ val demoModule =
         single<AnalyticsTracker> { LoggingAnalyticsTracker() }
         single<CrashReporter> { LoggingCrashReporter() }
         single { FeatureGate(get(), get()) }
-        viewModel { DemoViewModel(get(), get(), get()) }
+        // In-memory NoteStore so the demo shows a persisted value (BACKLOG P1-1) without dragging
+        // the SQLite native cinterop into DemoKit. The REAL SqlDelightNoteStore is bound by
+        // databaseModule (via frnkModules) and covered by NoteStoreRoundTripTest.
+        single<NoteStore> { FakeNoteStore() }
+        viewModel { DemoViewModel(get(), get(), get(), get()) }
     }
 
 /** In-memory Pro toggle so we can exercise FeatureGate without a paid SDK. */
@@ -48,6 +57,29 @@ class FakeEntitlementManager : EntitlementManager {
     override suspend fun restorePurchases(): Boolean {
         _isPro.value = true
         return true
+    }
+}
+
+/**
+ * In-memory [NoteStore] for the demo — same role as [FakeEntitlementManager]: it lets the demo
+ * exercise the persistence api surface without the SQLite native driver, keeping DemoKit
+ * cinterop-free. The real relational path is [dev.jdgarita.frnk.database.impl.SqlDelightNoteStore].
+ */
+class FakeNoteStore : NoteStore {
+    private val notes = mutableListOf<Note>()
+    private var nextId = 1L
+
+    override suspend fun add(content: String): AppResult<Note, CommonError> {
+        val note = Note(id = nextId++, content = content, createdAt = Clock.System.now())
+        notes.add(0, note)
+        return AppResult.Success(note)
+    }
+
+    override suspend fun all(): AppResult<List<Note>, CommonError> = AppResult.Success(notes.toList())
+
+    override suspend fun clear(): AppResult<Unit, CommonError> {
+        notes.clear()
+        return AppResult.Success(Unit)
     }
 }
 

@@ -5,7 +5,8 @@ Pure-interface persistence module. **No SQLDelight runtime usage of generated co
 ## Contents
 
 - `KeyValueStore.kt` — interface for simple key/value storage (impl uses `russhwolf/multiplatform-settings`).
-- `SqlDriverFactory.kt` — interface returning a `SqlDriver` for the host to bridge platform driver creation.
+- `SqlDriverFactory.kt` — interface returning a `SqlDriver` for the host to bridge platform driver creation. Reused by `databaseModule` to build the toolkit's own `FrnkDB` from `FrnkDB.Schema`.
+- `NoteStore.kt` — first relational entity (BACKLOG P1-1): the `Note(id, content, createdAt)` domain model + the `NoteStore` interface (`add` / `all` / `clear`), all returning `AppResult<…, CommonError>`. The generated `FrnkDB` row type stays in `:shared-database-impl` and never crosses this boundary — the impl maps rows to this `Note`. `AppResult`/`CommonError` come from `shared-utils`.
 
 ## Rules
 

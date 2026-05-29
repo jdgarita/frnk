@@ -1,0 +1,23 @@
+-- First persisted entity for the toolkit's FrnkDB demonstrator (BACKLOG P1-1).
+-- The generated row type stays in dev.jdgarita.frnk.database.sql; the impl maps it to the
+-- shared-database-api `Note` domain model so no generated type leaks across the api boundary.
+CREATE TABLE note (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+insert:
+INSERT INTO note(content, createdAt)
+VALUES (?, ?);
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+selectAll:
+SELECT id, content, createdAt
+FROM note
+ORDER BY createdAt DESC, id DESC;
+
+deleteAll:
+DELETE FROM note;

@@ -16,9 +16,11 @@ is enumerated, prioritized, and given acceptance criteria in `BACKLOG.md`.
 
 `frnk` has a **strong, correct skeleton and an unusually mature design-system /
 build foundation**, with the hard architectural invariants already enforced. The
-risk is concentrated in the **data and integration layers**: the backend impls,
-RevenueCat, and SQLDelight are wired structurally but are **not functionally
-implemented**, and there is **no test coverage** and **no navigation system**.
+risk is concentrated in the **data and integration layers**: the backend impls
+and RevenueCat are wired structurally but are **not functionally implemented**.
+SQLDelight persistence is now functionally complete (P1-1: `FrnkDB` + `NoteStore`,
+round-trip tested). The remaining headline gaps are the **backend/RevenueCat impls**
+and the **navigation system**.
 
 | Area | Grade | One-line verdict |
 | --- | --- | --- |
@@ -33,7 +35,7 @@ implemented**, and there is **no test coverage** and **no navigation system**.
 | Demo across 3 layers | ✅ | shared-demo + android + ios harnesses present |
 | **Backend (Firebase/Supabase)** | 🟡 | Interfaces real; **impls are `TODO()`** |
 | **Monetization (RevenueCat)** | 🟡 | Gate + fake work; **real manager is a `TODO()` skeleton** |
-| **SQLDelight persistence** | ⛔ | Drivers wired but **no `.sq`, no `FrnkDB`** |
+| **SQLDelight persistence** | ✅ | `FrnkDB` + `Note.sq` + `NoteStore`; round-trip tested, demoed (P1-1) |
 | **Navigation** | ⛔ | Only a `ToolkitRoute` marker; no NavHost/back stack |
 | **Analytics (PostHog)** | ⛔ | Not present; only no-op + Firebase skeleton |
 | Molecules / Organisms (Atomic Design) | ⛔ | Only atoms + scaffolds exist |
@@ -99,12 +101,16 @@ implemented**, and there is **no test coverage** and **no navigation system**.
 
 ## 3. The Gaps — missing entirely
 
-### 3.1 SQLDelight persistence (⛔)
-- **Evidence:** no `.sq` files exist anywhere; `shared-database-impl` wires the
-  Android + native drivers in its `build.gradle.kts` but defines no SQLDelight
-  database. There is no `FrnkDB` despite the name being reserved in config.
-- **Impact:** Requirement §3.4 (relational persistence) is unmet; only key-value
-  prefs work today.
+### 3.1 SQLDelight persistence (✅ — closed by P1-1, 2026-05-29)
+- **Was:** no `.sq` files; `shared-database-impl` wired the Android + native drivers
+  but defined no SQLDelight database, and there was no `FrnkDB`.
+- **Now:** the SQLDelight Gradle plugin is applied and configured to generate `FrnkDB`
+  into `dev.jdgarita.frnk.database.sql`; `Note.sq` defines the first entity; the
+  `shared-database-api` `NoteStore` interface exposes typed access returning `AppResult`;
+  `databaseModule` builds `FrnkDB` from `SqlDriverFactory` + `FrnkDB.Schema` and binds the
+  impl (exposed via `frnkModules`). A `JdbcSqliteDriver.IN_MEMORY` round-trip test
+  (`NoteStoreRoundTripTest`) passes, and the demo shows persisted notes (via an in-memory
+  fake so DemoKit stays cinterop-free). Requirement §3.4 (relational persistence) is met.
 
 ### 3.2 Navigation (⛔)
 - **Evidence:** the only navigation type is the `ToolkitRoute` marker in
@@ -172,10 +178,10 @@ implemented**, and there is **no test coverage** and **no navigation system**.
   symbols/tasks that don't exist. Low severity, but it erodes the "source of
   truth" guarantee.
 
-### 4.4 SQLDelight config without a database (⚠️)
-- Drivers are declared but no SQLDelight Gradle DSL block / `.sq` schema exists.
-  This is dormant config that will confuse anyone who assumes persistence is
-  available.
+### 4.4 SQLDelight config without a database (✅ — resolved by P1-1, 2026-05-29)
+- Was: drivers were declared but no SQLDelight Gradle DSL block / `.sq` schema
+  existed — dormant config. Now the plugin + `FrnkDB` DSL + `Note.sq` + `NoteStore`
+  binding make persistence live and round-trip tested; the config is no longer dormant.
 
 ### 4.5 No CI coverage of iOS or assembly (accepted, by design)
 - CI is compile + unit-test on Linux only; iOS targets and `assemble` are

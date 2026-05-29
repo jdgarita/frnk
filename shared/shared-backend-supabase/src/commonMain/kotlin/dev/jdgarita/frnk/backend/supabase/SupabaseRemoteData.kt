@@ -1,8 +1,8 @@
 package dev.jdgarita.frnk.backend.supabase
 
-import dev.jdgarita.frnk.backend.AppResult
-import dev.jdgarita.frnk.backend.CommonError
 import dev.jdgarita.frnk.backend.RemoteData
+import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 
 internal class SupabaseRemoteData : RemoteData {
     override suspend fun <T : Any> get(

@@ -111,7 +111,7 @@ reconciled to `testAndroidHostTest :androidDemoApp:testDebugUnitTest`.
 The largest functional gap and highest product risk: impls compile but do not
 work. Close the api↔impl behavior gap.
 
-### P1-1 — SQLDelight database (`FrnkDB`) end-to-end
+### P1-1 — SQLDelight database (`FrnkDB`) end-to-end ✅ DONE (2026-05-29)
 **Description:** Introduce the SQLDelight Gradle DSL, a first `.sq` schema, and
 driver factories so relational persistence actually works.
 **Rationale (priority):** §3.4 is entirely missing; many features (caching,
@@ -120,13 +120,36 @@ offline, entitlement cache) depend on it. Foundational for P3+.
 `dev.jdgarita.frnk.database.sql`, db class `FrnkDB`), one `.sq` file, an
 interface in `shared-database-api`, binding in `DatabaseModule`, Android + native
 `SqlDriverFactory` actuals.
+**Key decisions:**
+- `AppResult`/`AppError`/`CommonError`/`fold` **moved to `shared-utils`** (the neutral
+  root) so `shared-database-api` returns `AppResult` without a sibling `*-api`→`*-api`
+  dependency. All `*-api` modules now import it from `dev.jdgarita.frnk.utils`.
+- DB failures reuse `CommonError` (no new `DatabaseError`).
+- First entity: `Note(id, content, createdAt: Instant)`.
+- Demo persists via an **in-memory `FakeNoteStore`** bound in `demoModule` (keeps
+  `DemoKit.xcframework` free of the SQLite native cinterop, per §2.4); the **real**
+  `SqlDelightNoteStore` is covered by the round-trip unit test + the real `frnkModules` binding.
 **Acceptance Criteria:**
-- [ ] `FrnkDB` is generated; an `*-api` interface exposes typed access (returns
-      `AppResult`).
-- [ ] `DatabaseModule` binds the impl; `:shared` exposes it via `frnkModules`.
-- [ ] A round-trip insert/query is covered by a unit test (in-memory driver).
-- [ ] No SQLDelight/SQLite dependency leaks into `shared-database-api`.
-- [ ] Demoed in all three layers (a simple persisted value shown in `DemoScreen`).
+- [x] `FrnkDB` is generated (SQLDelight plugin + `databases { create("FrnkDB") { packageName
+      = "dev.jdgarita.frnk.database.sql" } }`); the `shared-database-api` `NoteStore`
+      interface exposes typed access returning `AppResult<…, CommonError>`.
+      *(Evidence: `:shared-database-impl:generateCommonMainFrnkDBInterface` runs;
+      `Note.sq` + `NoteStore.kt`.)*
+- [x] `DatabaseModule` binds the impl (`single<NoteStore> { SqlDelightNoteStore(get()) }`
+      + a `FrnkDB` singleton); `:shared` exposes it via `frnkModules` (already includes
+      `databaseModule`, no change needed).
+- [x] A round-trip insert/query is covered by a unit test using an in-memory driver.
+      *(Evidence: `NoteStoreRoundTripTest` (2 tests, green) in `androidHostTest` using
+      `JdbcSqliteDriver.IN_MEMORY`; `testAndroidHostTest` passes.)*
+- [x] No SQLDelight/SQLite **driver/generated-code** dependency leaks into
+      `shared-database-api` (the pre-existing intentional `api(sqldelight-runtime)` is
+      retained per the module's CLAUDE.md). The JDBC driver is test-only in
+      `:shared-database-impl`'s `androidHostTest` source set.
+- [x] Demoed in all three layers: `:shared-demo` (`FakeNoteStore` + "3. Persistence"
+      section in `DemoScreen`), `androidDemoApp` (installed + run on a Pixel 6 —
+      tapping **Add note** updated "FrnkDB — N saved" and listed `Note #N`), `iosDemoApp`
+      (compiles for `iosSimulatorArm64`; `DemoKit.xcframework` assembled — a booted iOS
+      simulator was unavailable in this environment, so not launched on-device).
 
 ### P1-2 — Firebase backend: real Auth implementation
 **Description:** Replace the `TODO()` bodies in `FirebaseAuthService` with real

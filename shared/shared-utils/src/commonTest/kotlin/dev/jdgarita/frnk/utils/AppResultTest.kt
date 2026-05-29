@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.backend
+package dev.jdgarita.frnk.utils
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

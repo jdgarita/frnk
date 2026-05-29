@@ -4,7 +4,7 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
 
 ## Contents
 
-- `AppResult.kt` — toolkit-wide `sealed interface AppResult<out D, out E : AppError>` with `Success(data)` / `Failure(error)`. `AppError` is an interface with `val message: String`. `CommonError` enum implements it (`Network`, `Unauthorized`, `NotFound`, `Unknown`).
+- `AppResult.kt` — **moved to `shared-utils`** (BACKLOG P1-1). The toolkit-wide `sealed interface AppResult<out D, out E : AppError>` (`Success(data)` / `Failure(error)`), the `AppError` interface, the `CommonError` enum (`Network`, `Unauthorized`, `NotFound`, `Unknown`), and `fold(...)` now live in `dev.jdgarita.frnk.utils` so non-backend `*-api` modules (e.g. `shared-database-api`'s `NoteStore`) can return `AppResult` without depending on this module. Import from `dev.jdgarita.frnk.utils`.
 - `Auth.kt` — `AuthService` interface (sign-in / sign-out / current user).
 - `RemoteData.kt` — generic CRUD-shaped interface for backed records.
 - `Analytics.kt` — analytics + crash-reporting interfaces.
@@ -28,7 +28,8 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
 ## Testing & the fake pattern
 
 - `AppResult.fold(onSuccess, onFailure)` collapses both arms with a compile-checked
-  exhaustive `when`; prefer it over hand-rolled `when` blocks. Tested in `AppResultTest`.
+  exhaustive `when`; prefer it over hand-rolled `when` blocks. It lives in `shared-utils`
+  now, tested by `AppResultTest` in `:shared-utils` `commonTest`.
 - **`FakeAuthService` (`commonTest`) is the canonical fake pattern for `*-api` interfaces.**
   When you add a new `*-api` interface (or implement a real `*-impl`, e.g. BACKLOG
   P1-2/P1-3), copy its shape to test success **and** failure branches without a real SDK:

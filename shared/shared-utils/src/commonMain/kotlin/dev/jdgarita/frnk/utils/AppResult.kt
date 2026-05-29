@@ -1,6 +1,6 @@
-package dev.jdgarita.frnk.backend
+package dev.jdgarita.frnk.utils
 
-/** Toolkit-wide result envelope. Every backend interface returns this; callers exhaustive-when on it. */
+/** Toolkit-wide result envelope. Every `*-api` interface returns this; callers exhaustive-when on it. */
 sealed interface AppResult<out D, out E : AppError> {
     data class Success<D>(
         val data: D,

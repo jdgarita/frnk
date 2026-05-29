@@ -92,7 +92,7 @@ fun initializeFrnk(
 ): KoinApplication
 ```
 
-`initializeFrnk` calls `startKoin { modules(frnkModules(backend)); extraConfig() }`. Hosts add `androidContext(...)` or their own SQLDelight schema module via `extraConfig`.
+`initializeFrnk` calls `startKoin { modules(frnkModules(backend)); extraConfig() }`. Hosts add `androidContext(...)` via `extraConfig`. The toolkit owns its own SQLDelight schema (`FrnkDB`, generated into `dev.jdgarita.frnk.database.sql`): `databaseModule` builds it from the platform `SqlDriverFactory` + `FrnkDB.Schema` and binds `NoteStore`. Hosts may still install their own additional schema module via `extraConfig` if they want app-specific tables.
 
 ## Module communication flow
 
@@ -105,7 +105,7 @@ fun initializeFrnk(
 
 ## Result wrapper
 
-`AppResult<D, E : AppError>` (in `shared-backend-api`) is sealed: `Success(data)` / `Failure(error)`. Every `*-api` interface returns `AppResult` instead of throwing, so callers handle errors exhaustively at compile time.
+`AppResult<D, E : AppError>` (in `shared-utils`, the neutral root) is sealed: `Success(data)` / `Failure(error)`. Every `*-api` interface returns `AppResult` instead of throwing, so callers handle errors exhaustively at compile time. It lives in `shared-utils` (not `shared-backend-api`) so any domain — backend, database (`NoteStore`), monetization — can return it without a sibling `*-api`→`*-api` dependency.
 
 ## iOS native dependency contract
 
