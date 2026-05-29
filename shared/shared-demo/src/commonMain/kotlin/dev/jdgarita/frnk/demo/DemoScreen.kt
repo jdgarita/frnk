@@ -22,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
@@ -552,6 +554,17 @@ private fun ComponentsTab(
     val trimmedQuery = query.trim()
     val matches = components.filter { it.first.contains(trimmedQuery, ignoreCase = true) }
 
+    // List view (detail path returned above): physical back mirrors the top bar's leading button —
+    // close the search field if it's open, otherwise fall through to the back arrow's target (Home).
+    DemoBackHandler {
+        if (searchActive) {
+            searchActive = false
+            query = ""
+        } else {
+            onBack()
+        }
+    }
+
     FrnkScreenScaffold(
         topBar =
             FrnkTopAppBarState(
@@ -649,6 +662,11 @@ private fun ComponentDetailScreen(
     onBack: () -> Unit,
     content: @Composable () -> Unit,
 ) {
+    // The Android physical back button / predictive-back gesture (and the iOS swipe-back gesture)
+    // mirror the top bar's back arrow: return to the Components list. Without this, system back
+    // bypasses the in-app navigation state and pops the whole Activity (exits the app) instead.
+    DemoBackHandler { onBack() }
+
     FrnkScreenScaffold(
         topBar =
             FrnkTopAppBarState(
@@ -685,6 +703,9 @@ private fun SettingsTab(
     onBack: () -> Unit,
     onEffect: (SettingsEffect) -> Unit,
 ) {
+    // Physical back / predictive-back gesture mirrors the top bar's back arrow: return to Home.
+    DemoBackHandler { onBack() }
+
     FrnkScreenScaffold(
         topBar =
             FrnkTopAppBarState(
@@ -827,4 +848,25 @@ private fun Section(
         FrnkText(state = FrnkTextState.Title(text = title))
         content()
     }
+}
+
+/**
+ * Bridges the platform back signal — the Android system back button + predictive-back gesture, and
+ * the iOS interactive swipe-back — to an in-app navigation action, so the demo's state-driven
+ * navigation (it deliberately runs no NavHost) honours the hardware/gesture back the same way it
+ * honours the on-screen back arrows.
+ *
+ * Confines the opt-in for the still-`@ExperimentalComposeUiApi` — and, as of Compose Multiplatform
+ * 1.11, soft-deprecated in favour of `androidx.navigationevent`'s `NavigationEventHandler` —
+ * [BackHandler] to this one place: call sites stay clean and the eventual migration is a one-function
+ * change rather than an edit at every screen.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@Suppress("DEPRECATION")
+@Composable
+private fun DemoBackHandler(
+    enabled: Boolean = true,
+    onBack: () -> Unit,
+) {
+    BackHandler(enabled = enabled, onBack = onBack)
 }
