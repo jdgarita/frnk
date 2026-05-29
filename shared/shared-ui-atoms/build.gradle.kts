@@ -28,6 +28,7 @@ kotlin {
             implementation(libs.compose.unstyled.button)
             implementation(libs.compose.unstyled.icon)
             implementation(libs.compose.unstyled.separators)
+            implementation(libs.compose.ripple.indication)
             implementation(libs.icons.lucide)
         }
 
