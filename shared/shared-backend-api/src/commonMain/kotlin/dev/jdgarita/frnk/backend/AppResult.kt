@@ -23,3 +23,16 @@ enum class CommonError(
     NotFound("Resource not found"),
     Unknown("Unknown error"),
 }
+
+/**
+ * Collapses both arms of an [AppResult] into a single value. The exhaustive `when` over the
+ * sealed hierarchy keeps the success/failure contract compile-checked at every call site.
+ */
+inline fun <D, E : AppError, R> AppResult<D, E>.fold(
+    onSuccess: (D) -> R,
+    onFailure: (E) -> R,
+): R =
+    when (this) {
+        is AppResult.Success -> onSuccess(data)
+        is AppResult.Failure -> onFailure(error)
+    }

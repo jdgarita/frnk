@@ -54,5 +54,8 @@ jobs:
       - name: Compile (Android, all modules in parallel)
         run: ./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache
 
+      # KMP modules (com.android.kotlin.multiplatform.library) expose their host unit
+      # tests as `testAndroidHostTest` (commonTest + androidHostTest), NOT `testDebugUnitTest`.
+      # `:androidDemoApp` is a com.android.application, so its unit tests stay on `testDebugUnitTest`.
       - name: Unit tests
-        run: ./gradlew testDebugUnitTest --parallel --build-cache
+        run: ./gradlew testAndroidHostTest :androidDemoApp:testDebugUnitTest --parallel --build-cache

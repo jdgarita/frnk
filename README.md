@@ -123,8 +123,8 @@ Demo apps (the internal smoke harnesses) additionally need:
 ```bash
 ./gradlew compileAndroidMain                          # fast compile-only check across every shared module (what CI runs)
 ./gradlew :androidDemoApp:compileDebugKotlin          # compile the demo harness
-./gradlew testDebugUnitTest                           # commonTest + androidUnitTest across all KMP modules
-./gradlew :shared-database-impl:testDebugUnitTest     # run a single module's tests
+./gradlew testAndroidHostTest                         # commonTest + androidHostTest across all KMP modules
+./gradlew :shared-database-impl:testAndroidHostTest   # run a single module's tests
 ./gradlew ktlintFormat                                # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                                    # full build of every target (Android library + iOS frameworks)
 ./gradlew :iosApp:assembleFrnkKitReleaseXCFramework       # produce FrnkKit.xcframework (consumer-facing)
@@ -132,7 +132,7 @@ Demo apps (the internal smoke harnesses) additionally need:
 ./gradlew clean
 ```
 
-> Under the AGP 9 KMP-Android plugin (`com.android.kotlin.multiplatform.library`), the per-module compile task is `compileAndroidMain` — `compileDebugKotlinAndroid` is the AGP 8 name and no longer exists for KMP-Android modules. The demo app is a plain `com.android.application`, so it keeps `compileDebugKotlin`.
+> Under the AGP 9 KMP-Android plugin (`com.android.kotlin.multiplatform.library`), the per-module compile task is `compileAndroidMain` — `compileDebugKotlinAndroid` is the AGP 8 name and no longer exists for KMP-Android modules. The host unit-test task is likewise `testAndroidHostTest` (not `testDebugUnitTest`), and a module only gets it after opting in with `kotlin { android { withHostTest {} } }`. The demo app is a plain `com.android.application`, so it keeps `compileDebugKotlin` / `testDebugUnitTest`.
 
 Shared constants (package name, min/compile/target SDK, iOS framework name `FrnkKit`, database class `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt` — read from there rather than hardcoding.
 
@@ -157,7 +157,7 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 `.github/workflows/main.yml` is the authoritative pipeline — a single job that runs:
 
 1. `./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain` plus the demo harness
-2. `./gradlew testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidUnitTest`
+2. `./gradlew testAndroidHostTest :androidDemoApp:testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidHostTest` (KMP host tests run under `testAndroidHostTest`, not `testDebugUnitTest`) plus the demo app's unit tests
 
 `assemble`, `allTests`, and `ktlintCheck` are intentionally out — they duplicate work the local pre-commit hook (style) and downstream consumer builds (release assembly, iOS link) already cover.
 

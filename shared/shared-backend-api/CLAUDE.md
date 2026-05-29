@@ -22,3 +22,16 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
 ## Dependencies
 
 - `api(projects.sharedUtils)`, `api(libs.kotlinx.coroutines.core)`. That's it.
+- `commonTest`: `kotlin-test` + `kotlinx-coroutines-test` (host tests opted in via
+  `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared-backend-api:testAndroidHostTest`).
+
+## Testing & the fake pattern
+
+- `AppResult.fold(onSuccess, onFailure)` collapses both arms with a compile-checked
+  exhaustive `when`; prefer it over hand-rolled `when` blocks. Tested in `AppResultTest`.
+- **`FakeAuthService` (`commonTest`) is the canonical fake pattern for `*-api` interfaces.**
+  When you add a new `*-api` interface (or implement a real `*-impl`, e.g. BACKLOG
+  P1-2/P1-3), copy its shape to test success **and** failure branches without a real SDK:
+  back observable state with a `MutableStateFlow`, return a test-controlled `AppResult`
+  from every call, and record inputs for assertions. Fakes live in `commonTest`, never
+  in `commonMain`.
