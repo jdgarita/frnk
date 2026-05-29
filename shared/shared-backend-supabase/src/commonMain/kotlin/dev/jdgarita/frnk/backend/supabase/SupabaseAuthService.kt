@@ -1,9 +1,9 @@
 package dev.jdgarita.frnk.backend.supabase
 
-import dev.jdgarita.frnk.backend.AppResult
 import dev.jdgarita.frnk.backend.AuthService
 import dev.jdgarita.frnk.backend.AuthUser
-import dev.jdgarita.frnk.backend.CommonError
+import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

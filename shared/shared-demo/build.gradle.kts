@@ -30,6 +30,7 @@ kotlin {
             export(projects.sharedUiApi)
             export(projects.sharedUiAtoms)
             export(projects.sharedBackendApi)
+            export(projects.sharedDatabaseApi)
             export(projects.sharedMonetizationApi)
         }
     }
@@ -40,6 +41,7 @@ kotlin {
             api(projects.sharedUiApi)
             api(projects.sharedUiAtoms)
             api(projects.sharedBackendApi)
+            api(projects.sharedDatabaseApi)
             api(projects.sharedMonetizationApi)
             api(compose.runtime)
             api(compose.foundation)

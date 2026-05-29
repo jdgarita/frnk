@@ -4,6 +4,7 @@ KMP root module — the dependency floor every other `shared-*` module sits on. 
 
 ## Public surface
 
+- `AppResult.kt` — the **toolkit-wide result envelope**: `sealed interface AppResult<out D, out E : AppError>` (`Success(data)` / `Failure(error)`), the `AppError` interface (`val message: String`), the `CommonError` enum (`Network`, `Unauthorized`, `NotFound`, `Unknown`), and the `fold(onSuccess, onFailure)` extension. Every `*-api` interface returns this and never throws. It lives here (the neutral root) rather than in `shared-backend-api` so backend, database (`NoteStore`), and monetization apis can all return it without a sibling `*-api`→`*-api` dependency. Tested by `AppResultTest` in `commonTest`.
 - `Logger.kt` — multiplatform log helper. Use this everywhere instead of `println` / `Log.d` / `NSLog`.
 - `DateTimeFormat.kt` — `kotlinx-datetime` formatting helpers shared by every consumer.
 - `PlatformInfo.kt` — the module's **only `expect/actual`**. `expect object PlatformInfo` (`osName` / `osVersion` / `deviceModel`) with an `androidMain` actual (reads `android.os.Build` / `Build.VERSION`) and an `iosMain` actual (reads `UIDevice`). No `Context` or composition needed, so it's safe to read from anywhere in common code. It lives here — not in `shared-ui-atoms` — so the UI module stays platform-free; the `FeedbackEmailLauncher` scaffold consumes it through `FeedbackEmail`.

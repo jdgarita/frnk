@@ -1,5 +1,8 @@
 package dev.jdgarita.frnk.backend
 
+import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
+
 /** Minimal remote read/write surface. Implementations decide what 'collection' means. */
 interface RemoteData {
     suspend fun <T : Any> get(

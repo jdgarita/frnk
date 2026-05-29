@@ -369,7 +369,50 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "3. MVI") {
+            Section(title = "3. Persistence (FrnkDB — ${state.notes.size} saved)") {
+                FrnkText(
+                    state =
+                        FrnkTextState.Body(
+                            text =
+                                "NoteStore (shared-database-api) over SQLDelight's FrnkDB. The demo binds an " +
+                                    "in-memory fake so DemoKit stays cinterop-free; the real driver path is " +
+                                    "covered by NoteStoreRoundTripTest.",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                    FrnkButton(
+                        state = FrnkButtonState(text = "Add note"),
+                        onClick = { onIntent(DemoIntent.AddNote) },
+                    )
+                    FrnkButton(
+                        state =
+                            FrnkButtonState(
+                                text = "Clear",
+                                variant = FrnkButtonVariant.Outlined,
+                                enabled = state.notes.isNotEmpty(),
+                            ),
+                        onClick = { onIntent(DemoIntent.ClearNotes) },
+                    )
+                }
+                if (state.notes.isEmpty()) {
+                    FrnkText(
+                        state =
+                            FrnkTextState.BodySmall(
+                                text = "No notes yet — tap Add note to persist one.",
+                                color = colorOnSurfaceVariant,
+                            ),
+                    )
+                } else {
+                    state.notes.forEach { note ->
+                        FrnkText(state = FrnkTextState.Body(text = "• $note"))
+                    }
+                }
+            }
+
+            FrnkDivider(state = FrnkDividerState.Horizontal())
+
+            Section(title = "4. MVI") {
                 FrnkText(
                     state =
                         FrnkTextState.Body(
