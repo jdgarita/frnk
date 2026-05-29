@@ -22,9 +22,9 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 | Module | Purpose |
 | --- | --- |
 | `shared` | Consumer-facing aggregator. Re-exports every `shared-*` module via `api(...)`, exposes `frnkModules(BackendChoice)` and `initializeFrnk()` for one-shot Koin bootstrap. |
-| `shared-utils` | Root utilities (coroutines, datetime). Every other shared module depends on this. |
-| `shared-ui-api` | UI-layer interfaces — lifecycle ViewModel + the MVI contracts. |
-| `shared-ui-atoms` | Headless Compose components on `compose-unstyled`, **and** the MVI engine: `MviContract`, `MviViewModel<S, A, E>`, `ObserveAsEvents`. New screens subclass `MviViewModel`. |
+| `shared-utils` | Root utilities — coroutines, datetime, `Logger`, `PlatformInfo` (the module's only `expect/actual`: OS + device), `FeedbackEmail` (`mailto:` draft builder), and `Frnk.VERSION`. Every other shared module depends on this. |
+| `shared-ui-api` | The **MVI engine**, no Compose deps: `MviContract` (`UiState` / `UiIntent` / `UiEffect`), `MviViewModel<S, I, E>` (StateFlow + intent flow + effect channel; `setState`/`onIntent`/`emit`), plus `ToolkitRoute` and `UiText`. Feature ViewModels subclass `MviViewModel` here without pulling in Compose. |
+| `shared-ui-atoms` | The **design system** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes`), the `FrnkTheme` engine, `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`, …), and page scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `FrnkScreenScaffold` + `CollapsibleBarsState`). |
 | `shared-backend-api` | Auth / Analytics / CrashReporter / RemoteData interfaces. Owns `AppResult<D, E : AppError>`. |
 | `shared-backend-firebase` | Firebase impl of `shared-backend-api`. Exposes `firebaseBackendModule`. |
 | `shared-backend-supabase` | Supabase + Ktor impl of `shared-backend-api`. Exposes `supabaseBackendModule`. |
@@ -40,12 +40,12 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 ## 🧰 Tech stack
 
 - **Language:** Kotlin 2.3.21
-- **UI:** Compose Multiplatform 1.10.3 + `compose-unstyled` (`com.composables:core`)
+- **UI:** Compose Multiplatform 1.11.0 + `compose-unstyled` 2.4.0 (the granular `com.composables:composeunstyled-*` artifacts — **not** `com.composables:core`, **not** Material3) + Lucide icons (`icons-lucide-cmp` 2.2.1)
 - **DI:** Koin 4.2.1
 - **Navigation:** Compose Multiplatform Navigation 2.9.2 (`org.jetbrains.androidx.navigation`)
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
 - **Backend:** Supabase 3.6.0 + Ktor 3.5.0, and GitLive Firebase 2.4.0 — both impls bundled, host picks via `BackendChoice`
-- **Monetization:** RevenueCat 3.0.1
+- **Monetization:** RevenueCat 3.0.2
 - **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
 
 ## 🚀 Consume as a composite build

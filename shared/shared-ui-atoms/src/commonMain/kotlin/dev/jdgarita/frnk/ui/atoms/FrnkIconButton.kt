@@ -31,6 +31,7 @@ data class FrnkIconButtonState(
     val tint: ThemeToken<Color>? = null,
     val contentPadding: PaddingValues = PaddingValues(FrnkSpacing.sm),
     val enabled: Boolean = true,
+    val skeleton: FrnkSkeleton = FrnkSkeleton(),
 )
 
 @Composable
@@ -41,11 +42,12 @@ fun FrnkIconButton(
 ) {
     UnstyledButton(
         onClick = onClick,
-        enabled = state.enabled,
+        enabled = state.enabled && !state.skeleton.enabled,
         modifier =
             modifier
                 .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                .clip(Theme[shapes][shapeFull]),
+                .clip(Theme[shapes][shapeFull])
+                .frnkSkeleton(state.skeleton),
         contentPadding = state.contentPadding,
     ) {
         FrnkIcon(

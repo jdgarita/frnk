@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButton
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
+import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorError
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -21,6 +22,34 @@ import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+
+@Preview
+@Composable
+private fun FrnkIcon_Skeleton_Light() {
+    PreviewSurface(appearance = Appearance.Light) {
+        Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md)) {
+            FrnkIcon(
+                state =
+                    FrnkIconState(
+                        imageVector = Theme[icons][iconCheck],
+                        contentDescription = null,
+                        size = FrnkIconSize.lg,
+                        tint = colorPrimary,
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+            )
+            FrnkIconButton(
+                state =
+                    FrnkIconButtonState(
+                        imageVector = Theme[icons][iconSettings],
+                        contentDescription = "Settings",
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+                onClick = {},
+            )
+        }
+    }
+}
 
 @Preview
 @Composable

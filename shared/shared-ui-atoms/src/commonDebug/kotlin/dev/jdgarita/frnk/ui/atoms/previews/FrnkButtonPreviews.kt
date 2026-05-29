@@ -7,8 +7,31 @@ import androidx.compose.ui.tooling.preview.Preview
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
+import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+
+@Preview
+@Composable
+private fun FrnkButton_Skeleton_Light() {
+    PreviewSurface(appearance = Appearance.Light) {
+        Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            FrnkButton(
+                state = FrnkButtonState(text = "Loading", skeleton = FrnkSkeleton(enabled = true)),
+                onClick = {},
+            )
+            FrnkButton(
+                state =
+                    FrnkButtonState(
+                        text = "Outlined",
+                        variant = FrnkButtonVariant.Outlined,
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+                onClick = {},
+            )
+        }
+    }
+}
 
 @Preview
 @Composable

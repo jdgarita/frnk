@@ -33,6 +33,7 @@ data class FrnkButtonState(
     val text: String,
     val enabled: Boolean = true,
     val variant: FrnkButtonVariant = FrnkButtonVariant.Filled,
+    val skeleton: FrnkSkeleton = FrnkSkeleton(),
 )
 
 @Composable
@@ -72,10 +73,11 @@ fun FrnkButton(
             .clip(shape)
             .background(backgroundColor)
             .let { if (border != null) it.border(border, shape) else it }
+            .frnkSkeleton(state.skeleton, shape = shapeButton)
 
     UnstyledButton(
         onClick = onClick,
-        enabled = state.enabled,
+        enabled = state.enabled && !state.skeleton.enabled,
         modifier = shapedModifier,
         contentPadding = PaddingValues(horizontal = FrnkSpacing.md, vertical = FrnkSpacing.sm),
     ) {

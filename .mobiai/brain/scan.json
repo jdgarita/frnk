@@ -33,7 +33,7 @@
     "github_actions"
   ],
   "detected_files": {
-    "android_manifest": "androidDemoApp/src/main/AndroidManifest.xml",
+    "android_manifest": "androidApp/src/androidMain/AndroidManifest.xml",
     "settings_gradle": "settings.gradle.kts",
     "xcodeproj": "iosDemoApp/iosDemoApp.xcodeproj",
     "xcworkspace": "iosDemoApp/iosDemoApp.xcodeproj/project.xcworkspace"
@@ -41,6 +41,6 @@
   "warnings": [
     "archivo sensible detectado: androidDemoApp/google-services.json (no leído)"
   ],
-  "created_at": "2026-05-26T16:33:17Z",
-  "updated_at": "2026-05-26T16:33:17Z"
+  "created_at": "2026-05-28T23:27:18Z",
+  "updated_at": "2026-05-28T23:27:18Z"
 }

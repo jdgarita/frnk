@@ -21,6 +21,7 @@ data class FrnkIconState(
     val size: Dp = FrnkIconSize.md,
     val tint: ThemeToken<Color>? = null,
     val tintAlpha: Float = 1f,
+    val skeleton: FrnkSkeleton = FrnkSkeleton(),
 )
 
 @Composable
@@ -37,6 +38,6 @@ fun FrnkIcon(
         imageVector = state.imageVector,
         contentDescription = state.contentDescription,
         tint = resolvedTint,
-        modifier = modifier.size(state.size),
+        modifier = modifier.size(state.size).frnkSkeleton(state.skeleton),
     )
 }

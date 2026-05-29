@@ -6,11 +6,23 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
+
+@Preview
+@Composable
+private fun FrnkText_Skeleton_Light() {
+    PreviewSurface(appearance = Appearance.Light) {
+        FrnkText(state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true)))
+        FrnkText(
+            state = FrnkTextState.Body(text = "Loading a body line", skeleton = FrnkSkeleton(enabled = true)),
+        )
+    }
+}
 
 @Preview
 @Composable

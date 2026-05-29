@@ -6,9 +6,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControl
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControlState
+import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.theme.Appearance
 
 private val themeOptions = listOf("System", "Light", "Dark")
+
+@Preview
+@Composable
+private fun FrnkSegmentedControl_Skeleton_Light() {
+    PreviewSurface(appearance = Appearance.Light) {
+        FrnkSegmentedControl(
+            state =
+                FrnkSegmentedControlState(
+                    options = themeOptions,
+                    selectedIndex = 0,
+                    skeleton = FrnkSkeleton(enabled = true),
+                ),
+            onOptionSelected = {},
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
 
 @Preview
 @Composable

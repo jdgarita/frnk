@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -132,8 +131,13 @@ fun FrnkBottomNavBar(
             state.items.forEachIndexed { index, item ->
                 val isSelected = index == selected
                 val activeTint = lerp(Theme[colors][colorSurface], Theme[colors][colorPrimary], ACTIVE_TINT_FRACTION)
+                // Idle tabs fade to the pill's own `colorSurface` rather than `Color.Transparent`.
+                // `Color.Transparent` carries black RGB channels, so animating to/from it drags the
+                // crossfade through a dark, muddy intermediate — a visible "flash" on both the
+                // outgoing and incoming tab. Fading between two opaque colors keeps it clean, and
+                // since the pill is `colorSurface`-filled the idle tab looks identical at rest.
                 val backgroundColor by animateColorAsState(
-                    targetValue = if (isSelected) activeTint else Color.Transparent,
+                    targetValue = if (isSelected) activeTint else Theme[colors][colorSurface],
                     label = "nav_item_bg",
                 )
                 val iconTint by animateColorAsState(
