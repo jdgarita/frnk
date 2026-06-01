@@ -6,9 +6,19 @@
 
 `package dev.jdgarita.frnk.shared`:
 
-- `BackendChoice` (enum) — `Supabase` (default) or `Firebase`.
-- `frnkModules(backend: BackendChoice = Supabase): List<Module>` — returns `databaseModule` + chosen-backend module + `revenueCatModule`. The unchosen backend's Koin module is **not** installed, so its bindings never appear in the graph at runtime — even though both backends are bundled at compile time.
-- `initializeFrnk(backend, extraConfig)` — one-shot `startKoin { modules(frnkModules(backend)); extraConfig() }`. Hosts plug in `androidContext(...)` and their own modules via `extraConfig`.
+- `BackendChoice` (enum) — `Supabase` (default) or `Firebase`. Selects the **auth + remote data** backend only.
+- `ObservabilityChoice` (enum) — `None` (default, no-op) or `Firebase`. Selects analytics + crash
+  reporting **independently of `BackendChoice`** (BACKLOG P1-5): a local-only app (no backend) or a
+  Supabase-backed app can still pick `ObservabilityChoice.Firebase`. `noopObservabilityModule` (here)
+  is the `None` default over `shared-backend-api`'s `Noop{Analytics,Crash}`; `firebaseObservabilityModule`
+  (in `shared-backend-firebase`) is the Firebase one.
+- `frnkModules(backend = Supabase, observability = None): List<Module>` — returns `databaseModule` +
+  chosen-backend module + chosen-observability module + `revenueCatModule`. Unchosen modules are **not**
+  installed, so their bindings never appear in the graph at runtime — even though everything is bundled
+  at compile time.
+- `initializeFrnk(backend, observability, extraConfig)` — one-shot
+  `startKoin { modules(frnkModules(backend, observability)); extraConfig() }`. Hosts plug in
+  `androidContext(...)` and their own modules via `extraConfig`.
 
 Keep this surface tiny. Adding a new top-level entry point here is a public-API change for every downstream consumer.
 

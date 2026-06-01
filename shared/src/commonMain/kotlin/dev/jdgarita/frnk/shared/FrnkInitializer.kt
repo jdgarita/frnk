@@ -5,9 +5,10 @@ import org.koin.core.context.startKoin
 
 fun initializeFrnk(
     backend: BackendChoice = BackendChoice.Supabase,
+    observability: ObservabilityChoice = ObservabilityChoice.None,
     extraConfig: KoinApplication.() -> Unit = {},
 ): KoinApplication =
     startKoin {
-        modules(frnkModules(backend))
+        modules(frnkModules(backend, observability))
         extraConfig()
     }

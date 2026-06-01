@@ -16,11 +16,14 @@ is enumerated, prioritized, and given acceptance criteria in `BACKLOG.md`.
 
 `frnk` has a **strong, correct skeleton and an unusually mature design-system /
 build foundation**, with the hard architectural invariants already enforced. The
-risk is concentrated in the **data and integration layers**: the backend impls
-and RevenueCat are wired structurally but are **not functionally implemented**.
+risk is concentrated in the **data and integration layers**: the backend auth/remote
+impls and RevenueCat are wired structurally but are **not functionally implemented**.
 SQLDelight persistence is now functionally complete (P1-1: `FrnkDB` + `NoteStore`,
-round-trip tested). The remaining headline gaps are the **backend/RevenueCat impls**
-and the **navigation system**.
+round-trip tested), and **Firebase analytics + crash reporting are now implemented and
+decoupled into a backend-independent `ObservabilityChoice` axis** (P1-5). The backend
+**auth + remote-data** impls (P1-2/3/4) are intentionally **deferred** while consuming
+apps are local-storage-only. The remaining headline gaps are **RevenueCat** and the
+**navigation system**.
 
 | Area | Grade | One-line verdict |
 | --- | --- | --- |
@@ -33,13 +36,14 @@ and the **navigation system**.
 | **No-Material constraint** | ✅ | Zero violations found |
 | Local preferences (KeyValueStore) | ✅ | Backed by multiplatform-settings |
 | Demo across 3 layers | ✅ | shared-demo + android + ios harnesses present |
-| **Backend (Firebase/Supabase)** | 🟡 | Interfaces real; **impls are `TODO()`** |
+| **Backend auth/remote (Firebase/Supabase)** | 🟡 | Interfaces real; **impls are `TODO()`** — deferred (local-only) |
+| **Observability (analytics + crash)** | ✅ | Firebase impls done + decoupled into `ObservabilityChoice` (P1-5) |
 | **Monetization (RevenueCat)** | 🟡 | Gate + fake work; **real manager is a `TODO()` skeleton** |
 | **SQLDelight persistence** | ✅ | `FrnkDB` + `Note.sq` + `NoteStore`; round-trip tested, demoed (P1-1) |
 | **Navigation** | ⛔ | Only a `ToolkitRoute` marker; no NavHost/back stack |
-| **Analytics (PostHog)** | ⛔ | Not present; only no-op + Firebase skeleton |
+| **Analytics (PostHog)** | 🟡 | Firebase analytics/crash done (P1-5); provider-neutral PostHog still missing (P3-1) |
 | Molecules / Organisms (Atomic Design) | ⛔ | Only atoms + scaffolds exist |
-| **Automated tests** | ⛔ | **Zero test files in the repo** |
+| **Automated tests** | 🟡 | Harness seeded (P0-3); MVI/`AppResult`/observability + reducer tests; broad coverage open (P4-4) |
 | Documentation accuracy | ⚠️ | `docs/ARCHITECTURE.md` has drifted from code |
 
 ---
@@ -120,12 +124,17 @@ and the **navigation system**.
 - **Impact:** Requirement §3.3 (tailored navigation) is unmet at the toolkit
   level.
 
-### 3.3 Analytics / PostHog (⛔)
-- **Evidence:** no PostHog dependency or code; analytics today is a no-op
-  (`NoopAnalyticsTracker`) on the Supabase path and a **commented-out skeleton**
-  on the Firebase path.
-- **Impact:** Requirement §3.6 partially unmet (interface exists; no working
-  provider).
+### 3.3 Analytics / PostHog (🟡 — Firebase done by P1-5; PostHog still open)
+- **Was:** no working analytics provider — a no-op (`NoopAnalyticsTracker`) on the
+  Supabase path and a **commented-out skeleton** on the Firebase path.
+- **Now (P1-5, 2026-05-29):** `FirebaseAnalyticsTracker` / `FirebaseCrashReporter` are
+  implemented against the gitlive SDKs (with `runCatching` no-op safety) and exposed via
+  `firebaseObservabilityModule` on a new **backend-independent `ObservabilityChoice` axis**
+  (`frnkModules(backend, observability)`); the `Noop*` defaults moved to `shared-backend-api`
+  and back `ObservabilityChoice.None`. So a local-only app (no backend) can ship Firebase
+  telemetry. Demoed across all three layers; `androidDemoApp` runs the real SDK.
+- **Remaining:** the **provider-neutral PostHog** tracker named in Requirement §3.6 is still
+  missing — see BACKLOG P3-1.
 
 ### 3.4 Molecules & Organisms (⛔)
 - **Evidence:** the design system has Atoms + Scaffolds but no Molecules or
@@ -150,15 +159,16 @@ and the **navigation system**.
 
 ## 4. The Tech Debt — deviations & risks
 
-### 4.1 Backend implementations are skeletons (🟡 → ⚠️)
-- **Evidence:** every Firebase/Supabase auth & remote-data method is
-  `= TODO("wire …")`; the Firebase analytics/crash methods are commented-out
-  bodies. The impl modules total ~230 lines — structure without behavior.
+### 4.1 Backend auth/remote implementations are skeletons (🟡 → ⚠️, deferred)
+- **Evidence:** every Firebase/Supabase **auth & remote-data** method is
+  `= TODO("wire …")`. (The Firebase **analytics/crash** methods are no longer
+  skeletons — implemented in P1-5; see §3.3.)
 - **Risk:** the toolkit *compiles* and *boots*, which can mask that no real
-  backend call works. Any host calling `AuthService.signIn(...)` against a real
+  auth/remote call works. Any host calling `AuthService.signIn(...)` against a real
   backend will hit `TODO()` at runtime (`NotImplementedError`).
-- **Severity:** High for any product that needs auth/remote data; low for the
-  demo (which uses fakes).
+- **Status:** **Deferred** (BACKLOG P1-2/P1-3/P1-4, 2026-05-29) while consuming apps
+  are local-storage-only. Severity is low until a networked/auth app is planned, at
+  which point these become the priority.
 
 ### 4.2 RevenueCat manager is a skeleton (🟡 → ⚠️)
 - **Evidence:** `RevenueCatEntitlementManager.kt` is marked
@@ -217,4 +227,7 @@ area and should be protected with an automated guard (see `BACKLOG.md`).
    (Molecules/Organisms) once the foundation is verified.
 5. **Reconcile docs** continuously so the source-of-truth guarantee holds.
 
-This ordering is encoded as priority tiers in `BACKLOG.md`.
+This ordering is encoded as priority tiers in `BACKLOG.md`. **Re-prioritization
+(2026-05-29):** because near-term consuming apps are local-storage-only, the backend
+**auth + remote-data** impls (P1-2/3/4) are deferred, and **analytics + crash** (P1-5)
+was pulled forward and completed. Recommended next is **navigation** (P2-1).

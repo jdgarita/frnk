@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
+    // Real Firebase smoke test (BACKLOG P1-5): processes google-services.json so Firebase
+    // auto-inits, enabling the real firebaseObservabilityModule wired in DemoApplication.
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 kotlin {
