@@ -111,6 +111,13 @@ reconciled to `testAndroidHostTest :androidDemoApp:testDebugUnitTest`.
 The largest functional gap and highest product risk: impls compile but do not
 work. Close the api↔impl behavior gap.
 
+> **Re-prioritization (2026-05-29).** All near-term apps consuming the toolkit are
+> **local-storage-only** — no auth, no remote data. P1-2 (Firebase Auth), P1-3
+> (Supabase Auth), and P1-4 (RemoteData) are therefore **deferred** below everything
+> else; revisit them when a networked/auth app is actually planned. Conversely, **every**
+> project wants analytics + crash reporting, so **P1-5 is promoted to the next task**
+> after P1-1. Order now: P1-1 ✅ → **P1-5** → P2/P3/P4 → (deferred) P1-2/P1-3/P1-4.
+
 ### P1-1 — SQLDelight database (`FrnkDB`) end-to-end ✅ DONE (2026-05-29)
 **Description:** Introduce the SQLDelight Gradle DSL, a first `.sq` schema, and
 driver factories so relational persistence actually works.
@@ -151,7 +158,8 @@ interface in `shared-database-api`, binding in `DatabaseModule`, Android + nativ
       (compiles for `iosSimulatorArm64`; `DemoKit.xcframework` assembled — a booted iOS
       simulator was unavailable in this environment, so not launched on-device).
 
-### P1-2 — Firebase backend: real Auth implementation
+### P1-2 — Firebase backend: real Auth implementation ⏸ DEFERRED (local-storage-only)
+**Deferred (2026-05-29):** near-term apps don't use a remote auth backend; revisit when one does.
 **Description:** Replace the `TODO()` bodies in `FirebaseAuthService` with real
 `dev.gitlive:firebase-auth` calls, mapping outcomes to `AppResult`.
 **Rationale (priority):** Auth is the most commonly needed backend capability;
@@ -166,7 +174,8 @@ backends).
 - [ ] Contract parity with `SupabaseAuthService` (same interface satisfied).
 - [ ] Unit test with a faked SDK boundary covers success + failure mapping.
 
-### P1-3 — Supabase backend: real Auth implementation
+### P1-3 — Supabase backend: real Auth implementation ⏸ DEFERRED (local-storage-only)
+**Deferred (2026-05-29):** same rationale as P1-2 — no remote auth backend in near-term apps.
 **Description:** Same as P1-2 for `SupabaseAuthService` using
 `io.github.jan-tennert.supabase:auth-kt`.
 **Rationale (priority):** Supabase is the **default** `BackendChoice`; parity is
@@ -177,7 +186,8 @@ required so backend swap is real, not theoretical.
 - [ ] Behaviorally interchangeable with the Firebase impl for the same calls.
 - [ ] Unit test covers success + failure mapping.
 
-### P1-4 — RemoteData implementations (Firestore + Supabase Postgrest)
+### P1-4 — RemoteData implementations (Firestore + Supabase Postgrest) ⏸ DEFERRED (local-storage-only)
+**Deferred (2026-05-29):** no remote reads/writes in near-term apps; revisit alongside P1-2/P1-3.
 **Description:** Implement `FirestoreRemoteData` and `SupabaseRemoteData`
 read/write against their SDKs.
 **Rationale (priority):** Remote reads/writes are the second core backend
@@ -188,15 +198,34 @@ capability after auth.
 - [ ] Serialization path verified for at least one DTO round-trip.
 - [ ] Unit tests for success + failure on both impls.
 
-### P1-5 — Analytics & crash: Firebase implementations
-**Description:** Uncomment/implement `FirebaseAnalyticsTracker` and
-`FirebaseCrashReporter` against the SDKs.
-**Rationale (priority):** Completes the Firebase backend contract; analytics
-interface already exists.
+### P1-5 — Analytics & crash: Firebase implementations ✅ DONE (2026-05-29)
+**Description:** Implement `FirebaseAnalyticsTracker` and `FirebaseCrashReporter` against the
+gitlive SDKs, and expose them **decoupled from `BackendChoice`** so local-only apps can use them.
+**Rationale (priority):** Promoted to next-up — every project wants analytics + crash, even the
+local-storage-only ones.
+**Key decisions:**
+- **Observability is its own axis.** Analytics/crash were moved out of `firebaseBackendModule` /
+  `supabaseBackendModule` into a new `ObservabilityChoice { None, Firebase }` selector on
+  `frnkModules(backend, observability)` + `initializeFrnk(...)`. `firebaseObservabilityModule`
+  (in `shared-backend-firebase`) binds the real impls; `noopObservabilityModule` (in `:shared`,
+  over the relocated `NoopAnalyticsTracker`/`NoopCrashReporter` now in `shared-backend-api`) is the
+  `None` default. So an app with **no backend** (or a Supabase-backed app) can still ship Firebase
+  Analytics + Crashlytics. (Pre-stages P3-1 PostHog, "selectable independently of `BackendChoice`".)
+- **Real SDK smoke-tested in `androidDemoApp`.** It applies the `google-services` +
+  `firebase-crashlytics` Gradle plugins (its `google-services.json` for project `frnk-demo` already
+  existed) and installs `firebaseObservabilityModule` over the demo's logging fakes via Koin
+  `allowOverride(true)`. `:shared-demo` + `iosDemoApp` stay **SDK-free** (logging fakes) so
+  `DemoKit.xcframework` remains cinterop-free.
 **Acceptance Criteria:**
-- [ ] `logEvent`/`setUserProperty`/crash recording call the SDK.
-- [ ] No-op behavior preserved when Firebase isn't configured (no crash).
-- [ ] Supabase path keeps `Noop*` defaults documented as intentional.
+- [x] `logEvent`/`setUserProperty`/`recordException`/`log`/`setUserId` call the gitlive SDK
+      (`Firebase.analytics` / `Firebase.crashlytics`); event params coerced to Firebase types.
+- [x] No-op when Firebase isn't configured: every SDK call wrapped in `runCatching` + logged warning.
+- [x] Analytics/crash decoupled from `BackendChoice` via `ObservabilityChoice`; `None` → Noop default
+      (documented as intentional in `shared-backend-api`).
+- [x] Reusable `FakeAnalyticsTracker`/`FakeCrashReporter` (+ `ObservabilityTest`) in
+      `shared-backend-api` `commonTest`; `DemoViewModelTest` in `:shared-demo` covers the new intents.
+- [x] Demoed in all three layers: `:shared-demo` (Analytics & Crash section + logging fakes),
+      `androidDemoApp` (real Firebase via `firebaseObservabilityModule`), `iosDemoApp` (logging fakes).
 
 ---
 
@@ -320,18 +349,20 @@ currently untested; do this once the harness (P0-3) exists.
 ## Dependency map (quick reference)
 
 ```
-P0-1, P0-2, P0-3      (no deps — do first)
+P0-1, P0-2, P0-3      (no deps — done)
         │
-P1-1 ───┤ (FrnkDB)            P1-2 ─┐
-P1-2/3 ─┤ (auth)             P1-3 ─┤→ P2-2 (verify backend swap)
-P1-4 ───┤ (remote data)      P1-5 ─┘
+P1-1 ✅ (FrnkDB)   P1-5 ✅ (analytics/crash — ObservabilityChoice, backend-independent)
         │
 P2-1 (navigation) ── depends on P0-3 harness; unblocks most feature screens
         │
 P3-1 (PostHog)   P3-2 (RevenueCat entitlements) → P3-3 (paywall/purchase)
         │
 P4-1 (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
+        ┊
+        ┊  ⏸ DEFERRED until a networked/auth app is planned (local-storage-only for now):
+        └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
-**Suggested first sprint:** P0-1, P0-2, P0-3, then P1-1. These lock in the
-constraints, make CI meaningful, and deliver the first real data capability.
+**Next up:** P1-1 ✅ and P1-5 ✅ are done. Recommended next is **P2-1 (navigation)** — it
+unblocks most multi-screen features and depends only on the P0-3 harness. P1-2/P1-3/P1-4 stay
+deferred while apps are local-storage-only.

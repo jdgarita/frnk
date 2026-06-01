@@ -40,7 +40,7 @@ val demoModule =
         // the SQLite native cinterop into DemoKit. The REAL SqlDelightNoteStore is bound by
         // databaseModule (via frnkModules) and covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
-        viewModel { DemoViewModel(get(), get(), get(), get()) }
+        viewModel { DemoViewModel(get(), get(), get(), get(), get()) }
     }
 
 /** In-memory Pro toggle so we can exercise FeatureGate without a paid SDK. */

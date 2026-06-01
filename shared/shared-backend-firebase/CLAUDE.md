@@ -6,9 +6,10 @@ Firebase implementation of `:shared-backend-api`. Bundled inside `:shared` and s
 
 - `FirebaseAuthService.kt` — `AuthService` over Firebase Auth.
 - `FirestoreRemoteData.kt` — `RemoteData` over Firestore.
-- `FirebaseAnalyticsTracker.kt` — analytics via Firebase Analytics.
-- `FirebaseCrashReporter.kt` — crash reporting via Firebase Crashlytics.
-- `FirebaseBackendModule.kt` — exports `val firebaseBackendModule = module { ... }`. `:shared`'s `frnkModules(BackendChoice.Firebase)` installs this.
+- `FirebaseAnalyticsTracker.kt` — analytics via Firebase Analytics (gitlive `firebase-analytics`).
+- `FirebaseCrashReporter.kt` — crash reporting via Firebase Crashlytics (gitlive `firebase-crashlytics`). Every SDK call is wrapped in `runCatching` so an unconfigured Firebase degrades to a logged no-op (BACKLOG P1-5).
+- `FirebaseBackendModule.kt` — exports `val firebaseBackendModule = module { ... }` (**auth + remote data only**). `:shared`'s `frnkModules(BackendChoice.Firebase)` installs this.
+- `FirebaseObservabilityModule.kt` — exports `val firebaseObservabilityModule = module { ... }` (analytics + crash). **Separate from the backend module** so it can be selected via `ObservabilityChoice.Firebase` independently of `BackendChoice` (BACKLOG P1-5). `:shared`'s `frnkModules(observability = Firebase)` installs this.
 
 ## Rules
 

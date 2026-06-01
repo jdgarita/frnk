@@ -17,11 +17,20 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Added
 
+- Firebase Analytics + Crashlytics implementations (`FirebaseAnalyticsTracker` / `FirebaseCrashReporter`) over the gitlive SDKs, with `runCatching` no-op safety when Firebase isn't configured (BACKLOG P1-5).
+- `ObservabilityChoice { None, Firebase }` — analytics + crash reporting selectable **independently of `BackendChoice`**, via `frnkModules(backend, observability)` / `initializeFrnk(...)`. `firebaseObservabilityModule` binds the real impls; `noopObservabilityModule` is the `None` default. Lets a local-storage-only app (no backend) ship Firebase telemetry.
+- Recording `FakeAnalyticsTracker` / `FakeCrashReporter` (+ `ObservabilityTest`) in `shared-backend-api` `commonTest`; `DemoViewModelTest` in `:shared-demo`.
+- `androidDemoApp` applies the `google-services` + `firebase-crashlytics` Gradle plugins and installs the real `firebaseObservabilityModule` to smoke-test Firebase on a device; the demo gains an "Analytics & Crash" section across all three layers.
+
 ### Changed
+
+- **Breaking:** `frnkModules` and `initializeFrnk` gained an `observability` parameter (defaulted to `ObservabilityChoice.None`, so existing source compiles). `firebaseBackendModule` / `supabaseBackendModule` no longer bind `AnalyticsTracker` / `CrashReporter` — they're on the observability axis now.
 
 ### Fixed
 
 ### Removed
+
+- `NoopAnalyticsTracker` / `NoopCrashReporter` removed from `shared-backend-supabase` and **relocated** to `shared-backend-api` (they're backend-independent no-op defaults).
 
 ## [0.1.0] - 2026-05-15
 

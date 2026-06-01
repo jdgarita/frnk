@@ -7,7 +7,11 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
 - `AppResult.kt` — **moved to `shared-utils`** (BACKLOG P1-1). The toolkit-wide `sealed interface AppResult<out D, out E : AppError>` (`Success(data)` / `Failure(error)`), the `AppError` interface, the `CommonError` enum (`Network`, `Unauthorized`, `NotFound`, `Unknown`), and `fold(...)` now live in `dev.jdgarita.frnk.utils` so non-backend `*-api` modules (e.g. `shared-database-api`'s `NoteStore`) can return `AppResult` without depending on this module. Import from `dev.jdgarita.frnk.utils`.
 - `Auth.kt` — `AuthService` interface (sign-in / sign-out / current user).
 - `RemoteData.kt` — generic CRUD-shaped interface for backed records.
-- `Analytics.kt` — analytics + crash-reporting interfaces.
+- `Analytics.kt` — analytics + crash-reporting interfaces (`AnalyticsTracker`, `CrashReporter`, `ToolkitEvent`).
+- `NoopObservability.kt` — `NoopAnalyticsTracker` / `NoopCrashReporter`, the SDK-free no-op defaults
+  (BACKLOG P1-5). They live here rather than in a backend impl because observability is a
+  **backend-independent axis** — `:shared`'s `noopObservabilityModule` binds them for
+  `ObservabilityChoice.None`. (Moved here from `shared-backend-supabase`.)
 
 ## Rules
 
@@ -36,3 +40,7 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
   back observable state with a `MutableStateFlow`, return a test-controlled `AppResult`
   from every call, and record inputs for assertions. Fakes live in `commonTest`, never
   in `commonMain`.
+- `FakeAnalyticsTracker` / `FakeCrashReporter` (`commonTest`) are the recording fakes for the
+  observability interfaces (BACKLOG P1-5), exercised by `ObservabilityTest`. Reuse them when
+  asserting analytics/crash wiring downstream (e.g. P3 monetization events). The `Noop*` defaults in
+  `commonMain` are also covered there (the "never throws" contract).

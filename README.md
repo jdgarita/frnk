@@ -7,7 +7,7 @@
 
 A Kotlin Multiplatform + Compose Multiplatform **toolkit** — not a standalone app. Consumed by downstream apps as a Git submodule via a Gradle composite build (`includeBuild("../frnk")`), it provides a strict, modular baseline so feature work doesn't start from zero.
 
-> See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the canonical module graph and api/impl rationale.
+> See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the canonical module graph and api/impl rationale. Product scope and roadmap live in [`REQUIREMENTS.md`](REQUIREMENTS.md), [`EVALUATION.md`](EVALUATION.md), and [`BACKLOG.md`](BACKLOG.md).
 
 ## 🎯 Objective
 
@@ -15,21 +15,21 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-A single `:shared` module is the consumer-facing surface. Internally it aggregates a flat **api / impl** module split: `*-api` modules hold only interfaces and DTOs; `*-impl` modules hold the concrete bindings (Ktor, SQLDelight, Firebase, Supabase, RevenueCat) wired via Koin. `:shared` bundles every api **and** every impl, so host apps depend on one module and pick which backend to install at runtime via `BackendChoice`.
+A single `:shared` module is the consumer-facing surface. Internally it aggregates a flat **api / impl** module split: `*-api` modules hold only interfaces and DTOs; `*-impl` modules hold the concrete bindings (Ktor, SQLDelight, Firebase, Supabase, RevenueCat) wired via Koin. `:shared` bundles every api **and** every impl, so host apps depend on one module and pick what to install at runtime: the auth/remote backend via `BackendChoice`, and analytics + crash reporting via `ObservabilityChoice` (a **separate axis** — a local-only app with no backend can still ship Firebase telemetry).
 
 ### Module map
 
 | Module | Purpose |
 | --- | --- |
-| `shared` | Consumer-facing aggregator. Re-exports every `shared-*` module via `api(...)`, exposes `frnkModules(BackendChoice)` and `initializeFrnk()` for one-shot Koin bootstrap. |
+| `shared` | Consumer-facing aggregator. Re-exports every `shared-*` module via `api(...)`, exposes `frnkModules(BackendChoice, ObservabilityChoice)` and `initializeFrnk()` for one-shot Koin bootstrap. |
 | `shared-utils` | Root utilities — coroutines, datetime, `Logger`, `PlatformInfo` (the module's only `expect/actual`: OS + device), `FeedbackEmail` (`mailto:` draft builder), and `Frnk.VERSION`. Every other shared module depends on this. |
 | `shared-ui-api` | The **MVI engine**, no Compose deps: `MviContract` (`UiState` / `UiIntent` / `UiEffect`), `MviViewModel<S, I, E>` (StateFlow + intent flow + effect channel; `setState`/`onIntent`/`emit`), plus `ToolkitRoute` and `UiText`. Feature ViewModels subclass `MviViewModel` here without pulling in Compose. |
-| `shared-ui-atoms` | The **design system** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes`), the `FrnkTheme` engine, `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`, …), and page scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `FrnkScreenScaffold` + `CollapsibleBarsState`). |
-| `shared-backend-api` | Auth / Analytics / CrashReporter / RemoteData interfaces. Owns `AppResult<D, E : AppError>`. |
-| `shared-backend-firebase` | Firebase impl of `shared-backend-api`. Exposes `firebaseBackendModule`. |
+| `shared-ui-atoms` | The **design system** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes` / `FrnkIconSize`), the `FrnkTheme` engine, `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`), and page scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `FrnkScreenScaffold` + `CollapsibleBarsState`). Atoms ship a built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`) and automatic **press ripple** (`FrnkTheme` installs `rememberFrnkRipple()` as `LocalIndication`). |
+| `shared-backend-api` | Auth / Analytics / CrashReporter / RemoteData interfaces + the no-op observability defaults (`Noop{Analytics,Crash}`). Owns `AppResult<D, E : AppError>`. |
+| `shared-backend-firebase` | Firebase impl of `shared-backend-api`. Exposes `firebaseBackendModule` (auth + remote data) and `firebaseObservabilityModule` (analytics + crash). |
 | `shared-backend-supabase` | Supabase + Ktor impl of `shared-backend-api`. Exposes `supabaseBackendModule`. |
-| `shared-database-api` | Persistence contracts (SqlDriverFactory, KeyValueStore). |
-| `shared-database-impl` | SQLDelight + Multiplatform Settings impl. Exposes `databaseModule`. |
+| `shared-database-api` | Persistence contracts (`SqlDriverFactory`, `KeyValueStore`, `NoteStore`). |
+| `shared-database-impl` | SQLDelight (`FrnkDB`) + Multiplatform Settings impl — `SqlDelightNoteStore`, `SettingsKeyValueStore`. Exposes `databaseModule`. |
 | `shared-monetization-api` | Entitlement / feature-gate interfaces. |
 | `shared-monetization-revenuecat` | RevenueCat impl. Exposes `revenueCatModule`. |
 | `androidApp` | Public entry point as a KMP-Android library (`com.android.kotlin.multiplatform.library`). `api(projects.shared)` — one dep, no surprises. |
@@ -45,6 +45,7 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 - **Navigation:** Compose Multiplatform Navigation 2.9.2 (`org.jetbrains.androidx.navigation`)
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
 - **Backend:** Supabase 3.6.0 + Ktor 3.5.0, and GitLive Firebase 2.4.0 — both impls bundled, host picks via `BackendChoice`
+- **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in via `ObservabilityChoice.Firebase`, independent of the backend choice
 - **Monetization:** RevenueCat 3.0.2
 - **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
 
@@ -86,13 +87,16 @@ dependencies {
 **4. Bootstrap in `Application.onCreate`:**
 ```kotlin
 import dev.jdgarita.frnk.shared.BackendChoice
+import dev.jdgarita.frnk.shared.ObservabilityChoice
 import dev.jdgarita.frnk.shared.initializeFrnk
 import dev.jdgarita.frnk.database.impl.DatabaseContext
 import org.koin.android.ext.koin.androidContext
 
 DatabaseContext.application = applicationContext
 
-initializeFrnk(backend = BackendChoice.Supabase) {
+// `observability` is independent of `backend` — a local-only app can pass
+// BackendChoice.Supabase (or skip backend calls entirely) and still get Firebase telemetry.
+initializeFrnk(backend = BackendChoice.Supabase, observability = ObservabilityChoice.Firebase) {
     androidContext(this@MyApp)
     modules(hostDatabaseModule, hostFeatureModules)   // host-defined; see docs/HOST_INTEGRATION.md
 }
@@ -102,7 +106,7 @@ initializeFrnk(backend = BackendChoice.Supabase) {
 
 For iOS, the `FrnkKit.xcframework` produced by `:iosApp:assembleFrnkKitReleaseXCFramework` lands at `iosApp/build/XCFrameworks/release/FrnkKit.xcframework` for SPM consumption. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)`.
 
-> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native `PurchasesHybridCommon` framework (and any Firebase frameworks if using `BackendChoice.Firebase`) via CocoaPods or SPM. The toolkit defers their symbol resolution via `-undefined dynamic_lookup`.
+> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native `PurchasesHybridCommon` framework (and the relevant Firebase frameworks if using `BackendChoice.Firebase` or `ObservabilityChoice.Firebase`) via CocoaPods or SPM. The toolkit defers their symbol resolution via `-undefined dynamic_lookup`.
 
 ## ⚙️ Setup
 

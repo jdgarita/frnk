@@ -6,12 +6,16 @@ Supabase implementation of `:shared-backend-api`. The **default** backend (`Back
 
 - `SupabaseAuthService.kt` — `AuthService` over `supabase-auth`.
 - `SupabaseRemoteData.kt` — `RemoteData` over `supabase-postgrest` (and `supabase-storage` for blobs).
-- `NoopAnalyticsTracker.kt` / `NoopCrashReporter.kt` — Supabase doesn't ship analytics/crash reporting, so these are no-ops to satisfy the `*-api` contract. Hosts wanting real analytics should install a custom Koin binding via `initializeFrnk { ... }`.
-- `SupabaseBackendModule.kt` — exports `val supabaseBackendModule = module { ... }`.
+- `SupabaseBackendModule.kt` — exports `val supabaseBackendModule = module { ... }` (**auth + remote data only**).
+
+Analytics/crash are **no longer bound here** (BACKLOG P1-5). They moved to the backend-independent
+`ObservabilityChoice` axis in `:shared` — the no-op defaults (`Noop{Analytics,Crash}`, now in
+`shared-backend-api`) are bound by `noopObservabilityModule`. A Supabase-backed app that wants real
+analytics picks `ObservabilityChoice.Firebase` (or installs its own binding).
 
 ## Rules
 
-- Mirror `FirebaseBackendModule.kt`'s bindings 1:1. If the Firebase module exposes an interface, this module must bind something for the same interface — even if it's a no-op (see the Noop trackers).
+- Mirror `FirebaseBackendModule.kt`'s bindings 1:1 — both now bind `AuthService` + `RemoteData` only (analytics/crash live on the separate observability axis).
 - Don't reach into anything from `*-firebase`. The two impls must compile independently; that's how parallel Gradle compilation pays off.
 - Return `AppResult` everywhere. Map Ktor / Supabase exceptions into `AppResult.Failure(...)` — don't let them escape.
 

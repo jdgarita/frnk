@@ -412,7 +412,42 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "4. MVI") {
+            Section(title = "4. Analytics & Crash") {
+                FrnkText(
+                    state =
+                        FrnkTextState.Body(
+                            text =
+                                "AnalyticsTracker + CrashReporter (shared-backend-api), a backend-independent " +
+                                    "axis (ObservabilityChoice). The demo binds logging fakes so DemoKit stays " +
+                                    "SDK-free; androidDemoApp installs the real firebaseObservabilityModule.",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                    FrnkButton(
+                        state = FrnkButtonState(text = "Track event"),
+                        onClick = { onIntent(DemoIntent.TrackEvent) },
+                    )
+                    FrnkButton(
+                        state = FrnkButtonState(text = "User property", variant = FrnkButtonVariant.Outlined),
+                        onClick = { onIntent(DemoIntent.SetUserProperty) },
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                    FrnkButton(
+                        state = FrnkButtonState(text = "Log breadcrumb", variant = FrnkButtonVariant.Outlined),
+                        onClick = { onIntent(DemoIntent.LogBreadcrumb) },
+                    )
+                    FrnkButton(
+                        state = FrnkButtonState(text = "Record non-fatal", variant = FrnkButtonVariant.Outlined),
+                        onClick = { onIntent(DemoIntent.RecordTestCrash) },
+                    )
+                }
+            }
+
+            FrnkDivider(state = FrnkDividerState.Horizontal())
+
+            Section(title = "5. MVI") {
                 FrnkText(
                     state =
                         FrnkTextState.Body(

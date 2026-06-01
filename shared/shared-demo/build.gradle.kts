@@ -13,6 +13,7 @@ kotlin {
         namespace = "${ProjectConfiguration.GROUP_ID}.demo.shared"
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
+        withHostTest {}
     }
 
     val xcf = XCFramework("DemoKit")
@@ -57,6 +58,10 @@ kotlin {
             // middle "Stats" tab). Real consumers only need this if they likewise name Lucide icons
             // directly; otherwise every icon is overridable through FrnkThemeConfig.
             implementation(libs.icons.lucide)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

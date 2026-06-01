@@ -4,6 +4,27 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
 }
 
+// Real Firebase smoke test (BACKLOG P1-5): the google-services plugin processes
+// google-services.json so Firebase auto-inits, enabling the real firebaseObservabilityModule
+// wired in DemoApplication. google-services.json is gitignored, so these plugins are applied
+// ONLY when it's present — locally that turns on the real SDK; on CI (no json) they're skipped
+// and the demo compiles, with DemoApplication's Firebase path degrading to a logged no-op at
+// runtime (every gitlive call is wrapped in runCatching).
+if (rootProject.file("androidDemoApp/google-services.json").exists()) {
+    apply(
+        plugin =
+            libs.plugins.google.services
+                .get()
+                .pluginId,
+    )
+    apply(
+        plugin =
+            libs.plugins.firebase.crashlytics
+                .get()
+                .pluginId,
+    )
+}
+
 kotlin {
     jvmToolchain(17)
 }

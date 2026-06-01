@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.demo
 
 import androidx.lifecycle.viewModelScope
 import dev.jdgarita.frnk.backend.AnalyticsTracker
+import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.NoteStore
 import dev.jdgarita.frnk.monetization.Feature
@@ -38,6 +39,14 @@ sealed interface DemoIntent : UiIntent {
     data object AddNote : DemoIntent
 
     data object ClearNotes : DemoIntent
+
+    data object TrackEvent : DemoIntent
+
+    data object SetUserProperty : DemoIntent
+
+    data object LogBreadcrumb : DemoIntent
+
+    data object RecordTestCrash : DemoIntent
 }
 
 sealed interface DemoEffect : UiEffect {
@@ -55,6 +64,7 @@ class DemoViewModel(
     private val analytics: AnalyticsTracker,
     private val entitlements: FakeEntitlementManager,
     private val notes: NoteStore,
+    private val crash: CrashReporter,
 ) : MviViewModel<DemoState, DemoIntent, DemoEffect>(DemoState()) {
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
@@ -90,6 +100,25 @@ class DemoViewModel(
                     onSuccess = { loadNotes() },
                     onFailure = { emit(DemoEffect.Toast("Couldn't clear notes: ${it.message}")) },
                 )
+            DemoIntent.TrackEvent -> {
+                analytics.trackCustom("demo_button_tapped", mapOf("count" to currentState().count))
+                emit(DemoEffect.Toast("Tracked demo_button_tapped"))
+            }
+            DemoIntent.SetUserProperty -> {
+                analytics.setUserProperty("demo_tier", if (currentState().isPro) "pro" else "free")
+                emit(DemoEffect.Toast("Set user property demo_tier"))
+            }
+            DemoIntent.LogBreadcrumb -> {
+                crash.log("Demo breadcrumb @ count=${currentState().count}")
+                emit(DemoEffect.Toast("Logged crash breadcrumb"))
+            }
+            DemoIntent.RecordTestCrash -> {
+                crash.recordException(
+                    RuntimeException("Demo non-fatal exception"),
+                    mapOf("screen" to "demo", "count" to currentState().count.toString()),
+                )
+                emit(DemoEffect.Toast("Recorded non-fatal exception"))
+            }
         }
     }
 

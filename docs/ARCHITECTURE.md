@@ -82,17 +82,27 @@ Before, `androidApp` and `iosApp` each listed six `api(projects.shared-*-api)` e
 
 ```kotlin
 // dev.jdgarita.frnk.shared
-enum class BackendChoice { Supabase, Firebase }
+enum class BackendChoice { Supabase, Firebase }          // auth + remote data
+enum class ObservabilityChoice { None, Firebase }        // analytics + crash — independent axis
 
-fun frnkModules(backend: BackendChoice = BackendChoice.Supabase): List<Module>
+fun frnkModules(
+    backend: BackendChoice = BackendChoice.Supabase,
+    observability: ObservabilityChoice = ObservabilityChoice.None,
+): List<Module>
 
 fun initializeFrnk(
     backend: BackendChoice = BackendChoice.Supabase,
+    observability: ObservabilityChoice = ObservabilityChoice.None,
     extraConfig: KoinApplication.() -> Unit = {},
 ): KoinApplication
 ```
 
-`initializeFrnk` calls `startKoin { modules(frnkModules(backend)); extraConfig() }`. Hosts add `androidContext(...)` via `extraConfig`. The toolkit owns its own SQLDelight schema (`FrnkDB`, generated into `dev.jdgarita.frnk.database.sql`): `databaseModule` builds it from the platform `SqlDriverFactory` + `FrnkDB.Schema` and binds `NoteStore`. Hosts may still install their own additional schema module via `extraConfig` if they want app-specific tables.
+Analytics + crash reporting are a **separate axis from `BackendChoice`** (BACKLOG P1-5): a
+local-storage-only app with no backend — or a Supabase-backed app — can still select
+`ObservabilityChoice.Firebase` to ship Firebase Analytics + Crashlytics. `None` binds the no-op
+defaults (`Noop{Analytics,Crash}` in `shared-backend-api`, via `noopObservabilityModule`).
+
+`initializeFrnk` calls `startKoin { modules(frnkModules(backend, observability)); extraConfig() }`. Hosts add `androidContext(...)` via `extraConfig`. The toolkit owns its own SQLDelight schema (`FrnkDB`, generated into `dev.jdgarita.frnk.database.sql`): `databaseModule` builds it from the platform `SqlDriverFactory` + `FrnkDB.Schema` and binds `NoteStore`. Hosts may still install their own additional schema module via `extraConfig` if they want app-specific tables.
 
 ## Module communication flow
 
