@@ -21,6 +21,9 @@ kotlin {
             api(compose.ui)
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
+            // Lifecycle-aware Compose collection (collectAsStateWithLifecycle / repeatOnLifecycle)
+            // powering FrnkMviScreen + EffectCollector. api so hosts inherit it for their own screens.
+            api(libs.androidx.lifecycle.runtime.compose)
 
             api(libs.compose.unstyled.theming)
             implementation(libs.compose.unstyled.primitives)

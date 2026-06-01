@@ -53,6 +53,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavIntent
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldContent
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
@@ -210,11 +211,10 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                 }
                 else ->
                     HomeTab(
-                        state = state,
+                        vm = vm,
                         contentPadding = contentPadding,
                         collapsibleBars = collapsibleBars,
                         onEffect = onEffect,
-                        onIntent = vm::send,
                     )
             }
         }
@@ -245,17 +245,22 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
  */
 @Composable
 private fun HomeTab(
-    state: DemoState,
+    vm: DemoViewModel,
     contentPadding: PaddingValues,
     collapsibleBars: CollapsibleBarsState,
     onEffect: (DemoEffect) -> Unit,
-    onIntent: (DemoIntent) -> Unit,
 ) {
-    FrnkScreenScaffold(
+    // Dogfoods the toolkit's FrnkMviScreen — the same state-hosting primitive host apps use for their
+    // own screens. It collects state (lifecycle-aware), hands back (state, onIntent), and renders the
+    // standard FrnkScreenScaffold. onEffect is left null: the demo's effects are one shared
+    // DemoViewModel stream already collected centrally in DemoScreen (the effect channel is
+    // single-consumer), and the few direct toasts below still go through the captured onEffect lambda.
+    FrnkMviScreen(
+        viewModel = vm,
         topBar = FrnkTopAppBarState(title = "frnk"),
         collapsibleBars = collapsibleBars,
         bottomInset = contentPadding.calculateBottomPadding(),
-    ) { padding ->
+    ) { state, onIntent, padding ->
         Column(
             modifier =
                 Modifier
