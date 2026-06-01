@@ -105,7 +105,7 @@
 				AA00000000000000000021 /* Resources */,
 				AA00000000000000000022 /* Frameworks */,
 				AA00000000000000000023 /* Embed Frameworks */,
-				AA00000000000000000030 /* Run Script: Upload Crashlytics dSYMs */,
+				AA00000000000000000025 /* Run Script: Upload Crashlytics dSYMs */,
 			);
 			buildRules = (
 			);
@@ -184,7 +184,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\ncd \"$SRCROOT/..\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  ./gradlew :shared-demo:assembleDemoKitReleaseXCFramework\nelse\n  ./gradlew :shared-demo:assembleDemoKitDebugXCFramework\nfi\n";
 		};
-		AA00000000000000000030 /* Run Script: Upload Crashlytics dSYMs */ = {
+		AA00000000000000000025 /* Run Script: Upload Crashlytics dSYMs */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
