@@ -14,10 +14,19 @@ iOS consumer entry point. Produces the **`FrnkKit.xcframework`** that downstream
 `iosApp/src/iosMain/kotlin/dev/jdgarita/frnk/ios/FrnkKit.kt`:
 
 ```kotlin
-fun bootstrapFrnkKit(backend: BackendChoice = BackendChoice.Supabase): KoinApplication
+fun bootstrapFrnkKit(
+    backend: BackendChoice = BackendChoice.Supabase,
+    observability: ObservabilityChoice = ObservabilityChoice.None,
+): KoinApplication
 ```
 
-From Swift: `FrnkKitKt.bootstrapFrnkKit(backend: .supabase)`. Add new top-level Kotlin functions to this file if iOS needs a thinner / more Swift-friendly facade than `initializeFrnk` directly.
+From Swift: `FrnkKitKt.bootstrapFrnkKit(backend: .supabase, observability: .firebase)`. Add new top-level Kotlin functions to this file if iOS needs a thinner / more Swift-friendly facade than `initializeFrnk` directly.
+
+Selecting `observability: .firebase` installs Firebase Analytics + Crashlytics **and** the CrashKiOS unhandled-Kotlin-exception hook (so uncaught Kotlin crashes reach Crashlytics symbolicated). The consumer must supply the Firebase Crashlytics pod, call `FirebaseApp.configure()`, and upload dSYMs (see below).
+
+## Crash symbolication
+
+`FrnkKit.xcframework` is `isStatic = true`, so the toolkit's Kotlin symbols link into the **consumer's** app binary. For CrashKiOS reports to symbolicate, the consumer uploads the Kotlin dSYM at their archive step — the standard Firebase `upload-symbols` run-script and/or the CrashKiOS `crashlyticslink` Gradle plugin. The toolkit cannot do this; it ships a prebuilt framework. Recommend uploading **all** dSYMs (the app-archive `dSYMs/` plus the XCFramework's bundled `ios-*/dSYMs/`). Details in `shared/shared-backend-firebase/CLAUDE.md`.
 
 ## Build
 

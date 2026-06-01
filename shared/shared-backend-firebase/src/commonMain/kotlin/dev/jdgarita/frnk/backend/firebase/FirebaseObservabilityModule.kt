@@ -14,5 +14,10 @@ import org.koin.dsl.module
 val firebaseObservabilityModule =
     module {
         single<AnalyticsTracker> { FirebaseAnalyticsTracker() }
-        single<CrashReporter> { FirebaseCrashReporter() }
+        single<CrashReporter> {
+            // Install the iOS unhandled-Kotlin-exception hook (no-op on Android) exactly when
+            // Firebase observability is selected and the reporter is first resolved.
+            enableNativeCrashHandler()
+            FirebaseCrashReporter()
+        }
     }

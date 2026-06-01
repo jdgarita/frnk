@@ -22,17 +22,22 @@ kotlin {
             baseName = "DemoKit"
             xcf.add(this)
             isStatic = true
-            // Only api-only toolkit modules are exported. The demo deliberately does NOT
-            // depend on :shared (which would drag in shared-backend-firebase /
-            // shared-monetization-revenuecat / shared-database-impl and their native
-            // cinterops). DemoKit.xcframework therefore has no Firebase / RevenueCat /
-            // SQLite symbols and the iosDemoApp links and launches without any CocoaPods.
+            // Only api-only toolkit modules are exported. The demo deliberately does NOT depend on
+            // :shared (which would drag in shared-monetization-revenuecat / shared-database-impl and
+            // their native cinterops), so DemoKit stays free of RevenueCat / SQLite symbols.
+            // EXCEPTION (BACKLOG P1-5b): the iosMain set adds the lightweight CrashKiOS cinterop so
+            // the demo's "Force crash" panic button can be reported to Firebase Crashlytics. That
+            // makes iosDemoApp require the native Firebase Crashlytics SDK (via SPM/CocoaPods) +
+            // GoogleService-Info.plist — it no longer launches on a bare simulator with no Firebase.
             export(projects.sharedUtils)
             export(projects.sharedUiApi)
             export(projects.sharedUiAtoms)
             export(projects.sharedBackendApi)
             export(projects.sharedDatabaseApi)
             export(projects.sharedMonetizationApi)
+            // CrashKiOS resolves the native Crashlytics symbols through the host's Firebase SDK at the
+            // app link step; defer them here (same approach as :iosApp / FrnkKit).
+            linkerOpts("-undefined", "dynamic_lookup")
         }
     }
 
@@ -59,6 +64,9 @@ kotlin {
             // directly; otherwise every icon is overridable through FrnkThemeConfig.
             implementation(libs.icons.lucide)
         }
+        // iOS-only: CrashKiOS for the demo's Crashlytics panic-button test (BACKLOG P1-5b). Kept out
+        // of commonMain so the Android demo + DemoKit's common surface stay SDK-free.
+        iosMain.dependencies { implementation(libs.crashkios.crashlytics) }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

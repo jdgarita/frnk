@@ -21,10 +21,12 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - `ObservabilityChoice { None, Firebase }` — analytics + crash reporting selectable **independently of `BackendChoice`**, via `frnkModules(backend, observability)` / `initializeFrnk(...)`. `firebaseObservabilityModule` binds the real impls; `noopObservabilityModule` is the `None` default. Lets a local-storage-only app (no backend) ship Firebase telemetry.
 - Recording `FakeAnalyticsTracker` / `FakeCrashReporter` (+ `ObservabilityTest`) in `shared-backend-api` `commonTest`; `DemoViewModelTest` in `:shared-demo`.
 - `androidDemoApp` applies the `google-services` + `firebase-crashlytics` Gradle plugins and installs the real `firebaseObservabilityModule` to smoke-test Firebase on a device; the demo gains an "Analytics & Crash" section across all three layers.
+- iOS unhandled-crash symbolication via CrashKiOS (`co.touchlab.crashkios:crashlytics`, `shared-backend-firebase` `iosMain`): selecting `ObservabilityChoice.Firebase` installs a Kotlin/Native unhandled-exception hook (`enableNativeCrashHandler`, no-op on Android) so *uncaught* Kotlin crashes reach Crashlytics symbolicated — not just explicitly-caught `recordException`s (BACKLOG P1-5b). The demo gains a "Force crash (unhandled)" action; `FirebaseObservabilityModuleTest` covers the JVM no-op + resolution. Consumers upload the Kotlin dSYM at their archive step (static framework).
 
 ### Changed
 
 - **Breaking:** `frnkModules` and `initializeFrnk` gained an `observability` parameter (defaulted to `ObservabilityChoice.None`, so existing source compiles). `firebaseBackendModule` / `supabaseBackendModule` no longer bind `AnalyticsTracker` / `CrashReporter` — they're on the observability axis now.
+- `bootstrapFrnkKit` (iOS entry point) gained an `observability` parameter (additive, default `ObservabilityChoice.None`) so iOS hosts can select Firebase observability and trigger the CrashKiOS hook.
 
 ### Fixed
 

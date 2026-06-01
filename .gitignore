@@ -1,3 +1,6 @@
+# Firebase Crashlytics CLI scratch dir (created by upload-symbols / firebase CLI)
+.crashlytics/
+
 # Gradle
 .gradle/
 build/

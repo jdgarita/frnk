@@ -227,6 +227,49 @@ local-storage-only ones.
 - [x] Demoed in all three layers: `:shared-demo` (Analytics & Crash section + logging fakes),
       `androidDemoApp` (real Firebase via `firebaseObservabilityModule`), `iosDemoApp` (logging fakes).
 
+### P1-5b — iOS unhandled-crash symbolication (CrashKiOS) ✅ DONE (2026-06-01)
+**Description:** Close the iOS half of P1-5's crash story. gitlive's `CrashReporter.recordException`
+only reports exceptions the app *explicitly catches*; on iOS an **uncaught** Kotlin exception aborts
+via `konan` with no symbolicated Kotlin stack in Crashlytics. Adopt `co.touchlab.crashkios:crashlytics`
+to install the Kotlin/Native unhandled-exception hook so those crashes reach Crashlytics symbolicated.
+**Rationale (priority):** Direct extension of the just-shipped P1-5; uncaught crashes are the most
+valuable ones and were previously invisible on iOS.
+**Key decisions:**
+- **iOS-only, behind the existing axis.** CrashKiOS (`0.9.0`) lives in `shared-backend-firebase`'s
+  **`iosMain`** (it has no JVM variant — must stay out of `commonMain`). An `internal expect fun
+  enableNativeCrashHandler()` has an iOS actual (`enableCrashlytics()` + `setCrashlyticsUnhandledExceptionHook()`,
+  `runCatching`-wrapped + idempotent) and an Android **no-op** actual (the Crashlytics Android SDK
+  already hooks uncaught JVM exceptions). It's invoked lazily from the `CrashReporter` binding in
+  `firebaseObservabilityModule`, so it runs exactly when `ObservabilityChoice.Firebase` is selected and
+  never for `None`.
+- **`bootstrapFrnkKit` gained an `observability` param** (additive, default `None`) so iOS hosts can
+  actually reach `ObservabilityChoice.Firebase`.
+- **klib compatibility verified:** CrashKiOS 0.9.0 (built with Kotlin 1.9.24) compiles/links under this
+  project's Kotlin 2.3.21 — confirmed on macOS via `compileKotlinIosSimulatorArm64` +
+  `assembleFrnkKitDebugXCFramework`.
+**Acceptance Criteria:**
+- [x] CrashKiOS hook installed on iOS when `ObservabilityChoice.Firebase` is selected; no-op on Android;
+      never installed for `ObservabilityChoice.None`.
+- [x] `*-api` stays SDK-free; CrashKiOS confined to `shared-backend-firebase` `iosMain`; no per-framework
+      `linkerOpts` (resolves under the existing `dynamic_lookup`).
+- [x] Host test (`testAndroidHostTest`): `enableNativeCrashHandler` is a safe JVM no-op and `CrashReporter`
+      resolves from `firebaseObservabilityModule` without throwing (`FirebaseObservabilityModuleTest`, 2 tests).
+- [x] `compileAndroidMain` + `testAndroidHostTest` green; iOS compile/link green on macOS.
+      **CI caveat (recorded):** Linux CI does not compile `iosMain`, so a CrashKiOS API drift ships green
+      — a local macOS iOS compile/link is a mandatory pre-merge gate.
+- [x] Demoed: `:shared-demo` adds a "Force crash (unhandled)" panic-button action (platform-agnostic
+      throw on a background dispatcher); `androidDemoApp` covers real Android delivery via the real
+      `firebaseObservabilityModule`. **`iosDemoApp` now tests the real iOS path too** — `DemoKit` gains
+      the lightweight **CrashKiOS** cinterop in `iosMain` (plus `dynamic_lookup`), an `enableDemoCrashlytics()`
+      installer, and the Swift side calls `FirebaseApp.configure()` + the hook. **Trade-off accepted:**
+      `DemoKit` is no longer SDK-free — `iosDemoApp` must link the native Firebase SDK (via SPM) and ship
+      `GoogleService-Info.plist`; it no longer launches on a bare simulator. (Only `iosDemoApp` consumes
+      `DemoKit`, so the blast radius is the demo harness alone.) Pressing the button → CrashKiOS hook →
+      crash visible in the Firebase Crashlytics console (see `iosDemoApp/README.md`). The native
+      Firebase SPM add + simulator run + console check are manual Mac/Xcode steps.
+- [x] dSYM/symbolication responsibility documented for consumers (static framework → consumer uploads
+      all dSYMs) in `iosApp/CLAUDE.md` + `shared-backend-firebase/CLAUDE.md`.
+
 ---
 
 ## P2 — Navigation & DI completeness
@@ -352,6 +395,7 @@ currently untested; do this once the harness (P0-3) exists.
 P0-1, P0-2, P0-3      (no deps — done)
         │
 P1-1 ✅ (FrnkDB)   P1-5 ✅ (analytics/crash — ObservabilityChoice, backend-independent)
+                   P1-5b ✅ (iOS unhandled-crash symbolication — CrashKiOS)
         │
 P2-1 (navigation) ── depends on P0-3 harness; unblocks most feature screens
         │
@@ -363,6 +407,6 @@ P4-1 (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, nee
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
-**Next up:** P1-1 ✅ and P1-5 ✅ are done. Recommended next is **P2-1 (navigation)** — it
+**Next up:** P1-1 ✅, P1-5 ✅, and P1-5b ✅ are done. Recommended next is **P2-1 (navigation)** — it
 unblocks most multi-screen features and depends only on the P0-3 harness. P1-2/P1-3/P1-4 stay
 deferred while apps are local-storage-only.
