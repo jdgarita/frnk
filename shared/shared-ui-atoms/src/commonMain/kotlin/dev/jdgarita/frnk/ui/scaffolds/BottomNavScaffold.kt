@@ -6,19 +6,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
+import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colors
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,12 +49,9 @@ fun BottomNavScaffold(
     tabContent: @Composable (tab: BottomNavTab, contentPadding: PaddingValues) -> Unit,
 ) {
     val vm: BottomNavViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
-    val state by vm.state.collectAsState()
+    val state by vm.state.collectAsStateWithLifecycle()
 
-    // See OnboardingScreen for why the effect handler is wrapped in rememberUpdatedState: the
-    // collector is keyed on `vm`, so a recomposed lambda must be observed without restarting it.
-    val currentOnEffect by rememberUpdatedState(onEffect)
-    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
+    EffectCollector(vm.effects, onEffect = onEffect)
 
     BottomNavScaffoldContent(
         state = state,

@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkDivider
 import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
@@ -30,6 +28,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkSwitch
 import dev.jdgarita.frnk.ui.atoms.FrnkSwitchState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorSurface
@@ -66,11 +65,9 @@ fun SettingsScreen(
     onEffect: (SettingsEffect) -> Unit = {},
 ) {
     val vm: SettingsViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
-    val state by vm.state.collectAsState()
+    val state by vm.state.collectAsStateWithLifecycle()
 
-    // Keyed on `vm`, so wrap onEffect in rememberUpdatedState — see OnboardingScreen for the rationale.
-    val currentOnEffect by rememberUpdatedState(onEffect)
-    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
+    EffectCollector(vm.effects, onEffect = onEffect)
 
     SettingsScreenContent(
         state = state,

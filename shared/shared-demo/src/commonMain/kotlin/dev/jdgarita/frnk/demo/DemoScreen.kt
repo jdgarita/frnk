@@ -18,11 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -56,6 +53,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavIntent
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldContent
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
@@ -126,15 +124,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
 
     val appearanceController = LocalAppearanceController.current
-    var showOnboarding by remember { mutableStateOf(false) }
-    // Bump on each open so OnboardingScreen resolves a fresh VM instead of reusing the last
-    // session's page index. Otherwise dismissing on page 3 and reopening would land back on page 3.
-    var onboardingOpenCount by remember { mutableIntStateOf(0) }
-
-    val openOnboarding = {
-        onboardingOpenCount++
-        showOnboarding = true
-    }
 
     // Opens the platform mail composer prefilled with app + OS diagnostics. A real host passes its
     // own app name/version and may override `recipient` to route feedback to its own inbox.
@@ -154,20 +143,19 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                     label = "Components",
                 ),
         )
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val navigateHome = { selectedTabIndex = 0 }
+    val navigateHome = { vm.send(DemoIntent.NavigateHome) }
 
     // A single collapse coordinator shared by every tab's top bar and the one floating bottom bar, so
     // they hide/reveal together on scroll. Reset to "shown" whenever the visible tab changes.
     val collapsibleBars = rememberCollapsibleBarsState()
-    LaunchedEffect(selectedTabIndex) { collapsibleBars.reset() }
+    LaunchedEffect(state.selectedTabIndex) { collapsibleBars.reset() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         BottomNavScaffoldContent(
-            state = navState.copy(selectedIndex = selectedTabIndex),
+            state = navState.copy(selectedIndex = state.selectedTabIndex),
             onIntent = { intent ->
                 when (intent) {
-                    is BottomNavIntent.TabSelected -> selectedTabIndex = intent.index
+                    is BottomNavIntent.TabSelected -> vm.send(DemoIntent.TabSelected(intent.index))
                 }
             },
             modifier = Modifier.fillMaxSize(),
@@ -176,6 +164,8 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             when (tab.key) {
                 "components" ->
                     ComponentsTab(
+                        state = state,
+                        onIntent = vm::send,
                         contentPadding = contentPadding,
                         collapsibleBars = collapsibleBars,
                         onBack = navigateHome,
@@ -211,7 +201,7 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                                     onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
                                 is SettingsEffect.ActionInvoked ->
                                     when (effect.action) {
-                                        SettingsAction.ShowOnboarding -> openOnboarding()
+                                        SettingsAction.ShowOnboarding -> vm.send(DemoIntent.ShowOnboarding)
                                         SettingsAction.SendFeedback -> sendFeedback()
                                         else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
                                     }
@@ -221,25 +211,27 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                 }
                 else ->
                     HomeTab(
-                        state = state,
+                        vm = vm,
                         contentPadding = contentPadding,
                         collapsibleBars = collapsibleBars,
                         onEffect = onEffect,
-                        onIntent = vm::send,
                     )
             }
         }
 
-        if (showOnboarding) {
+        if (state.showOnboarding) {
             OnboardingScreen(
                 initialState = demoOnboardingState(),
                 modifier = Modifier.fillMaxSize(),
-                vmKey = "demo-onboarding-$onboardingOpenCount",
+                // Keyed on onboardingSession (bumped on each open) so OnboardingScreen resolves a fresh
+                // VM instead of reusing the last session's page index — otherwise dismissing on page 3
+                // and reopening would land back on page 3.
+                vmKey = "demo-onboarding-${state.onboardingSession}",
                 onEffect = { effect ->
                     when (effect) {
                         OnboardingEffect.CloseRequested,
                         OnboardingEffect.Completed,
-                        -> showOnboarding = false
+                        -> vm.send(DemoIntent.DismissOnboarding)
                     }
                 },
             )
@@ -253,17 +245,22 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
  */
 @Composable
 private fun HomeTab(
-    state: DemoState,
+    vm: DemoViewModel,
     contentPadding: PaddingValues,
     collapsibleBars: CollapsibleBarsState,
     onEffect: (DemoEffect) -> Unit,
-    onIntent: (DemoIntent) -> Unit,
 ) {
-    FrnkScreenScaffold(
+    // Dogfoods the toolkit's FrnkMviScreen — the same state-hosting primitive host apps use for their
+    // own screens. It collects state (lifecycle-aware), hands back (state, onIntent), and renders the
+    // standard FrnkScreenScaffold. onEffect is left null: the demo's effects are one shared
+    // DemoViewModel stream already collected centrally in DemoScreen (the effect channel is
+    // single-consumer), and the few direct toasts below still go through the captured onEffect lambda.
+    FrnkMviScreen(
+        viewModel = vm,
         topBar = FrnkTopAppBarState(title = "frnk"),
         collapsibleBars = collapsibleBars,
         bottomInset = contentPadding.calculateBottomPadding(),
-    ) { padding ->
+    ) { state, onIntent, padding ->
         Column(
             modifier =
                 Modifier
@@ -480,23 +477,22 @@ private fun HomeTab(
  * Components tab — a vertical list of every `Frnk*` atom by name, under a top bar with a back button
  * (returns to Home) and a search action that filters the list. Tapping a row opens that component's
  * dedicated detail screen ([ComponentDetailScreen]), which shows all of its variants; back there
- * returns to this list. Interactive atoms keep local state hoisted here so it survives the
- * list ↔ detail navigation.
+ * returns to this list. All of this tab's state (search, list ↔ detail selection, and the interactive
+ * atoms' values) is hoisted into [DemoViewModel], so it survives navigation and recomposition; this
+ * composable is stateless — it reads [state] and emits [onIntent].
  */
 @Composable
 private fun ComponentsTab(
+    state: DemoState,
+    onIntent: (DemoIntent) -> Unit,
     contentPadding: PaddingValues,
     collapsibleBars: CollapsibleBarsState,
     onBack: () -> Unit,
     onEffect: (DemoEffect) -> Unit,
 ) {
-    var searchActive by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    var selectedComponent by remember { mutableStateOf<String?>(null) }
-
-    var switchOn by remember { mutableStateOf(true) }
-    var segmentIndex by remember { mutableIntStateOf(0) }
-    var navIndex by remember { mutableIntStateOf(0) }
+    val searchActive = state.searchActive
+    val query = state.searchQuery
+    val selectedComponent = state.selectedComponent
 
     // The gallery as (componentName, content) pairs so the search field can filter it by name.
     val components: List<Pair<String, @Composable () -> Unit>> =
@@ -645,10 +641,10 @@ private fun ComponentsTab(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     FrnkSwitch(
-                        state = FrnkSwitchState(checked = switchOn),
-                        onCheckedChange = { switchOn = it },
+                        state = FrnkSwitchState(checked = state.gallerySwitchOn),
+                        onCheckedChange = { onIntent(DemoIntent.GallerySwitchChanged(it)) },
                     )
-                    FrnkText(state = FrnkTextState.BodySmall(text = if (switchOn) "On" else "Off"))
+                    FrnkText(state = FrnkTextState.BodySmall(text = if (state.gallerySwitchOn) "On" else "Off"))
                     FrnkSwitch(
                         state = FrnkSwitchState(checked = true, enabled = false),
                         onCheckedChange = {},
@@ -666,9 +662,9 @@ private fun ComponentsTab(
                     state =
                         FrnkSegmentedControlState(
                             options = listOf("One", "Two", "Three"),
-                            selectedIndex = segmentIndex,
+                            selectedIndex = state.gallerySegmentIndex,
                         ),
-                    onOptionSelected = { segmentIndex = it },
+                    onOptionSelected = { onIntent(DemoIntent.GallerySegmentChanged(it)) },
                 )
                 FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
                 FrnkSegmentedControl(
@@ -698,9 +694,9 @@ private fun ComponentsTab(
                                     FrnkBottomNavItem("b", Theme[icons][iconCheck], "Check"),
                                     FrnkBottomNavItem("c", Theme[icons][iconSettings], "Settings"),
                                 ),
-                            selectedIndex = navIndex,
+                            selectedIndex = state.galleryNavIndex,
                         ),
-                    onItemSelected = { navIndex = it },
+                    onItemSelected = { onIntent(DemoIntent.GalleryNavChanged(it)) },
                 )
             },
             "Ripple" to {
@@ -754,7 +750,7 @@ private fun ComponentsTab(
             name = selected.first,
             bottomInset = contentPadding.calculateBottomPadding(),
             collapsibleBars = collapsibleBars,
-            onBack = { selectedComponent = null },
+            onBack = { onIntent(DemoIntent.ComponentSelected(null)) },
             content = selected.second,
         )
         return
@@ -767,8 +763,7 @@ private fun ComponentsTab(
     // close the search field if it's open, otherwise fall through to the back arrow's target (Home).
     DemoBackHandler {
         if (searchActive) {
-            searchActive = false
-            query = ""
+            onIntent(DemoIntent.SearchClosed)
         } else {
             onBack()
         }
@@ -791,12 +786,9 @@ private fun ComponentsTab(
         collapsibleBars = collapsibleBars,
         bottomInset = contentPadding.calculateBottomPadding(),
         onNavigationClick = onBack,
-        onActionClick = { searchActive = true },
-        onSearchQueryChange = { query = it },
-        onSearchClose = {
-            searchActive = false
-            query = ""
-        },
+        onActionClick = { onIntent(DemoIntent.SearchOpened) },
+        onSearchQueryChange = { onIntent(DemoIntent.SearchQueryChanged(it)) },
+        onSearchClose = { onIntent(DemoIntent.SearchClosed) },
     ) { padding ->
         Column(
             modifier =
@@ -819,7 +811,7 @@ private fun ComponentsTab(
                 if (index > 0) {
                     FrnkDivider(state = FrnkDividerState.Horizontal())
                 }
-                ComponentRow(name = name, onClick = { selectedComponent = name })
+                ComponentRow(name = name, onClick = { onIntent(DemoIntent.ComponentSelected(name)) })
             }
         }
     }

@@ -17,15 +17,14 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
@@ -35,6 +34,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconButton
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
@@ -82,14 +82,9 @@ fun OnboardingScreen(
     onEffect: (OnboardingEffect) -> Unit = {},
 ) {
     val vm: OnboardingViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
-    val state by vm.state.collectAsState()
+    val state by vm.state.collectAsStateWithLifecycle()
 
-    // The collection coroutine is keyed on `vm`, so it only restarts when the VM identity changes.
-    // Wrap [onEffect] in rememberUpdatedState so a recomposition with a new lambda (e.g. one that
-    // captures fresh outer-scope state) is observed by the long-lived collector — otherwise the
-    // first-composition lambda would be captured forever.
-    val currentOnEffect by rememberUpdatedState(onEffect)
-    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
+    EffectCollector(vm.effects, onEffect = onEffect)
 
     OnboardingScreenContent(
         state = state,

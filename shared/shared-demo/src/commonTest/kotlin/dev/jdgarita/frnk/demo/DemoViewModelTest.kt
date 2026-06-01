@@ -94,6 +94,91 @@ class DemoViewModelTest {
             assertEquals(1, crash.logs.size)
             assertEquals(1, crash.exceptions.size)
         }
+
+    // --- Hoisted navigation / components state (state-hoisting migration) ---
+
+    @Test
+    fun tab_selection_and_navigate_home_reduce_selected_index() =
+        runTest(dispatcher) {
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+
+            vm.send(DemoIntent.TabSelected(2))
+            runCurrent()
+            assertEquals(2, vm.state.value.selectedTabIndex)
+
+            vm.send(DemoIntent.NavigateHome)
+            runCurrent()
+            assertEquals(0, vm.state.value.selectedTabIndex)
+        }
+
+    @Test
+    fun show_onboarding_sets_flag_and_bumps_session_then_dismiss_clears() =
+        runTest(dispatcher) {
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+
+            vm.send(DemoIntent.ShowOnboarding)
+            runCurrent()
+            assertTrue(vm.state.value.showOnboarding)
+            assertEquals(1, vm.state.value.onboardingSession)
+
+            vm.send(DemoIntent.DismissOnboarding)
+            vm.send(DemoIntent.ShowOnboarding)
+            runCurrent()
+            assertTrue(vm.state.value.showOnboarding)
+            // Re-opening resolves a fresh OnboardingScreen VM via a new session key.
+            assertEquals(2, vm.state.value.onboardingSession)
+        }
+
+    @Test
+    fun search_open_query_then_close_clears_query() =
+        runTest(dispatcher) {
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+
+            vm.send(DemoIntent.SearchOpened)
+            vm.send(DemoIntent.SearchQueryChanged("Frnk"))
+            runCurrent()
+            assertTrue(vm.state.value.searchActive)
+            assertEquals("Frnk", vm.state.value.searchQuery)
+
+            vm.send(DemoIntent.SearchClosed)
+            runCurrent()
+            assertEquals(false, vm.state.value.searchActive)
+            assertEquals("", vm.state.value.searchQuery)
+        }
+
+    @Test
+    fun component_selected_sets_and_clears_detail() =
+        runTest(dispatcher) {
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+
+            vm.send(DemoIntent.ComponentSelected("FrnkButton"))
+            runCurrent()
+            assertEquals("FrnkButton", vm.state.value.selectedComponent)
+
+            vm.send(DemoIntent.ComponentSelected(null))
+            runCurrent()
+            assertEquals(null, vm.state.value.selectedComponent)
+        }
+
+    @Test
+    fun gallery_toggles_reduce_their_values() =
+        runTest(dispatcher) {
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+
+            vm.send(DemoIntent.GallerySwitchChanged(false))
+            vm.send(DemoIntent.GallerySegmentChanged(2))
+            vm.send(DemoIntent.GalleryNavChanged(1))
+            runCurrent()
+
+            assertEquals(false, vm.state.value.gallerySwitchOn)
+            assertEquals(2, vm.state.value.gallerySegmentIndex)
+            assertEquals(1, vm.state.value.galleryNavIndex)
+        }
 }
 
 private class RecordingAnalytics : AnalyticsTracker {
