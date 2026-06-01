@@ -39,6 +39,10 @@ DerivedData/
 # SwiftPM
 .swiftpm/
 .build/
+# Xcode-managed SwiftPM pins for iosDemoApp — resolved locally on first Xcode open.
+# Kept local (like GoogleService-Info.plist above): the demo apps are internal smoke
+# harnesses that already require local Firebase setup, and CI never builds iOS.
+**/xcshareddata/swiftpm/Package.resolved
 
 # CocoaPods (if reintroduced later)
 Podfile.lock

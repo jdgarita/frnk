@@ -29,6 +29,8 @@ Day-to-day:
 
 `local.properties` is gitignored and required — `BuildKonfig` will fail at configuration time without `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `FIREBASE_*`, and `BUILD_VARIANT`.
 
+`iosDemoApp` needs local setup beyond `local.properties`: drop in its own `GoogleService-Info.plist` and let Xcode resolve Swift packages on first open (Firebase SDK). Both are gitignored — `GoogleService-Info.plist` and the Xcode-managed `**/xcshareddata/swiftpm/Package.resolved` — so a fresh checkout of the demo isn't buildable from CI (which never builds iOS anyway); it's a local-only harness.
+
 ## Toolchain pinning (don't fight it)
 
 - **JDK 17** everywhere. Android Studio bundles JDK 21; the Foojay resolver in `settings.gradle.kts` auto-provisions 17, and every KMP module explicitly calls `kotlin { jvmToolchain(17) }` because AGP's javac and the Kotlin task would otherwise disagree about target. Don't change this without changing both sides.
