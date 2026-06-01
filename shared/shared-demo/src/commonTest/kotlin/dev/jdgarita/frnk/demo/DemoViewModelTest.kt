@@ -5,6 +5,8 @@ import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.FeatureGate
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -95,40 +97,24 @@ class DemoViewModelTest {
             assertEquals(1, crash.exceptions.size)
         }
 
-    // --- Hoisted navigation / components state (state-hoisting migration) ---
+    // --- Navigation as an effect + hoisted components state ---
 
     @Test
-    fun tab_selection_and_navigate_home_reduce_selected_index() =
+    fun request_upgrade_when_not_pro_emits_navigate_effect() =
         runTest(dispatcher) {
+            // FakeEntitlementManager starts non-Pro, so RequestUpgrade falls through to a Navigate
+            // effect (routed into the FrnkNavHost Paywall by routeDemoEffect, covered separately).
             val vm = viewModel(RecordingAnalytics(), RecordingCrash())
             runCurrent()
-
-            vm.send(DemoIntent.TabSelected(2))
-            runCurrent()
-            assertEquals(2, vm.state.value.selectedTabIndex)
-
-            vm.send(DemoIntent.NavigateHome)
-            runCurrent()
-            assertEquals(0, vm.state.value.selectedTabIndex)
-        }
-
-    @Test
-    fun show_onboarding_sets_flag_and_bumps_session_then_dismiss_clears() =
-        runTest(dispatcher) {
-            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            val effects = mutableListOf<DemoEffect>()
+            val job = launch { vm.effects.toList(effects) }
             runCurrent()
 
-            vm.send(DemoIntent.ShowOnboarding)
+            vm.send(DemoIntent.RequestUpgrade)
             runCurrent()
-            assertTrue(vm.state.value.showOnboarding)
-            assertEquals(1, vm.state.value.onboardingSession)
 
-            vm.send(DemoIntent.DismissOnboarding)
-            vm.send(DemoIntent.ShowOnboarding)
-            runCurrent()
-            assertTrue(vm.state.value.showOnboarding)
-            // Re-opening resolves a fresh OnboardingScreen VM via a new session key.
-            assertEquals(2, vm.state.value.onboardingSession)
+            assertTrue(effects.any { it is DemoEffect.Navigate })
+            job.cancel()
         }
 
     @Test
@@ -147,21 +133,6 @@ class DemoViewModelTest {
             runCurrent()
             assertEquals(false, vm.state.value.searchActive)
             assertEquals("", vm.state.value.searchQuery)
-        }
-
-    @Test
-    fun component_selected_sets_and_clears_detail() =
-        runTest(dispatcher) {
-            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
-            runCurrent()
-
-            vm.send(DemoIntent.ComponentSelected("FrnkButton"))
-            runCurrent()
-            assertEquals("FrnkButton", vm.state.value.selectedComponent)
-
-            vm.send(DemoIntent.ComponentSelected(null))
-            runCurrent()
-            assertEquals(null, vm.state.value.selectedComponent)
         }
 
     @Test

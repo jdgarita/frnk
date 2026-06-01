@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -24,6 +25,10 @@ kotlin {
             // Lifecycle-aware Compose collection (collectAsStateWithLifecycle / repeatOnLifecycle)
             // powering FrnkMviScreen + EffectCollector. api so hosts inherit it for their own screens.
             api(libs.androidx.lifecycle.runtime.compose)
+            // Toolkit navigation primitives (FrnkNavHost / frnkComposable / rememberFrnkNavigator)
+            // wrap JetBrains CMP navigation-compose. api so hosts can reference NavController types.
+            // Pure Kotlin/Compose — no native cinterop, so DemoKit.xcframework stays clean.
+            api(libs.androidx.navigation)
 
             api(libs.compose.unstyled.theming)
             implementation(libs.compose.unstyled.primitives)
