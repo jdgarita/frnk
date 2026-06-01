@@ -443,6 +443,20 @@ private fun HomeTab(
                         onClick = { onIntent(DemoIntent.RecordTestCrash) },
                     )
                 }
+                FrnkText(
+                    state =
+                        FrnkTextState.BodySmall(
+                            text =
+                                "Force crash throws an UNHANDLED Kotlin exception — on iOS the CrashKiOS hook " +
+                                    "(installed with ObservabilityChoice.Firebase) reports it symbolicated; on Android " +
+                                    "the Crashlytics SDK catches it. This terminates the app.",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+                FrnkButton(
+                    state = FrnkButtonState(text = "Force crash (unhandled)", variant = FrnkButtonVariant.Outlined),
+                    onClick = { onIntent(DemoIntent.ForceUnhandledCrash) },
+                )
             }
 
             FrnkDivider(state = FrnkDividerState.Horizontal())

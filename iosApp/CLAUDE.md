@@ -14,10 +14,61 @@ iOS consumer entry point. Produces the **`FrnkKit.xcframework`** that downstream
 `iosApp/src/iosMain/kotlin/dev/jdgarita/frnk/ios/FrnkKit.kt`:
 
 ```kotlin
-fun bootstrapFrnkKit(backend: BackendChoice = BackendChoice.Supabase): KoinApplication
+fun bootstrapFrnkKit(
+    backend: BackendChoice = BackendChoice.Supabase,
+    observability: ObservabilityChoice = ObservabilityChoice.None,
+): KoinApplication
 ```
 
-From Swift: `FrnkKitKt.bootstrapFrnkKit(backend: .supabase)`. Add new top-level Kotlin functions to this file if iOS needs a thinner / more Swift-friendly facade than `initializeFrnk` directly.
+From Swift: `FrnkKitKt.bootstrapFrnkKit(backend: .supabase, observability: .firebase)`. Add new top-level Kotlin functions to this file if iOS needs a thinner / more Swift-friendly facade than `initializeFrnk` directly.
+
+Selecting `observability: .firebase` installs Firebase Analytics + Crashlytics **and** the CrashKiOS unhandled-Kotlin-exception hook (so uncaught Kotlin crashes reach Crashlytics symbolicated). The consumer must supply the Firebase Crashlytics pod, call `FirebaseApp.configure()`, and upload dSYMs (see below).
+
+## Crashlytics setup for consumer apps (do this for every new iOS app)
+
+> **Claude: when the user is creating/scaffolding a new iOS app that consumes FrnkKit and wants
+> crash reporting, walk them through this checklist.** The toolkit ships a prebuilt static
+> framework and **cannot** wire any of this for them — it's per-app Xcode setup. Skipping step 4
+> is the #1 reason "crashes don't show up in Crashlytics."
+
+Why it's needed: `FrnkKit.xcframework` is `isStatic = true`, so frnk's Kotlin symbols are linked
+into the **consumer app binary** at the app's link step. Selecting `observability: .firebase`
+installs the CrashKiOS hook that turns an uncaught Kotlin exception into a Crashlytics report — but
+Crashlytics still needs the matching **dSYM** uploaded to symbolicate it.
+
+Per-app checklist:
+1. **Add Firebase** to the Xcode project — Firebase Apple SDK via SPM (`FirebaseCrashlytics` product;
+   pulls `FirebaseCore`/`FirebaseAnalytics`) or CocoaPods — and add the app's `GoogleService-Info.plist`
+   to the target.
+2. **Configure + install the hook** in Swift, early at launch:
+   ```swift
+   FirebaseApp.configure()
+   _ = FrnkKitKt.bootstrapFrnkKit(backend: .supabase, observability: .firebase) // installs CrashKiOS hook
+   ```
+3. **Confirm Release builds emit dSYMs** — `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym` (Xcode's
+   Release default; Debug defaults to `dwarf` = **no dSYM**, so only Release/Archive symbolicates
+   out of the box).
+4. **Upload dSYMs to Crashlytics** — add the Crashlytics **run-script build phase** so every archive
+   uploads automatically (SPM path):
+   ```
+   "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+   ```
+   (`iosDemoApp` has a working example of this build phase — copy its shape.)
+
+KMP specifics that save you work:
+- **One dSYM covers everything.** Because FrnkKit is **static**, your app's own dSYM already contains
+  frnk's Kotlin frames — the standard app-dSYM upload symbolicates both your Swift and frnk's Kotlin.
+  **No separate Kotlin-framework dSYM step**, and **no** CrashKiOS `crashlyticslink` Gradle plugin
+  (that's only for *dynamic* frameworks).
+- **Production needs no per-release manual step** once step 4's build phase exists. The manual
+  `upload-symbols -gsp GoogleService-Info.plist -p ios <App.xcarchive/dSYMs>` (or Xcode Organizer →
+  App Store Connect dSYM download) is only a fallback if the build phase is missing or App Store
+  re-thins the binary.
+
+Gotcha we hit (so you don't again): a crash showing as **"unprocessed — upload 1 dSYM file"** means
+the report arrived but no matching dSYM was uploaded — usually a **Debug** build (no dSYM generated)
+or a missing run-script. Crashes upload on the **next launch**, and the **first-ever** crash can take
+several minutes to surface. Details in `shared/shared-backend-firebase/CLAUDE.md`.
 
 ## Build
 

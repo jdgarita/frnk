@@ -12,6 +12,8 @@ import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
 import dev.jdgarita.frnk.utils.fold
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -47,6 +49,8 @@ sealed interface DemoIntent : UiIntent {
     data object LogBreadcrumb : DemoIntent
 
     data object RecordTestCrash : DemoIntent
+
+    data object ForceUnhandledCrash : DemoIntent
 }
 
 sealed interface DemoEffect : UiEffect {
@@ -118,6 +122,18 @@ class DemoViewModel(
                     mapOf("screen" to "demo", "count" to currentState().count.toString()),
                 )
                 emit(DemoEffect.Toast("Recorded non-fatal exception"))
+            }
+            DemoIntent.ForceUnhandledCrash -> {
+                // Throw an *uncaught* Kotlin exception on a background dispatcher with no handler, so it
+                // escapes to the platform's uncaught-exception handler. On iOS that path is what the
+                // CrashKiOS hook (installed by firebaseObservabilityModule) intercepts and forwards to
+                // Crashlytics symbolicated — unlike RecordTestCrash above, which is an explicitly-caught
+                // non-fatal. On Android the Crashlytics SDK's own handler catches it. The demo's logging
+                // fakes have no such hook, so under DemoKit this simply terminates the process.
+                emit(DemoEffect.Toast("Forcing an unhandled crash…"))
+                CoroutineScope(Dispatchers.Default).launch {
+                    throw RuntimeException("Demo UNHANDLED Kotlin exception (exercises the iOS CrashKiOS hook)")
+                }
             }
         }
     }

@@ -101,6 +101,10 @@ Analytics + crash reporting are a **separate axis from `BackendChoice`** (BACKLO
 local-storage-only app with no backend — or a Supabase-backed app — can still select
 `ObservabilityChoice.Firebase` to ship Firebase Analytics + Crashlytics. `None` binds the no-op
 defaults (`Noop{Analytics,Crash}` in `shared-backend-api`, via `noopObservabilityModule`).
+On iOS, `ObservabilityChoice.Firebase` additionally installs the CrashKiOS unhandled-exception hook
+(`shared-backend-firebase`'s `enableNativeCrashHandler`, iOS-only — no-op on Android) so *uncaught*
+Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller explicitly
+`recordException`s (BACKLOG P1-5b).
 
 `initializeFrnk` calls `startKoin { modules(frnkModules(backend, observability)); extraConfig() }`. Hosts add `androidContext(...)` via `extraConfig`. The toolkit owns its own SQLDelight schema (`FrnkDB`, generated into `dev.jdgarita.frnk.database.sql`): `databaseModule` builds it from the platform `SqlDriverFactory` + `FrnkDB.Schema` and binds `NoteStore`. Hosts may still install their own additional schema module via `extraConfig` if they want app-specific tables.
 
