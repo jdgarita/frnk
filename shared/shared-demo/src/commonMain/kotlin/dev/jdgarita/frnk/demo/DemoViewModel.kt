@@ -23,6 +23,18 @@ data class DemoState(
     val email: String = "",
     val isPro: Boolean = false,
     val notes: List<String> = emptyList(),
+    // navigation
+    val selectedTabIndex: Int = 0,
+    val showOnboarding: Boolean = false,
+    val onboardingSession: Int = 0, // bump on each open -> fresh OnboardingScreen VM key
+    // components tab
+    val searchActive: Boolean = false,
+    val searchQuery: String = "",
+    val selectedComponent: String? = null, // non-null -> detail screen
+    // components gallery widget demos
+    val gallerySwitchOn: Boolean = true,
+    val gallerySegmentIndex: Int = 0,
+    val galleryNavIndex: Int = 0,
 ) : UiState
 
 sealed interface DemoIntent : UiIntent {
@@ -51,6 +63,43 @@ sealed interface DemoIntent : UiIntent {
     data object RecordTestCrash : DemoIntent
 
     data object ForceUnhandledCrash : DemoIntent
+
+    // navigation
+    data class TabSelected(
+        val index: Int,
+    ) : DemoIntent
+
+    data object NavigateHome : DemoIntent
+
+    data object ShowOnboarding : DemoIntent
+
+    data object DismissOnboarding : DemoIntent
+
+    // components tab
+    data object SearchOpened : DemoIntent
+
+    data object SearchClosed : DemoIntent
+
+    data class SearchQueryChanged(
+        val value: String,
+    ) : DemoIntent
+
+    data class ComponentSelected(
+        val name: String?,
+    ) : DemoIntent
+
+    // components gallery widget demos
+    data class GallerySwitchChanged(
+        val checked: Boolean,
+    ) : DemoIntent
+
+    data class GallerySegmentChanged(
+        val index: Int,
+    ) : DemoIntent
+
+    data class GalleryNavChanged(
+        val index: Int,
+    ) : DemoIntent
 }
 
 sealed interface DemoEffect : UiEffect {
@@ -135,6 +184,18 @@ class DemoViewModel(
                     throw RuntimeException("Demo UNHANDLED Kotlin exception (exercises the iOS CrashKiOS hook)")
                 }
             }
+            is DemoIntent.TabSelected -> setState { copy(selectedTabIndex = intent.index) }
+            DemoIntent.NavigateHome -> setState { copy(selectedTabIndex = 0) }
+            DemoIntent.ShowOnboarding ->
+                setState { copy(showOnboarding = true, onboardingSession = onboardingSession + 1) }
+            DemoIntent.DismissOnboarding -> setState { copy(showOnboarding = false) }
+            DemoIntent.SearchOpened -> setState { copy(searchActive = true) }
+            DemoIntent.SearchClosed -> setState { copy(searchActive = false, searchQuery = "") }
+            is DemoIntent.SearchQueryChanged -> setState { copy(searchQuery = intent.value) }
+            is DemoIntent.ComponentSelected -> setState { copy(selectedComponent = intent.name) }
+            is DemoIntent.GallerySwitchChanged -> setState { copy(gallerySwitchOn = intent.checked) }
+            is DemoIntent.GallerySegmentChanged -> setState { copy(gallerySegmentIndex = intent.index) }
+            is DemoIntent.GalleryNavChanged -> setState { copy(galleryNavIndex = intent.index) }
         }
     }
 
