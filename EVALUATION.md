@@ -116,13 +116,19 @@ apps are local-storage-only. The remaining headline gaps are **RevenueCat** and 
   (`NoteStoreRoundTripTest`) passes, and the demo shows persisted notes (via an in-memory
   fake so DemoKit stays cinterop-free). Requirement §3.4 (relational persistence) is met.
 
-### 3.2 Navigation (⛔)
-- **Evidence:** the only navigation type is the `ToolkitRoute` marker in
-  `shared-ui-api`; `androidx.navigation` is declared in the catalog but there is
-  no `NavHost`, no graph builder, no back-stack ownership. `DemoScreen` does
-  ad-hoc navigation locally.
-- **Impact:** Requirement §3.3 (tailored navigation) is unmet at the toolkit
-  level.
+### 3.2 Navigation (✅ — P2-1)
+- **Was:** the only navigation type was the `ToolkitRoute` marker in
+  `shared-ui-api`; `androidx.navigation` was declared but unused (no `NavHost`,
+  no graph builder, no back-stack ownership), and `DemoScreen` navigated ad hoc
+  through MVI state.
+- **Now:** a toolkit-owned navigation layer over JetBrains CMP `navigation-compose`:
+  `@Serializable` type-safe routes + a Compose-free `FrnkNavigator`/`FrnkNavOptions`
+  in `shared-ui-api`; `FrnkNavHost` / `frnkComposable<T>` / `rememberFrnkNavController`
+  / `rememberFrnkNavigator` in `shared-ui-atoms`. The host owns the back stack;
+  navigation is a `UiEffect` routed by a single `EffectCollector`; Android
+  predictive-back + iOS swipe-back pop the stack. `DemoScreen` is fully migrated
+  (tabs as top-level destinations with saved back stacks; pushed detail/onboarding/
+  paywall). Requirement §3.3 (tailored navigation) is met.
 
 ### 3.3 Analytics / PostHog (🟡 — Firebase done by P1-5; PostHog still open)
 - **Was:** no working analytics provider — a no-op (`NoopAnalyticsTracker`) on the

@@ -115,7 +115,7 @@ Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller 
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed via `frnkModules(BackendChoice.…)`.
 4. The impl returns an `AppResult<Data, AppError>`.
 5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.
-6. The composable collects one-shot effects with `LaunchedEffect(vm) { vm.effects.collect(::handleEffect) }`, so they don't leak across recompositions.
+6. The composable collects one-shot effects with the lifecycle-aware `EffectCollector(vm.effects) { … }` (in `:shared-ui-atoms`, `ui/mvi/`) — use it instead of a hand-rolled `LaunchedEffect(vm) { vm.effects.collect(...) }` so effects don't leak across recompositions or fire at a backgrounded screen. **Navigation** is one such effect: a single collector routes it into a `FrnkNavigator` (see Navigation below).
 
 ## Result wrapper
 
@@ -186,7 +186,16 @@ See `shared/shared-ui-api/src/commonMain/kotlin/.../ui/mvi/`:
 - `MviContract.kt` — `UiState`, `UiIntent`, `UiEffect` marker interfaces.
 - `MviViewModel.kt` — abstract base; owns `StateFlow<S>`, an intent `SharedFlow<I>` (replay=0, buffer=16, `DROP_OLDEST`), and a one-shot effect `Channel<E>` (BUFFERED) exposed as `effects`.
 
-ViewModels subclass `MviViewModel<S, I, E>`, reduce state purely with `setState { copy(...) }`, and override `suspend fun onIntent(intent: I)` for impure work (network, db), emitting one-shots via `emit(effect)`. Composables dispatch with `send(intent)` and collect effects via `LaunchedEffect(vm) { vm.effects.collect(::handleEffect) }`.
+ViewModels subclass `MviViewModel<S, I, E>`, reduce state purely with `setState { copy(...) }`, and override `suspend fun onIntent(intent: I)` for impure work (network, db), emitting one-shots via `emit(effect)`. Composables dispatch with `send(intent)` and collect effects via `EffectCollector(vm.effects) { … }` (or `FrnkMviScreen`'s built-in `onEffect`).
+
+## Navigation
+
+The toolkit-owned navigation layer is a thin wrapper over JetBrains CMP `navigation-compose`, split across the no-Compose / Compose boundary like everything else:
+
+- **`shared-ui-api`** (`ui/nav/`) holds the Compose-free contract: `ToolkitRoute` — a `@Serializable` sealed interface of default routes — and `FrnkNavigator` (`navigate(route)`, `navigate(route, options)`, `navigateUp`, `popBackStack`) with `FrnkNavOptions` (tab-switch save/restore back-stack flags). Routes are `@Serializable` (needs `kotlinx-serialization-core` — **not** `-json`; nav encodes routes via its own `SavedStateEncoder`).
+- **`shared-ui-atoms`** (`ui/nav/`) holds the Compose primitives: `rememberFrnkNavController()`, `FrnkNavHost(navController, startRoute) { … }`, the reified `frnkComposable<T> { route -> … }` (type-safe destination + argument decode via `toRoute<T>()`), and `rememberFrnkNavigator(navController)` (adapts a `NavController` to `FrnkNavigator`).
+
+**The toolkit ships the `NavHost` machinery; the host owns the back-stack instance** (it creates the `NavController` and passes it in). Navigation is driven by the MVI effect channel: a ViewModel emits a navigation `UiEffect`, and a single `EffectCollector` above the `FrnkNavHost` routes it into the `FrnkNavigator` (collect it in exactly one place — the effect channel is single-consumer). On Android `NavHost` consumes the system back button / predictive-back gesture to pop the back stack automatically (the host activity sets `android:enableOnBackInvokedCallback="true"`); on iOS the back-gesture support depends on the Compose Multiplatform runtime, so screens should also carry an on-screen back affordance. `:shared-demo`'s `DemoScreen` is the reference integration — three bottom-nav tab roots as top-level destinations (each with its own saved back stack via the tab-switch options) plus pushed `ComponentDetail(name)` / `Onboarding` / `Paywall` destinations.
 
 ## CI
 

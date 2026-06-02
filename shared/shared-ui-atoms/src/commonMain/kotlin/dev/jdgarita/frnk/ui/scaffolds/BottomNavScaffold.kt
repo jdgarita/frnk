@@ -4,13 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
@@ -22,7 +19,6 @@ import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colors
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.math.roundToInt
 
 /**
  * VM-backed convenience wrapper around [BottomNavScaffoldContent]. Resolves a [BottomNavViewModel]
@@ -92,8 +88,6 @@ fun BottomNavScaffoldContent(
             PaddingValues(bottom = FrnkBottomNavBarDefaults.BarHeight),
         )
 
-        val density = LocalDensity.current
-        val barHeightPx = with(density) { FrnkBottomNavBarDefaults.BarHeight.toPx() }
         FrnkBottomNavBar(
             state =
                 FrnkBottomNavBarState(
@@ -105,11 +99,9 @@ fun BottomNavScaffoldContent(
                 Modifier
                     .align(Alignment.BottomCenter)
                     .then(
+                        // Slide down off the bottom edge to hide, in lock-step with the top bar.
                         if (collapsibleBars != null) {
-                            // Positive Y = slide down off the bottom edge to hide.
-                            Modifier.offset {
-                                IntOffset(x = 0, y = (collapsibleBars.collapseFraction * barHeightPx).roundToInt())
-                            }
+                            Modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight)
                         } else {
                             Modifier
                         },

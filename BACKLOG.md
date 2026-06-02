@@ -274,7 +274,7 @@ valuable ones and were previously invisible on iOS.
 
 ## P2 — Navigation & DI completeness
 
-### P2-1 — Toolkit navigation layer (type-safe, MVI-integrated)
+### P2-1 — Toolkit navigation layer (type-safe, MVI-integrated) ✅ DONE (2026-06-01)
 **Description:** Build the tailored navigation system: type-safe routes
 (extending the existing `ToolkitRoute`), a host-owned back stack, a `NavHost`
 graph builder usable from common code, argument passing, and Android
@@ -283,13 +283,34 @@ system-back/gesture handling.
 features; the demo currently navigates ad hoc.
 **Scope:** `shared-ui-api` (route contract) + `shared-ui-atoms` (Compose host),
 integrated with the MVI effect channel (navigation as a `UiEffect`).
+**Key decisions:**
+- **Wrapped JetBrains CMP `navigation-compose` 2.9.2** (already in the catalog) with a thin
+  toolkit layer rather than hand-rolling a back stack. `ToolkitRoute` is now a `@Serializable`
+  sealed interface; routes need `kotlinx-serialization-core` (**not** `-json` — nav encodes via
+  its own `SavedStateEncoder`), and the `kotlin-serialization` plugin is applied to `shared-ui-api`,
+  `shared-ui-atoms`, and `:shared-demo`.
+- **Split across the no-Compose / Compose boundary:** route contract + Compose-free `FrnkNavigator`/
+  `FrnkNavOptions` in `shared-ui-api`; `FrnkNavHost` / `frnkComposable<T>` / `rememberFrnkNavController`
+  / `rememberFrnkNavigator` in `shared-ui-atoms`. **Toolkit ships the `NavHost`; the host owns the
+  `NavController` back-stack instance.** This supersedes the old "toolkit never owns the NavHost" note.
+- **Nav-as-effect:** a single `EffectCollector` above the `FrnkNavHost` routes a navigation `UiEffect`
+  into the `FrnkNavigator` (the channel is single-consumer). `navigation-compose` is pure Kotlin/Compose
+  — no native cinterop — so `DemoKit`/`FrnkKit` XCFrameworks stay clean.
+- **Full demo rewrite:** the three bottom-nav tabs are top-level destinations (each with its own saved
+  back stack via tab-switch save/restore options); `ComponentDetail(name)` (type-safe arg), `Onboarding`,
+  and `Paywall` are pushed routes. Removed the ad-hoc `selectedTabIndex`/`showOnboarding`/`selectedComponent`
+  state; Android `NavHost` auto-pops on system back (`android:enableOnBackInvokedCallback="true"`), so the
+  only manual `BackHandler` left closes the Components search field.
 **Acceptance Criteria:**
-- [ ] Type-safe routes with arguments; back stack owned by the toolkit host.
-- [ ] Navigation is driven by `UiEffect` and consumed without leaking across
-      recompositions.
-- [ ] Works in Compose Multiplatform common code (Android + iOS).
-- [ ] Android system back / predictive-back honored.
-- [ ] `DemoScreen` migrated onto the new navigation; demoed in all three layers.
+- [x] Type-safe routes with arguments; back stack owned by the toolkit host.
+- [x] Navigation is driven by `UiEffect` and consumed without leaking across
+      recompositions (`EffectCollector` → `routeDemoEffect` → `FrnkNavigator`).
+- [x] Works in Compose Multiplatform common code (Android + iOS).
+- [x] Android system back / predictive-back honored.
+- [x] `DemoScreen` migrated onto the new navigation; demoed in all three layers.
+      *(Evidence: `compileAndroidMain` + `testAndroidHostTest` green incl. new `ToolkitRouteTest`,
+      `DemoNavigationTest`, and the updated `DemoViewModelTest`; `androidDemoApp` installs + runs; iOS
+      compile/link of `DemoKit` is the mandatory local macOS pre-merge gate — CI does not build iOS.)*
 
 ### P2-2 — Verify `BackendChoice` swap is observable end-to-end
 **Description:** Add a demo/test that proves selecting Firebase vs Supabase
@@ -397,7 +418,7 @@ P0-1, P0-2, P0-3      (no deps — done)
 P1-1 ✅ (FrnkDB)   P1-5 ✅ (analytics/crash — ObservabilityChoice, backend-independent)
                    P1-5b ✅ (iOS unhandled-crash symbolication — CrashKiOS)
         │
-P2-1 (navigation) ── depends on P0-3 harness; unblocks most feature screens
+P2-1 ✅ (navigation — FrnkNavHost over CMP navigation-compose; unblocks feature screens)
         │
 P3-1 (PostHog)   P3-2 (RevenueCat entitlements) → P3-3 (paywall/purchase)
         │
@@ -407,6 +428,7 @@ P4-1 (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, nee
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
-**Next up:** P1-1 ✅, P1-5 ✅, and P1-5b ✅ are done. Recommended next is **P2-1 (navigation)** — it
-unblocks most multi-screen features and depends only on the P0-3 harness. P1-2/P1-3/P1-4 stay
-deferred while apps are local-storage-only.
+**Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, and **P2-1 ✅ (navigation)** are done. Recommended next is
+**P2-2 (verify `BackendChoice` swap)** — small and closes a central correctness claim — or, for product
+surface, **P3-2 (RevenueCat entitlements)** now that navigation unblocks multi-screen flows, then
+**P4-1 (molecules)**. P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.

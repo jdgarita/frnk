@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
 import androidx.compose.animation.core.animate
+import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -8,13 +9,17 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * Shared "collapse on scroll" coordinator for a screen's top bar and floating bottom bar. A single
@@ -105,3 +110,18 @@ fun rememberCollapsibleBarsState(): CollapsibleBarsState {
     val scope = rememberCoroutineScope()
     return remember(scope) { CollapsibleBarsState(scope) }
 }
+
+/**
+ * Translate a floating bottom bar (height [barHeight]) down off the bottom edge in lock-step with
+ * [collapsibleBars]: `collapseFraction` 0 → resting, 1 → fully hidden one bar-height below. The
+ * `collapseFraction` read is deferred to layout (lambda-based [offset]), so a scroll that only moves
+ * the bar doesn't recompose. The single source of the collapse-offset math, shared by
+ * [BottomNavScaffoldContent] and host-rendered bars (e.g. a `NavHost`-driven bottom bar).
+ */
+fun Modifier.collapsibleBarOffset(
+    collapsibleBars: CollapsibleBarsState,
+    barHeight: Dp,
+): Modifier =
+    offset {
+        IntOffset(x = 0, y = (collapsibleBars.collapseFraction * barHeight.toPx()).roundToInt())
+    }

@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -29,10 +27,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Lucide
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
+import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
@@ -53,9 +54,13 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
-import dev.jdgarita.frnk.ui.scaffolds.BottomNavIntent
-import dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldContent
+import dev.jdgarita.frnk.ui.nav.FrnkNavHost
+import dev.jdgarita.frnk.ui.nav.FrnkNavOptions
+import dev.jdgarita.frnk.ui.nav.frnkComposable
+import dev.jdgarita.frnk.ui.nav.rememberFrnkNavController
+import dev.jdgarita.frnk.ui.nav.rememberFrnkNavigator
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
 import dev.jdgarita.frnk.ui.scaffolds.CollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
@@ -70,6 +75,7 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsScreen
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
+import dev.jdgarita.frnk.ui.scaffolds.collapsibleBarOffset
 import dev.jdgarita.frnk.ui.scaffolds.rememberBottomNavScaffoldState
 import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
@@ -98,30 +104,40 @@ import dev.jdgarita.frnk.utils.Frnk
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Smoke harness for the toolkit, structured as a real app would be: the whole screen lives inside the
- * `BottomNavScaffold`, which is the persistent shell, and every tab is topped by a status-bar-safe
- * `FrnkTopAppBar`. Three tabs:
- *  - **Home** — the toolkit showcase (theming + atoms, FeatureGate, MVI engine).
- *  - **Components** — a gallery of every `Frnk*` atom in its different styles/states (back + search).
- *  - **Settings** — the real `SettingsScreen` scaffold (back; Onboarding is launched from here).
+ * Smoke harness for the toolkit, structured as a real app would be on the toolkit navigation layer:
+ * a host-owned [rememberFrnkNavController] drives a [FrnkNavHost] whose three tab roots are top-level
+ * destinations, with a single floating [FrnkBottomNavBar] overlaid above the host so it persists
+ * across tab swaps. Tabs (each keeping its own saved back stack via [DemoTabSwitchOptions]):
+ *  - **Home** ([DemoRoute.Home]) — the toolkit showcase (theming + atoms, FeatureGate, MVI engine).
+ *  - **Components** ([DemoRoute.Components]) — a gallery of every `Frnk*` atom (with a search field);
+ *    tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
+ *  - **Settings** ([DemoRoute.Settings]) — the real `SettingsScreen` scaffold; Onboarding is launched
+ *    from here as a pushed [DemoRoute.Onboarding].
  *
- * The demo drives the bottom nav through the **stateless** [BottomNavScaffoldContent] so it owns the
- * selected index — that lets the Settings/Components back buttons return to the Home tab.
+ * Navigation is MVI-faithful: the shared [DemoViewModel] is resolved **once at this host scope** (so
+ * its cross-tab state isn't forked per `NavBackStackEntry`), and its single one-shot effect stream is
+ * consumed by **one** [EffectCollector] above the host that routes navigation into the `FrnkNavigator`
+ * via [routeDemoEffect] and forwards the rest to the host's [onEffect]. On Android the system back
+ * button and predictive-back gesture pop the `FrnkNavHost`'s back stack automatically; on iOS the
+ * back-gesture support depends on the Compose Multiplatform runtime, so every pushed screen also
+ * carries an on-screen back affordance (the detail/paywall back arrow, the onboarding close-X). The
+ * only manual back handling left is closing the Components search field before a pop.
  *
  * The host integration story: a real app passes its own [dev.jdgarita.frnk.ui.theme.FrnkThemeConfig]
- * (color/typography/string/icon overrides), binds a real [dev.jdgarita.frnk.monetization.EntitlementManager]
- * (e.g. RevenueCat), and mounts [DemoScreen] under its own NavHost.
+ * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat).
  */
 @Composable
 fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
-    // Same rationale as OnboardingScreen: the collector is keyed on `vm`, so wrap onEffect in
-    // rememberUpdatedState so a recomposing caller's new lambda is observed by the long-lived
-    // collector instead of capturing the first-composition lambda forever.
-    val currentOnEffect by rememberUpdatedState(onEffect)
-    LaunchedEffect(vm) { vm.effects.collect { currentOnEffect(it) } }
+    val navController = rememberFrnkNavController()
+    val navigator = rememberFrnkNavigator(navController)
+
+    // Single central collector for the shared VM's one-shot effects (the channel is single-consumer):
+    // navigation effects drive the navigator; everything else is forwarded to the host. EffectCollector
+    // is lifecycle-aware and rememberUpdatedState-wraps the handler, so it survives destination swaps.
+    EffectCollector(vm.effects) { effect -> routeDemoEffect(effect, navigator, onEffect) }
 
     val appearanceController = LocalAppearanceController.current
 
@@ -133,7 +149,8 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             appVersion = "v${Frnk.VERSION}",
         )
 
-    // Home is always index 0 (rememberBottomNavScaffoldState builds [Home, middle, Settings]).
+    // Bottom-nav tabs and their routes — one source of truth, in the order rememberBottomNavScaffoldState
+    // builds (Home, middle, Settings); tabRoutes pairs each tab with the route it switches to.
     val navState =
         rememberBottomNavScaffoldState(
             middleTab =
@@ -143,123 +160,176 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                     label = "Components",
                 ),
         )
-    val navigateHome = { vm.send(DemoIntent.NavigateHome) }
+    val tabRoutes = remember { listOf<DemoRoute>(DemoRoute.Home, DemoRoute.Components, DemoRoute.Settings) }
 
-    // A single collapse coordinator shared by every tab's top bar and the one floating bottom bar, so
-    // they hide/reveal together on scroll. Reset to "shown" whenever the visible tab changes.
+    // A single collapse coordinator shared by every destination's top bar and the one floating bottom
+    // bar, so they hide/reveal together on scroll. Reset to "shown" on every destination change — keyed
+    // on the back-stack entry id (unique per instance), so even two ComponentDetail(name)s reset.
     val collapsibleBars = rememberCollapsibleBarsState()
-    LaunchedEffect(state.selectedTabIndex) { collapsibleBars.reset() }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = backStackEntry?.destination
+    LaunchedEffect(backStackEntry?.id) { collapsibleBars.reset() }
+
+    // The tab route that owns the current destination — drives the pill highlight (its index in
+    // tabRoutes) and whether the bar shows at all. Pushed full screens (Onboarding / Paywall) own no
+    // tab → null → the bar is hidden. ComponentDetail belongs to the Components tab: a flat nav graph
+    // with this explicit mapping is a deliberate choice over nested per-tab graphs — with a single
+    // pushed child it's simpler than a nested-graph DSL; revisit if pushed destinations multiply.
+    val selectedTabRoute: DemoRoute? =
+        currentDestination?.let { dest ->
+            when {
+                dest.hasRoute<DemoRoute.Home>() -> DemoRoute.Home
+                dest.hasRoute<DemoRoute.Components>() || dest.hasRoute<DemoRoute.ComponentDetail>() -> DemoRoute.Components
+                dest.hasRoute<DemoRoute.Settings>() -> DemoRoute.Settings
+                else -> null
+            }
+        }
+    val selectedTabIndex: Int? = selectedTabRoute?.let { route -> tabRoutes.indexOf(route).takeIf { it >= 0 } }
+
+    // Destinations under the bar reserve its height for scrollable content; full-screen pushes don't.
+    val barInset = FrnkBottomNavBarDefaults.BarHeight
 
     Box(modifier = Modifier.fillMaxSize()) {
-        BottomNavScaffoldContent(
-            state = navState.copy(selectedIndex = state.selectedTabIndex),
-            onIntent = { intent ->
-                when (intent) {
-                    is BottomNavIntent.TabSelected -> vm.send(DemoIntent.TabSelected(intent.index))
-                }
-            },
+        FrnkNavHost(
+            navController = navController,
+            startRoute = DemoRoute.Home,
             modifier = Modifier.fillMaxSize(),
-            collapsibleBars = collapsibleBars,
-        ) { tab, contentPadding ->
-            when (tab.key) {
-                "components" ->
-                    ComponentsTab(
-                        state = state,
-                        onIntent = vm::send,
-                        contentPadding = contentPadding,
-                        collapsibleBars = collapsibleBars,
-                        onBack = navigateHome,
-                        onEffect = onEffect,
-                    )
-                "settings" -> {
-                    // Blank title: the FrnkTopAppBar already shows "Settings", so suppress the
-                    // scaffold's own header to avoid a duplicate heading. The default catalog is
-                    // extended with demo-only Preferences/Account sections so the screen overflows the
-                    // viewport on tall devices — otherwise it fits and the collapsing bars never engage.
-                    val baseSettings =
-                        rememberDefaultSettingsState(
-                            version = "v${Frnk.VERSION}",
-                            appearance = appearanceController.appearance,
-                            isPro = state.isPro,
-                            title = "",
-                        )
-                    val extraSettings = demoExtraSettingsSections()
-                    val settingsState =
-                        remember(baseSettings, extraSettings) {
-                            baseSettings.copy(sections = baseSettings.sections + extraSettings)
-                        }
-                    SettingsTab(
-                        initialState = settingsState,
-                        contentPadding = contentPadding,
-                        collapsibleBars = collapsibleBars,
-                        onBack = navigateHome,
-                        onEffect = { effect ->
-                            when (effect) {
-                                is SettingsEffect.AppearanceChanged ->
-                                    appearanceController.appearance = effect.appearance
-                                is SettingsEffect.ToggleChanged ->
-                                    onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
-                                is SettingsEffect.ActionInvoked ->
-                                    when (effect.action) {
-                                        SettingsAction.ShowOnboarding -> vm.send(DemoIntent.ShowOnboarding)
-                                        SettingsAction.SendFeedback -> sendFeedback()
-                                        else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
-                                    }
-                            }
-                        },
-                    )
+        ) {
+            frnkComposable<DemoRoute.Home> {
+                HomeTab(
+                    vm = vm,
+                    collapsibleBars = collapsibleBars,
+                    bottomInset = barInset,
+                    onEffect = onEffect,
+                )
+            }
+            frnkComposable<DemoRoute.Components> {
+                ComponentsListScreen(
+                    state = state,
+                    onIntent = vm::send,
+                    collapsibleBars = collapsibleBars,
+                    bottomInset = barInset,
+                    onOpenComponent = { name -> navigator.navigate(DemoRoute.ComponentDetail(name)) },
+                )
+            }
+            frnkComposable<DemoRoute.ComponentDetail> { route ->
+                ComponentDetailScreen(
+                    name = route.name,
+                    collapsibleBars = collapsibleBars,
+                    bottomInset = barInset,
+                    onBack = { navigator.popBackStack() },
+                ) {
+                    ComponentContent(route.name, state, vm::send, onEffect)
                 }
-                else ->
-                    HomeTab(
-                        vm = vm,
-                        contentPadding = contentPadding,
-                        collapsibleBars = collapsibleBars,
-                        onEffect = onEffect,
-                    )
+            }
+            frnkComposable<DemoRoute.Settings> {
+                SettingsTab(
+                    initialState = demoSettingsState(appearanceController.appearance, state.isPro),
+                    collapsibleBars = collapsibleBars,
+                    bottomInset = barInset,
+                    onEffect = { effect ->
+                        when (effect) {
+                            is SettingsEffect.AppearanceChanged ->
+                                appearanceController.appearance = effect.appearance
+                            is SettingsEffect.ToggleChanged ->
+                                onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
+                            is SettingsEffect.ActionInvoked ->
+                                when (effect.action) {
+                                    SettingsAction.ShowOnboarding -> navigator.navigate(DemoRoute.Onboarding)
+                                    SettingsAction.SendFeedback -> sendFeedback()
+                                    else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
+                                }
+                        }
+                    },
+                )
+            }
+            frnkComposable<DemoRoute.Onboarding> {
+                OnboardingScreen(
+                    initialState = demoOnboardingState(),
+                    modifier = Modifier.fillMaxSize(),
+                    // A pushed destination gets a fresh NavBackStackEntry (and ViewModelStoreOwner) per
+                    // push, so OnboardingScreen's koinViewModel is naturally fresh — no vmKey dance needed.
+                    onEffect = { effect ->
+                        when (effect) {
+                            OnboardingEffect.CloseRequested,
+                            OnboardingEffect.Completed,
+                            -> navigator.popBackStack()
+                        }
+                    },
+                )
+            }
+            frnkComposable<DemoRoute.Paywall> {
+                PaywallScreen(
+                    collapsibleBars = collapsibleBars,
+                    onBack = { navigator.popBackStack() },
+                )
             }
         }
 
-        if (state.showOnboarding) {
-            OnboardingScreen(
-                initialState = demoOnboardingState(),
-                modifier = Modifier.fillMaxSize(),
-                // Keyed on onboardingSession (bumped on each open) so OnboardingScreen resolves a fresh
-                // VM instead of reusing the last session's page index — otherwise dismissing on page 3
-                // and reopening would land back on page 3.
-                vmKey = "demo-onboarding-${state.onboardingSession}",
-                onEffect = { effect ->
-                    when (effect) {
-                        OnboardingEffect.CloseRequested,
-                        OnboardingEffect.Completed,
-                        -> vm.send(DemoIntent.DismissOnboarding)
+        // The one floating bottom bar, overlaid above the NavHost so it persists across tab swaps. Hidden
+        // on full-screen pushes. Slides off-screen in lock-step with the top bars via collapsibleBars.
+        if (selectedTabIndex != null) {
+            DemoBottomBar(
+                tabs = navState.tabs,
+                selectedIndex = selectedTabIndex,
+                collapsibleBars = collapsibleBars,
+                onSelect = { index ->
+                    val route = tabRoutes[index]
+                    if (index == selectedTabIndex) {
+                        // Re-tapping the active tab returns to its root, popping any pushed child
+                        // (e.g. ComponentDetail) off this tab's stack rather than restoring it.
+                        navigator.navigate(
+                            route,
+                            FrnkNavOptions(popUpTo = FrnkNavOptions.PopUpTo(route), launchSingleTop = true),
+                        )
+                    } else {
+                        navigator.navigate(route, DemoTabSwitchOptions)
                     }
                 },
+                modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
     }
 }
 
+/** The floating bottom-nav bar overlay — the `FrnkBottomNavBar` atom translated by the shared collapse fraction. */
+@Composable
+private fun DemoBottomBar(
+    tabs: List<BottomNavTab>,
+    selectedIndex: Int,
+    collapsibleBars: CollapsibleBarsState,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FrnkBottomNavBar(
+        state =
+            FrnkBottomNavBarState(
+                items = tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) },
+                selectedIndex = selectedIndex,
+            ),
+        onItemSelected = onSelect,
+        modifier = modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight),
+    )
+}
+
 /**
- * Home tab — the toolkit showcase that used to be the demo's start screen. The appearance toggle was
- * dropped (it lives on the Settings screen now); the screen title moved into the [FrnkTopAppBar].
+ * Home tab — the toolkit showcase. Dogfoods [FrnkMviScreen] (the state-hosting primitive host apps use)
+ * over the shared [DemoViewModel]; `onEffect` is left null there because the demo's single effect stream
+ * is already collected centrally in [DemoScreen] (the channel is single-consumer). The few direct toasts
+ * below go through the captured [onEffect] lambda, which bypasses the VM channel.
  */
 @Composable
 private fun HomeTab(
     vm: DemoViewModel,
-    contentPadding: PaddingValues,
     collapsibleBars: CollapsibleBarsState,
+    bottomInset: Dp,
     onEffect: (DemoEffect) -> Unit,
 ) {
-    // Dogfoods the toolkit's FrnkMviScreen — the same state-hosting primitive host apps use for their
-    // own screens. It collects state (lifecycle-aware), hands back (state, onIntent), and renders the
-    // standard FrnkScreenScaffold. onEffect is left null: the demo's effects are one shared
-    // DemoViewModel stream already collected centrally in DemoScreen (the effect channel is
-    // single-consumer), and the few direct toasts below still go through the captured onEffect lambda.
     FrnkMviScreen(
         viewModel = vm,
         topBar = FrnkTopAppBarState(title = "frnk"),
         collapsibleBars = collapsibleBars,
-        bottomInset = contentPadding.calculateBottomPadding(),
+        bottomInset = bottomInset,
     ) { state, onIntent, padding ->
         Column(
             modifier =
@@ -458,13 +528,15 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "5. MVI") {
+            Section(title = "5. MVI + Navigation") {
                 FrnkText(
                     state =
                         FrnkTextState.Body(
                             text =
                                 "DemoViewModel = MviViewModel<DemoState, DemoIntent, DemoEffect>.\n" +
-                                    "Every interaction above flows: Composable → send(Intent) → reducer → State → recomposition.",
+                                    "Every interaction above flows: Composable → send(Intent) → reducer → State → " +
+                                    "recomposition. Navigation is a one-shot effect routed into the toolkit's " +
+                                    "FrnkNavHost — Request Upgrade pushes the Paywall; the bottom bar switches tabs.",
                             color = colorOnSurfaceVariant,
                         ),
                 )
@@ -474,307 +546,32 @@ private fun HomeTab(
 }
 
 /**
- * Components tab — a vertical list of every `Frnk*` atom by name, under a top bar with a back button
- * (returns to Home) and a search action that filters the list. Tapping a row opens that component's
- * dedicated detail screen ([ComponentDetailScreen]), which shows all of its variants; back there
- * returns to this list. All of this tab's state (search, list ↔ detail selection, and the interactive
- * atoms' values) is hoisted into [DemoViewModel], so it survives navigation and recomposition; this
- * composable is stateless — it reads [state] and emits [onIntent].
+ * Components tab list — every `Frnk*` atom by name under a searchable top bar. Tapping a row pushes
+ * that component's detail destination via [onOpenComponent]. All state (search + the interactive atoms'
+ * values) is hoisted into [DemoViewModel]; this composable is stateless. Physical/gesture back closes an
+ * open search field, otherwise it falls through to the `FrnkNavHost` (which pops the tab back to Home).
  */
 @Composable
-private fun ComponentsTab(
+private fun ComponentsListScreen(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    contentPadding: PaddingValues,
     collapsibleBars: CollapsibleBarsState,
-    onBack: () -> Unit,
-    onEffect: (DemoEffect) -> Unit,
+    bottomInset: Dp,
+    onOpenComponent: (String) -> Unit,
 ) {
     val searchActive = state.searchActive
     val query = state.searchQuery
-    val selectedComponent = state.selectedComponent
-
-    // The gallery as (componentName, content) pairs so the search field can filter it by name.
-    val components: List<Pair<String, @Composable () -> Unit>> =
-        listOf(
-            "FrnkText" to {
-                FrnkText(state = FrnkTextState.HeadlineSmall(text = "HeadlineSmall"))
-                FrnkText(state = FrnkTextState.Title(text = "Title"))
-                FrnkText(state = FrnkTextState.TitleMedium(text = "TitleMedium"))
-                FrnkText(state = FrnkTextState.Body(text = "Body"))
-                FrnkText(state = FrnkTextState.BodyMedium(text = "BodyMedium"))
-                FrnkText(
-                    state = FrnkTextState.BodySmall(text = "BodySmall", color = colorOnSurfaceVariant),
-                )
-                FrnkText(state = FrnkTextState.AppName(annotated = buildAnnotatedString { append("FrnkKit") }))
-                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
-                FrnkText(
-                    state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true)),
-                )
-                FrnkText(
-                    state =
-                        FrnkTextState.Body(
-                            text = "Loading a longer body line of text",
-                            skeleton = FrnkSkeleton(enabled = true),
-                        ),
-                )
-            },
-            "FrnkButton" to {
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(state = FrnkButtonState(text = "Filled"), onClick = {})
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
-                        onClick = {},
-                    )
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Ghost", variant = FrnkButtonVariant.Ghost),
-                        onClick = {},
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Filled", enabled = false),
-                        onClick = {},
-                    )
-                    FrnkButton(
-                        state =
-                            FrnkButtonState(
-                                text = "Outlined",
-                                variant = FrnkButtonVariant.Outlined,
-                                enabled = false,
-                            ),
-                        onClick = {},
-                    )
-                }
-                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Loading", skeleton = FrnkSkeleton(enabled = true)),
-                        onClick = {},
-                    )
-                    FrnkButton(
-                        state =
-                            FrnkButtonState(
-                                text = "Outlined",
-                                variant = FrnkButtonVariant.Outlined,
-                                skeleton = FrnkSkeleton(enabled = true),
-                            ),
-                        onClick = {},
-                    )
-                }
-            },
-            "FrnkIcon / FrnkIconButton" to {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FrnkIcon(
-                        state =
-                            FrnkIconState(
-                                imageVector = Theme[icons][iconSearch],
-                                contentDescription = "Search",
-                                size = FrnkIconSize.md,
-                                tint = colorPrimary,
-                            ),
-                    )
-                    FrnkIcon(
-                        state =
-                            FrnkIconState(
-                                imageVector = Theme[icons][iconCheck],
-                                contentDescription = "Check",
-                                size = FrnkIconSize.lg,
-                                tint = colorPrimary,
-                            ),
-                    )
-                    FrnkIconButton(
-                        state =
-                            FrnkIconButtonState(
-                                imageVector = Theme[icons][iconSettings],
-                                contentDescription = "Settings",
-                                tint = colorOnBackground,
-                            ),
-                        onClick = { onEffect(DemoEffect.Toast("Icon button tapped")) },
-                    )
-                }
-                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FrnkIcon(
-                        state =
-                            FrnkIconState(
-                                imageVector = Theme[icons][iconCheck],
-                                contentDescription = null,
-                                size = FrnkIconSize.lg,
-                                tint = colorPrimary,
-                                skeleton = FrnkSkeleton(enabled = true),
-                            ),
-                    )
-                    FrnkIconButton(
-                        state =
-                            FrnkIconButtonState(
-                                imageVector = Theme[icons][iconSettings],
-                                contentDescription = "Settings",
-                                tint = colorOnBackground,
-                                skeleton = FrnkSkeleton(enabled = true),
-                            ),
-                        onClick = {},
-                    )
-                }
-            },
-            "FrnkDivider" to {
-                FrnkDivider(state = FrnkDividerState.Horizontal())
-                Row(
-                    modifier = Modifier.height(24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FrnkText(state = FrnkTextState.BodySmall(text = "Left"))
-                    FrnkDivider(state = FrnkDividerState.Vertical())
-                    FrnkText(state = FrnkTextState.BodySmall(text = "Right"))
-                }
-            },
-            "FrnkSwitch" to {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FrnkSwitch(
-                        state = FrnkSwitchState(checked = state.gallerySwitchOn),
-                        onCheckedChange = { onIntent(DemoIntent.GallerySwitchChanged(it)) },
-                    )
-                    FrnkText(state = FrnkTextState.BodySmall(text = if (state.gallerySwitchOn) "On" else "Off"))
-                    FrnkSwitch(
-                        state = FrnkSwitchState(checked = true, enabled = false),
-                        onCheckedChange = {},
-                    )
-                    FrnkText(state = FrnkTextState.BodySmall(text = "Disabled"))
-                }
-                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
-                FrnkSwitch(
-                    state = FrnkSwitchState(checked = true, skeleton = FrnkSkeleton(enabled = true)),
-                    onCheckedChange = {},
-                )
-            },
-            "FrnkSegmentedControl" to {
-                FrnkSegmentedControl(
-                    state =
-                        FrnkSegmentedControlState(
-                            options = listOf("One", "Two", "Three"),
-                            selectedIndex = state.gallerySegmentIndex,
-                        ),
-                    onOptionSelected = { onIntent(DemoIntent.GallerySegmentChanged(it)) },
-                )
-                FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
-                FrnkSegmentedControl(
-                    state =
-                        FrnkSegmentedControlState(
-                            options = listOf("One", "Two", "Three"),
-                            selectedIndex = 0,
-                            skeleton = FrnkSkeleton(enabled = true),
-                        ),
-                    onOptionSelected = {},
-                )
-            },
-            "FrnkBottomNavBar" to {
-                FrnkText(
-                    state =
-                        FrnkTextState.BodySmall(
-                            text = "The atom standalone — the bar at the foot of this screen is the same atom.",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
-                FrnkBottomNavBar(
-                    state =
-                        FrnkBottomNavBarState(
-                            items =
-                                listOf(
-                                    FrnkBottomNavItem("a", Theme[icons][iconSearch], "Search"),
-                                    FrnkBottomNavItem("b", Theme[icons][iconCheck], "Check"),
-                                    FrnkBottomNavItem("c", Theme[icons][iconSettings], "Settings"),
-                                ),
-                            selectedIndex = state.galleryNavIndex,
-                        ),
-                    onItemSelected = { onIntent(DemoIntent.GalleryNavChanged(it)) },
-                )
-            },
-            "Ripple" to {
-                FrnkText(
-                    state =
-                        FrnkTextState.BodySmall(
-                            text =
-                                "Every interactive atom above ripples on press by default — FrnkTheme installs " +
-                                    "the ripple as LocalIndication. Host apps apply the same ripple to their own " +
-                                    "components with rememberFrnkRipple().",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
-                val boundedRipple = remember { MutableInteractionSource() }
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(Theme[shapes][shapeCard])
-                            .background(Theme[colors][colorSurfaceVariant])
-                            .clickable(
-                                interactionSource = boundedRipple,
-                                indication = rememberFrnkRipple(),
-                            ) { onEffect(DemoEffect.Toast("Bounded ripple")) }
-                            .padding(FrnkSpacing.md),
-                ) {
-                    FrnkText(state = FrnkTextState.Body(text = "Custom card — bounded ripple (content color)"))
-                }
-                val unboundedRipple = remember { MutableInteractionSource() }
-                Box(
-                    modifier =
-                        Modifier
-                            .clip(Theme[shapes][shapeCard])
-                            .clickable(
-                                interactionSource = unboundedRipple,
-                                indication = rememberFrnkRipple(color = Theme[colors][colorPrimary], bounded = false),
-                            ) { onEffect(DemoEffect.Toast("Unbounded ripple")) }
-                            .padding(FrnkSpacing.md),
-                ) {
-                    FrnkText(state = FrnkTextState.Body(text = "Tap for an unbounded, primary-colored ripple"))
-                }
-            },
-        )
-
-    // Navigating into / out of a component detail is a screen change — start it with the bars shown.
-    LaunchedEffect(selectedComponent) { collapsibleBars.reset() }
-
-    val selected = components.firstOrNull { it.first == selectedComponent }
-    if (selected != null) {
-        ComponentDetailScreen(
-            name = selected.first,
-            bottomInset = contentPadding.calculateBottomPadding(),
-            collapsibleBars = collapsibleBars,
-            onBack = { onIntent(DemoIntent.ComponentSelected(null)) },
-            content = selected.second,
-        )
-        return
-    }
 
     val trimmedQuery = query.trim()
-    val matches = components.filter { it.first.contains(trimmedQuery, ignoreCase = true) }
+    val matches = componentNames.filter { it.contains(trimmedQuery, ignoreCase = true) }
 
-    // List view (detail path returned above): physical back mirrors the top bar's leading button —
-    // close the search field if it's open, otherwise fall through to the back arrow's target (Home).
-    DemoBackHandler {
-        if (searchActive) {
-            onIntent(DemoIntent.SearchClosed)
-        } else {
-            onBack()
-        }
-    }
+    // Only intercept back to close an open search field; when inactive the FrnkNavHost handles back.
+    DemoBackHandler(enabled = searchActive) { onIntent(DemoIntent.SearchClosed) }
 
     FrnkScreenScaffold(
         topBar =
             FrnkTopAppBarState(
                 title = "Components",
-                navigationIcon = Theme[icons][iconBack],
-                navigationContentDescription = "Back",
                 actions =
                     listOf(
                         FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search"),
@@ -784,8 +581,7 @@ private fun ComponentsTab(
                 searchPlaceholder = "Search components",
             ),
         collapsibleBars = collapsibleBars,
-        bottomInset = contentPadding.calculateBottomPadding(),
-        onNavigationClick = onBack,
+        bottomInset = bottomInset,
         onActionClick = { onIntent(DemoIntent.SearchOpened) },
         onSearchQueryChange = { onIntent(DemoIntent.SearchQueryChanged(it)) },
         onSearchClose = { onIntent(DemoIntent.SearchClosed) },
@@ -807,18 +603,18 @@ private fun ComponentsTab(
                 )
             }
 
-            matches.forEachIndexed { index, (name, _) ->
+            matches.forEachIndexed { index, name ->
                 if (index > 0) {
                     FrnkDivider(state = FrnkDividerState.Horizontal())
                 }
-                ComponentRow(name = name, onClick = { onIntent(DemoIntent.ComponentSelected(name)) })
+                ComponentRow(name = name, onClick = { onOpenComponent(name) })
             }
         }
     }
 }
 
 /**
- * A tappable row in the Components list: the component's name with a trailing chevron. Tapping it opens
+ * A tappable row in the Components list: the component's name with a trailing chevron. Tapping it pushes
  * that component's [ComponentDetailScreen].
  */
 @Composable
@@ -851,23 +647,19 @@ private fun ComponentRow(
 }
 
 /**
- * The dedicated detail screen for a single component — its name in the top bar over a scrollable list
- * of all that component's variants. Uses the same [FrnkScreenScaffold] template as every other screen
- * (so its bars collapse on scroll too); back returns to the Components list.
+ * Pushed detail destination for a single component — its name in the top bar over a scrollable list of
+ * all that component's variants. Uses the same [FrnkScreenScaffold] template as every other screen (so
+ * its bars collapse on scroll too). Back is handled by the `FrnkNavHost` (system back / swipe-back pop
+ * the stack automatically); the top bar's back arrow calls [onBack].
  */
 @Composable
 private fun ComponentDetailScreen(
     name: String,
-    bottomInset: Dp,
     collapsibleBars: CollapsibleBarsState,
+    bottomInset: Dp,
     onBack: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    // The Android physical back button / predictive-back gesture (and the iOS swipe-back gesture)
-    // mirror the top bar's back arrow: return to the Components list. Without this, system back
-    // bypasses the in-app navigation state and pops the whole Activity (exits the app) instead.
-    DemoBackHandler { onBack() }
-
     FrnkScreenScaffold(
         topBar =
             FrnkTopAppBarState(
@@ -893,30 +685,21 @@ private fun ComponentDetailScreen(
 }
 
 /**
- * Settings tab — a top bar with a back button (returns to Home) over the real [SettingsScreen]
- * scaffold. [initialState] is built with a blank title so the bar's "Settings" heading isn't doubled.
+ * Settings tab — a top bar over the real [SettingsScreen] scaffold (no back arrow: it's a tab root,
+ * switched via the bottom bar). [initialState] uses a blank title so the bar's "Settings" heading
+ * isn't doubled.
  */
 @Composable
 private fun SettingsTab(
     initialState: SettingsScreenState,
-    contentPadding: PaddingValues,
     collapsibleBars: CollapsibleBarsState,
-    onBack: () -> Unit,
+    bottomInset: Dp,
     onEffect: (SettingsEffect) -> Unit,
 ) {
-    // Physical back / predictive-back gesture mirrors the top bar's back arrow: return to Home.
-    DemoBackHandler { onBack() }
-
     FrnkScreenScaffold(
-        topBar =
-            FrnkTopAppBarState(
-                title = "Settings",
-                navigationIcon = Theme[icons][iconBack],
-                navigationContentDescription = "Back",
-            ),
+        topBar = FrnkTopAppBarState(title = "Settings"),
         collapsibleBars = collapsibleBars,
-        bottomInset = contentPadding.calculateBottomPadding(),
-        onNavigationClick = onBack,
+        bottomInset = bottomInset,
     ) { padding ->
         SettingsScreen(
             initialState = initialState,
@@ -924,6 +707,357 @@ private fun SettingsTab(
             contentPadding = padding,
             onEffect = onEffect,
         )
+    }
+}
+
+/**
+ * Placeholder Paywall — a pushed full screen reached from "Request Upgrade" (via `FeatureGate`). Wiring
+ * RevenueCat offerings + a real purchase/restore flow here is BACKLOG P3-3; for now it demonstrates the
+ * nav-as-effect path (a ViewModel effect pushing a destination) and a pushed screen's back arrow.
+ */
+@Composable
+private fun PaywallScreen(
+    collapsibleBars: CollapsibleBarsState,
+    onBack: () -> Unit,
+) {
+    FrnkScreenScaffold(
+        topBar =
+            FrnkTopAppBarState(
+                title = "Paywall",
+                navigationIcon = Theme[icons][iconBack],
+                navigationContentDescription = "Back",
+            ),
+        collapsibleBars = collapsibleBars,
+    ) { padding ->
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(padding),
+            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+        ) {
+            FrnkText(state = FrnkTextState.Title(text = "Upgrade to Pro"))
+            FrnkText(
+                state =
+                    FrnkTextState.Body(
+                        text =
+                            "This screen was pushed by a DemoViewModel navigation effect routed into the toolkit's " +
+                                "FrnkNavHost. Real offerings + purchase/restore are BACKLOG P3-3.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            FrnkButton(
+                state = FrnkButtonState(text = "Back"),
+                onClick = onBack,
+            )
+        }
+    }
+}
+
+/**
+ * The Components catalog in display order. The list destination renders these names; the detail
+ * destination resolves one name's content via [ComponentContent]. Single source of truth for both.
+ */
+private val componentNames =
+    listOf(
+        "FrnkText",
+        "FrnkButton",
+        "FrnkIcon / FrnkIconButton",
+        "FrnkDivider",
+        "FrnkSwitch",
+        "FrnkSegmentedControl",
+        "FrnkBottomNavBar",
+        "Ripple",
+    )
+
+/**
+ * Renders the variants for a single component [name] — the body of [ComponentDetailScreen]. A `when`
+ * over the catalog so the detail destination composes **only** the requested component's content
+ * (not the whole gallery). Reads interactive values from [state] and dispatches [onIntent] / [onEffect],
+ * so the atoms stay live. Unknown names render a fallback rather than crash.
+ */
+@Composable
+private fun ComponentContent(
+    name: String,
+    state: DemoState,
+    onIntent: (DemoIntent) -> Unit,
+    onEffect: (DemoEffect) -> Unit,
+) {
+    when (name) {
+        "FrnkText" -> {
+            FrnkText(state = FrnkTextState.HeadlineSmall(text = "HeadlineSmall"))
+            FrnkText(state = FrnkTextState.Title(text = "Title"))
+            FrnkText(state = FrnkTextState.TitleMedium(text = "TitleMedium"))
+            FrnkText(state = FrnkTextState.Body(text = "Body"))
+            FrnkText(state = FrnkTextState.BodyMedium(text = "BodyMedium"))
+            FrnkText(
+                state = FrnkTextState.BodySmall(text = "BodySmall", color = colorOnSurfaceVariant),
+            )
+            FrnkText(state = FrnkTextState.AppName(annotated = buildAnnotatedString { append("FrnkKit") }))
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkText(
+                state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true)),
+            )
+            FrnkText(
+                state =
+                    FrnkTextState.Body(
+                        text = "Loading a longer body line of text",
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+            )
+        }
+        "FrnkButton" -> {
+            Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                FrnkButton(state = FrnkButtonState(text = "Filled"), onClick = {})
+                FrnkButton(
+                    state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
+                    onClick = {},
+                )
+                FrnkButton(
+                    state = FrnkButtonState(text = "Ghost", variant = FrnkButtonVariant.Ghost),
+                    onClick = {},
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                FrnkButton(
+                    state = FrnkButtonState(text = "Filled", enabled = false),
+                    onClick = {},
+                )
+                FrnkButton(
+                    state =
+                        FrnkButtonState(
+                            text = "Outlined",
+                            variant = FrnkButtonVariant.Outlined,
+                            enabled = false,
+                        ),
+                    onClick = {},
+                )
+            }
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                FrnkButton(
+                    state = FrnkButtonState(text = "Loading", skeleton = FrnkSkeleton(enabled = true)),
+                    onClick = {},
+                )
+                FrnkButton(
+                    state =
+                        FrnkButtonState(
+                            text = "Outlined",
+                            variant = FrnkButtonVariant.Outlined,
+                            skeleton = FrnkSkeleton(enabled = true),
+                        ),
+                    onClick = {},
+                )
+            }
+        }
+        "FrnkIcon / FrnkIconButton" -> {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FrnkIcon(
+                    state =
+                        FrnkIconState(
+                            imageVector = Theme[icons][iconSearch],
+                            contentDescription = "Search",
+                            size = FrnkIconSize.md,
+                            tint = colorPrimary,
+                        ),
+                )
+                FrnkIcon(
+                    state =
+                        FrnkIconState(
+                            imageVector = Theme[icons][iconCheck],
+                            contentDescription = "Check",
+                            size = FrnkIconSize.lg,
+                            tint = colorPrimary,
+                        ),
+                )
+                FrnkIconButton(
+                    state =
+                        FrnkIconButtonState(
+                            imageVector = Theme[icons][iconSettings],
+                            contentDescription = "Settings",
+                            tint = colorOnBackground,
+                        ),
+                    onClick = { onEffect(DemoEffect.Toast("Icon button tapped")) },
+                )
+            }
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FrnkIcon(
+                    state =
+                        FrnkIconState(
+                            imageVector = Theme[icons][iconCheck],
+                            contentDescription = null,
+                            size = FrnkIconSize.lg,
+                            tint = colorPrimary,
+                            skeleton = FrnkSkeleton(enabled = true),
+                        ),
+                )
+                FrnkIconButton(
+                    state =
+                        FrnkIconButtonState(
+                            imageVector = Theme[icons][iconSettings],
+                            contentDescription = "Settings",
+                            tint = colorOnBackground,
+                            skeleton = FrnkSkeleton(enabled = true),
+                        ),
+                    onClick = {},
+                )
+            }
+        }
+        "FrnkDivider" -> {
+            FrnkDivider(state = FrnkDividerState.Horizontal())
+            Row(
+                modifier = Modifier.height(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FrnkText(state = FrnkTextState.BodySmall(text = "Left"))
+                FrnkDivider(state = FrnkDividerState.Vertical())
+                FrnkText(state = FrnkTextState.BodySmall(text = "Right"))
+            }
+        }
+        "FrnkSwitch" -> {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FrnkSwitch(
+                    state = FrnkSwitchState(checked = state.gallerySwitchOn),
+                    onCheckedChange = { onIntent(DemoIntent.GallerySwitchChanged(it)) },
+                )
+                FrnkText(state = FrnkTextState.BodySmall(text = if (state.gallerySwitchOn) "On" else "Off"))
+                FrnkSwitch(
+                    state = FrnkSwitchState(checked = true, enabled = false),
+                    onCheckedChange = {},
+                )
+                FrnkText(state = FrnkTextState.BodySmall(text = "Disabled"))
+            }
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkSwitch(
+                state = FrnkSwitchState(checked = true, skeleton = FrnkSkeleton(enabled = true)),
+                onCheckedChange = {},
+            )
+        }
+        "FrnkSegmentedControl" -> {
+            FrnkSegmentedControl(
+                state =
+                    FrnkSegmentedControlState(
+                        options = listOf("One", "Two", "Three"),
+                        selectedIndex = state.gallerySegmentIndex,
+                    ),
+                onOptionSelected = { onIntent(DemoIntent.GallerySegmentChanged(it)) },
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkSegmentedControl(
+                state =
+                    FrnkSegmentedControlState(
+                        options = listOf("One", "Two", "Three"),
+                        selectedIndex = 0,
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+                onOptionSelected = {},
+            )
+        }
+        "FrnkBottomNavBar" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text = "The atom standalone — the bar at the foot of this screen is the same atom.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            FrnkBottomNavBar(
+                state =
+                    FrnkBottomNavBarState(
+                        items =
+                            listOf(
+                                FrnkBottomNavItem("a", Theme[icons][iconSearch], "Search"),
+                                FrnkBottomNavItem("b", Theme[icons][iconCheck], "Check"),
+                                FrnkBottomNavItem("c", Theme[icons][iconSettings], "Settings"),
+                            ),
+                        selectedIndex = state.galleryNavIndex,
+                    ),
+                onItemSelected = { onIntent(DemoIntent.GalleryNavChanged(it)) },
+            )
+        }
+        "Ripple" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Every interactive atom above ripples on press by default — FrnkTheme installs " +
+                                "the ripple as LocalIndication. Host apps apply the same ripple to their own " +
+                                "components with rememberFrnkRipple().",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            val boundedRipple = remember { MutableInteractionSource() }
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(Theme[shapes][shapeCard])
+                        .background(Theme[colors][colorSurfaceVariant])
+                        .clickable(
+                            interactionSource = boundedRipple,
+                            indication = rememberFrnkRipple(),
+                        ) { onEffect(DemoEffect.Toast("Bounded ripple")) }
+                        .padding(FrnkSpacing.md),
+            ) {
+                FrnkText(state = FrnkTextState.Body(text = "Custom card — bounded ripple (content color)"))
+            }
+            val unboundedRipple = remember { MutableInteractionSource() }
+            Box(
+                modifier =
+                    Modifier
+                        .clip(Theme[shapes][shapeCard])
+                        .clickable(
+                            interactionSource = unboundedRipple,
+                            indication = rememberFrnkRipple(color = Theme[colors][colorPrimary], bounded = false),
+                        ) { onEffect(DemoEffect.Toast("Unbounded ripple")) }
+                        .padding(FrnkSpacing.md),
+            ) {
+                FrnkText(state = FrnkTextState.Body(text = "Tap for an unbounded, primary-colored ripple"))
+            }
+        }
+        else ->
+            FrnkText(
+                state =
+                    FrnkTextState.Body(
+                        text = "Unknown component \"$name\".",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+    }
+}
+
+/**
+ * The demo's Settings state: the toolkit's default catalog (blank title — the top bar already shows
+ * "Settings") extended with demo-only Preferences/Account sections so the screen overflows the viewport
+ * on tall devices (otherwise it fits and the collapsing bars never engage).
+ */
+@Composable
+private fun demoSettingsState(
+    appearance: dev.jdgarita.frnk.ui.theme.Appearance,
+    isPro: Boolean,
+): SettingsScreenState {
+    val baseSettings =
+        rememberDefaultSettingsState(
+            version = "v${Frnk.VERSION}",
+            appearance = appearance,
+            isPro = isPro,
+            title = "",
+        )
+    val extraSettings = demoExtraSettingsSections()
+    return remember(baseSettings, extraSettings) {
+        baseSettings.copy(sections = baseSettings.sections + extraSettings)
     }
 }
 
@@ -1052,15 +1186,14 @@ private fun Section(
 }
 
 /**
- * Bridges the platform back signal — the Android system back button + predictive-back gesture, and
- * the iOS interactive swipe-back — to an in-app navigation action, so the demo's state-driven
- * navigation (it deliberately runs no NavHost) honours the hardware/gesture back the same way it
- * honours the on-screen back arrows.
+ * Bridges the platform back signal — the Android system back button + predictive-back gesture, and the
+ * iOS interactive swipe-back — to an in-app action. The `FrnkNavHost` already pops its back stack on
+ * system back, so this is now used in exactly one place: intercepting back to close the Components
+ * search field (when [enabled]) before it would otherwise pop the destination.
  *
  * Confines the opt-in for the still-`@ExperimentalComposeUiApi` — and, as of Compose Multiplatform
  * 1.11, soft-deprecated in favour of `androidx.navigationevent`'s `NavigationEventHandler` —
- * [BackHandler] to this one place: call sites stay clean and the eventual migration is a one-function
- * change rather than an edit at every screen.
+ * [BackHandler] to this one place.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Suppress("DEPRECATION")
