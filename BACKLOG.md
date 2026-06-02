@@ -436,10 +436,11 @@ atoms, e.g. labeled fields, list rows, cards) under a `ui/molecules/` package.
 **Rationale (priority):** §3.1 calls for Atoms→Molecules→Organisms; only Atoms +
 Scaffolds exist today.
 **Acceptance Criteria:**
-- [ ] ≥3 molecules built purely from existing atoms + tokens (no literals).
-- [ ] Each has an `@Immutable *State`, a `@Preview`, and a skeleton decision
-      recorded.
-- [ ] Showcased in the demo.
+- [x] ≥3 molecules built purely from existing atoms + tokens (no literals).
+      `FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState` under `ui/molecules/`.
+- [x] Each has an `@Immutable *State`, a `@Preview`, and a skeleton decision
+      recorded (ListRow/LabeledValue → skeleton; EmptyState → none, by design).
+- [x] Showcased in the demo (Components gallery, all three layers).
 
 ### P4-2 — Organisms layer
 **Description:** Introduce Organisms (compositions of molecules/atoms forming a

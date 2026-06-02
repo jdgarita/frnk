@@ -59,6 +59,13 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
+import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
+import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
+import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValueOrientation
+import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValueState
+import dev.jdgarita.frnk.ui.molecules.FrnkListRow
+import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
 import dev.jdgarita.frnk.ui.nav.FrnkNavHost
@@ -95,6 +102,7 @@ import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconManageSubscription
+import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconPrivacy
 import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.iconSearch
@@ -785,6 +793,9 @@ private val componentNames =
         "FrnkSegmentedControl",
         "FrnkBottomNavBar",
         "Ripple",
+        "FrnkListRow",
+        "FrnkLabeledValue",
+        "FrnkEmptyState",
     )
 
 /**
@@ -1042,6 +1053,110 @@ private fun ComponentContent(
             ) {
                 FrnkText(state = FrnkTextState.Body(text = "Tap for an unbounded, primary-colored ripple"))
             }
+        }
+        "FrnkListRow" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Molecule: leading icon + title/subtitle + trailing slot. Tap a row for a " +
+                                "ripple + haptic; the whole row collapses to a skeleton while loading.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            FrnkListRow(
+                state =
+                    FrnkListRowState(
+                        title = "Notifications",
+                        subtitle = "Push, email and in-app alerts",
+                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    ),
+                onClick = { onEffect(DemoEffect.Toast("Tapped Notifications")) },
+                trailing = {
+                    FrnkIcon(
+                        state =
+                            FrnkIconState(
+                                imageVector = Theme[icons][iconChevronRight],
+                                contentDescription = null,
+                                tint = colorOnSurfaceVariant,
+                            ),
+                    )
+                },
+            )
+            FrnkListRow(
+                state = FrnkListRowState(title = "Title only, non-interactive"),
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkListRow(
+                state =
+                    FrnkListRowState(
+                        title = "Loading row",
+                        subtitle = "Loading subtitle",
+                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+                onClick = {},
+            )
+        }
+        "FrnkLabeledValue" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Molecule: a muted label paired with a value. Inline pushes the value to the " +
+                                "end; Stacked sits it below. The value carries the skeleton while loading.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            FrnkLabeledValue(state = FrnkLabeledValueState(label = "Plan", value = "Pro"))
+            FrnkDivider(state = FrnkDividerState.Horizontal())
+            FrnkLabeledValue(state = FrnkLabeledValueState(label = "Renews", value = "Jun 2026"))
+            FrnkDivider(state = FrnkDividerState.Horizontal())
+            FrnkLabeledValue(
+                state =
+                    FrnkLabeledValueState(
+                        label = "Storage used",
+                        value = "4.2 GB",
+                        orientation = FrnkLabeledValueOrientation.Stacked,
+                    ),
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkLabeledValue(
+                state =
+                    FrnkLabeledValueState(
+                        label = "Plan",
+                        value = "Loading",
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
+            )
+        }
+        "FrnkEmptyState" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Molecule: centered icon + title + subtitle + optional action button. A terminal " +
+                                "zero-content state, so it has no skeleton (you'd skeletonize the eventual content " +
+                                "instead). The action button brings its own ripple + haptic.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            FrnkEmptyState(
+                state =
+                    FrnkEmptyStateState(
+                        icon =
+                            FrnkIconState(
+                                imageVector = Theme[icons][iconSearch],
+                                contentDescription = null,
+                                size = FrnkIconSize.emptyState,
+                                tint = colorOnSurfaceVariant,
+                            ),
+                        title = "No results",
+                        subtitle = "Try adjusting your search to find what you're looking for.",
+                        actionLabel = "Clear search",
+                    ),
+                onActionClick = { onEffect(DemoEffect.Toast("Cleared search")) },
+            )
         }
         else ->
             FrnkText(
