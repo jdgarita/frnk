@@ -28,7 +28,7 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 | `shared-backend-api` | Auth / Analytics / CrashReporter / RemoteData interfaces + the no-op observability defaults (`Noop{Analytics,Crash}`). Owns `AppResult<D, E : AppError>`. |
 | `shared-backend-firebase` | Firebase impl of `shared-backend-api`. Exposes `firebaseBackendModule` (auth + remote data) and `firebaseObservabilityModule` (analytics + crash). |
 | `shared-backend-supabase` | Supabase + Ktor impl of `shared-backend-api`. Exposes `supabaseBackendModule`. |
-| `shared-database-api` | Persistence contracts (`SqlDriverFactory`, `KeyValueStore`, `NoteStore`). |
+| `shared-database-api` | Persistence contracts (`SqlDriverFactory`, `KeyValueStore` + typed `Preference` accessors, `NoteStore`). |
 | `shared-database-impl` | SQLDelight (`FrnkDB`) + Multiplatform Settings impl — `SqlDelightNoteStore`, `SettingsKeyValueStore`. Exposes `databaseModule`. |
 | `shared-monetization-api` | Entitlement / feature-gate interfaces. |
 | `shared-monetization-revenuecat` | RevenueCat impl. Exposes `revenueCatModule`. |

@@ -9,6 +9,7 @@ kotlin {
         namespace = "${ProjectConfiguration.GROUP_ID}.database.api"
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
+        withHostTest {}
     }
     listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_database_api" } }
     sourceSets {
@@ -16,6 +17,10 @@ kotlin {
             api(projects.sharedUtils)
             api(libs.sqldelight.runtime)
             api(libs.settings.core)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
