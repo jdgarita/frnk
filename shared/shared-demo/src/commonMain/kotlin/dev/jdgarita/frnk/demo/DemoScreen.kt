@@ -392,85 +392,7 @@ private fun HomeTab(
                     .padding(padding),
             verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
         ) {
-            Section(title = "1. Theme + Atoms") {
-                FrnkText(state = FrnkTextState.TitleMedium(text = "Text variants"))
-                FrnkText(state = FrnkTextState.Body(text = "Body — the default reading style."))
-                FrnkText(
-                    state =
-                        FrnkTextState.BodySmall(
-                            text = "BodySmall — secondary copy.",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
-
-                FrnkText(state = FrnkTextState.TitleMedium(text = "Buttons"))
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Filled"),
-                        onClick = { onIntent(DemoIntent.Increment) },
-                    )
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
-                        onClick = { onIntent(DemoIntent.Decrement) },
-                    )
-                    FrnkButton(
-                        state =
-                            FrnkButtonState(
-                                text = "Ghost",
-                                variant = FrnkButtonVariant.Ghost,
-                                enabled = false,
-                            ),
-                        onClick = { },
-                    )
-                }
-
-                FrnkText(state = FrnkTextState.TitleMedium(text = "Icons"))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FrnkIcon(
-                        state =
-                            FrnkIconState(
-                                imageVector = Theme[icons][iconBack],
-                                contentDescription = "Back",
-                                size = FrnkIconSize.lg,
-                                tint = colorPrimary,
-                            ),
-                    )
-                    FrnkIcon(
-                        state =
-                            FrnkIconState(
-                                imageVector = Theme[icons][iconCheck],
-                                contentDescription = "Check",
-                                size = FrnkIconSize.lg,
-                                tint = colorPrimary,
-                            ),
-                    )
-                    FrnkIconButton(
-                        state =
-                            FrnkIconButtonState(
-                                imageVector = Theme[icons][iconSettings],
-                                contentDescription = "Settings",
-                                tint = colorOnBackground,
-                            ),
-                        onClick = { onEffect(DemoEffect.Toast("Settings tapped")) },
-                    )
-                }
-
-                FrnkText(
-                    state =
-                        FrnkTextState.Body(
-                            text = "Count: ${state.count} • Email field: pending FrnkTextField (v2)",
-                            color = colorOnSurfaceVariant,
-                        ),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            FrnkDivider(state = FrnkDividerState.Horizontal())
-
-            Section(title = "2. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
+            Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
                 Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                         // Entry point #1 mirror: open the toolkit paywall (also reachable from the
@@ -503,7 +425,7 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "3. Persistence (FrnkDB — ${state.notes.size} saved)") {
+            Section(title = "2. Persistence (FrnkDB — ${state.notes.size} saved)") {
                 FrnkText(
                     state =
                         FrnkTextState.Body(
@@ -546,7 +468,7 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "4. Analytics & Crash") {
+            Section(title = "3. Analytics & Crash") {
                 FrnkText(
                     state =
                         FrnkTextState.Body(
@@ -595,7 +517,7 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "5. MVI + Navigation") {
+            Section(title = "4. MVI + Navigation") {
                 FrnkText(
                     state =
                         FrnkTextState.Body(
