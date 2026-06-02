@@ -1111,24 +1111,19 @@ private fun demoSettingsState(
  */
 @Composable
 private fun demoExtraSettingsSections(): List<SettingsSectionState> {
-    val hapticsIcon = Theme[icons][iconSettings]
+    // Haptic feedback lives in the toolkit's *default* catalog now (a real `LocalFrnkHaptics`-backed
+    // toggle), so the demo no longer hand-rolls a haptics row — it just appends a couple of demo-only
+    // rows to keep the Settings screen long enough that the collapsing bars engage.
     val analyticsIcon = Theme[icons][iconPrivacy]
     val accountIcon = Theme[icons][iconManageSubscription]
     val signOutIcon = Theme[icons][iconRestore]
-    return remember(hapticsIcon, analyticsIcon, accountIcon, signOutIcon) {
+    return remember(analyticsIcon, accountIcon, signOutIcon) {
         fun rowIcon(vector: ImageVector) = FrnkIconState(imageVector = vector, contentDescription = null, tint = colorPrimary)
         listOf(
             SettingsSectionState(
-                title = "Preferences",
+                title = "Privacy",
                 rows =
                     listOf(
-                        SettingsToggleRowState(
-                            id = "haptics",
-                            icon = rowIcon(hapticsIcon),
-                            title = "Haptic feedback",
-                            subtitle = "Vibrate on interactions",
-                            checked = true,
-                        ),
                         SettingsToggleRowState(
                             id = "analytics",
                             icon = rowIcon(analyticsIcon),

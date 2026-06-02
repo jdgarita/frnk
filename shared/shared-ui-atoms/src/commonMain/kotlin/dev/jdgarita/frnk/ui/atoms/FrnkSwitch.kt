@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.haptics.HapticType
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorSurface
@@ -49,6 +51,7 @@ fun FrnkSwitch(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalFrnkHaptics.current
     val trackColor by animateColorAsState(
         targetValue = Theme[colors][if (state.checked) colorPrimary else colorOutline],
         label = "switch_track",
@@ -73,7 +76,13 @@ fun FrnkSwitch(
                     value = state.checked,
                     enabled = state.enabled && !state.skeleton.enabled,
                     role = Role.Switch,
-                    onValueChange = onCheckedChange,
+                    onValueChange = {
+                        // Convention: selection atoms fire on an actual change. For a switch every
+                        // toggle *is* a change, so this is unconditional (multi-option atoms like
+                        // FrnkSegmentedControl/FrnkBottomNavBar guard on `index != selected`).
+                        haptics.perform(HapticType.Selection)
+                        onCheckedChange(it)
+                    },
                 ),
         contentAlignment = Alignment.CenterStart,
     ) {

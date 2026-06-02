@@ -19,6 +19,7 @@ import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Settings
 import com.composables.icons.lucide.Shield
 import com.composables.icons.lucide.Star
+import com.composables.icons.lucide.Vibrate
 import com.composables.icons.lucide.X
 import com.composeunstyled.theme.ThemeToken
 
@@ -43,6 +44,7 @@ val iconPrivacy = ThemeToken<ImageVector>("icon_privacy")
 val iconTerms = ThemeToken<ImageVector>("icon_terms")
 val iconNotifications = ThemeToken<ImageVector>("icon_notifications")
 val iconOnboarding = ThemeToken<ImageVector>("icon_onboarding")
+val iconHaptics = ThemeToken<ImageVector>("icon_haptics")
 
 // Bottom-nav scaffold icons. The Home tab uses [iconNavHome]; the Settings tab reuses
 // [iconSettings]; the configurable middle tab supplies its own ImageVector at the call site.
@@ -68,5 +70,6 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconTerms to Lucide.FileText,
         iconNotifications to Lucide.Bell,
         iconOnboarding to Lucide.BookOpen,
+        iconHaptics to Lucide.Vibrate,
         iconNavHome to Lucide.House,
     )

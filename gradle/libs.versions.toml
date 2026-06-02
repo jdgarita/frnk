@@ -20,6 +20,7 @@ firebase-crashlytics-gradle = "3.0.7"
 crashkios = "0.9.0"
 supabase = "3.6.0"
 revenuecat = "3.0.2"
+multihaptic = "0.3.2"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
 androidx-activity = "1.13.0"
@@ -71,6 +72,10 @@ supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", versi
 
 revenuecat-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "revenuecat" }
 revenuecat-result = { module = "com.revenuecat.purchases:purchases-kmp-result", version.ref = "revenuecat" }
+
+# Cross-platform haptics (Android + iOS), no native cinterop. Core is Compose-free; -compose adds rememberVibrator().
+multihaptic-core = { module = "top.ltfan.multihaptic:multihaptic-core", version.ref = "multihaptic" }
+multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihaptic" }
 
 # Compose Unstyled
 icons-lucide = { module = "com.composables:icons-lucide-cmp", version.ref = "iconsLucide" }

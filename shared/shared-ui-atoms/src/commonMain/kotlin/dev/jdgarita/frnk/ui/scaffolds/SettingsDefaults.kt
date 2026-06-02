@@ -5,9 +5,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
+import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.iconFeedback
+import dev.jdgarita.frnk.ui.theme.iconHaptics
 import dev.jdgarita.frnk.ui.theme.iconManageSubscription
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconOnboarding
@@ -18,8 +21,11 @@ import dev.jdgarita.frnk.ui.theme.iconTerms
 import dev.jdgarita.frnk.ui.theme.iconUpgrade
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.stringAppearance
+import dev.jdgarita.frnk.ui.theme.stringHaptics
+import dev.jdgarita.frnk.ui.theme.stringHapticsSubtitle
 import dev.jdgarita.frnk.ui.theme.stringManageSubscription
 import dev.jdgarita.frnk.ui.theme.stringNotifications
+import dev.jdgarita.frnk.ui.theme.stringPreferences
 import dev.jdgarita.frnk.ui.theme.stringPrivacyPolicy
 import dev.jdgarita.frnk.ui.theme.stringProBadge
 import dev.jdgarita.frnk.ui.theme.stringProMember
@@ -59,6 +65,9 @@ import dev.jdgarita.frnk.ui.theme.strings
  * @param isPro switches the subscription section between the Free and Pro layouts (see above).
  * @param notificationsEnabled initial checked state of the notifications toggle.
  * @param showNotifications when false, the notifications section is omitted entirely.
+ * @param showHaptics when false, the haptic-feedback toggle is omitted entirely. When shown, its
+ *   initial checked state is read from the ambient [LocalFrnkHaptics] so the row reflects (and the
+ *   handler can drive) the real toggle — no host wiring required.
  */
 @Composable
 fun rememberDefaultSettingsState(
@@ -67,6 +76,7 @@ fun rememberDefaultSettingsState(
     isPro: Boolean = false,
     notificationsEnabled: Boolean = true,
     showNotifications: Boolean = true,
+    showHaptics: Boolean = true,
     title: String = Theme[strings][stringSettings],
 ): SettingsScreenState {
     // Resolve every token up front so `remember` can key on the resolved values: if a host swaps a
@@ -76,6 +86,13 @@ fun rememberDefaultSettingsState(
     val labelLight = Theme[strings][stringThemeLight]
     val labelDark = Theme[strings][stringThemeDark]
     val labelNotifications = Theme[strings][stringNotifications]
+    val labelPreferences = Theme[strings][stringPreferences]
+    val labelHaptics = Theme[strings][stringHaptics]
+    val labelHapticsSubtitle = Theme[strings][stringHapticsSubtitle]
+    // Seed the toggle from the live haptics state so the row reflects reality on first paint; runtime
+    // flips are owned by SettingsViewModel + applied by rememberFrnkSettingsHandler. .value (not a
+    // lifecycle collect) is enough — the VM owns the row's checked state after the first reduction.
+    val hapticsEnabled = LocalFrnkHaptics.current.isEnabled.value
     val labelUpgrade = Theme[strings][stringUpgradeToPro]
     val labelManage = Theme[strings][stringManageSubscription]
     val labelRestore = Theme[strings][stringRestorePurchases]
@@ -92,6 +109,7 @@ fun rememberDefaultSettingsState(
     val footerText = Theme[strings][stringSettingsFooter]
 
     val iconNotificationsVec = Theme[icons][iconNotifications]
+    val iconHapticsVec = Theme[icons][iconHaptics]
     val iconUpgradeVec = Theme[icons][iconUpgrade]
     val iconManageVec = Theme[icons][iconManageSubscription]
     val iconRestoreVec = Theme[icons][iconRestore]
@@ -107,12 +125,17 @@ fun rememberDefaultSettingsState(
         isPro,
         notificationsEnabled,
         showNotifications,
+        showHaptics,
+        hapticsEnabled,
         title,
         labelAppearance,
         labelSystem,
         labelLight,
         labelDark,
         labelNotifications,
+        labelPreferences,
+        labelHaptics,
+        labelHapticsSubtitle,
         labelUpgrade,
         labelManage,
         labelRestore,
@@ -128,6 +151,7 @@ fun rememberDefaultSettingsState(
         headerLegal,
         footerText,
         iconNotificationsVec,
+        iconHapticsVec,
         iconUpgradeVec,
         iconManageVec,
         iconRestoreVec,
@@ -153,18 +177,34 @@ fun rememberDefaultSettingsState(
                             ),
                     ),
                 )
-                if (showNotifications) {
+                if (showNotifications || showHaptics) {
                     add(
                         SettingsSectionState(
+                            title = labelPreferences,
                             rows =
-                                listOf(
-                                    SettingsToggleRowState(
-                                        id = "notifications",
-                                        icon = rowIcon(iconNotificationsVec),
-                                        title = labelNotifications,
-                                        checked = notificationsEnabled,
-                                    ),
-                                ),
+                                buildList {
+                                    if (showNotifications) {
+                                        add(
+                                            SettingsToggleRowState(
+                                                id = "notifications",
+                                                icon = rowIcon(iconNotificationsVec),
+                                                title = labelNotifications,
+                                                checked = notificationsEnabled,
+                                            ),
+                                        )
+                                    }
+                                    if (showHaptics) {
+                                        add(
+                                            SettingsToggleRowState(
+                                                id = HAPTICS_TOGGLE_ID,
+                                                icon = rowIcon(iconHapticsVec),
+                                                title = labelHaptics,
+                                                subtitle = labelHapticsSubtitle,
+                                                checked = hapticsEnabled,
+                                            ),
+                                        )
+                                    }
+                                },
                         ),
                     )
                 }

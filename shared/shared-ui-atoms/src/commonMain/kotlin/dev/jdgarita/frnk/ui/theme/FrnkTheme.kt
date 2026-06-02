@@ -20,6 +20,9 @@ import com.composeunstyled.platformtheme.buildPlatformTheme
 import com.composeunstyled.theme.ComponentInteractiveSize
 import com.composeunstyled.theme.ThemeProperty
 import com.composeunstyled.theme.ThemeToken
+import dev.jdgarita.frnk.ui.haptics.HapticFeedback
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
+import dev.jdgarita.frnk.ui.haptics.rememberFrnkHaptics
 import dev.jdgarita.frnk.ui.tokens.FrnkColors
 import dev.jdgarita.frnk.ui.tokens.FrnkShapes
 import dev.jdgarita.frnk.ui.tokens.FrnkTypography
@@ -277,11 +280,17 @@ private val FrnkPlatformTheme =
  *
  * Hosts that need the appearance to survive process death should hoist their own controller with
  * `rememberSaveable` (or wire it to a `DataStore`-backed flow) and pass it here.
+ *
+ * [haptics] is the ambient [HapticFeedback] installed as `LocalFrnkHaptics` — atoms vibrate on
+ * interaction through it, gated by its enabled flag (driven by the Settings "Haptic feedback"
+ * toggle). It defaults to a `multihaptic`-backed instance; hoist your own (a persisted or
+ * initially-disabled [HapticFeedback]) the same way you would the appearance controller.
  */
 @Composable
 fun FrnkTheme(
     config: FrnkThemeConfig = FrnkThemeConfig.Default,
     appearanceController: AppearanceController = remember { AppearanceController() },
+    haptics: HapticFeedback = rememberFrnkHaptics(),
     content: @Composable () -> Unit,
 ) {
     val indication = config.indication ?: rememberFrnkRipple()
@@ -289,6 +298,7 @@ fun FrnkTheme(
         LocalFrnkThemeConfig provides config,
         LocalAppearanceController provides appearanceController,
         LocalIndication provides indication,
+        LocalFrnkHaptics provides haptics,
     ) {
         FrnkPlatformTheme(content)
     }

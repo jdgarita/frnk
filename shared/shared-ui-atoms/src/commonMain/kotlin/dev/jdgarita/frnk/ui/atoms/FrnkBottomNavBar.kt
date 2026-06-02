@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.haptics.HapticType
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.colorOnSurface
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutlineVariant
@@ -96,6 +98,7 @@ fun FrnkBottomNavBar(
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalFrnkHaptics.current
     val selected = state.selectedIndex.coerceIn(0, (state.items.size - 1).coerceAtLeast(0))
     Row(
         // The wrapper is intentionally transparent (only the pill is filled) so that when the bar
@@ -154,7 +157,10 @@ fun FrnkBottomNavBar(
                                 selected = isSelected,
                                 enabled = state.enabled,
                                 role = Role.Tab,
-                                onClick = { onItemSelected(index) },
+                                onClick = {
+                                    if (index != selected) haptics.perform(HapticType.Selection)
+                                    onItemSelected(index)
+                                },
                             ),
                     contentAlignment = Alignment.Center,
                 ) {

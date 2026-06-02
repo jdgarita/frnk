@@ -469,6 +469,30 @@ currently untested; do this once the harness (P0-3) exists.
 - [ ] At least the most complex atoms (`FrnkSegmentedControl`, `FrnkSwitch`,
       `FrnkTopAppBar` search mode) have state-driven tests.
 
+### P4-5 — Cross-platform haptics ✅ DONE (2026-06-02)
+**Description:** A simplified, host-facing haptics API backed by `multihaptic`
+(`top.ltfan.multihaptic`), wired to the existing Settings "Haptic feedback" toggle,
+working on Android + iOS with zero host code.
+**Rationale (priority):** Tactile feedback is table-stakes polish for the design
+system; `multihaptic` matches the toolkit's Kotlin/AGP/Compose pins and ships
+Android/iOS impls with no native cinterop, so it slots in like the ripple.
+**Acceptance Criteria:**
+- [x] Compose-free contract in `shared-ui-api` (`HapticType`, `HapticFeedback`,
+      `HapticEngine`, `DefaultHapticFeedback`, `NoOpHapticFeedback`); unit-tested
+      (`DefaultHapticFeedbackTest` — gating + `setEnabled`).
+- [x] `multihaptic` binding (`MultiHapticEngine`) + `LocalFrnkHaptics` installed by
+      `FrnkTheme` via `rememberFrnkHaptics()` (no Context plumbing) in
+      `shared-ui-atoms`.
+- [x] Interactive atoms auto-fire (`FrnkButton`/`FrnkIconButton` → `Click`;
+      `FrnkSwitch`/`FrnkSegmentedControl`/`FrnkBottomNavBar` → `Selection`).
+- [x] Toolkit default Settings catalog ships the "Haptic feedback" toggle
+      (`HAPTICS_TOGGLE_ID`); `rememberFrnkSettingsHandler` flips
+      `HapticFeedback.setEnabled` — demo carries no custom haptics logic.
+- [x] Demoed in all three layers (`:shared-demo` components + Settings toggle,
+      `androidDemoApp`, `iosDemoApp` — iOS needs a physical device for the taptic
+      engine).
+- [x] No native cinterop added; `DemoKit`/`FrnkKit` XCFrameworks stay clean.
+
 ---
 
 ## Dependency map (quick reference)

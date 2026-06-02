@@ -8,6 +8,8 @@ import androidx.compose.ui.platform.UriHandler
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
+import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.nav.FrnkNavigator
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
@@ -20,12 +22,13 @@ import kotlinx.coroutines.launch
 const val GOD_MODE_TOGGLE_ID = "god_mode"
 
 /**
- * Centralizes the toolkit's monetization-related Settings wiring so every host gets paywall navigation,
- * restore, manage-subscription, and the god-mode toggle for free. Handles `UpgradeToPro` (→ navigate to
- * the toolkit [ToolkitRoute.Paywall]), `RestorePurchases`, `ManageSubscription` (→ open the provider's
- * customer-specific management URL, falling back to the platform's native subscriptions deep link via
- * [platformManageSubscriptionsUrl]), and the god-mode [SettingsEffect.ToggleChanged]; delegates
- * everything else (theme appearance, other actions) to [fallback].
+ * Centralizes the toolkit's Settings wiring so every host gets paywall navigation, restore,
+ * manage-subscription, the god-mode toggle, and the haptic-feedback toggle for free. Handles
+ * `UpgradeToPro` (→ navigate to the toolkit [ToolkitRoute.Paywall]), `RestorePurchases`,
+ * `ManageSubscription` (→ open the provider's customer-specific management URL, falling back to the
+ * platform's native subscriptions deep link via [platformManageSubscriptionsUrl]), and the god-mode and
+ * `HAPTICS_TOGGLE_ID` [SettingsEffect.ToggleChanged]s (the latter drives the ambient [LocalFrnkHaptics]);
+ * delegates everything else (theme appearance, other actions) to [fallback].
  */
 @Composable
 fun rememberFrnkSettingsHandler(
@@ -37,7 +40,8 @@ fun rememberFrnkSettingsHandler(
 ): (SettingsEffect) -> Unit {
     val scope: CoroutineScope = rememberCoroutineScope()
     val uriHandler: UriHandler = LocalUriHandler.current
-    return remember(navigator, entitlements, analytics, uriHandler, onMessage, fallback) {
+    val haptics = LocalFrnkHaptics.current
+    return remember(navigator, entitlements, analytics, uriHandler, haptics, onMessage, fallback) {
         { effect ->
             when (effect) {
                 is SettingsEffect.ActionInvoked ->
@@ -67,7 +71,11 @@ fun rememberFrnkSettingsHandler(
                         else -> fallback(effect)
                     }
                 is SettingsEffect.ToggleChanged ->
-                    if (effect.id == GOD_MODE_TOGGLE_ID) entitlements.setGodMode(effect.checked) else fallback(effect)
+                    when (effect.id) {
+                        GOD_MODE_TOGGLE_ID -> entitlements.setGodMode(effect.checked)
+                        HAPTICS_TOGGLE_ID -> haptics.setEnabled(effect.checked)
+                        else -> fallback(effect)
+                    }
                 is SettingsEffect.AppearanceChanged -> fallback(effect)
             }
         }
