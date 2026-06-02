@@ -66,6 +66,14 @@ kotlin {
             // middle "Stats" tab). Real consumers only need this if they likewise name Lucide icons
             // directly; otherwise every icon is overridable through FrnkThemeConfig.
             implementation(libs.icons.lucide)
+            // SPIKE (spike/adaptive-bottom-nav): Calf adaptive nav bar, for the A/B comparison against the
+            // Haze-based FrnkAdaptiveBottomNavBar. Calf renders a NATIVE UIKit UITabBar on iOS and a
+            // Material3 NavigationBar elsewhere — so it HARD-DEPENDS on compose.material3. We declare M3
+            // EXPLICITLY here to make the contamination boundary visible: it lives ONLY in :shared-demo,
+            // never in shared-ui-atoms / :shared / :iosApp / FrnkKit (the toolkit's "no Material3" rule).
+            // Both are pure Kotlin/Compose (no new native SPM SDK), so DemoKit still links under dynamic_lookup.
+            implementation(libs.calf.ui)
+            implementation(compose.material3)
         }
         // iOS-only native SDKs the demo opts into (kept out of commonMain so the Android demo +
         // DemoKit's common surface stay SDK-free):

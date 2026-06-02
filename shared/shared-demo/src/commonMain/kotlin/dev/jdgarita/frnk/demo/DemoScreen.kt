@@ -17,7 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -32,11 +35,19 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Lucide
 import com.composeunstyled.theme.Theme
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import dev.jdgarita.frnk.backend.AnalyticsTracker
+import dev.jdgarita.frnk.demo.nav.CalfAdaptiveBottomNavBar
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.frnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
+import dev.jdgarita.frnk.ui.atoms.FrnkAdaptiveBottomNavBar
+import dev.jdgarita.frnk.ui.atoms.FrnkAdaptiveBottomNavBarDefaults
+import dev.jdgarita.frnk.ui.atoms.FrnkAdaptiveBottomNavBarState
+import dev.jdgarita.frnk.ui.atoms.FrnkAdaptiveNavStyle
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
@@ -120,6 +131,7 @@ import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.utils.Frnk
+import dev.jdgarita.frnk.utils.PlatformInfo
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -231,20 +243,55 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         }
     val selectedTabIndex: Int? = selectedTabRoute?.let { route -> tabRoutes.indexOf(route).takeIf { it >= 0 } }
 
-    // Destinations under the bar reserve its height for scrollable content; full-screen pushes don't.
-    val barInset = FrnkBottomNavBarDefaults.BarHeight
+    // SPIKE (spike/adaptive-bottom-nav): A/B harness for the bottom-nav approaches. The variant is picked
+    // live from the segmented control on the Home tab; the Haze variant's silhouette is the platform
+    // default (frosted full-width on iOS, floating pill on Android) — derived HERE at the host (which may
+    // depend on shared-utils' PlatformInfo), keeping the atom itself param-driven.
+    // NB: UIDevice.systemName is "iPadOS" on iPad (not "iOS"), so match both Apple OS names.
+    val platformNavStyle =
+        remember {
+            if (PlatformInfo.osName == "iOS" || PlatformInfo.osName == "iPadOS") {
+                FrnkAdaptiveNavStyle.IosFrostedBar
+            } else {
+                FrnkAdaptiveNavStyle.AndroidFloatingPill
+            }
+        }
+    // Hold the variant as the enum (the type-safe source of truth); rememberSaveable persists the choice
+    // across config change / process death. The segmented control speaks indices, so convert only at that
+    // boundary (HomeTab).
+    var navVariantOrdinal by rememberSaveable { mutableStateOf(DemoNavVariant.HazeAdaptive.ordinal) }
+    val navVariant = DemoNavVariant.entries.getOrElse(navVariantOrdinal) { DemoNavVariant.HazeAdaptive }
+    // The frost samples whatever is marked as the Haze source (the NavHost content below). Hoisted here so
+    // the source (scrolling content) and the effect (the bar) share one state.
+    val hazeState = rememberHazeState()
+
+    // Destinations under the bar reserve its full rendered height for scrollable content; full-screen pushes
+    // don't. The reserve tracks the active variant — the iOS frosted bar's safe-area inset makes it taller
+    // than the pill, so a constant would trap the last item underneath it on a notched device.
+    val barInset =
+        when (navVariant) {
+            DemoNavVariant.HazeAdaptive -> FrnkAdaptiveBottomNavBarDefaults.barHeightWithSafeArea(platformNavStyle)
+            else -> FrnkBottomNavBarDefaults.BarHeight
+        }
 
     Box(modifier = Modifier.fillMaxSize()) {
         FrnkNavHost(
             navController = navController,
             startRoute = DemoRoute.Home,
-            modifier = Modifier.fillMaxSize(),
+            // hazeSource only when the Haze variant is active — it's not free (it installs a layout-aware
+            // node that tracks content bounds every pass), so don't pay it for the Pill/Calf variants.
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .then(if (navVariant == DemoNavVariant.HazeAdaptive) Modifier.hazeSource(hazeState) else Modifier),
         ) {
             frnkComposable<DemoRoute.Home> {
                 HomeTab(
                     vm = vm,
                     collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
+                    navVariant = navVariant,
+                    onNavVariantChange = { navVariantOrdinal = it.ordinal },
                     onEffect = onEffect,
                 )
             }
@@ -315,6 +362,9 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         // on full-screen pushes. Slides off-screen in lock-step with the top bars via collapsibleBars.
         if (selectedTabIndex != null) {
             DemoBottomBar(
+                variant = navVariant,
+                hazeStyle = platformNavStyle,
+                hazeState = hazeState,
                 tabs = navState.tabs,
                 selectedIndex = selectedTabIndex,
                 collapsibleBars = collapsibleBars,
@@ -337,24 +387,71 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     }
 }
 
-/** The floating bottom-nav bar overlay — the `FrnkBottomNavBar` atom translated by the shared collapse fraction. */
+/**
+ * SPIKE (`spike/adaptive-bottom-nav`): the three bottom-nav approaches being compared, switchable live
+ * from the segmented control on the Home tab.
+ *  - [Baseline] — the toolkit's current `FrnkBottomNavBar` floating pill (the control group).
+ *  - [HazeAdaptive] — the candidate `FrnkAdaptiveBottomNavBar`: a Haze-frosted full-width bar on iOS, the
+ *    pill on Android. Pure Compose, no Material3, stays in the toolkit.
+ *  - [CalfAdaptive] — Calf's `AdaptiveNavigationBar`: a native UIKit `UITabBar` on iOS, Material3 elsewhere.
+ *    Demo-only (drags in Material3).
+ */
+private enum class DemoNavVariant(
+    val label: String,
+) {
+    Baseline("Pill"),
+    HazeAdaptive("Haze"),
+    CalfAdaptive("Calf"),
+}
+
+/** The floating bottom-nav bar overlay, dispatching to the selected [DemoNavVariant] (SPIKE). */
 @Composable
 private fun DemoBottomBar(
+    variant: DemoNavVariant,
+    hazeStyle: FrnkAdaptiveNavStyle,
+    hazeState: HazeState,
     tabs: List<BottomNavTab>,
     selectedIndex: Int,
     collapsibleBars: CollapsibleBarsState,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FrnkBottomNavBar(
-        state =
-            FrnkBottomNavBarState(
-                items = tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) },
+    val items = tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) }
+    when (variant) {
+        DemoNavVariant.Baseline ->
+            FrnkBottomNavBar(
+                state = FrnkBottomNavBarState(items = items, selectedIndex = selectedIndex),
+                onItemSelected = onSelect,
+                modifier = modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight),
+            )
+
+        DemoNavVariant.HazeAdaptive ->
+            FrnkAdaptiveBottomNavBar(
+                state =
+                    FrnkAdaptiveBottomNavBarState(
+                        items = items,
+                        selectedIndex = selectedIndex,
+                        style = hazeStyle,
+                    ),
+                hazeState = hazeState,
+                onItemSelected = onSelect,
+                modifier =
+                    modifier.collapsibleBarOffset(
+                        collapsibleBars,
+                        // Full rendered height incl. the iOS safe-area inset, so the bar fully clears the
+                        // screen on collapse (the content-only barHeight would leave a frosted band behind).
+                        FrnkAdaptiveBottomNavBarDefaults.barHeightWithSafeArea(hazeStyle),
+                    ),
+            )
+
+        DemoNavVariant.CalfAdaptive ->
+            CalfAdaptiveBottomNavBar(
+                items = items,
                 selectedIndex = selectedIndex,
-            ),
-        onItemSelected = onSelect,
-        modifier = modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight),
-    )
+                onItemSelected = onSelect,
+                modifier = modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight),
+            )
+    }
 }
 
 /**
@@ -368,6 +465,8 @@ private fun HomeTab(
     vm: DemoViewModel,
     collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
+    navVariant: DemoNavVariant,
+    onNavVariantChange: (DemoNavVariant) -> Unit,
     onEffect: (DemoEffect) -> Unit,
 ) {
     val homeState by vm.state.collectAsState()
@@ -397,6 +496,31 @@ private fun HomeTab(
                     .padding(padding),
             verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
         ) {
+            // SPIKE (spike/adaptive-bottom-nav): live A/B switch for the bottom-nav bar at the foot of the
+            // screen. Pill = the current FrnkBottomNavBar; Haze = the candidate FrnkAdaptiveBottomNavBar
+            // (frosted full-width on iOS / pill on Android); Calf = native UITabBar on iOS / Material3 (demo-only).
+            Section(title = "0. Bottom nav (SPIKE)") {
+                FrnkSegmentedControl(
+                    state =
+                        FrnkSegmentedControlState(
+                            options = DemoNavVariant.entries.map { it.label },
+                            selectedIndex = navVariant.ordinal,
+                        ),
+                    // The control reports a valid index; convert it back to the enum at this boundary.
+                    onOptionSelected = { index -> onNavVariantChange(DemoNavVariant.entries[index]) },
+                )
+                FrnkText(
+                    state =
+                        FrnkTextState.BodySmall(
+                            text =
+                                "Switches the bar at the foot of the screen. On iOS, Haze renders a frosted " +
+                                    "full-width bar and Calf a native UITabBar; on Android, Haze is the pill and " +
+                                    "Calf a Material3 NavigationBar. Scroll a tab to see the frost sample content.",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+            }
+
             Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
                 Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
