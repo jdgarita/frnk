@@ -430,11 +430,29 @@ small monetization subsystem.
 
 ## P4 — Design-system depth & polish
 
-### P4-1 — Molecules layer
+### P4-1 — Molecules layer ✅ DONE (2026-06-02)
 **Description:** Introduce the Molecules tier of Atomic Design (compositions of
 atoms, e.g. labeled fields, list rows, cards) under a `ui/molecules/` package.
 **Rationale (priority):** §3.1 calls for Atoms→Molecules→Organisms; only Atoms +
 Scaffolds exist today.
+**Key decisions:**
+- **New `ui/molecules/` package** in `:shared-ui-atoms`, above `ui/atoms/` and below
+  `ui/scaffolds/`. Three molecules, each composed purely from existing atoms + tokens
+  (no `Color(0xFF…)`, no raw `.dp` spacing): **`FrnkListRow`** (icon + title/subtitle +
+  trailing slot, optionally clickable — reuses the `SettingsRow` layout idiom),
+  **`FrnkLabeledValue`** (muted label + value, `Inline`/`Stacked`), **`FrnkEmptyState`**
+  (centered icon/title/subtitle + optional `FrnkButton`).
+- **Skeleton spectrum recorded:** ListRow → whole-row block; LabeledValue → the *value*
+  carries the skeleton (label is static chrome); EmptyState → **none, by design** (a
+  terminal zero-content state is never a loading state).
+- **No re-wiring of feedback:** clickable molecules reuse `FrnkTheme`'s ambient ripple
+  (`LocalIndication`) + fire `LocalFrnkHaptics` like the atoms.
+- **No unit tests added:** molecules are pure stateless view code, matching the atoms tier
+  (previews only). `@Preview`s (Light/Dark/skeleton) live in `commonDebug/.../ui/molecules/previews/`.
+- **Demo:** added to the `:shared-demo` Components gallery (`componentNames` + `ComponentContent`);
+  Android/iOS pick it up automatically, `DemoKit` stays cinterop-free; clickable demos reuse the
+  existing `DemoEffect.Toast` (no `DemoViewModel` change). Also removed the now-redundant
+  "Theme + Atoms" section from the demo Home tab. (PR #31.)
 **Acceptance Criteria:**
 - [x] ≥3 molecules built purely from existing atoms + tokens (no literals).
       `FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState` under `ui/molecules/`.
@@ -508,13 +526,14 @@ P2-1 ✅ (navigation — FrnkNavHost over CMP navigation-compose; unblocks featu
         │
 P3-1 (PostHog)   P3-2 ✅ (RevenueCat entitlements) → P3-3 ✅ (paywall/purchase + frnk Pro layer + god mode)
         │
-P4-1 (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
+P4-1 ✅ (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
         ┊
         ┊  ⏸ DEFERRED until a networked/auth app is planned (local-storage-only for now):
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
-**Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, and **P3-3 ✅ (paywall +
-frnk Pro layer + god mode)** are done. Recommended next is **P4-1 (molecules)** then **P4-2 (organisms)**
-for design-system depth, or **P3-1 (PostHog)** to round out analytics. P2-2 (verify `BackendChoice` swap)
-and P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.
+**Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, **P3-3 ✅ (paywall +
+frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, and **P4-1 ✅ (molecules)** are done. Recommended
+next is **P4-2 (organisms)** to continue the Atomic Design hierarchy (now unblocked by P4-1), or
+**P3-1 (PostHog)** to round out analytics. P2-2 (verify `BackendChoice` swap) and P1-2/P1-3/P1-4 stay
+deferred while apps are local-storage-only.
