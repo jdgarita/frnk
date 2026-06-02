@@ -33,6 +33,10 @@ import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
  * scaffold's private `SettingsSection` (a heterogeneous sealed row hierarchy) — the card chrome lives
  * here once; only the row rendering differs per caller. `internal` because hosts compose sections via
  * those higher-level entry points, not this primitive directly.
+ *
+ * Caller contract: [rows] is expected non-empty. An empty list still paints the surface/title/footnote
+ * chrome around zero rows (a near-zero-height card), which reads as a stray gap — render a
+ * [FrnkEmptyState][dev.jdgarita.frnk.ui.molecules.FrnkEmptyState] for the zero-content case instead.
  */
 @Composable
 internal fun <T> FrnkSectionCard(

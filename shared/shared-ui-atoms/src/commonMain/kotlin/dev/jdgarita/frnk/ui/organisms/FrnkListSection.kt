@@ -14,7 +14,9 @@ import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
  * grouped lists (account rows, a menu, a detail screen).
  *
  * @property rows the rows of the card, top to bottom. Each is a full [FrnkListRowState] (icon, title,
- *   subtitle, trailing handled by the caller, and its own `skeleton` flag).
+ *   subtitle, trailing handled by the caller, and its own `skeleton` flag). Expected non-empty — for
+ *   the zero-content case render a [FrnkEmptyState][dev.jdgarita.frnk.ui.molecules.FrnkEmptyState]
+ *   rather than an empty section (an empty list paints an empty card shell).
  * @property title optional uppercase section header above the card; omitted when `null`.
  * @property footnote optional muted caption below the card; omitted when `null`.
  *

@@ -37,11 +37,16 @@ import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
  * molecule.
  *
  * @property name the primary line (rendered as `Title`).
- * @property avatar the leading glyph, shown inside a circular `primaryContainer` chip.
+ * @property avatar the leading glyph, shown inside a circular `primaryContainer` chip. Decorative by
+ *   default (pass `contentDescription = null`); if the avatar conveys identity for the caller, set a
+ *   meaningful `contentDescription` on it so screen readers announce it — the organism passes it through
+ *   verbatim and never synthesises one from [name].
  * @property subtitle optional secondary line (muted `BodyMedium`); omitted when `null`.
  * @property stats optional stat tiles laid out evenly in a row below the identity block (each
  *   [FrnkLabeledValueState] is forced to [Stacked][FrnkLabeledValueOrientation.Stacked]); the stats
- *   row and its top divider are omitted when empty.
+ *   row and its top divider are omitted when empty. Keep stat **values** short/compact (e.g. `"48d"`,
+ *   `"Pro"`): each tile gets an equal `weight(1f)` slice, so a wide value wraps to multiple lines and
+ *   leaves its column taller than its siblings.
  * @property skeleton loading placeholder. Content-bearing, so the flag is **passed through** to every
  *   child (avatar, name, subtitle, each stat value collapses to a block) and the avatar chip drops its
  *   `primaryContainer` fill while loading so its rim doesn't peek around the glyph skeleton.
