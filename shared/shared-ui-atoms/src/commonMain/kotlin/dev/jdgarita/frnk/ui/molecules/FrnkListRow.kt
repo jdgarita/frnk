@@ -11,7 +11,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import com.composeunstyled.theme.Theme
+import com.composeunstyled.theme.ThemeToken
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
@@ -20,6 +22,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.frnkSkeleton
 import dev.jdgarita.frnk.ui.haptics.HapticType
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
+import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.shapeMedium
 import dev.jdgarita.frnk.ui.theme.shapes
@@ -48,6 +51,13 @@ data class FrnkListRowState(
  * A single list row: `[icon]  title / subtitle  [trailing]`. Pass [onClick] to make the whole row
  * tappable — press feedback (ripple) and a [HapticType.Click] fire automatically, both gated off
  * while the skeleton is showing. [trailing] is an optional slot for a chevron, switch, badge, etc.
+ *
+ * **Optional swipe actions.** Pass a [swipe] state to wrap the row in [FrnkSwipeable], revealing or
+ * dismissing to action buttons (delete/archive/…). Swipe is **off by default** (`null`) — when null
+ * the row renders exactly as before — and is suppressed while the skeleton shows. Action taps are
+ * reported through [onSwipeAction]. While swiping, the sliding row paints an opaque [surfaceColor] so
+ * the action panel only shows once dragged aside; set [surfaceColor] to the host's backdrop when the
+ * row sits on a non-default surface (e.g. a `colorSurface` card) — it defaults to [colorBackground].
  */
 @Composable
 fun FrnkListRow(
@@ -55,6 +65,31 @@ fun FrnkListRow(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
+    swipe: FrnkSwipeableState? = null,
+    onSwipeAction: (FrnkSwipeAction) -> Unit = {},
+    surfaceColor: ThemeToken<Color> = colorBackground,
+) {
+    if (swipe == null || state.skeleton.enabled) {
+        FrnkListRowContent(state = state, onClick = onClick, trailing = trailing, modifier = modifier)
+    } else {
+        FrnkSwipeable(
+            state = swipe,
+            onAction = onSwipeAction,
+            modifier = modifier,
+            contentBackground = surfaceColor,
+        ) {
+            FrnkListRowContent(state = state, onClick = onClick, trailing = trailing)
+        }
+    }
+}
+
+/** The row body shared by the plain and swipe-wrapped paths. */
+@Composable
+private fun FrnkListRowContent(
+    state: FrnkListRowState,
+    onClick: (() -> Unit)?,
+    trailing: (@Composable () -> Unit)?,
+    modifier: Modifier = Modifier,
 ) {
     val haptics = LocalFrnkHaptics.current
     val interactive = onClick != null && !state.skeleton.enabled
