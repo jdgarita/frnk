@@ -8,10 +8,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * frnk-owned [EntitlementManager]: combines an [EntitlementProvider]'s purchased state with a persisted
@@ -33,24 +37,31 @@ class DefaultEntitlementManager(
     private val _isGodMode = MutableStateFlow(keyValueStore.getBoolean(GOD_MODE_KEY, default = false))
     override val isGodMode: StateFlow<Boolean> = _isGodMode.asStateFlow()
 
-    private val _status = MutableStateFlow(compute())
-    override val status: StateFlow<EntitlementStatus> = _status.asStateFlow()
+    /**
+     * Single reactive derivation of `provider.isPro × godMode`. Because `status`/`isPro` are *derived*
+     * (never written by hand) there is no read-modify-write race between [setGodMode] and the provider's
+     * background pushes — `combine` is the only writer. The `onEach` re-seeds the analytics user-properties
+     * on every distinct status, including the very first emission, so a Free-at-startup session is still
+     * tagged `is_pro=false` / `pro_source=None`.
+     */
+    override val status: StateFlow<EntitlementStatus> =
+        combine(provider.isPro, _isGodMode) { providerPro, god -> compute(providerPro, god) }
+            .distinctUntilChanged()
+            .onEach { next ->
+                analytics.setUserProperty("is_pro", next.isPro.toString())
+                analytics.setUserProperty("pro_source", next.source.name)
+            }.stateIn(scope, SharingStarted.Eagerly, compute(provider.isPro.value, _isGodMode.value))
 
-    private val _isPro = MutableStateFlow(_status.value.isPro)
-    override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
-
-    init {
-        // React to provider changes (StateFlow emits current immediately → seeds user properties once).
-        provider.isPro.onEach { recompute() }.launchIn(scope)
-    }
+    override val isPro: StateFlow<Boolean> =
+        status.map { it.isPro }.stateIn(scope, SharingStarted.Eagerly, status.value.isPro)
 
     override fun setGodMode(enabled: Boolean) {
         if (_isGodMode.value == enabled) return
         keyValueStore.putBoolean(GOD_MODE_KEY, enabled)
-        _isGodMode.value = enabled
         analytics.trackCustom("god_mode_toggled", mapOf("enabled" to enabled))
         analytics.setUserProperty("god_mode", enabled.toString())
-        recompute()
+        // The combine derivation reacts to this and recomputes status/isPro + their user-properties.
+        _isGodMode.value = enabled
     }
 
     override suspend fun refresh() = provider.refresh()
@@ -79,26 +90,17 @@ class DefaultEntitlementManager(
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = provider.managementUrl()
 
-    private fun compute(): EntitlementStatus {
-        val god = _isGodMode.value
-        val providerPro = provider.isPro.value
-        val isPro = god || providerPro
+    private fun compute(
+        providerPro: Boolean,
+        god: Boolean,
+    ): EntitlementStatus {
         val source =
             when {
                 god -> ProSource.GodMode
                 providerPro -> ProSource.Purchase
                 else -> ProSource.None
             }
-        return EntitlementStatus(isPro = isPro, source = source)
-    }
-
-    private fun recompute() {
-        val next = compute()
-        if (next == _status.value && next.isPro == _isPro.value) return
-        _status.value = next
-        _isPro.value = next.isPro
-        analytics.setUserProperty("is_pro", next.isPro.toString())
-        analytics.setUserProperty("pro_source", next.source.name)
+        return EntitlementStatus(isPro = god || providerPro, source = source)
     }
 
     private companion object {

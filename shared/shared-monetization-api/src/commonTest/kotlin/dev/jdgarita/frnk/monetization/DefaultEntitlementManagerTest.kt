@@ -68,6 +68,16 @@ class DefaultEntitlementManagerTest {
     }
 
     @Test
+    fun free_at_startup_seeds_is_pro_and_pro_source_user_properties() {
+        val analytics = FakeAnalytics()
+        manager(analytics = analytics)
+        // The reactive derivation must tag a plain Free session immediately, not only after a transition,
+        // so god-mode/Pro sessions are filterable out of revenue analytics from the first event onward.
+        assertEquals("false", analytics.userProperties["is_pro"])
+        assertEquals(ProSource.None.name, analytics.userProperties["pro_source"])
+    }
+
+    @Test
     fun setGodMode_tracks_event_and_user_property() {
         val analytics = FakeAnalytics()
         manager(analytics = analytics).setGodMode(true)
