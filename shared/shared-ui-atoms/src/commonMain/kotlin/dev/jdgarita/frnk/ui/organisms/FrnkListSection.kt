@@ -1,29 +1,11 @@
 package dev.jdgarita.frnk.ui.organisms
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkDivider
-import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
-import dev.jdgarita.frnk.ui.atoms.FrnkText
-import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.molecules.FrnkListRow
 import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
-import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
-import dev.jdgarita.frnk.ui.theme.colorSurface
-import dev.jdgarita.frnk.ui.theme.colors
-import dev.jdgarita.frnk.ui.theme.labelMedium
-import dev.jdgarita.frnk.ui.theme.labelSmall
-import dev.jdgarita.frnk.ui.theme.shapeCard
-import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
 /**
  * View state for [FrnkListSection] — an **organism**: an optional section title, a surface card that
@@ -52,8 +34,8 @@ data class FrnkListSectionState(
  * A titled card grouping its [FrnkListSectionState.rows] as [FrnkListRow]s separated by dividers. Pass
  * [onRowClick] to make rows tappable (the index identifies the row) — each row brings its own ripple +
  * [HapticType.Click][dev.jdgarita.frnk.ui.haptics.HapticType], gated off while that row's skeleton
- * shows. [trailing] is an optional per-row slot (chevron, switch, badge…). The card
- * `animateContentSize()`s so rows appearing/disappearing settle smoothly instead of popping the layout.
+ * shows. [trailing] is an optional per-row slot (chevron, switch, badge…). The card chrome
+ * (`animateContentSize()`, dividers, surface) is shared with the Settings scaffold via [FrnkSectionCard].
  */
 @Composable
 fun FrnkListSection(
@@ -62,46 +44,16 @@ fun FrnkListSection(
     onRowClick: ((index: Int) -> Unit)? = null,
     trailing: (@Composable (index: Int) -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xs),
-    ) {
-        state.title?.let { title ->
-            FrnkText(
-                state =
-                    FrnkTextState.Raw(
-                        text = title.uppercase(),
-                        style = labelMedium,
-                        color = colorOnSurfaceVariant,
-                    ),
-            )
-        }
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(Theme[shapes][shapeCard])
-                    .background(Theme[colors][colorSurface])
-                    .animateContentSize(),
-        ) {
-            state.rows.forEachIndexed { index, row ->
-                if (index > 0) FrnkDivider(state = FrnkDividerState.Horizontal())
-                FrnkListRow(
-                    state = row,
-                    onClick = onRowClick?.let { { it(index) } },
-                    trailing = trailing?.let { { it(index) } },
-                )
-            }
-        }
-        state.footnote?.let { footnote ->
-            FrnkText(
-                state =
-                    FrnkTextState.Raw(
-                        text = footnote,
-                        style = labelSmall,
-                        color = colorOnSurfaceVariant,
-                    ),
-            )
-        }
+    FrnkSectionCard(
+        rows = state.rows,
+        modifier = modifier,
+        title = state.title,
+        footnote = state.footnote,
+    ) { index, row ->
+        FrnkListRow(
+            state = row,
+            onClick = onRowClick?.let { { it(index) } },
+            trailing = trailing?.let { { it(index) } },
+        )
     }
 }

@@ -473,6 +473,11 @@ distinct section, e.g. a form, a feed item, a header block).
   `SettingsScreen` section-card idiom; `onRowClick(index)` + per-row `trailing(index)` slot) and
   **`FrnkProfileHeader`** (circular `colorPrimaryContainer` avatar chip + name/subtitle + an optional
   even row of `FrnkLabeledValue` stat tiles).
+- **Shared card chrome, not duplicated:** the titled-card layout (title + `shapeCard` surface +
+  `FrnkDivider`-between-rows + `animateContentSize()` + footnote) lives once in an `internal`
+  `FrnkSectionCard<T>` helper with a `row(index, item)` slot; both `FrnkListSection` and the Settings
+  scaffold's private `SettingsSection` delegate to it (review follow-up — `SettingsSection` was
+  refactored to drop its inline copy), so the chrome has a single source of truth.
 - **Skeleton decisions recorded:** ListSection → **carried by the rows** (enable `skeleton` per
   `FrnkListRowState` so a partially-loaded list skeletonizes per row; card/title/dividers are static
   framing — no section-level flag). ProfileHeader → **passed through** (one `skeleton` flag drives
