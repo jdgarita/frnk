@@ -77,6 +77,10 @@ import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValueOrientation
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValueState
 import dev.jdgarita.frnk.ui.molecules.FrnkListRow
 import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
+import dev.jdgarita.frnk.ui.molecules.FrnkSwipeAction
+import dev.jdgarita.frnk.ui.molecules.FrnkSwipeBehavior
+import dev.jdgarita.frnk.ui.molecules.FrnkSwipeDirection
+import dev.jdgarita.frnk.ui.molecules.FrnkSwipeableState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
 import dev.jdgarita.frnk.ui.nav.FrnkNavHost
@@ -110,13 +114,16 @@ import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
+import dev.jdgarita.frnk.ui.theme.colorOnSuccess
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
+import dev.jdgarita.frnk.ui.theme.colorSuccess
 import dev.jdgarita.frnk.ui.theme.colorSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
+import dev.jdgarita.frnk.ui.theme.iconError
 import dev.jdgarita.frnk.ui.theme.iconManageSubscription
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconPrivacy
@@ -845,6 +852,7 @@ private val componentNames =
         "FrnkBottomNavBar",
         "Ripple",
         "FrnkListRow",
+        "FrnkSwipeable",
         "FrnkLabeledValue",
         "FrnkEmptyState",
         "FrnkListSection",
@@ -1149,6 +1157,63 @@ private fun ComponentContent(
                         skeleton = FrnkSkeleton(enabled = true),
                     ),
                 onClick = {},
+            )
+        }
+        "FrnkSwipeable" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Optional swipe-to-action on any row. Reveal holds open a row of buttons " +
+                                "(tap one, or tap the row to close); Dismiss fires on release past the " +
+                                "threshold then snaps back. Headless — no Material3.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            val deleteAction =
+                FrnkSwipeAction(
+                    icon = FrnkIconState(Theme[icons][iconError], contentDescription = "Delete"),
+                    label = "Delete",
+                )
+            val archiveAction =
+                FrnkSwipeAction(
+                    icon = FrnkIconState(Theme[icons][iconRestore], contentDescription = "Archive"),
+                    containerColor = colorSuccess,
+                    contentColor = colorOnSuccess,
+                    label = "Archive",
+                )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Reveal (drag left)", color = colorOnSurfaceVariant))
+            FrnkListRow(
+                state =
+                    FrnkListRowState(
+                        title = "Project Apollo",
+                        subtitle = "Swipe left to reveal actions",
+                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    ),
+                onClick = { onEffect(DemoEffect.Toast("Tapped Project Apollo")) },
+                swipe =
+                    FrnkSwipeableState(
+                        behavior = FrnkSwipeBehavior.Reveal,
+                        direction = FrnkSwipeDirection.Right,
+                        rightActions = listOf(archiveAction, deleteAction),
+                    ),
+                onSwipeAction = { onEffect(DemoEffect.Toast("${it.key} (reveal)")) },
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Dismiss (drag left)", color = colorOnSurfaceVariant))
+            FrnkListRow(
+                state =
+                    FrnkListRowState(
+                        title = "Swipe-to-delete",
+                        subtitle = "Release past the threshold to fire",
+                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    ),
+                swipe =
+                    FrnkSwipeableState(
+                        behavior = FrnkSwipeBehavior.Dismiss,
+                        direction = FrnkSwipeDirection.Right,
+                        rightActions = listOf(deleteAction),
+                    ),
+                onSwipeAction = { onEffect(DemoEffect.Toast("${it.key} (dismiss)")) },
             )
         }
         "FrnkLabeledValue" -> {

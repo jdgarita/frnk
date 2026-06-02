@@ -9,10 +9,16 @@ import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface
 import dev.jdgarita.frnk.ui.molecules.FrnkListRow
 import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
+import dev.jdgarita.frnk.ui.molecules.FrnkSwipeAction
+import dev.jdgarita.frnk.ui.molecules.FrnkSwipeableState
 import dev.jdgarita.frnk.ui.theme.Appearance
+import dev.jdgarita.frnk.ui.theme.colorOnSuccess
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colorSuccess
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
+import dev.jdgarita.frnk.ui.theme.iconError
 import dev.jdgarita.frnk.ui.theme.iconNotifications
+import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.icons
 
 @Composable
@@ -71,6 +77,38 @@ private fun FrnkListRow_Skeleton_Light() {
                 ),
             onClick = {},
             trailing = { chevronTrailing() },
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FrnkListRow_Swipe_Open_Light() {
+    PreviewSurface(appearance = Appearance.Light) {
+        FrnkListRow(
+            state =
+                FrnkListRowState(
+                    title = "Project Apollo",
+                    subtitle = "Swipe left to reveal actions",
+                    icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                ),
+            onClick = {},
+            swipe =
+                FrnkSwipeableState(
+                    rightActions =
+                        listOf(
+                            FrnkSwipeAction(
+                                icon = FrnkIconState(Theme[icons][iconError], contentDescription = "Delete"),
+                                label = "Delete",
+                            ),
+                            FrnkSwipeAction(
+                                icon = FrnkIconState(Theme[icons][iconRestore], contentDescription = "Archive"),
+                                containerColor = colorSuccess,
+                                contentColor = colorOnSuccess,
+                                label = "Archive",
+                            ),
+                        ),
+                ),
         )
     }
 }
