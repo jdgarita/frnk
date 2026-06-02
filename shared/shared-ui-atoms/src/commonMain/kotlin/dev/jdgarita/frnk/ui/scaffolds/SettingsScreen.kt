@@ -1,6 +1,5 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
-import dev.jdgarita.frnk.ui.atoms.FrnkDivider
-import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControl
@@ -30,18 +27,16 @@ import dev.jdgarita.frnk.ui.atoms.FrnkSwitchState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.organisms.FrnkSectionCard
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
-import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconCoffee
 import dev.jdgarita.frnk.ui.theme.icons
-import dev.jdgarita.frnk.ui.theme.labelMedium
 import dev.jdgarita.frnk.ui.theme.labelSmall
-import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
@@ -126,42 +121,14 @@ private fun SettingsSection(
     section: SettingsSectionState,
     onIntent: (SettingsIntent) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xs)) {
-        section.title?.let { title ->
-            FrnkText(
-                state =
-                    FrnkTextState.Raw(
-                        text = title.uppercase(),
-                        style = labelMedium,
-                        color = colorOnSurfaceVariant,
-                    ),
-            )
-        }
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(Theme[shapes][shapeCard])
-                    .background(Theme[colors][colorSurface])
-                    // Animate height when rows are added/removed (e.g. the Subscription section swapping
-                    // from Free → Pro) so the change settles smoothly instead of popping the layout.
-                    .animateContentSize(),
-        ) {
-            section.rows.forEachIndexed { index, row ->
-                if (index > 0) FrnkDivider(state = FrnkDividerState.Horizontal())
-                SettingsRow(row = row, onIntent = onIntent)
-            }
-        }
-        section.footnote?.let { footnote ->
-            FrnkText(
-                state =
-                    FrnkTextState.Raw(
-                        text = footnote,
-                        style = labelSmall,
-                        color = colorOnSurfaceVariant,
-                    ),
-            )
-        }
+    // Card chrome (title + surface + dividers + animateContentSize + footnote) is shared with the
+    // FrnkListSection organism via FrnkSectionCard; only the heterogeneous row rendering differs.
+    FrnkSectionCard(
+        rows = section.rows,
+        title = section.title,
+        footnote = section.footnote,
+    ) { _, row ->
+        SettingsRow(row = row, onIntent = onIntent)
     }
 }
 

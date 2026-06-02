@@ -73,6 +73,10 @@ import dev.jdgarita.frnk.ui.nav.FrnkNavOptions
 import dev.jdgarita.frnk.ui.nav.frnkComposable
 import dev.jdgarita.frnk.ui.nav.rememberFrnkNavController
 import dev.jdgarita.frnk.ui.nav.rememberFrnkNavigator
+import dev.jdgarita.frnk.ui.organisms.FrnkListSection
+import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
+import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
+import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
 import dev.jdgarita.frnk.ui.scaffolds.CollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
@@ -94,6 +98,7 @@ import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
+import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorSurfaceVariant
@@ -718,6 +723,8 @@ private val componentNames =
         "FrnkListRow",
         "FrnkLabeledValue",
         "FrnkEmptyState",
+        "FrnkListSection",
+        "FrnkProfileHeader",
     )
 
 /**
@@ -1078,6 +1085,112 @@ private fun ComponentContent(
                         actionLabel = "Clear search",
                     ),
                 onActionClick = { onEffect(DemoEffect.Toast("Cleared search")) },
+            )
+        }
+        "FrnkListSection" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Organism: an optional title + a surface card stacking FrnkListRow molecules " +
+                                "separated by dividers, animating its height as rows change. Tap a row for a " +
+                                "ripple + haptic; per-row skeletons collapse each row independently.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            val sectionRows =
+                listOf(
+                    FrnkListRowState(
+                        title = "Notifications",
+                        subtitle = "Push, email and in-app alerts",
+                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    ),
+                    FrnkListRowState(
+                        title = "Preferences",
+                        subtitle = "Theme, language and units",
+                        icon = FrnkIconState(Theme[icons][iconSettings], contentDescription = null),
+                    ),
+                )
+            FrnkListSection(
+                state =
+                    FrnkListSectionState(
+                        title = "Account",
+                        rows = sectionRows,
+                        footnote = "Manage how you're notified across devices.",
+                    ),
+                onRowClick = { index -> onEffect(DemoEffect.Toast("Tapped row $index")) },
+                trailing = {
+                    FrnkIcon(
+                        state =
+                            FrnkIconState(
+                                imageVector = Theme[icons][iconChevronRight],
+                                contentDescription = null,
+                                tint = colorOnSurfaceVariant,
+                            ),
+                    )
+                },
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkListSection(
+                state =
+                    FrnkListSectionState(
+                        title = "Account",
+                        rows = sectionRows.map { it.copy(skeleton = FrnkSkeleton(enabled = true)) },
+                    ),
+            )
+        }
+        "FrnkProfileHeader" -> {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text =
+                            "Organism: a circular avatar + name/subtitle, with an even row of " +
+                                "FrnkLabeledValue stat tiles below. The skeleton flag passes through to every " +
+                                "child (avatar, name, subtitle, each stat value).",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+            val avatar =
+                FrnkIconState(
+                    imageVector = Theme[icons][iconSettings],
+                    contentDescription = null,
+                    size = FrnkIconSize.lg,
+                    tint = colorOnPrimaryContainer,
+                )
+            val stats =
+                listOf(
+                    FrnkLabeledValueState(label = "Projects", value = "12"),
+                    FrnkLabeledValueState(label = "Streak", value = "48d"),
+                    FrnkLabeledValueState(label = "Plan", value = "Pro"),
+                )
+            FrnkProfileHeader(
+                state =
+                    FrnkProfileHeaderState(
+                        name = "Juan Diego",
+                        subtitle = "juandiego@example.com",
+                        avatar = avatar,
+                        stats = stats,
+                    ),
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "No stats", color = colorOnSurfaceVariant))
+            FrnkProfileHeader(
+                state =
+                    FrnkProfileHeaderState(
+                        name = "Juan Diego",
+                        subtitle = "Free plan",
+                        avatar = avatar,
+                    ),
+            )
+            FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
+            FrnkProfileHeader(
+                state =
+                    FrnkProfileHeaderState(
+                        name = "Loading name",
+                        subtitle = "loading@example.com",
+                        avatar = avatar,
+                        stats = stats,
+                        skeleton = FrnkSkeleton(enabled = true),
+                    ),
             )
         }
         else ->

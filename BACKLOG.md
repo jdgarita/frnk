@@ -460,13 +460,40 @@ Scaffolds exist today.
       recorded (ListRow/LabeledValue → skeleton; EmptyState → none, by design).
 - [x] Showcased in the demo (Components gallery, all three layers).
 
-### P4-2 — Organisms layer
+### P4-2 — Organisms layer ✅ DONE (2026-06-02)
 **Description:** Introduce Organisms (compositions of molecules/atoms forming a
 distinct section, e.g. a form, a feed item, a header block).
 **Rationale (priority):** Completes the Atomic Design hierarchy; depends on P4-1.
+**Key decisions:**
+- **New `ui/organisms/` package** in `:shared-ui-atoms`, above `ui/molecules/` and below
+  `ui/scaffolds/`. Two organisms, each composed purely from P4-1 molecules + atoms + tokens
+  (no `Color(0xFF…)`, no raw `.dp` spacing), visually distinct from each other and the molecules:
+  **`FrnkListSection`** (optional title + a `shapeCard`/`colorSurface` card stacking N `FrnkListRow`
+  molecules separated by `FrnkDivider`s, `animateContentSize()`, optional footnote — generalises the
+  `SettingsScreen` section-card idiom; `onRowClick(index)` + per-row `trailing(index)` slot) and
+  **`FrnkProfileHeader`** (circular `colorPrimaryContainer` avatar chip + name/subtitle + an optional
+  even row of `FrnkLabeledValue` stat tiles).
+- **Shared card chrome, not duplicated:** the titled-card layout (title + `shapeCard` surface +
+  `FrnkDivider`-between-rows + `animateContentSize()` + footnote) lives once in an `internal`
+  `FrnkSectionCard<T>` helper with a `row(index, item)` slot; both `FrnkListSection` and the Settings
+  scaffold's private `SettingsSection` delegate to it (review follow-up — `SettingsSection` was
+  refactored to drop its inline copy), so the chrome has a single source of truth.
+- **Skeleton decisions recorded:** ListSection → **carried by the rows** (enable `skeleton` per
+  `FrnkListRowState` so a partially-loaded list skeletonizes per row; card/title/dividers are static
+  framing — no section-level flag). ProfileHeader → **passed through** (one `skeleton` flag drives
+  avatar + name + subtitle + each stat value; the avatar chip **drops its brand fill while loading**
+  so its rim doesn't peek around the glyph skeleton, the `FrnkSwitch` precedent).
+- **No re-wiring of feedback:** clickable rows reuse `FrnkTheme`'s ambient ripple + fire
+  `LocalFrnkHaptics` via the underlying `FrnkListRow` molecule.
+- **No unit tests added:** organisms are pure stateless view code, matching the atoms/molecules tier
+  (previews only). `@Preview`s (Light/Dark/skeleton) live in `commonDebug/.../ui/organisms/previews/`.
+- **Demo:** added to the `:shared-demo` Components gallery (`componentNames` + `ComponentContent`);
+  Android/iOS pick it up automatically, `DemoKit` stays cinterop-free; clickable rows reuse the
+  existing `DemoEffect.Toast` (no `DemoViewModel` change). Verified on a Pixel 6 (resting + skeleton).
 **Acceptance Criteria:**
-- [ ] ≥2 organisms composed from molecules/atoms; tokens-only styling.
-- [ ] Previews + skeleton decisions + demo coverage.
+- [x] ≥2 organisms composed from molecules/atoms; tokens-only styling.
+      `FrnkListSection`, `FrnkProfileHeader` under `ui/organisms/`.
+- [x] Previews + skeleton decisions + demo coverage (all three layers).
 
 ### P4-3 — Typed preferences wrapper over `KeyValueStore`
 **Description:** Provide a small typed-key convenience API over the existing
@@ -526,14 +553,15 @@ P2-1 ✅ (navigation — FrnkNavHost over CMP navigation-compose; unblocks featu
         │
 P3-1 (PostHog)   P3-2 ✅ (RevenueCat entitlements) → P3-3 ✅ (paywall/purchase + frnk Pro layer + god mode)
         │
-P4-1 ✅ (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
+P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
         ┊
         ┊  ⏸ DEFERRED until a networked/auth app is planned (local-storage-only for now):
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
 **Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, **P3-3 ✅ (paywall +
-frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, and **P4-1 ✅ (molecules)** are done. Recommended
-next is **P4-2 (organisms)** to continue the Atomic Design hierarchy (now unblocked by P4-1), or
-**P3-1 (PostHog)** to round out analytics. P2-2 (verify `BackendChoice` swap) and P1-2/P1-3/P1-4 stay
-deferred while apps are local-storage-only.
+frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, **P4-1 ✅ (molecules)**, and **P4-2 ✅ (organisms)**
+are done — the Atomic Design hierarchy (Atoms → Molecules → Organisms → Scaffolds) is now complete.
+Recommended next is **P4-3 (typed preferences wrapper)** (low-risk QoL on `KeyValueStore`) or
+**P3-1 (PostHog)** to round out analytics; **P4-4 (DS backfill tests)** once the P0-3 harness exists.
+P2-2 (verify `BackendChoice` swap) and P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.
