@@ -1,5 +1,6 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +31,9 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.theme.colorBackground
+import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
@@ -39,6 +42,7 @@ import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.labelMedium
 import dev.jdgarita.frnk.ui.theme.labelSmall
 import dev.jdgarita.frnk.ui.theme.shapeCard
+import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
@@ -107,7 +111,13 @@ fun SettingsScreenContent(
             SettingsSection(section = section, onIntent = onIntent)
         }
 
-        state.footer?.let { SettingsFooter(footer = it) }
+        if (state.developerVisible) {
+            state.developerSection?.let { SettingsSection(section = it, onIntent = onIntent) }
+        }
+
+        state.footer?.let {
+            SettingsFooter(footer = it, onVersionTap = { onIntent(SettingsIntent.VersionTapped) })
+        }
     }
 }
 
@@ -132,7 +142,10 @@ private fun SettingsSection(
                 Modifier
                     .fillMaxWidth()
                     .clip(Theme[shapes][shapeCard])
-                    .background(Theme[colors][colorSurface]),
+                    .background(Theme[colors][colorSurface])
+                    // Animate height when rows are added/removed (e.g. the Subscription section swapping
+                    // from Free → Pro) so the change settles smoothly instead of popping the layout.
+                    .animateContentSize(),
         ) {
             section.rows.forEachIndexed { index, row ->
                 if (index > 0) FrnkDivider(state = FrnkDividerState.Horizontal())
@@ -217,7 +230,34 @@ private fun SettingsRow(
                     onCheckedChange = { checked -> onIntent(SettingsIntent.ToggleChanged(row.id, checked)) },
                 )
             }
+
+        is SettingsStatusRowState ->
+            SettingsRowScaffold(
+                icon = row.icon,
+                title = row.title,
+                subtitle = row.subtitle,
+            ) {
+                row.badge?.let { SettingsBadge(text = it) }
+            }
     }
+}
+
+/** A small pill badge (e.g. "PRO") drawn in the primary-container palette. Non-interactive. */
+@Composable
+private fun SettingsBadge(text: String) {
+    FrnkText(
+        state =
+            FrnkTextState.Raw(
+                text = text,
+                style = labelSmall,
+                color = colorOnPrimaryContainer,
+            ),
+        modifier =
+            Modifier
+                .clip(Theme[shapes][shapeFull])
+                .background(Theme[colors][colorPrimaryContainer])
+                .padding(horizontal = FrnkSpacing.sm, vertical = FrnkSpacing.xxs),
+    )
 }
 
 /** Shared icon + title/subtitle + trailing-slot layout for clickable and toggle rows. */
@@ -252,7 +292,10 @@ private fun SettingsRowScaffold(
 }
 
 @Composable
-private fun SettingsFooter(footer: SettingsFooterState) {
+private fun SettingsFooter(
+    footer: SettingsFooterState,
+    onVersionTap: () -> Unit,
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -284,6 +327,7 @@ private fun SettingsFooter(footer: SettingsFooterState) {
                     style = labelSmall,
                     color = colorOnSurfaceVariant,
                 ),
+            modifier = Modifier.clickable { onVersionTap() },
         )
     }
 }

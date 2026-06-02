@@ -2,18 +2,42 @@
 
 Pure-interface monetization contract. No RevenueCat, no Play Billing, no StoreKit.
 
-## Contents
+## Contents — the frnk-owned Free/Pro layer (P3-3)
 
-- `monetization/EntitlementManager.kt` — interface for entitlement lookup / restore / purchase flows.
-- `monetization/FeatureGate.kt` — small helper for gating a UI region on a given entitlement.
-- `di/ToolkitDiModule.kt` (`commonMain`) + `.android.kt` / `.ios.kt` actuals — expect/actual seam for platform DI scaffolding the monetization layer needs (e.g. Android `Context`).
+Two layers, so god mode + Pro logic stay independent of any billing SDK:
+
+- `monetization/EntitlementProvider.kt` — the **pluggable billing backend** (RC + the demo fake implement
+  it): `isPro: StateFlow<Boolean>` + `refresh()` + `offerings()` + `purchase(id)` + `restore()`, all
+  returning `AppResult` (never throw).
+- `monetization/EntitlementManager.kt` — the **toolkit's canonical source of truth** feature code reads.
+  Wraps a provider and overlays a persisted **god mode** override. `status: StateFlow<EntitlementStatus>`,
+  `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`. Also
+  holds `Feature` (opaque feature ids).
+- `monetization/DefaultEntitlementManager.kt` — the pure-Kotlin impl. `isPro = provider.isPro || godMode`;
+  god mode persisted via `KeyValueStore` (key `frnk.god_mode`); sets analytics user-properties
+  `is_pro`/`pro_source`/`god_mode` and emits the purchase funnel events.
+- `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode})`.
+- `monetization/ProProduct.kt` — SDK-free purchasable plan (`ProPlan{Weekly,Monthly,Yearly,Lifetime,Other}`,
+  prices, `hasFreeTrial`, `badge`) the paywall renders.
+- `monetization/MonetizationError.kt` — typed offerings/purchase/restore failures.
+- `monetization/FeatureGate.kt` — gating helper over the manager: `canUse(feature)`, reactive
+  `observe(feature)`, `requestUpgrade(source)` (emits `Paywall_Viewed`, returns `PAYWALL_ROUTE_KEY`),
+  host-configurable `freeFeatures`.
+- `monetization/MonetizationModule.kt` — `monetizationModule` binds `EntitlementManager`
+  (`DefaultEntitlementManager`) + `FeatureGate` over whatever `EntitlementProvider` the host installs.
+  Requires an `EntitlementProvider` + `KeyValueStore` + `AnalyticsTracker` in the graph.
+- `di/ToolkitDiModule.kt` (+ `.android.kt`/`.ios.kt`) — expect/actual platform-DI seam.
 
 ## Rules
 
-- **No SDK dependencies.** The RevenueCat artifacts live in `:shared-monetization-revenuecat`. If you add a new provider (Adapty, RC alt SDK, …), give it its own `*-impl` module and bind it in `:shared`.
-- This module `api`-exports `:shared-backend-api` — error types and `AppResult` are reused across domains, so entitlement methods return `AppResult` like everything else.
-- `koin.core` is on the `api` surface because `EntitlementManager` etc. are expected to be resolved via Koin at call sites.
+- **No SDK dependencies.** RevenueCat artifacts live in `:shared-monetization-revenuecat`. A new provider
+  (Adapty, …) implements `EntitlementProvider` in its own `*-impl` module, bound in `:shared`;
+  `monetizationModule` is unchanged.
+- `api`-exports `:shared-backend-api` (`AnalyticsTracker`, `AppResult`/error types) **and**
+  `:shared-database-api` (`KeyValueStore`, for god-mode persistence in `DefaultEntitlementManager`).
+- `koin.core` is on the `api` surface — these types are resolved via Koin at call sites.
 
 ## Dependencies
 
-- `api(projects.sharedBackendApi)`, `api(libs.kotlinx.coroutines.core)`, `api(libs.koin.core)`.
+- `api(projects.sharedBackendApi)`, `api(projects.sharedDatabaseApi)`, `api(libs.kotlinx.coroutines.core)`,
+  `api(libs.koin.core)`. `commonTest`: `kotlin.test` + `kotlinx.coroutines.test`.

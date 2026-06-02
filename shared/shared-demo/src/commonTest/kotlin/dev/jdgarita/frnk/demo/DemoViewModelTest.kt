@@ -3,7 +3,9 @@ package dev.jdgarita.frnk.demo
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.monetization.DefaultEntitlementManager
 import dev.jdgarita.frnk.monetization.FeatureGate
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -42,7 +44,8 @@ class DemoViewModelTest {
         analytics: AnalyticsTracker,
         crash: CrashReporter,
     ): DemoViewModel {
-        val entitlements = FakeEntitlementManager()
+        // The real frnk EntitlementManager over the demo's fake provider — exactly the demo's wiring.
+        val entitlements = DefaultEntitlementManager(FakeEntitlementProvider(), FakeKeyValueStore(), analytics, CoroutineScope(dispatcher))
         val gate = FeatureGate(entitlements, analytics)
         return DemoViewModel(gate, analytics, entitlements, FakeNoteStore(), crash)
     }
@@ -114,6 +117,40 @@ class DemoViewModelTest {
             runCurrent()
 
             assertTrue(effects.any { it is DemoEffect.Navigate })
+            job.cancel()
+        }
+
+    @Test
+    fun god_mode_forces_pro_with_godmode_source() =
+        runTest(dispatcher) {
+            // God mode is a frnk-level override (independent of the provider): it flips isPro and
+            // reports ProSource.GodMode.
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+            assertEquals(false, vm.state.value.isPro)
+
+            vm.send(DemoIntent.ToggleGodMode)
+            runCurrent()
+            assertTrue(vm.state.value.isGodMode)
+            assertTrue(vm.state.value.isPro)
+            assertEquals("GodMode", vm.state.value.proSource)
+        }
+
+    @Test
+    fun restore_with_no_purchase_emits_toast() =
+        runTest(dispatcher) {
+            // The fake provider has nothing to restore → a Toast, and the user stays Free.
+            val vm = viewModel(RecordingAnalytics(), RecordingCrash())
+            runCurrent()
+            val effects = mutableListOf<DemoEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(DemoIntent.RestorePurchases)
+            runCurrent()
+
+            assertEquals(false, vm.state.value.isPro)
+            assertTrue(effects.any { it is DemoEffect.Toast })
             job.cancel()
         }
 

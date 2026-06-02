@@ -21,6 +21,8 @@ import dev.jdgarita.frnk.ui.theme.stringAppearance
 import dev.jdgarita.frnk.ui.theme.stringManageSubscription
 import dev.jdgarita.frnk.ui.theme.stringNotifications
 import dev.jdgarita.frnk.ui.theme.stringPrivacyPolicy
+import dev.jdgarita.frnk.ui.theme.stringProBadge
+import dev.jdgarita.frnk.ui.theme.stringProMember
 import dev.jdgarita.frnk.ui.theme.stringRateApp
 import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
 import dev.jdgarita.frnk.ui.theme.stringSectionLegal
@@ -39,18 +41,22 @@ import dev.jdgarita.frnk.ui.theme.strings
 
 /**
  * Builds a batteries-included [SettingsScreenState] from the toolkit's default catalogue: a theme
- * toggle, an optional notifications switch, a subscription section (Upgrade-to-Pro when [isPro] is
- * false, otherwise Manage Subscription + Restore), a support section (Send Feedback, Rate, Show
- * Onboarding), a legal section (Privacy, Terms), and the "Made in 🇨🇷 by JD with ☕ / [version]"
- * footer. All copy and icons resolve from `FrnkStrings` / `FrnkIcons`, so hosts re-skin every label
- * and glyph through `FrnkThemeConfig`.
+ * toggle, an optional notifications switch, a subscription section driven by [isPro] (see below), a
+ * support section (Send Feedback, Rate, Show Onboarding), a legal section (Privacy, Terms), and the
+ * "Made in 🇨🇷 by JD with ☕ / [version]" footer. All copy and icons resolve from `FrnkStrings` /
+ * `FrnkIcons`, so hosts re-skin every label and glyph through `FrnkThemeConfig`.
+ *
+ * The subscription section follows a strict Free/Pro visibility matrix:
+ *  - **Free** ([isPro] = false): "Upgrade to Pro" (opens the paywall) + "Restore Purchases".
+ *  - **Pro** ([isPro] = true): a non-interactive "Pro Member" status badge + "Manage Subscription"
+ *    (the host deep-links the OS subscriptions page). Upgrade and Restore are hidden.
  *
  * Hosts that need a different set of rows can ignore this and assemble [SettingsScreenState] by hand
  * — this is a convenience, not the only entry point.
  *
  * @param version the host app's version string, rendered verbatim in the footer (e.g. "v1.2.0 (42)").
  * @param appearance the currently-selected theme, reflected in the segmented control.
- * @param isPro when true, the Upgrade row is replaced by a Manage Subscription row.
+ * @param isPro switches the subscription section between the Free and Pro layouts (see above).
  * @param notificationsEnabled initial checked state of the notifications toggle.
  * @param showNotifications when false, the notifications section is omitted entirely.
  */
@@ -73,6 +79,8 @@ fun rememberDefaultSettingsState(
     val labelUpgrade = Theme[strings][stringUpgradeToPro]
     val labelManage = Theme[strings][stringManageSubscription]
     val labelRestore = Theme[strings][stringRestorePurchases]
+    val labelProMember = Theme[strings][stringProMember]
+    val badgePro = Theme[strings][stringProBadge]
     val labelFeedback = Theme[strings][stringSendFeedback]
     val labelRate = Theme[strings][stringRateApp]
     val labelOnboarding = Theme[strings][stringShowOnboarding]
@@ -108,6 +116,8 @@ fun rememberDefaultSettingsState(
         labelUpgrade,
         labelManage,
         labelRestore,
+        labelProMember,
+        badgePro,
         labelFeedback,
         labelRate,
         labelOnboarding,
@@ -161,30 +171,42 @@ fun rememberDefaultSettingsState(
                 add(
                     SettingsSectionState(
                         title = headerSubscription,
+                        // Strict Free/Pro visibility matrix:
+                        //  - Free → Upgrade-to-Pro (opens the paywall) + Restore Purchases.
+                        //  - Pro  → a "Pro Member" status badge + Manage Subscription (deep-links the OS
+                        //    subscriptions page). Upgrade and Restore are hidden — dead weight once entitled.
                         rows =
-                            listOf(
-                                if (isPro) {
+                            if (isPro) {
+                                listOf(
+                                    SettingsStatusRowState(
+                                        id = "pro_member",
+                                        icon = rowIcon(iconUpgradeVec),
+                                        title = labelProMember,
+                                        badge = badgePro,
+                                    ),
                                     SettingsClickableRowState(
                                         id = "manage_subscription",
                                         icon = rowIcon(iconManageVec),
                                         title = labelManage,
                                         action = SettingsAction.ManageSubscription,
-                                    )
-                                } else {
+                                    ),
+                                )
+                            } else {
+                                listOf(
                                     SettingsClickableRowState(
                                         id = "upgrade_to_pro",
                                         icon = rowIcon(iconUpgradeVec),
                                         title = labelUpgrade,
                                         action = SettingsAction.UpgradeToPro,
-                                    )
-                                },
-                                SettingsClickableRowState(
-                                    id = "restore_purchases",
-                                    icon = rowIcon(iconRestoreVec),
-                                    title = labelRestore,
-                                    action = SettingsAction.RestorePurchases,
-                                ),
-                            ),
+                                    ),
+                                    SettingsClickableRowState(
+                                        id = "restore_purchases",
+                                        icon = rowIcon(iconRestoreVec),
+                                        title = labelRestore,
+                                        action = SettingsAction.RestorePurchases,
+                                    ),
+                                )
+                            },
                     ),
                 )
                 add(

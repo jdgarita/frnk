@@ -32,6 +32,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Lucide
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.backend.AnalyticsTracker
+import dev.jdgarita.frnk.monetization.EntitlementManager
+import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
+import dev.jdgarita.frnk.monetization.ui.frnkPaywallDestination
+import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
@@ -94,6 +99,7 @@ import dev.jdgarita.frnk.ui.theme.iconPrivacy
 import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.iconSearch
 import dev.jdgarita.frnk.ui.theme.iconSettings
+import dev.jdgarita.frnk.ui.theme.iconUpgrade
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
 import dev.jdgarita.frnk.ui.theme.shapeCard
@@ -101,6 +107,7 @@ import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.utils.Frnk
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -147,6 +154,31 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         rememberFeedbackEmailLauncher(
             appName = "frnk",
             appVersion = "v${Frnk.VERSION}",
+        )
+
+    // Entry point #2: Settings rows (Upgrade / Restore / god-mode toggle) handled by the toolkit's
+    // monetization wiring — navigation to the paywall, restore, and setGodMode all come for free; the
+    // demo only supplies a fallback for the non-monetization effects (theme, onboarding, feedback).
+    val entitlements: EntitlementManager = koinInject()
+    val analytics: AnalyticsTracker = koinInject()
+    val settingsHandler =
+        rememberFrnkSettingsHandler(
+            navigator = navigator,
+            entitlements = entitlements,
+            analytics = analytics,
+            onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
+            fallback = { effect ->
+                when (effect) {
+                    is SettingsEffect.AppearanceChanged -> appearanceController.appearance = effect.appearance
+                    is SettingsEffect.ActionInvoked ->
+                        when (effect.action) {
+                            SettingsAction.ShowOnboarding -> navigator.navigate(DemoRoute.Onboarding)
+                            SettingsAction.SendFeedback -> sendFeedback()
+                            else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
+                        }
+                    is SettingsEffect.ToggleChanged -> onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
+                }
+            },
         )
 
     // Bottom-nav tabs and their routes — one source of truth, in the order rememberBottomNavScaffoldState
@@ -224,23 +256,14 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             }
             frnkComposable<DemoRoute.Settings> {
                 SettingsTab(
-                    initialState = demoSettingsState(appearanceController.appearance, state.isPro),
+                    initialState = demoSettingsState(appearanceController.appearance, state.isPro, state.isGodMode),
                     collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
-                    onEffect = { effect ->
-                        when (effect) {
-                            is SettingsEffect.AppearanceChanged ->
-                                appearanceController.appearance = effect.appearance
-                            is SettingsEffect.ToggleChanged ->
-                                onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
-                            is SettingsEffect.ActionInvoked ->
-                                when (effect.action) {
-                                    SettingsAction.ShowOnboarding -> navigator.navigate(DemoRoute.Onboarding)
-                                    SettingsAction.SendFeedback -> sendFeedback()
-                                    else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
-                                }
-                        }
-                    },
+                    onEffect = settingsHandler,
+                    // Re-seed the settings VM when entitlement state changes so the Subscription section
+                    // swaps Upgrade↔Manage (and the god-mode toggle reflects the current value). The VM is
+                    // seeded once via parametersOf, so without a fresh key it'd keep the stale initial state.
+                    vmKey = "settings-${state.isPro}-${state.isGodMode}",
                 )
             }
             frnkComposable<DemoRoute.Onboarding> {
@@ -258,12 +281,21 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                     },
                 )
             }
-            frnkComposable<DemoRoute.Paywall> {
-                PaywallScreen(
-                    collapsibleBars = collapsibleBars,
-                    onBack = { navigator.popBackStack() },
-                )
-            }
+            // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
+            // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
+            // EntitlementManager); the demo just mounts the destination + handles close/messages. This is
+            // the exact one-liner real hosts use (and the same route `rememberFrnkSettingsHandler` targets).
+            frnkPaywallDestination(
+                features =
+                    listOf(
+                        "Unlimited everything",
+                        "No ads",
+                        "Priority support",
+                    ),
+                source = "demo",
+                onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
+                onClose = { navigator.popBackStack() },
+            )
         }
 
         // The one floating bottom bar, overlaid above the NavHost so it persists across tab swaps. Hidden
@@ -325,11 +357,24 @@ private fun HomeTab(
     bottomInset: Dp,
     onEffect: (DemoEffect) -> Unit,
 ) {
+    val homeState by vm.state.collectAsState()
+    val upgradeAction =
+        FrnkTopAppBarAction(
+            icon = Theme[icons][iconUpgrade],
+            contentDescription = "Upgrade to Pro",
+            key = "upgrade",
+        )
     FrnkMviScreen(
         viewModel = vm,
-        topBar = FrnkTopAppBarState(title = "frnk"),
+        // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro.
+        topBar =
+            FrnkTopAppBarState(
+                title = "frnk",
+                actions = if (homeState.isPro) emptyList() else listOf(upgradeAction),
+            ),
         collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
+        onActionClick = { action -> if (action.key == upgradeAction.key) vm.send(DemoIntent.RequestUpgrade) },
     ) { state, onIntent, padding ->
         Column(
             modifier =
@@ -417,19 +462,33 @@ private fun HomeTab(
 
             FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "2. FeatureGate (Pro = ${state.isPro})") {
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            Section(title = "2. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
+                Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                        // Entry point #1 mirror: open the toolkit paywall (also reachable from the
+                        // top-right crown action and from Settings).
+                        FrnkButton(
+                            state = FrnkButtonState(text = "Open Paywall"),
+                            onClick = { onIntent(DemoIntent.RequestUpgrade) },
+                        )
+                        FrnkButton(
+                            state =
+                                FrnkButtonState(
+                                    text = "Restore",
+                                    variant = FrnkButtonVariant.Outlined,
+                                ),
+                            onClick = { onIntent(DemoIntent.RestorePurchases) },
+                        )
+                    }
+                    // God mode: a frnk-level Pro override (independent of RevenueCat), normally reached
+                    // via Settings → tap version 7× → Developer. Surfaced here too for demo discoverability.
                     FrnkButton(
                         state =
                             FrnkButtonState(
-                                text = "Toggle Pro",
+                                text = if (state.isGodMode) "God mode: ON" else "God mode: OFF",
                                 variant = FrnkButtonVariant.Outlined,
                             ),
-                        onClick = { onIntent(DemoIntent.TogglePro) },
-                    )
-                    FrnkButton(
-                        state = FrnkButtonState(text = "Request Upgrade"),
-                        onClick = { onIntent(DemoIntent.RequestUpgrade) },
+                        onClick = { onIntent(DemoIntent.ToggleGodMode) },
                     )
                 }
             }
@@ -695,6 +754,7 @@ private fun SettingsTab(
     collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onEffect: (SettingsEffect) -> Unit,
+    vmKey: String? = null,
 ) {
     FrnkScreenScaffold(
         topBar = FrnkTopAppBarState(title = "Settings"),
@@ -704,54 +764,10 @@ private fun SettingsTab(
         SettingsScreen(
             initialState = initialState,
             modifier = Modifier.fillMaxSize(),
+            vmKey = vmKey,
             contentPadding = padding,
             onEffect = onEffect,
         )
-    }
-}
-
-/**
- * Placeholder Paywall — a pushed full screen reached from "Request Upgrade" (via `FeatureGate`). Wiring
- * RevenueCat offerings + a real purchase/restore flow here is BACKLOG P3-3; for now it demonstrates the
- * nav-as-effect path (a ViewModel effect pushing a destination) and a pushed screen's back arrow.
- */
-@Composable
-private fun PaywallScreen(
-    collapsibleBars: CollapsibleBarsState,
-    onBack: () -> Unit,
-) {
-    FrnkScreenScaffold(
-        topBar =
-            FrnkTopAppBarState(
-                title = "Paywall",
-                navigationIcon = Theme[icons][iconBack],
-                navigationContentDescription = "Back",
-            ),
-        collapsibleBars = collapsibleBars,
-    ) { padding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-        ) {
-            FrnkText(state = FrnkTextState.Title(text = "Upgrade to Pro"))
-            FrnkText(
-                state =
-                    FrnkTextState.Body(
-                        text =
-                            "This screen was pushed by a DemoViewModel navigation effect routed into the toolkit's " +
-                                "FrnkNavHost. Real offerings + purchase/restore are BACKLOG P3-3.",
-                        color = colorOnSurfaceVariant,
-                    ),
-            )
-            FrnkButton(
-                state = FrnkButtonState(text = "Back"),
-                onClick = onBack,
-            )
-        }
     }
 }
 
@@ -1047,6 +1063,7 @@ private fun ComponentContent(
 private fun demoSettingsState(
     appearance: dev.jdgarita.frnk.ui.theme.Appearance,
     isPro: Boolean,
+    isGodMode: Boolean,
 ): SettingsScreenState {
     val baseSettings =
         rememberDefaultSettingsState(
@@ -1056,8 +1073,33 @@ private fun demoSettingsState(
             title = "",
         )
     val extraSettings = demoExtraSettingsSections()
-    return remember(baseSettings, extraSettings) {
-        baseSettings.copy(sections = baseSettings.sections + extraSettings)
+    val godModeIcon = Theme[icons][iconUpgrade]
+    // "Developer" section holding the god-mode toggle. The demo always shows it (showDeveloperSection =
+    // true) so it stays stable across the isPro/isGodMode VM re-key (toggling god mode flips isPro, which
+    // re-seeds the settings VM). Real apps can instead leave it hidden and use the 7-tap version-footer
+    // reveal gesture (the toolkit supports both).
+    val developerSection =
+        remember(godModeIcon, isGodMode) {
+            SettingsSectionState(
+                title = "Developer",
+                rows =
+                    listOf(
+                        SettingsToggleRowState(
+                            id = GOD_MODE_TOGGLE_ID,
+                            icon = FrnkIconState(imageVector = godModeIcon, contentDescription = null, tint = colorPrimary),
+                            title = "God mode",
+                            subtitle = "Force Pro on this device (testing)",
+                            checked = isGodMode,
+                        ),
+                    ),
+            )
+        }
+    return remember(baseSettings, extraSettings, developerSection) {
+        baseSettings.copy(
+            sections = baseSettings.sections + extraSettings,
+            developerSection = developerSection,
+            showDeveloperSection = true,
+        )
     }
 }
 

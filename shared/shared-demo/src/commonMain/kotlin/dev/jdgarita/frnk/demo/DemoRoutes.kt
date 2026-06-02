@@ -5,8 +5,9 @@ import kotlinx.serialization.Serializable
 /**
  * Type-safe navigation routes for the demo, driving the toolkit's `FrnkNavHost`. The three tab roots
  * ([Home] / [Components] / [Settings]) are top-level destinations switched via the floating bottom
- * bar (each keeps its own saved back stack); [ComponentDetail], [Onboarding], and [Paywall] are
- * pushed full screens with a back arrow.
+ * bar (each keeps its own saved back stack); [ComponentDetail] and [Onboarding] are pushed full
+ * screens with a back arrow. The paywall is the toolkit-owned `ToolkitRoute.Paywall` (mounted via
+ * `frnkPaywallDestination`), not a `DemoRoute`.
  *
  * Each member is `@Serializable` so navigation-compose can encode it into the back stack and so
  * [ComponentDetail] can carry a typed `name` argument instead of a stringly-keyed bundle.
@@ -30,7 +31,4 @@ sealed interface DemoRoute {
 
     @Serializable
     data object Onboarding : DemoRoute
-
-    @Serializable
-    data object Paywall : DemoRoute
 }

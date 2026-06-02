@@ -22,6 +22,7 @@ kotlin {
             api(projects.sharedDatabaseApi)
             api(projects.sharedBackendApi)
             api(projects.sharedMonetizationApi)
+            api(projects.sharedMonetizationUi)
 
             api(projects.sharedDatabaseImpl)
             api(projects.sharedBackendFirebase)

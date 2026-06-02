@@ -17,8 +17,11 @@
  (MVI engine,
   headless atoms)
                                   shared-monetization-api
-                                          ▲
-                                          └─── shared-monetization-revenuecat
+                                          ▲     (EntitlementProvider contract +
+                                          │      frnk-owned EntitlementManager/god mode)
+                                          ├─── shared-monetization-revenuecat (EntitlementProvider impl)
+                                          └─── shared-monetization-ui (paywall + nav + settings handler;
+                                                also depends on shared-ui-atoms)
 
                           ┌─────────────────────────────┐
                           │           shared            │
@@ -49,12 +52,22 @@ the two smoke harnesses (`androidDemoApp`, `iosDemoApp`). Downstream consumers
 never depend on `:shared-demo`.
 
 `:shared-demo` deliberately depends only on the `*-api` modules plus
-`shared-ui-atoms` — **not** `:shared`. This keeps `DemoKit.xcframework` free of
-the Firebase / RevenueCat / SQLite native cinterop references that would
-otherwise force iosDemoApp to ship `PurchasesHybridCommon` + Firebase pods just
-to launch. The demo binds fakes (`FakeEntitlementManager`,
-`LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never touches a real
-SDK, so it boots on a clean simulator with no extra setup.
+`shared-ui-atoms` and `shared-monetization-ui` — **not** `:shared`. This keeps
+`DemoKit.xcframework` free of the Firebase / RevenueCat / SQLite native cinterop
+references that would otherwise force iosDemoApp to ship `PurchasesHybridCommon`
++ Firebase pods just to launch. The demo binds fakes (`FakeEntitlementProvider`,
+`FakeKeyValueStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never
+touches a real SDK, so it boots on a clean simulator with no extra setup.
+
+**Entitlement layering (P3-3).** Free/Pro is frnk-owned and independent of any
+billing SDK: an `EntitlementProvider` (RevenueCat, or the demo fake) supplies
+purchased state + offerings + purchase/restore, and the pure-Kotlin
+`DefaultEntitlementManager` (`shared-monetization-api`, bound by
+`monetizationModule`) wraps it and overlays a persisted **god mode** override —
+so a developer can force Pro even in a release build. `FeatureGate` reads the
+manager. The basic paywall + its toolkit-owned route (`frnkPaywallDestination`)
++ the Settings monetization wiring (`rememberFrnkSettingsHandler`) live in
+`shared-monetization-ui`, above the design system.
 
 `:shared` is the single consumer-facing surface. `androidApp` and `iosApp` each depend on `:shared` only — they re-export it for downstream apps and add nothing else.
 

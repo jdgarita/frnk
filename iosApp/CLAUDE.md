@@ -7,7 +7,7 @@ iOS consumer entry point. Produces the **`FrnkKit.xcframework`** that downstream
 - Declares the three Apple targets (`iosX64`, `iosArm64`, `iosSimulatorArm64`) and bundles them into a single XCFramework via `XCFramework(ProjectConfiguration.IOS_FRAMEWORK_NAME)`.
 - Each framework binary `export`s `projects.shared`, so the whole toolkit surface (atoms, MVI, backend interfaces, monetization, …) is callable from Swift through one framework.
 - `isStatic = true`.
-- `linkerOpts("-undefined", "dynamic_lookup")` — **deliberate**. Bundled impls (`shared-monetization-revenuecat`, `shared-backend-firebase`) reference native iOS frameworks (`PurchasesHybridCommon`, Firebase pods) that the toolkit does **not** ship. Deferring symbol resolution makes the XCFramework link locally; the consumer Xcode project's link step resolves the symbols via CocoaPods / SPM.
+- `linkerOpts("-undefined", "dynamic_lookup")` — **deliberate**. Bundled impls (`shared-monetization-revenuecat`, `shared-backend-firebase`) reference native iOS frameworks (`RevenueCat` / `purchases-ios`, Firebase pods) that the toolkit does **not** ship. Deferring symbol resolution makes the XCFramework link locally; the consumer Xcode project's link step resolves the symbols via SPM / CocoaPods.
 
 ## Public Swift surface
 
@@ -23,6 +23,34 @@ fun bootstrapFrnkKit(
 From Swift: `FrnkKitKt.bootstrapFrnkKit(backend: .supabase, observability: .firebase)`. Add new top-level Kotlin functions to this file if iOS needs a thinner / more Swift-friendly facade than `initializeFrnk` directly.
 
 Selecting `observability: .firebase` installs Firebase Analytics + Crashlytics **and** the CrashKiOS unhandled-Kotlin-exception hook (so uncaught Kotlin crashes reach Crashlytics symbolicated). The consumer must supply the Firebase Crashlytics pod, call `FirebaseApp.configure()`, and upload dSYMs (see below).
+
+### RevenueCat (monetization) — consumer setup (BACKLOG P3-2)
+
+`:shared` always bundles `shared-monetization-revenuecat`, so `FeatureGate` / `EntitlementManager`
+are in every build. The toolkit never calls `Purchases.configure(...)`; the consumer iOS app must:
+1. Add the **`RevenueCat`** Swift package (`github.com/RevenueCat/purchases-ios`, a 5.x compatible with
+   `purchases-kmp` 3.0.2 — e.g. `from: 5.58.0`) via SPM — resolved at the app's link step under the
+   existing `dynamic_lookup` (do **not** add a per-framework `linkerOpts`). *(purchases-kmp 3.0+ binds
+   directly against `purchases-ios`; the old `PurchasesHybridCommon` framework is no longer the integration
+   point.)*
+   - **Add only the `RevenueCat` product.** The package vends several (`RevenueCat`, `RevenueCatUI`,
+     `ReceiptParser`, `RevenueCat_CustomEntitlementComputation`) — frnk needs **`RevenueCat`** only.
+     Skip `RevenueCatUI` (frnk ships its own Compose paywall), `ReceiptParser` (unrelated), and
+     `RevenueCat_CustomEntitlementComputation` (a mutually-exclusive alternate build — would conflict).
+2. Call `Purchases.configure(withAPIKey:)` on launch before using the gate, with the key for the
+   target environment:
+   - **Testing:** a RevenueCat **Test Store** `test_…` key (routes purchases to the Test Store — no App
+     Store Connect setup). The Test Store app is **project-level and platform-agnostic**, so the *same*
+     `test_` key works on iOS and Android (`iosDemoApp` reuses `androidDemoApp`'s).
+   - **Production:** the app's **iOS App Store** public SDK key (`appl_…`) from RevenueCat — distinct from
+     the Android `goog_…` key. Each platform/store app in a RevenueCat project has its own production key;
+     products, the offering, and the `pro` entitlement are shared project-level config across them.
+3. Ensure the dashboard entitlement identifier matches `RevenueCatConfig.proEntitlementId` (default
+   `"pro"`); override the `RevenueCatConfig` Koin binding if it differs.
+
+`iosDemoApp` is the worked example (RevenueCat Test Store path — see `iosDemoApp/README.md`).
+
+Until configured, `EntitlementManager` degrades to a safe no-op (`isPro == false`) — every SDK call is `runCatching`-wrapped.
 
 ## Crashlytics setup for consumer apps (do this for every new iOS app)
 

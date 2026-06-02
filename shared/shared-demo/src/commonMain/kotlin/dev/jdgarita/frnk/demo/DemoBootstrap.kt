@@ -5,13 +5,15 @@ import org.koin.core.context.startKoin
 
 /**
  * Single entry point for both `androidDemoApp` and `iosDemoApp`. Installs only [demoModule],
- * which binds fakes for every `*-api` interface the screen touches (`FakeEntitlementManager`,
- * `LoggingAnalyticsTracker`, `LoggingCrashReporter`). No real backend or RevenueCat init — by design.
+ * which binds fakes for every `*-api` interface the screen touches (`FakeEntitlementProvider`,
+ * `FakeKeyValueStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`). No real backend by design.
  *
- * Note: `iosDemoApp` additionally configures Firebase + installs the CrashKiOS hook
- * ([enableDemoCrashlytics]) **outside** this function so its "Force crash" panic button reports to
- * Crashlytics (BACKLOG P1-5b); that's the only real native SDK the demo touches. Apps that want a
- * real backend wire `frnkModules(BackendChoice)` via `:shared` / `FrnkKit.xcframework` instead.
+ * The device demos override selected bindings with real SDKs to smoke-test them (Koin
+ * `allowOverride(true)`): `androidDemoApp` installs `firebaseObservabilityModule` + (when a key is set)
+ * `revenueCatModule`; `iosDemoApp` calls [bootstrapDemoKoinWithRevenueCat] for the real RevenueCat Test
+ * Store path and configures Firebase + the CrashKiOS hook ([enableDemoCrashlytics]) in Swift
+ * (BACKLOG P1-5b/P3-3). Apps that want a real backend wire `frnkModules(BackendChoice)` via `:shared` /
+ * `FrnkKit.xcframework` instead.
  */
 fun bootstrapDemoKoin(extraConfig: KoinApplication.() -> Unit = {}): KoinApplication =
     startKoin {

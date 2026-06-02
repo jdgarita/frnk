@@ -36,6 +36,7 @@ kotlin {
             export(projects.sharedBackendApi)
             export(projects.sharedDatabaseApi)
             export(projects.sharedMonetizationApi)
+            export(projects.sharedMonetizationUi)
             // CrashKiOS resolves the native Crashlytics symbols through the host's Firebase SDK at the
             // app link step; defer them here (same approach as :iosApp / FrnkKit).
             linkerOpts("-undefined", "dynamic_lookup")
@@ -50,6 +51,7 @@ kotlin {
             api(projects.sharedBackendApi)
             api(projects.sharedDatabaseApi)
             api(projects.sharedMonetizationApi)
+            api(projects.sharedMonetizationUi)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)
@@ -65,9 +67,17 @@ kotlin {
             // directly; otherwise every icon is overridable through FrnkThemeConfig.
             implementation(libs.icons.lucide)
         }
-        // iOS-only: CrashKiOS for the demo's Crashlytics panic-button test (BACKLOG P1-5b). Kept out
-        // of commonMain so the Android demo + DemoKit's common surface stay SDK-free.
-        iosMain.dependencies { implementation(libs.crashkios.crashlytics) }
+        // iOS-only native SDKs the demo opts into (kept out of commonMain so the Android demo +
+        // DemoKit's common surface stay SDK-free):
+        //  - CrashKiOS for the Crashlytics panic-button test (BACKLOG P1-5b).
+        //  - RevenueCat (P3-3): so DemoKit can install the REAL revenueCatModule over the fake and
+        //    iosDemoApp exercises the same RevenueCat Test Store path androidDemoApp does. The native
+        //    purchases-ios SDK is supplied by the consumer (iosDemoApp) via SPM under dynamic_lookup.
+        iosMain.dependencies {
+            implementation(libs.crashkios.crashlytics)
+            implementation(projects.sharedMonetizationRevenuecat)
+            implementation(libs.revenuecat.core)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

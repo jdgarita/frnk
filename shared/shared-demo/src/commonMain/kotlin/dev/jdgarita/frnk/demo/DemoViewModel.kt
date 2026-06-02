@@ -5,12 +5,15 @@ import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.NoteStore
+import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.Feature
 import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.monetization.ProSource
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
+import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.fold
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +25,9 @@ data class DemoState(
     val count: Int = 0,
     val email: String = "",
     val isPro: Boolean = false,
+    val isGodMode: Boolean = false,
+    // Where Pro comes from (None / Purchase / GodMode) — shown in the FeatureGate demo section.
+    val proSource: String = ProSource.None.name,
     val notes: List<String> = emptyList(),
     // components tab — search state (which-screen-is-shown is owned by the nav back stack, not here)
     val searchActive: Boolean = false,
@@ -41,7 +47,11 @@ sealed interface DemoIntent : UiIntent {
         val value: String,
     ) : DemoIntent
 
-    data object TogglePro : DemoIntent
+    data object ToggleGodMode : DemoIntent
+
+    data object RefreshEntitlements : DemoIntent
+
+    data object RestorePurchases : DemoIntent
 
     data object RequestUpgrade : DemoIntent
 
@@ -95,14 +105,17 @@ sealed interface DemoEffect : UiEffect {
 class DemoViewModel(
     private val gate: FeatureGate,
     private val analytics: AnalyticsTracker,
-    private val entitlements: FakeEntitlementManager,
+    private val entitlements: EntitlementManager,
     private val notes: NoteStore,
     private val crash: CrashReporter,
 ) : MviViewModel<DemoState, DemoIntent, DemoEffect>(DemoState()) {
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
-        gate.isPro
-            .onEach { pro -> setState { copy(isPro = pro) } }
+        entitlements.status
+            .onEach { status -> setState { copy(isPro = status.isPro, proSource = status.source.name) } }
+            .launchIn(viewModelScope)
+        entitlements.isGodMode
+            .onEach { god -> setState { copy(isGodMode = god) } }
             .launchIn(viewModelScope)
         viewModelScope.launch { loadNotes() }
     }
@@ -112,7 +125,17 @@ class DemoViewModel(
             DemoIntent.Increment -> setState { copy(count = count + 1) }
             DemoIntent.Decrement -> setState { copy(count = count - 1) }
             is DemoIntent.EmailChanged -> setState { copy(email = intent.value) }
-            DemoIntent.TogglePro -> entitlements.setPro(!currentState().isPro)
+            DemoIntent.ToggleGodMode -> entitlements.setGodMode(!currentState().isGodMode)
+            DemoIntent.RefreshEntitlements -> {
+                entitlements.refresh()
+                emit(DemoEffect.Toast("Refreshed entitlements (Pro=${currentState().isPro})"))
+            }
+            DemoIntent.RestorePurchases ->
+                when (val result = entitlements.restorePurchases()) {
+                    is AppResult.Success ->
+                        emit(DemoEffect.Toast(if (result.data) "Purchases restored" else "Nothing to restore"))
+                    is AppResult.Failure -> emit(DemoEffect.Toast("Restore failed: ${result.error.message}"))
+                }
             DemoIntent.RequestUpgrade -> {
                 if (gate.canUse(Feature.Premium)) {
                     emit(DemoEffect.Toast("Already Pro — feature unlocked"))

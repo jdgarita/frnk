@@ -14,5 +14,9 @@ FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
 FIREBASE_PROJECT_ID=YOUR_FIREBASE_PROJECT_ID
 FIREBASE_APPLICATION_ID=YOUR_FIREBASE_APP_ID
 
+# RevenueCat — public Android SDK key for the androidDemoApp real-path smoke test (BACKLOG P3-2).
+# Starts with "goog_". Leave blank/absent to fall back to the in-memory fake EntitlementManager.
+REVENUECAT_ANDROID_API_KEY=goog_CHANGE_ME
+
 # Build flavor
 BUILD_VARIANT=debug

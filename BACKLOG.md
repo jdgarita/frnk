@@ -340,30 +340,91 @@ decision; keep the api SDK-free.
 - [ ] No-op fallback remains the safe default.
 - [ ] Demoed (an event fired from `DemoScreen`, visible in logs/fake in demo).
 
-### P3-2 — RevenueCat: real EntitlementManager + entitlement state
+### P3-2 — RevenueCat: real EntitlementManager + entitlement state ✅ DONE (2026-06-01)
 **Description:** Wire `RevenueCatEntitlementManager` to
 `com.revenuecat.purchases.kmp.Purchases`: fetch customer info, expose active
 entitlements reactively, and back `FeatureGate` with real data.
 **Rationale (priority):** Monetization is a headline feature; the gate already
 exists and only needs a real source.
+**Key decisions:**
+- **Configurable "Pro" identifier.** New `RevenueCatConfig(proEntitlementId = "pro")` (Koin
+  `single`, host-overridable); `isPro = proEntitlementId in customerInfo.entitlements.active`. The
+  decision is isolated in a pure, SDK-free `isProFor(...)` mapper so it is unit-testable without the
+  static `Purchases.sharedInstance`.
+- **Host configures, toolkit reads.** The toolkit never calls `Purchases.configure(...)`; the manager
+  reads `Purchases.sharedInstance` lazily, every call `runCatching`-wrapped → safe no-op
+  (`isPro=false`) while unconfigured (mirrors `FirebaseCrashReporter`). Reactivity via a
+  `PurchasesDelegate` installed once (won't clobber a host delegate) + `refresh()`/`restorePurchases()`
+  reading `awaitCustomerInfoResult()`/`awaitRestoreResult()` from `purchases-kmp-result`.
+- **Demo decoupled from the concrete fake.** `DemoViewModel` now depends on the `EntitlementManager`
+  interface (not `FakeEntitlementManager`), exposing `canTogglePro` + `RefreshEntitlements`/
+  `RestorePurchases` intents, so `androidDemoApp` can override the fake with the real `revenueCatModule`.
+- **Real Android smoke test, demo stays SDK-free.** `androidDemoApp` calls `Purchases.configure(...)`
+  (key from `local.properties` `REVENUECAT_ANDROID_API_KEY` → `BuildConfig`) and overrides with
+  `revenueCatModule` via Koin `allowOverride(true)`. `:shared-demo`/`DemoKit` keep the fake (cinterop-free).
 **Acceptance Criteria:**
-- [ ] `EntitlementManager` returns real entitlement state (reactive to changes);
-      no `TODO()`.
-- [ ] `FeatureGate` gates a feature on a real active entitlement.
-- [ ] iOS native-dependency contract honored (`PurchasesHybridCommon` supplied by
-      consumer; `dynamic_lookup` unchanged); `:shared-demo` stays SDK-free.
-- [ ] Demoed via the fake in `:shared-demo`; real path covered in `androidApp`.
+- [x] `EntitlementManager` returns real entitlement state (reactive to changes via `PurchasesDelegate`
+      + `refresh`/`restore`); no `TODO()` — `RevenueCatEntitlementManager` rewritten against the 3.0.2 SDK.
+- [x] `FeatureGate` gates a feature on a real active entitlement (`isPro` derives from
+      `customerInfo.entitlements.active`; the demo's Request Upgrade → Paywall is driven by it).
+- [x] iOS native-dependency contract honored (`PurchasesHybridCommon` supplied by consumer;
+      `dynamic_lookup` unchanged); `:shared-demo` stays SDK-free (fake only).
+- [x] Demoed via the fake in `:shared-demo`; **real path covered in `androidDemoApp`** (the device-runnable
+      host — `androidApp` is a library and can't run; matches how P1-5 smoke-tested real Firebase there).
+      *(Evidence: `compileAndroidMain` + `testAndroidHostTest` green incl. new
+      `RevenueCatEntitlementManagerTest` (`isProFor` truth table + Koin resolution) and updated
+      `DemoViewModelTest`; iOS compile/link of `FrnkKit.xcframework` is the mandatory local macOS gate —
+      CI does not build iOS.)*
+      **iosDemoApp justification:** `DemoKit` is intentionally SDK-free, so the real iOS RC path (native
+      `PurchasesHybridCommon` pod + iOS key) is **not** wired into `iosDemoApp`; the iOS RC code is instead
+      compile/link-verified through `FrnkKit.xcframework`.
 
-### P3-3 — RevenueCat: offerings, paywall, purchase/restore flow
-**Description:** Add fetch-offerings, a paywall presentation hook, and a
-purchase/restore flow.
-**Rationale (priority):** Completes §3.7; depends on P3-2.
+### P3-3 — RevenueCat: offerings, paywall, purchase/restore + frnk-owned Pro layer ✅ DONE (2026-06-02)
+**Description:** Add fetch-offerings, a basic toolkit paywall, and a purchase/restore flow — plus a
+frnk-owned Free/Pro layer (independent of RevenueCat), god mode, and two always-on paywall entry points.
+**Rationale (priority):** Completes §3.7; depends on P3-2. Scope expanded per product requirements into a
+small monetization subsystem.
+**Key decisions:**
+- **Provider/Manager split.** Renamed the old `EntitlementManager` → **`EntitlementProvider`** (RC + the
+  demo fake implement it: real entitlement + `offerings()`/`purchase()`/`restore()`). New frnk-owned
+  **`EntitlementManager`** (`DefaultEntitlementManager`, pure Kotlin in `shared-monetization-api`) wraps the
+  provider and overlays **god mode** (persisted via `KeyValueStore`, key `frnk.god_mode`) + analytics
+  user-properties (`is_pro`/`pro_source`/`god_mode`). `isPro = provider.isPro || godMode`;
+  `EntitlementStatus(isPro, source: None|Purchase|GodMode)`. `FeatureGate` reads the manager + gained
+  `observe(feature)` and a configurable `freeFeatures`. Bound by new `monetizationModule`; `revenueCatModule`
+  now binds the **provider only**.
+- **God mode** reachable in release builds: hidden **Settings → tap version 7×** Developer section
+  (`SettingsScreenState.developerSection` + `showDeveloperSection`) **and** a host opt-in flag; persisted.
+- **New module `shared-monetization-ui`** (keeps `shared-ui-atoms` monetization-agnostic): the basic
+  **Paywall** scaffold (stacked selectable plan cards, free-trial/savings badges, loading skeleton, VM-driven
+  purchase/restore via the manager), `frnkPaywallDestination` (toolkit-owned `ToolkitRoute.Paywall` graph
+  entry), and `rememberFrnkSettingsHandler` (centralizes Upgrade→paywall nav, Restore, god-mode toggle).
+- **Two entry points** (toolkit-owned nav): Home top-app-bar top-right crown action (hidden once Pro) + the
+  Settings Upgrade/Restore rows. Products: monthly + yearly demanded; **free trial + lifetime supported,
+  optional**. RC entitlement id stays `pro`; dashboard display name `"<App> Pro"`.
+- **Analytics** woven in: `Paywall_Viewed{source}` (home_topbar/settings/demo), `Purchase_Started/Completed/
+  Failed{product}`, `Paywall_Dismissed`, custom `god_mode_toggled`, + the user-properties above.
+- **Suggested extras shipped:** source tagging, `is_pro`/`pro_source`/`god_mode` user-properties, reactive
+  `FeatureGate.observe`, trial + best-value badges, paywall skeleton. **Deferred** (noted): Manage-Subscription
+  deep link, trial-countdown UI (needs tiered status), paywall A/B via RC offering id, promo/host-granted
+  `ProSource`.
 **Acceptance Criteria:**
-- [ ] Offerings fetched and exposed via api returning `AppResult`.
-- [ ] Purchase + restore flows implemented; entitlement updates propagate to
-      `FeatureGate`.
-- [ ] Cancellation and failure paths mapped to typed errors (no throws).
-- [ ] Demoed with fakes in `:shared-demo`.
+- [x] Offerings fetched + exposed via api returning `AppResult` (`EntitlementProvider.offerings()` →
+      `List<ProProduct>`; RC maps `Offerings.current` packages, `PackageType`→`ProPlan`, prices, trial).
+- [x] Purchase + restore flows implemented; entitlement updates propagate to `FeatureGate` (manager combines
+      provider + god mode; the paywall VM runs them and closes on success).
+- [x] Cancellation + failure mapped to typed `MonetizationError` (no throws; `awaitPurchaseResult` →
+      `PurchasesTransactionException.userCancelled` → `UserCancelled`).
+- [x] Demoed in all three layers: `:shared-demo` (fake provider + the real `monetizationModule` over it,
+      exercising god mode cross-platform), **`androidDemoApp`** (crown→paywall, Settings entry, god-mode flips
+      Pro=true via GodMode with the crown hiding — verified on device against the **RevenueCat Test Store**:
+      products + a current offering configured via MCP, `test_` key in `local.properties`), **`iosDemoApp`**
+      (parity — `DemoKit` `iosMain` gains the RevenueCat cinterop so `bootstrapDemoKoinWithRevenueCat(...)`
+      installs the real `revenueCatModule` against the same Test Store; the app adds the `RevenueCat` SPM
+      package — see `iosDemoApp/README.md`).
+      *(Evidence: `compileAndroidMain` + `testAndroidHostTest` green incl. `DefaultEntitlementManagerTest`,
+      `PaywallViewModelTest`, `RevenueCatEntitlementProviderTest`, updated `DemoViewModelTest`; `ktlintFormat`
+      clean; `FrnkKit` + `DemoKit` debug XCFrameworks link on macOS — the latter now linking the RC iOS cinterop.)*
 
 ---
 
@@ -420,7 +481,7 @@ P1-1 ✅ (FrnkDB)   P1-5 ✅ (analytics/crash — ObservabilityChoice, backend-i
         │
 P2-1 ✅ (navigation — FrnkNavHost over CMP navigation-compose; unblocks feature screens)
         │
-P3-1 (PostHog)   P3-2 (RevenueCat entitlements) → P3-3 (paywall/purchase)
+P3-1 (PostHog)   P3-2 ✅ (RevenueCat entitlements) → P3-3 ✅ (paywall/purchase + frnk Pro layer + god mode)
         │
 P4-1 (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
         ┊
@@ -428,7 +489,7 @@ P4-1 (molecules) → P4-2 (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, nee
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
-**Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, and **P2-1 ✅ (navigation)** are done. Recommended next is
-**P2-2 (verify `BackendChoice` swap)** — small and closes a central correctness claim — or, for product
-surface, **P3-2 (RevenueCat entitlements)** now that navigation unblocks multi-screen flows, then
-**P4-1 (molecules)**. P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.
+**Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, and **P3-3 ✅ (paywall +
+frnk Pro layer + god mode)** are done. Recommended next is **P4-1 (molecules)** then **P4-2 (organisms)**
+for design-system depth, or **P3-1 (PostHog)** to round out analytics. P2-2 (verify `BackendChoice` swap)
+and P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.

@@ -3,10 +3,15 @@ package dev.jdgarita.frnk.demo
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.database.Note
 import dev.jdgarita.frnk.database.NoteStore
-import dev.jdgarita.frnk.monetization.EntitlementManager
-import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.monetization.EntitlementProvider
+import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProPlan
+import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.monetizationModule
+import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
@@ -29,13 +34,17 @@ val demoModule =
         includes(onboardingScaffoldModule)
         includes(settingsScaffoldModule)
         includes(bottomNavScaffoldModule)
-        // Bind the concrete fake so DemoViewModel can ask for it directly (for setPro()),
-        // then expose it via the EntitlementManager interface as the same singleton.
-        single { FakeEntitlementManager() }
-        single<EntitlementManager> { get<FakeEntitlementManager>() }
+        // The real frnk monetization layer (DefaultEntitlementManager + FeatureGate) over a FAKE
+        // provider — so the demo exercises the actual god-mode / Free-Pro logic cross-platform without
+        // a paid SDK. A real host installs `revenueCatModule` instead (androidDemoApp does).
+        includes(monetizationModule)
+        includes(paywallScaffoldModule)
+        single<EntitlementProvider> { FakeEntitlementProvider() }
+        // In-memory KeyValueStore so god mode persists for the session without the multiplatform-settings
+        // impl; the real one is bound by databaseModule (via frnkModules).
+        single<KeyValueStore> { FakeKeyValueStore() }
         single<AnalyticsTracker> { LoggingAnalyticsTracker() }
         single<CrashReporter> { LoggingCrashReporter() }
-        single { FeatureGate(get(), get()) }
         // In-memory NoteStore so the demo shows a persisted value (BACKLOG P1-1) without dragging
         // the SQLite native cinterop into DemoKit. The REAL SqlDelightNoteStore is bound by
         // databaseModule (via frnkModules) and covered by NoteStoreRoundTripTest.
@@ -43,20 +52,74 @@ val demoModule =
         viewModel { DemoViewModel(get(), get(), get(), get(), get()) }
     }
 
-/** In-memory Pro toggle so we can exercise FeatureGate without a paid SDK. */
-class FakeEntitlementManager : EntitlementManager {
+/** In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK. */
+class FakeEntitlementProvider : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
-    fun setPro(value: Boolean) {
-        _isPro.value = value
-    }
-
     override suspend fun refresh() = Unit
 
-    override suspend fun restorePurchases(): Boolean {
+    override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> =
+        AppResult.Success(
+            listOf(
+                ProProduct("monthly", ProPlan.Monthly, "Monthly", "$4.99", pricePerMonthFormatted = "$4.99"),
+                ProProduct(
+                    "yearly",
+                    ProPlan.Yearly,
+                    "Yearly",
+                    "$39.99",
+                    pricePerMonthFormatted = "$3.33",
+                    hasFreeTrial = true,
+                    badge = "Save 33%",
+                ),
+                ProProduct("lifetime", ProPlan.Lifetime, "Lifetime", "$99.99"),
+            ),
+        )
+
+    override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
         _isPro.value = true
-        return true
+        return AppResult.Success(true)
+    }
+
+    override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(_isPro.value)
+
+    // The fake has no store-managed subscription, so there's nothing to open (real RC returns the
+    // App Store / Play Store management URL after a real purchase).
+    override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+}
+
+/** In-memory [KeyValueStore] for the demo (god-mode persistence) — keeps DemoKit free of the settings impl. */
+class FakeKeyValueStore : KeyValueStore {
+    private val strings = mutableMapOf<String, String>()
+    private val booleans = mutableMapOf<String, Boolean>()
+
+    override fun putString(
+        key: String,
+        value: String,
+    ) {
+        strings[key] = value
+    }
+
+    override fun getString(
+        key: String,
+        default: String?,
+    ): String? = strings[key] ?: default
+
+    override fun putBoolean(
+        key: String,
+        value: Boolean,
+    ) {
+        booleans[key] = value
+    }
+
+    override fun getBoolean(
+        key: String,
+        default: Boolean,
+    ): Boolean = booleans[key] ?: default
+
+    override fun remove(key: String) {
+        strings.remove(key)
+        booleans.remove(key)
     }
 }
 

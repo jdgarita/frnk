@@ -14,11 +14,16 @@ exercises the MVI engine + `FeatureGate` via fakes.
 | Xcode app | This folder |
 
 `DemoKit.xcframework` exports the toolkit's **`*-api`** modules plus
-`shared-ui-atoms` — it does **not** pull in `:shared`, so no RevenueCat or SQLite
-native code is linked. The **one exception** (BACKLOG P1-5b) is the lightweight
-**CrashKiOS** cinterop in `iosMain`, added so the demo's "Force crash" panic button
-can be reported to Firebase Crashlytics. Because of that, this app now links the
-**native Firebase SDK** (added via SPM, below) and ships `GoogleService-Info.plist`.
+`shared-ui-atoms` — it does **not** pull in `:shared`. It links two native SDKs via
+`iosMain` cinterops so the demo can exercise the real paths (each supplied by this
+app via SPM under `dynamic_lookup`):
+- **CrashKiOS** (BACKLOG P1-5b) — the "Force crash" panic button → Firebase Crashlytics.
+- **RevenueCat** (BACKLOG P3-3) — the paywall runs against the RevenueCat **Test Store**
+  (real `RevenueCatEntitlementProvider`, parity with `androidDemoApp`), via
+  `DemoRevenueCatKt.bootstrapDemoKoinWithRevenueCat(apiKey:)` in `iosDemoAppApp.swift`.
+
+So this app links the **native Firebase + RevenueCat SDKs** (added via SPM, below) and
+ships `GoogleService-Info.plist`.
 
 For apps that need real backends, depend on `FrnkKit.xcframework` from `:iosApp`
 instead and follow the integration notes in `docs/ARCHITECTURE.md`.
@@ -36,6 +41,22 @@ The Crashlytics test needs the native Firebase SDK linked into this Xcode projec
 
 `FirebaseApp.configure()` + the CrashKiOS hook are already wired in
 `iosDemoAppApp.swift`; no further code needed.
+
+## RevenueCat setup (one-time, for the paywall)
+
+The paywall runs against the RevenueCat **Test Store** — no App Store Connect / sandbox
+tester needed. The native RevenueCat Apple SDK must be linked into this Xcode project:
+
+1. In Xcode: **File ▸ Add Package Dependencies…**
+2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.58.0` or later**
+   (a 5.x compatible with `purchases-kmp` 3.0.2).
+3. Add the **`RevenueCat`** product to the `iosDemoApp` target. *(purchases-kmp 3.0+ binds
+   directly against `purchases-ios` — **not** `PurchasesHybridCommon`.)*
+4. The Test Store `test_` API key is already wired in `iosDemoAppApp.swift`
+   (`bootstrapDemoKoinWithRevenueCat`). It's a public key for the throwaway `frnk-demo`
+   project; swap it (and the dashboard products/offering) for your own to use a different store.
+
+`Purchases.configure(...)` runs inside the Kotlin bootstrap helper — no Swift configure call needed.
 
 ## Run
 
@@ -65,5 +86,6 @@ up a fresh framework — no manual gradle invocation needed.
   back to a SwiftUI toast overlay (`ContentView.swift`).
 - Theming via `ProvideToolkitTheme(colors = demoBlueColors())` — same palette
   Android uses, defined once in `:shared-demo` commonMain.
-- `FeatureGate` exercised against `FakeEntitlementManager` so the Pro toggle
-  works without any subscription SDK.
+- `FeatureGate` exercised against the **real** RevenueCat Test Store provider (offerings,
+  sandbox purchase, restore) — plus the frnk-owned **god mode** override (Settings → tap the
+  version 7× → Developer), which forces Pro independent of RevenueCat.

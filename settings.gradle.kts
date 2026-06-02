@@ -40,6 +40,7 @@ include(
     ":shared-backend-supabase",
     ":shared-monetization-api",
     ":shared-monetization-revenuecat",
+    ":shared-monetization-ui",
     ":shared-demo",
     ":androidApp",
     ":iosApp",
@@ -60,6 +61,7 @@ listOf(
     "shared-backend-supabase",
     "shared-monetization-api",
     "shared-monetization-revenuecat",
+    "shared-monetization-ui",
     "shared-demo",
 ).forEach { name ->
     project(":$name").projectDir = file("shared/$name")

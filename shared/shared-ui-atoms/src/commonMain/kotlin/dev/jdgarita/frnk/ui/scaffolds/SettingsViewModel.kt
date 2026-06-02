@@ -23,6 +23,18 @@ class SettingsViewModel(
                 emit(SettingsEffect.ToggleChanged(intent.id, intent.checked))
             }
             is SettingsIntent.RowClicked -> emit(SettingsEffect.ActionInvoked(intent.action))
+            SettingsIntent.VersionTapped ->
+                setState {
+                    if (developerRevealed) {
+                        this
+                    } else {
+                        val taps = versionTapCount + 1
+                        copy(
+                            versionTapCount = taps,
+                            developerRevealed = taps >= SettingsScreenState.DEVELOPER_REVEAL_TAPS,
+                        )
+                    }
+                }
         }
     }
 }

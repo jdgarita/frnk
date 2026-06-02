@@ -1,0 +1,306 @@
+package dev.jdgarita.frnk.monetization.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.ui.atoms.FrnkButton
+import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
+import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
+import dev.jdgarita.frnk.ui.atoms.FrnkIcon
+import dev.jdgarita.frnk.ui.atoms.FrnkIconState
+import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
+import dev.jdgarita.frnk.ui.atoms.FrnkText
+import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
+import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
+import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colorOutline
+import dev.jdgarita.frnk.ui.theme.colorPrimary
+import dev.jdgarita.frnk.ui.theme.colorSurface
+import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.iconCheck
+import dev.jdgarita.frnk.ui.theme.iconClose
+import dev.jdgarita.frnk.ui.theme.iconUpgrade
+import dev.jdgarita.frnk.ui.theme.icons
+import dev.jdgarita.frnk.ui.theme.labelSmall
+import dev.jdgarita.frnk.ui.theme.shapeCard
+import dev.jdgarita.frnk.ui.theme.shapes
+import dev.jdgarita.frnk.ui.theme.stringAppName
+import dev.jdgarita.frnk.ui.theme.stringClose
+import dev.jdgarita.frnk.ui.theme.stringPaywallContinue
+import dev.jdgarita.frnk.ui.theme.stringPaywallEmpty
+import dev.jdgarita.frnk.ui.theme.stringPaywallFreeTrialBadge
+import dev.jdgarita.frnk.ui.theme.stringPaywallPrivacy
+import dev.jdgarita.frnk.ui.theme.stringPaywallStartTrial
+import dev.jdgarita.frnk.ui.theme.stringPaywallTerms
+import dev.jdgarita.frnk.ui.theme.stringPaywallTitlePrefix
+import dev.jdgarita.frnk.ui.theme.stringPerMonthSuffix
+import dev.jdgarita.frnk.ui.theme.stringProName
+import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
+import dev.jdgarita.frnk.ui.theme.strings
+import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
+import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+/**
+ * The toolkit's basic paywall — a full screen of stacked, selectable plan cards over a frnk-owned
+ * [PaywallViewModel]. Hosts can ship their own paywall instead; this is mounted via
+ * [frnkPaywallDestination] so the toolkit owns the route.
+ *
+ * @param source analytics source (where the paywall was opened from).
+ * @param features short benefit bullets shown above the plans (host-supplied).
+ */
+@Composable
+fun PaywallScreen(
+    source: String,
+    features: List<String>,
+    modifier: Modifier = Modifier,
+    vmKey: String? = null,
+    onEffect: (PaywallEffect) -> Unit = {},
+) {
+    val vm: PaywallViewModel = koinViewModel(key = vmKey) { parametersOf(source) }
+    val state by vm.state.collectAsStateWithLifecycle()
+    val collapsibleBars = rememberCollapsibleBarsState()
+
+    EffectCollector(vm.effects, onEffect = onEffect)
+
+    FrnkScreenScaffold(
+        topBar =
+            FrnkTopAppBarState(
+                title = "",
+                navigationIcon = Theme[icons][iconClose],
+                navigationContentDescription = Theme[strings][stringClose],
+            ),
+        collapsibleBars = collapsibleBars,
+        modifier = modifier,
+        onNavigationClick = { vm.send(PaywallIntent.Close) },
+    ) { padding ->
+        PaywallScreenContent(
+            state = state,
+            features = features,
+            onIntent = vm::send,
+            contentPadding = padding,
+        )
+    }
+}
+
+/** Stateless paywall body — header, feature checklist, plan cards, CTA, restore + legal. */
+@Composable
+fun PaywallScreenContent(
+    state: PaywallScreenState,
+    features: List<String>,
+    onIntent: (PaywallIntent) -> Unit,
+    modifier: Modifier = Modifier,
+    contentPadding: androidx.compose.foundation.layout.PaddingValues =
+        androidx.compose.foundation.layout
+            .PaddingValues(FrnkSpacing.lg),
+) {
+    val title = "${Theme[strings][stringPaywallTitlePrefix]} ${Theme[strings][stringAppName]} ${Theme[strings][stringProName]}"
+    Column(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(contentPadding),
+        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.lg),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FrnkIcon(
+                state =
+                    FrnkIconState(
+                        imageVector = Theme[icons][iconUpgrade],
+                        contentDescription = null,
+                        size = FrnkIconSize.lg,
+                        tint = colorPrimary,
+                    ),
+            )
+            FrnkText(state = FrnkTextState.HeadlineSmall(text = title))
+        }
+
+        if (features.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                features.forEach { FeatureRow(text = it) }
+            }
+        }
+
+        when {
+            state.isLoading -> repeat(2) { SkeletonCard() }
+            state.products.isEmpty() ->
+                FrnkText(state = FrnkTextState.Body(text = Theme[strings][stringPaywallEmpty], color = colorOnSurfaceVariant))
+            else ->
+                Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                    state.products.forEach { product ->
+                        PaywallProductCard(
+                            product = product,
+                            selected = product.id == state.selectedProductId,
+                            onClick = { onIntent(PaywallIntent.ProductSelected(product.id)) },
+                        )
+                    }
+                }
+        }
+
+        val ctaText =
+            if (state.selectedProduct?.hasFreeTrial == true) {
+                Theme[strings][stringPaywallStartTrial]
+            } else {
+                Theme[strings][stringPaywallContinue]
+            }
+        FrnkButton(
+            state =
+                FrnkButtonState(
+                    text = ctaText,
+                    enabled = state.selectedProductId != null && !state.isPurchasing,
+                ),
+            onClick = { onIntent(PaywallIntent.Purchase) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+        ) {
+            FrnkButton(
+                state = FrnkButtonState(text = Theme[strings][stringRestorePurchases], variant = FrnkButtonVariant.Ghost),
+                onClick = { onIntent(PaywallIntent.Restore) },
+            )
+            FrnkText(
+                state =
+                    FrnkTextState.Raw(
+                        text = "${Theme[strings][stringPaywallTerms]} · ${Theme[strings][stringPaywallPrivacy]}",
+                        style = labelSmall,
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeatureRow(text: String) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FrnkIcon(
+            state =
+                FrnkIconState(
+                    imageVector = Theme[icons][iconCheck],
+                    contentDescription = null,
+                    size = FrnkIconSize.sm,
+                    tint = colorPrimary,
+                ),
+        )
+        FrnkText(state = FrnkTextState.Body(text = text))
+    }
+}
+
+@Composable
+private fun PaywallProductCard(
+    product: ProProduct,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(Theme[shapes][shapeCard])
+                .border(
+                    width = if (selected) 2.dp else 1.dp,
+                    color = if (selected) Theme[colors][colorPrimary] else Theme[colors][colorOutline],
+                    shape = Theme[shapes][shapeCard],
+                ).background(Theme[colors][colorSurface])
+                .clickable { onClick() }
+                .padding(FrnkSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioDot(selected = selected)
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs)) {
+            FrnkText(state = FrnkTextState.TitleMedium(text = product.title))
+            product.pricePerMonthFormatted?.let { perMonth ->
+                FrnkText(
+                    state =
+                        FrnkTextState.BodySmall(
+                            text = "$perMonth${Theme[strings][stringPerMonthSuffix]}",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+            }
+        }
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs)) {
+            FrnkText(state = FrnkTextState.TitleMedium(text = product.priceFormatted))
+            val badge = product.badge ?: if (product.hasFreeTrial) Theme[strings][stringPaywallFreeTrialBadge] else null
+            badge?.let {
+                FrnkText(state = FrnkTextState.Raw(text = it, style = labelSmall, color = colorPrimary))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RadioDot(selected: Boolean) {
+    Box(
+        modifier =
+            Modifier
+                .size(20.dp)
+                .clip(CircleShape)
+                .border(
+                    width = 2.dp,
+                    color = if (selected) Theme[colors][colorPrimary] else Theme[colors][colorOutline],
+                    shape = CircleShape,
+                ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (selected) {
+            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Theme[colors][colorPrimary]))
+        }
+    }
+}
+
+@Composable
+private fun SkeletonCard() {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(Theme[shapes][shapeCard])
+                .border(width = 1.dp, color = Theme[colors][colorOutline], shape = Theme[shapes][shapeCard])
+                .padding(FrnkSpacing.md),
+    ) {
+        FrnkText(
+            state =
+                FrnkTextState.TitleMedium(
+                    text = "Plan placeholder",
+                    skeleton = FrnkSkeleton(enabled = true),
+                ),
+        )
+    }
+}

@@ -76,6 +76,20 @@ data class SettingsToggleRowState(
     val checked: Boolean,
 ) : SettingsRowState
 
+/**
+ * Row style 4 — a **non-interactive** status row: icon + title + optional subtitle + a trailing
+ * [badge] pill. Used to surface state that needs no action, e.g. a "Pro Member" / `PRO` badge once the
+ * user is entitled. Has no [SettingsAction]; tapping it does nothing.
+ */
+@Immutable
+data class SettingsStatusRowState(
+    override val id: String,
+    val icon: FrnkIconState,
+    val title: String,
+    val subtitle: String? = null,
+    val badge: String? = null,
+) : SettingsRowState
+
 /** A card grouping related rows, with an optional header [title] and trailing [footnote] help text. */
 @Immutable
 data class SettingsSectionState(
@@ -107,7 +121,22 @@ data class SettingsScreenState(
     val title: String = "Settings",
     val sections: List<SettingsSectionState>,
     val footer: SettingsFooterState? = null,
-) : UiState
+    /**
+     * Optional hidden section (e.g. a god-mode toggle) shown only once revealed. Revealed by tapping
+     * the version footer [DEVELOPER_REVEAL_TAPS] times, or immediately when [showDeveloperSection] is
+     * true (a host opt-in for internal builds). Lets a developer flip god mode even in a release build.
+     */
+    val developerSection: SettingsSectionState? = null,
+    val showDeveloperSection: Boolean = false,
+    val developerRevealed: Boolean = false,
+    val versionTapCount: Int = 0,
+) : UiState {
+    val developerVisible: Boolean get() = developerSection != null && (showDeveloperSection || developerRevealed)
+
+    companion object {
+        const val DEVELOPER_REVEAL_TAPS = 7
+    }
+}
 
 sealed interface SettingsIntent : UiIntent {
     data class ThemeSelected(
@@ -122,6 +151,9 @@ sealed interface SettingsIntent : UiIntent {
     data class RowClicked(
         val action: SettingsAction,
     ) : SettingsIntent
+
+    /** The version footer was tapped; enough taps reveal the hidden developer section. */
+    data object VersionTapped : SettingsIntent
 }
 
 sealed interface SettingsEffect : UiEffect {

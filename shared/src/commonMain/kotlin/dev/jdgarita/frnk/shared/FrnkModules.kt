@@ -4,7 +4,9 @@ import dev.jdgarita.frnk.backend.firebase.firebaseBackendModule
 import dev.jdgarita.frnk.backend.firebase.firebaseObservabilityModule
 import dev.jdgarita.frnk.backend.supabase.supabaseBackendModule
 import dev.jdgarita.frnk.database.impl.databaseModule
+import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
+import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import org.koin.core.module.Module
 
 fun frnkModules(
@@ -25,5 +27,9 @@ fun frnkModules(
                 ObservabilityChoice.Firebase -> firebaseObservabilityModule
             },
         )
+        // RevenueCat supplies the EntitlementProvider; monetizationModule binds the frnk-owned
+        // EntitlementManager (god mode + Free/Pro layer) + FeatureGate over it.
         add(revenueCatModule)
+        add(monetizationModule)
+        add(paywallScaffoldModule)
     }

@@ -1,11 +1,15 @@
 package dev.jdgarita.frnk.monetization.revenuecat
 
-import dev.jdgarita.frnk.monetization.EntitlementManager
-import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.monetization.EntitlementProvider
 import org.koin.dsl.module
 
+/**
+ * RevenueCat binds **only** the [EntitlementProvider]. The frnk-owned `EntitlementManager` + `FeatureGate`
+ * come from `monetizationModule` (`shared-monetization-api`), so god mode / the Free-Pro layer stay
+ * independent of RevenueCat.
+ */
 val revenueCatModule =
     module {
-        single<EntitlementManager> { RevenueCatEntitlementManager() }
-        single { FeatureGate(get(), get()) }
+        single { RevenueCatConfig() }
+        single<EntitlementProvider> { RevenueCatEntitlementProvider(get()) }
     }

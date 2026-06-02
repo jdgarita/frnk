@@ -9,6 +9,7 @@ kotlin {
         namespace = "${ProjectConfiguration.GROUP_ID}.monetization.revenuecat"
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
+        withHostTest {}
     }
     listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_monetization_revenuecat" } }
     sourceSets {
@@ -17,6 +18,9 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.revenuecat.core)
             implementation(libs.revenuecat.result)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
         }
     }
 }
