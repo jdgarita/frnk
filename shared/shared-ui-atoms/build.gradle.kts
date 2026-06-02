@@ -38,6 +38,12 @@ kotlin {
             implementation(libs.compose.unstyled.separators)
             implementation(libs.compose.ripple.indication)
             implementation(libs.icons.lucide)
+            // Cross-platform haptics behind LocalFrnkHaptics (installed by FrnkTheme). Like the
+            // ripple, this is a UI-feedback library, not a swappable backend SDK. multihaptic ships
+            // its own Android/iOS impls (no native cinterop), so DemoKit/FrnkKit XCFrameworks stay
+            // clean and the Android VIBRATE permission self-merges from multihaptic-core's manifest.
+            implementation(libs.multihaptic.core)
+            implementation(libs.multihaptic.compose)
         }
 
         // commonDebug: cross-platform source set for @Preview composables.

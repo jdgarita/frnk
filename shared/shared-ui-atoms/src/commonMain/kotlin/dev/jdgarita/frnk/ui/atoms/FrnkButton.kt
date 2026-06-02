@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.haptics.HapticType
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.colorOnPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
@@ -42,6 +44,7 @@ fun FrnkButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalFrnkHaptics.current
     val shape = Theme[shapes][shapeButton]
     val primary = Theme[colors][colorPrimary]
     val onPrimary = Theme[colors][colorOnPrimary]
@@ -76,7 +79,10 @@ fun FrnkButton(
             .frnkSkeleton(state.skeleton, shape = shapeButton)
 
     UnstyledButton(
-        onClick = onClick,
+        onClick = {
+            haptics.perform(HapticType.Click)
+            onClick()
+        },
         enabled = state.enabled && !state.skeleton.enabled,
         modifier = shapedModifier,
         contentPadding = PaddingValues(horizontal = FrnkSpacing.md, vertical = FrnkSpacing.sm),

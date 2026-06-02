@@ -16,6 +16,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.haptics.HapticType
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.colorOnSurface
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorSurface
@@ -48,6 +50,7 @@ fun FrnkSegmentedControl(
     onOptionSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalFrnkHaptics.current
     val selected = state.selectedIndex.coerceIn(0, (state.options.size - 1).coerceAtLeast(0))
     Row(
         modifier =
@@ -77,8 +80,10 @@ fun FrnkSegmentedControl(
                         .weight(1f)
                         .clip(Theme[shapes][shapeFull])
                         .background(segmentColor)
-                        .clickable(enabled = state.enabled && !state.skeleton.enabled) { onOptionSelected(index) }
-                        .padding(vertical = FrnkSpacing.xs),
+                        .clickable(enabled = state.enabled && !state.skeleton.enabled) {
+                            if (index != selected) haptics.perform(HapticType.Selection)
+                            onOptionSelected(index)
+                        }.padding(vertical = FrnkSpacing.xs),
                 horizontalArrangement = Arrangement.Center,
             ) {
                 FrnkText(

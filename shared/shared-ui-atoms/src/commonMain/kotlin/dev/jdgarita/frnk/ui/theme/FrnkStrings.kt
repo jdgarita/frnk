@@ -22,6 +22,9 @@ val stringNavHome = ThemeToken<String>("string_nav_home")
 // Settings scaffold strings. Default copy for the settings catalog; hosts override per token.
 val stringSettings = ThemeToken<String>("string_settings")
 val stringAppearance = ThemeToken<String>("string_appearance")
+val stringPreferences = ThemeToken<String>("string_preferences")
+val stringHaptics = ThemeToken<String>("string_haptics")
+val stringHapticsSubtitle = ThemeToken<String>("string_haptics_subtitle")
 val stringNotifications = ThemeToken<String>("string_notifications")
 val stringSectionSubscription = ThemeToken<String>("string_section_subscription")
 val stringSectionSupport = ThemeToken<String>("string_section_support")
@@ -80,6 +83,9 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringNavHome to "Home",
         stringSettings to "Settings",
         stringAppearance to "Appearance",
+        stringPreferences to "Preferences",
+        stringHaptics to "Haptic feedback",
+        stringHapticsSubtitle to "Vibrate on interactions",
         stringNotifications to "Notifications",
         stringSectionSubscription to "Subscription",
         stringSectionSupport to "Support",

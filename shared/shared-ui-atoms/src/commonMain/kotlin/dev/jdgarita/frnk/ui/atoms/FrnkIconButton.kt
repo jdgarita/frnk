@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import com.composeunstyled.UnstyledButton
 import com.composeunstyled.theme.Theme
 import com.composeunstyled.theme.ThemeToken
+import dev.jdgarita.frnk.ui.haptics.HapticType
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
@@ -40,8 +42,12 @@ fun FrnkIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptics = LocalFrnkHaptics.current
     UnstyledButton(
-        onClick = onClick,
+        onClick = {
+            haptics.perform(HapticType.Click)
+            onClick()
+        },
         enabled = state.enabled && !state.skeleton.enabled,
         modifier =
             modifier
