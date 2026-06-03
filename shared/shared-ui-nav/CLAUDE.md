@@ -23,9 +23,14 @@ consumer's existing `-undefined dynamic_lookup`.
 - `FrnkAdaptiveBottomNavBar.kt` — `FrnkAdaptiveBottomNavBar(items, selectedIndex, onItemSelected, modifier)`.
   The low-level adaptive bar over Calf's `AdaptiveNavigationBar` (`@OptIn(ExperimentalCalfUiApi::class)`):
   iOS `UIKitUITabBarItem`s (icons via `UIKitImage.Vector`, rasterised from the `FrnkBottomNavItem` `ImageVector`),
-  Android Material3 `NavigationBarItem`s. Use directly only when wiring your own selected-tab state / navigation
-  (as the demo does); most hosts use the scaffold. For the Material-free floating pill, use
-  `FrnkBottomNavBar` in `shared-ui-atoms` instead.
+  Android Material3 `NavigationBarItem`s. **Themed from `FrnkTheme` tokens, not the platform defaults** — both
+  bars take selected = `colorPrimary`, unselected = `colorOnSurfaceVariant` (Android adds a
+  `colorPrimaryContainer` indicator) via Calf's `UIKitTabBarConfiguration` on iOS (→ `UITabBar.tintColor`) and
+  `NavigationBarItemDefaults.colors(...)` on Android, so the host's brand flows through instead of iOS system
+  blue / the Material baseline. (Caveat: iOS 26 "Liquid Glass" ignores the *unselected* tint; the selected
+  brand tint still applies.) Use directly only when wiring your own selected-tab state / navigation (as the
+  demo does); most hosts use the scaffold. For the Material-free floating pill, use `FrnkBottomNavBar` in
+  `shared-ui-atoms` instead.
 - `FrnkAdaptiveBottomNavScaffold.kt` — `FrnkAdaptiveBottomNavScaffold` (VM-backed) + `…Content` (stateless).
   The **default** scaffold: owns which tab is selected (reusing `BottomNavViewModel` + `BottomNavScaffoldState`
   from atoms, so `BottomNavEffect.TabSelected` behaves identically to the pill `BottomNavScaffold`) and pins
