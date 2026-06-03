@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -38,7 +39,6 @@ import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.frnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
-import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
@@ -59,6 +59,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveBottomNavBar
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -95,7 +96,6 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsScreen
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
-import dev.jdgarita.frnk.ui.scaffolds.collapsibleBarOffset
 import dev.jdgarita.frnk.ui.scaffolds.rememberBottomNavScaffoldState
 import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
@@ -238,8 +238,9 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         }
     val selectedTabIndex: Int? = selectedTabRoute?.let { route -> tabRoutes.indexOf(route).takeIf { it >= 0 } }
 
-    // Destinations under the bar reserve its height for scrollable content; full-screen pushes don't.
-    val barInset = FrnkBottomNavBarDefaults.BarHeight
+    // Destinations under the opaque adaptive bottom bar reserve its height so the last item clears it;
+    // full-screen pushes (Onboarding / Paywall) own no tab and hide the bar.
+    val barInset = DemoBottomBarHeight
 
     Box(modifier = Modifier.fillMaxSize()) {
         FrnkNavHost(
@@ -318,14 +319,15 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             )
         }
 
-        // The one floating bottom bar, overlaid above the NavHost so it persists across tab swaps. Hidden
-        // on full-screen pushes. Slides off-screen in lock-step with the top bars via collapsibleBars.
+        // The toolkit's platform-adaptive bottom bar (native UITabBar on iOS / Material3 NavigationBar on
+        // Android), pinned at the bottom and persisting across tab swaps. Hidden on full-screen pushes
+        // (Onboarding / Paywall, which own no tab). The demo wires its own navigation here — the lower-level
+        // FrnkAdaptiveBottomNavBar override path; simpler hosts use FrnkAdaptiveBottomNavScaffold instead.
         if (selectedTabIndex != null) {
-            DemoBottomBar(
-                tabs = navState.tabs,
+            FrnkAdaptiveBottomNavBar(
+                items = navState.tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) },
                 selectedIndex = selectedTabIndex,
-                collapsibleBars = collapsibleBars,
-                onSelect = { index ->
+                onItemSelected = { index ->
                     val route = tabRoutes[index]
                     if (index == selectedTabIndex) {
                         // Re-tapping the active tab returns to its root, popping any pushed child
@@ -338,31 +340,15 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                         navigator.navigate(route, DemoTabSwitchOptions)
                     }
                 },
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
             )
         }
     }
 }
 
-/** The floating bottom-nav bar overlay — the `FrnkBottomNavBar` atom translated by the shared collapse fraction. */
-@Composable
-private fun DemoBottomBar(
-    tabs: List<BottomNavTab>,
-    selectedIndex: Int,
-    collapsibleBars: CollapsibleBarsState,
-    onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    FrnkBottomNavBar(
-        state =
-            FrnkBottomNavBarState(
-                items = tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) },
-                selectedIndex = selectedIndex,
-            ),
-        onItemSelected = onSelect,
-        modifier = modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight),
-    )
-}
+// Height reserved for the opaque adaptive bottom bar (≈Material3 NavigationBar; the iOS UITabBar +
+// safe-area inset lands close enough that a single reserve clears both).
+private val DemoBottomBarHeight = 80.dp
 
 /**
  * Home tab — the toolkit showcase. Dogfoods [FrnkMviScreen] (the state-hosting primitive host apps use)

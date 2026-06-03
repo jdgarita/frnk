@@ -21,6 +21,9 @@ crashkios = "0.9.0"
 supabase = "3.6.0"
 revenuecat = "3.0.2"
 multihaptic = "0.3.2"
+# Calf adaptive nav bar: native UITabBar on iOS / Material3 NavigationBar on Android. Lives in the
+# :shared-ui-nav module (the toolkit's sole, deliberate Material3 dependency).
+calf = "0.12.0"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
 androidx-activity = "1.13.0"
@@ -76,6 +79,10 @@ revenuecat-result = { module = "com.revenuecat.purchases:purchases-kmp-result", 
 # Cross-platform haptics (Android + iOS), no native cinterop. Core is Compose-free; -compose adds rememberVibrator().
 multihaptic-core = { module = "top.ltfan.multihaptic:multihaptic-core", version.ref = "multihaptic" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihaptic" }
+
+# Calf adaptive nav bar (native UITabBar on iOS / Material3 NavigationBar on Android). Hosted in
+# :shared-ui-nav — the toolkit's single, deliberate Material3 dependency, shipped via :shared/FrnkKit.
+calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 
 # Compose Unstyled
 icons-lucide = { module = "com.composables:icons-lucide-cmp", version.ref = "iconsLucide" }
