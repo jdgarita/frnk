@@ -2,14 +2,21 @@ package dev.jdgarita.frnk.ui.bottomnav
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.composeunstyled.theme.Theme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
+import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colorPrimary
+import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
+import dev.jdgarita.frnk.ui.theme.colors
 
 /**
  * The toolkit's **platform-adaptive** bottom navigation bar: a genuine native UIKit `UITabBar` on iOS and
@@ -32,20 +39,39 @@ fun FrnkAdaptiveBottomNavBar(
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Drive the native bars from FrnkTheme tokens so they follow the host's brand instead of each
+    // platform's default tint (iOS UITabBar would otherwise show system blue; Material3 its baseline).
+    val selectedColor = Theme[colors][colorPrimary]
+    val unselectedColor = Theme[colors][colorOnSurfaceVariant]
+    val indicatorColor = Theme[colors][colorPrimaryContainer]
     AdaptiveNavigationBar(
         modifier = modifier,
-        // iOS path: native UITabBar. Calf rasterises each ImageVector to a UIImage.
+        // iOS path: native UITabBar. Calf rasterises each ImageVector to a UIImage; the configuration maps
+        // selected/unselected colors onto UITabBar.tintColor / unselectedItemTintColor.
         iosItems = items.map { UIKitUITabBarItem(title = it.label, image = UIKitImage.Vector(it.icon)) },
         iosSelectedIndex = selectedIndex,
         iosOnItemSelected = onItemSelected,
+        iosConfiguration =
+            UIKitTabBarConfiguration(
+                selectedItemColor = selectedColor,
+                unselectedItemColor = unselectedColor,
+            ),
     ) {
-        // Android/Desktop path: Material3 NavigationBarItems in the bar's RowScope.
+        // Android/Desktop path: Material3 NavigationBarItems in the bar's RowScope, tinted from the tokens.
         items.forEachIndexed { index, item ->
             NavigationBarItem(
                 selected = index == selectedIndex,
                 onClick = { onItemSelected(index) },
                 icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
                 label = { Text(text = item.label) },
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = selectedColor,
+                        selectedTextColor = selectedColor,
+                        indicatorColor = indicatorColor,
+                        unselectedIconColor = unselectedColor,
+                        unselectedTextColor = unselectedColor,
+                    ),
             )
         }
     }
