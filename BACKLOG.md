@@ -495,15 +495,45 @@ distinct section, e.g. a form, a feed item, a header block).
       `FrnkListSection`, `FrnkProfileHeader` under `ui/organisms/`.
 - [x] Previews + skeleton decisions + demo coverage (all three layers).
 
-### P4-3 — Typed preferences wrapper over `KeyValueStore`
+### P4-3 — Typed preferences wrapper over `KeyValueStore` ✅ DONE (2026-06-02)
 **Description:** Provide a small typed-key convenience API over the existing
 `KeyValueStore` (e.g. typed delegates with defaults) so hosts avoid stringly
 access.
 **Rationale (priority):** Quality-of-life on an already-working primitive; low
 risk.
+**Key decisions:**
+- **API shape:** `Preference<T> : kotlin.properties.ReadWriteProperty<Any?, T>` (`Preference.kt` in
+  `shared-database-api` `commonMain`), so a single object serves both imperative `pref.value` get/set
+  **and** `var x by pref` delegation. Created via `KeyValueStore` extension factories
+  `stringPreference`/`booleanPreference`/`intPreference`/`enumPreference`. Backing `internal
+  KeyValuePreference<T>` takes `read`/`write` lambdas so each type owns its encoding. Pure stdlib —
+  no new deps, SDK-free, no cinterop (`DemoKit`/`FrnkKit` stay clean).
+- **Type set:** String, Boolean (native) + Int and Enum **encoded losslessly over the String
+  primitive** — Int via `toString()`/`toIntOrNull()`, Enum via `name`/`firstOrNull { it.name == … }`
+  (**not** the throwing `enumValueOf`, so a renamed/removed constant degrades to the default). Unset
+  **or** undecodable values fall back to the default. `Long`/`Double`/nullable-string deliberately
+  deferred (no consumer; AC forbids contract changes — `Preference<T>` already supports `T = String?`
+  as a non-breaking future add).
+- **`KeyValueStore` contract unchanged:** every accessor rides on the existing
+  `getString`/`putString`/`getBoolean`/`putBoolean`/`remove`.
+- **Dogfood (real consumer):** `DefaultEntitlementManager` god-mode persistence now goes through
+  `keyValueStore.booleanPreference("frnk.god_mode", default = false)` instead of raw
+  `getBoolean`/`putBoolean` + a stringly `GOD_MODE_KEY`. Same key + same `getBoolean`/`putBoolean`
+  under the hood ⇒ **no persisted-data migration**; `DefaultEntitlementManagerTest` passes unchanged.
+- **Tests:** `shared-database-api` opted into `withHostTest {}` + a `commonTest` source set; added the
+  canonical `InMemoryKeyValueStore` fixture + `PreferenceTest` (round-trip + default per type, the
+  corrupt-Int and unknown-Enum fallback edges, `by`-delegation, `remove`, independence). Collapsing the
+  two other in-memory `FakeKeyValueStore` copies (monetization `commonTest`, demo `commonMain`) is out
+  of scope — test source sets aren't shared across modules.
 **Acceptance Criteria:**
-- [ ] Typed accessors with defaults; unit-tested.
-- [ ] `KeyValueStore` contract unchanged; lives in `shared-database-api`.
+- [x] Typed accessors with defaults; unit-tested. *(Evidence: `PreferenceTest` (13 tests) green via
+      `:shared-database-api:testAndroidHostTest`.)*
+- [x] `KeyValueStore` contract unchanged; lives in `shared-database-api` (`Preference.kt`).
+**Demo rule:** the typed-prefs layer is a build-time/library convenience with no UI of its own; it is
+transitively exercised in all three demo layers via the existing god-mode toggle (Settings → tap
+version 7×) that now persists through `booleanPreference` — `:shared-demo` (in-memory store, cross-
+platform), `androidDemoApp` (real `SharedPreferences`-backed store, device-verified), `iosDemoApp`
+(`DemoKit`, `NSUserDefaults`-backed). No new demo surface needed.
 
 ### P4-4 — Backfill tests for the existing design system
 **Description:** Add Compose/unit tests for the highest-value existing atoms and
@@ -553,15 +583,16 @@ P2-1 ✅ (navigation — FrnkNavHost over CMP navigation-compose; unblocks featu
         │
 P3-1 (PostHog)   P3-2 ✅ (RevenueCat entitlements) → P3-3 ✅ (paywall/purchase + frnk Pro layer + god mode)
         │
-P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 (typed prefs)   P4-4 (DS tests, needs P0-3)
+P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 ✅ (typed prefs)   P4-4 (DS tests, needs P0-3)
         ┊
         ┊  ⏸ DEFERRED until a networked/auth app is planned (local-storage-only for now):
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
 ```
 
 **Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, **P3-3 ✅ (paywall +
-frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, **P4-1 ✅ (molecules)**, and **P4-2 ✅ (organisms)**
-are done — the Atomic Design hierarchy (Atoms → Molecules → Organisms → Scaffolds) is now complete.
-Recommended next is **P4-3 (typed preferences wrapper)** (low-risk QoL on `KeyValueStore`) or
-**P3-1 (PostHog)** to round out analytics; **P4-4 (DS backfill tests)** once the P0-3 harness exists.
-P2-2 (verify `BackendChoice` swap) and P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.
+frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, **P4-1 ✅ (molecules)**, **P4-2 ✅ (organisms)**,
+and **P4-3 ✅ (typed preferences wrapper)** are done — the Atomic Design hierarchy (Atoms → Molecules →
+Organisms → Scaffolds) is complete and `KeyValueStore` now has a typed convenience layer.
+Recommended next is **P3-1 (PostHog)** to round out analytics, or **P4-4 (DS backfill tests)** now that
+the P0-3 harness exists. P2-2 (verify `BackendChoice` swap) and P1-2/P1-3/P1-4 stay deferred while apps
+are local-storage-only.

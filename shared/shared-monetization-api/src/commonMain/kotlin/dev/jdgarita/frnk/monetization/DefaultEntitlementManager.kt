@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.monetization
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.KeyValueStore
+import dev.jdgarita.frnk.database.booleanPreference
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,9 @@ class DefaultEntitlementManager(
     private val analytics: AnalyticsTracker,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : EntitlementManager {
-    private val _isGodMode = MutableStateFlow(keyValueStore.getBoolean(GOD_MODE_KEY, default = false))
+    /** Typed view over the persisted god-mode flag — same key/representation as a raw `putBoolean`. */
+    private val godModePref = keyValueStore.booleanPreference(GOD_MODE_KEY, default = false)
+    private val _isGodMode = MutableStateFlow(godModePref.value)
     override val isGodMode: StateFlow<Boolean> = _isGodMode.asStateFlow()
 
     /**
@@ -57,7 +60,7 @@ class DefaultEntitlementManager(
 
     override fun setGodMode(enabled: Boolean) {
         if (_isGodMode.value == enabled) return
-        keyValueStore.putBoolean(GOD_MODE_KEY, enabled)
+        godModePref.value = enabled
         analytics.trackCustom("god_mode_toggled", mapOf("enabled" to enabled))
         analytics.setUserProperty("god_mode", enabled.toString())
         // The combine derivation reacts to this and recomputes status/isPro + their user-properties.

@@ -14,7 +14,8 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`. Also
   holds `Feature` (opaque feature ids).
 - `monetization/DefaultEntitlementManager.kt` — the pure-Kotlin impl. `isPro = provider.isPro || godMode`;
-  god mode persisted via `KeyValueStore` (key `frnk.god_mode`); sets analytics user-properties
+  god mode persisted via `KeyValueStore`'s typed `booleanPreference("frnk.god_mode", default = false)`
+  (P4-3 — same key/representation as a raw `putBoolean`); sets analytics user-properties
   `is_pro`/`pro_source`/`god_mode` and emits the purchase funnel events.
 - `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode})`.
 - `monetization/ProProduct.kt` — SDK-free purchasable plan (`ProPlan{Weekly,Monthly,Yearly,Lifetime,Other}`,
