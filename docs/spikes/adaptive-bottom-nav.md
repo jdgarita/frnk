@@ -2,10 +2,28 @@
 
 - **Branch:** `spike/adaptive-bottom-nav`
 - **Date:** 2026-06-02
-- **Status:** Spike complete — both approaches built, compiled, and linked on Android + iOS. Recommendation below.
-- **Goal:** A bottom nav that reads as native on each platform (a frosted translucent bar on iOS, the
-  floating pill on Android), shipped as a reusable, host-themeable toolkit component. Android must stay on
-  `compose-unstyled` (no Material3). iOS should lean on Compose Multiplatform as much as possible.
+- **Status:** ✅ **Decided & shipped.** See *Outcome* below; the rest of this doc is the evaluation record.
+
+## Outcome (final decision)
+
+After evaluating four candidates (Pill / Haze / Native UITabBar / Calf) live in the demo, the maintainer chose:
+
+- **Bar: Calf's `AdaptiveNavigationBar` for both platforms** — a native UIKit `UITabBar` on iOS and a
+  **Material3 `NavigationBar` on Android**. Material3 is **accepted as a toolkit-wide dependency** for this
+  feature (the maintainer's explicit call), traded for a single maintained adaptive component.
+- **Home: a new `shared-ui-nav` module** owns the adaptive bar + the default scaffold + the Home/Settings tab
+  builder. It is `api`-aggregated by `:shared` and exported in FrnkKit, so **Material3 + Calf ship to every
+  consumer** — isolated to this one named module (`shared-ui-atoms` stays Material-free).
+- **Dropped: Haze and the own-interop Native UITabBar.** The frosted-glass imitation and the hand-rolled
+  no-Material3 interop were both removed once Calf-for-both was chosen.
+- **Default + override:** `FrnkAdaptiveBottomNavScaffold` + `rememberFrnkBottomNavState` provide a working
+  default that guarantees **Home + Settings** and lets hosts override the tabs and wire each tab's navigation.
+  The demo is a thin consumer (it uses the lower-level `FrnkAdaptiveBottomNavBar` with its own `FrnkNavHost`,
+  demonstrating the custom-nav override path).
+
+> Everything from *TL;DR* down is the original four-way evaluation, kept for the rationale and the rejected
+> options (notably: Native gets the same iOS UITabBar with **zero** Material3 — declined in favour of Calf's
+> maintained component, accepting M3 toolkit-wide).
 
 ## TL;DR
 

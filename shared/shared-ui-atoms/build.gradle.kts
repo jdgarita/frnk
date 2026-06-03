@@ -44,14 +44,6 @@ kotlin {
             // clean and the Android VIBRATE permission self-merges from multihaptic-core's manifest.
             implementation(libs.multihaptic.core)
             implementation(libs.multihaptic.compose)
-            // SPIKE (spike/adaptive-bottom-nav): Haze frosted-glass blur behind FrnkAdaptiveBottomNavBar.
-            // Pure Kotlin/Compose (no native cinterop), so DemoKit/FrnkKit XCFrameworks stay clean — same
-            // property as navigation/multihaptic. `haze` is `api` because `HazeState` is part of the atom's
-            // public signature (the host owns it and marks its scrollable content as the hazeSource); the
-            // `haze-blur` effect is an internal detail, so it stays `implementation`. `haze-materials` is
-            // intentionally NOT taken (it's the only Material3-adjacent module).
-            api(libs.haze)
-            implementation(libs.haze.blur)
         }
 
         // commonDebug: cross-platform source set for @Preview composables.

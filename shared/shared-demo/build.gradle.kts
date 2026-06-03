@@ -33,6 +33,7 @@ kotlin {
             export(projects.sharedUtils)
             export(projects.sharedUiApi)
             export(projects.sharedUiAtoms)
+            export(projects.sharedUiNav)
             export(projects.sharedBackendApi)
             export(projects.sharedDatabaseApi)
             export(projects.sharedMonetizationApi)
@@ -48,6 +49,9 @@ kotlin {
             api(projects.sharedUtils)
             api(projects.sharedUiApi)
             api(projects.sharedUiAtoms)
+            // Platform-adaptive bottom nav (Calf-backed). The demo consumes the toolkit default from here
+            // rather than carrying any nav-bar implementation itself.
+            api(projects.sharedUiNav)
             api(projects.sharedBackendApi)
             api(projects.sharedDatabaseApi)
             api(projects.sharedMonetizationApi)
@@ -66,14 +70,6 @@ kotlin {
             // middle "Stats" tab). Real consumers only need this if they likewise name Lucide icons
             // directly; otherwise every icon is overridable through FrnkThemeConfig.
             implementation(libs.icons.lucide)
-            // SPIKE (spike/adaptive-bottom-nav): Calf adaptive nav bar, for the A/B comparison against the
-            // Haze-based FrnkAdaptiveBottomNavBar. Calf renders a NATIVE UIKit UITabBar on iOS and a
-            // Material3 NavigationBar elsewhere — so it HARD-DEPENDS on compose.material3. We declare M3
-            // EXPLICITLY here to make the contamination boundary visible: it lives ONLY in :shared-demo,
-            // never in shared-ui-atoms / :shared / :iosApp / FrnkKit (the toolkit's "no Material3" rule).
-            // Both are pure Kotlin/Compose (no new native SPM SDK), so DemoKit still links under dynamic_lookup.
-            implementation(libs.calf.ui)
-            implementation(compose.material3)
         }
         // iOS-only native SDKs the demo opts into (kept out of commonMain so the Android demo +
         // DemoKit's common surface stay SDK-free):

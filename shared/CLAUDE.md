@@ -26,6 +26,8 @@ Keep this surface tiny. Adding a new top-level entry point here is a public-API 
 
 `commonMain` `api`-depends on:
 - All six `*-api` modules (utils, ui-api, ui-atoms, database-api, backend-api, monetization-api).
+- `shared-ui-nav` (platform-adaptive bottom navigation; **the toolkit's sole Material3 dependency** — it
+  ships in FrnkKit for every consumer, a deliberate trade isolated to that one module).
 - All four `*-impl` modules (database-impl, backend-firebase, backend-supabase, monetization-revenuecat).
 
 `koin.core` is `implementation` here because consumers get Koin via the impl modules' `api` exports anyway.

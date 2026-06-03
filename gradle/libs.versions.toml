@@ -21,11 +21,8 @@ crashkios = "0.9.0"
 supabase = "3.6.0"
 revenuecat = "3.0.2"
 multihaptic = "0.3.2"
-# SPIKE (spike/adaptive-bottom-nav): adaptive bottom-nav evaluation. 2.0.0-alpha02 is the
-# Haze line built against Kotlin 2.3.20 / CMP 1.11 (matches us) and the one that splits blur into
-# the separate `haze-blur` module. The 1.7.x line targets CMP 1.10 and has no `haze-blur`.
-haze = "2.0.0-alpha02"
-# SPIKE: Calf adaptive nav bar — drags in compose.material3, so it is QUARANTINED to :shared-demo only.
+# Calf adaptive nav bar: native UITabBar on iOS / Material3 NavigationBar on Android. Lives in the
+# :shared-ui-nav module (the toolkit's sole, deliberate Material3 dependency).
 calf = "0.12.0"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
@@ -83,13 +80,8 @@ revenuecat-result = { module = "com.revenuecat.purchases:purchases-kmp-result", 
 multihaptic-core = { module = "top.ltfan.multihaptic:multihaptic-core", version.ref = "multihaptic" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihaptic" }
 
-# SPIKE (spike/adaptive-bottom-nav). Haze: pure-Compose blur/frosted-glass. `haze` is effect-agnostic
-# core (no Material), `haze-blur` adds the blur effect. We deliberately do NOT take `haze-materials`
-# (its Material-style presets are the only M3-adjacent module). No native cinterop -> XCFrameworks stay clean.
-haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
-haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
-# SPIKE: Calf adaptive nav bar (native UITabBar on iOS / Material3 NavigationBar elsewhere). HARD M3 dep,
-# so it lives ONLY in :shared-demo for the comparison — never in shared-ui-atoms / :shared / :iosApp.
+# Calf adaptive nav bar (native UITabBar on iOS / Material3 NavigationBar on Android). Hosted in
+# :shared-ui-nav — the toolkit's single, deliberate Material3 dependency, shipped via :shared/FrnkKit.
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 
 # Compose Unstyled
