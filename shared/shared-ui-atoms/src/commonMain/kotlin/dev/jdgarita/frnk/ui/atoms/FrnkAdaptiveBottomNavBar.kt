@@ -22,8 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.theme.Theme
 import dev.chrisbanes.haze.HazeState
@@ -103,17 +105,20 @@ data class FrnkAdaptiveBottomNavBarState(
     val enabled: Boolean = true,
 )
 
-// iOS frosted-bar geometry — exact design metrics, kept as private dp vals (same precedent as the pill's
-// constants in FrnkBottomNavBar and FrnkSwitch's TrackWidth). Colors/blur still resolve from Theme tokens.
-private val IosBarContentHeight = 56.dp
-private val IosIconSize = 24.dp
+// iOS frosted-bar geometry — tuned toward UIKit's UITabBar proportions (≈49pt bar, ≈25pt glyphs, ≈10pt
+// labels), kept as private dp vals (same precedent as the pill's constants and FrnkSwitch's TrackWidth).
+// Colors/blur still resolve from Theme tokens. Starting values — fine-tune against a simulator.
+private val IosBarContentHeight = 50.dp
+private val IosIconSize = 25.dp
+private val IosLabelSize = 10.sp
 private val IosItemMinWidth = 56.dp
+private val IosIconLabelGap = 3.dp
 private val IosHairlineHeight = 1.dp
-private val IosFrostBlurRadius = 24.dp
+private val IosFrostBlurRadius = 30.dp
 
-// Translucency of the frost's own surface fill layered over the blurred backdrop. Low enough that the
-// content behind stays legibly diffused (the iOS material look), high enough to keep icon contrast.
-private const val IOS_FROST_ALPHA = 0.55f
+// Translucency of the frost's own surface fill layered over the blurred backdrop — tuned toward UIKit's
+// `systemChromeMaterial` (fairly opaque), high enough to keep icon/label contrast over busy content.
+private const val IOS_FROST_ALPHA = 0.72f
 
 /** Shared layout metrics for [FrnkAdaptiveBottomNavBar], per [FrnkAdaptiveNavStyle]. */
 object FrnkAdaptiveBottomNavBarDefaults {
@@ -196,7 +201,7 @@ private fun IosFrostedBar(
                         .fillMaxWidth()
                         .height(IosBarContentHeight)
                         .windowInsetsPadding(WindowInsets.navigationBars),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 state.items.forEachIndexed { index, item ->
@@ -239,14 +244,24 @@ private fun IosFrostedItem(
                     onClick = onClick,
                 ).padding(horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(IosIconLabelGap),
     ) {
         ProvideContentColor(tint) {
             FrnkIcon(
                 state = FrnkIconState(imageVector = item.icon, contentDescription = item.label, size = IosIconSize),
             )
-            // Icon-with-label is the UITabBar idiom; the label reads the same animated content color.
-            FrnkText(state = FrnkTextState.BodySmall(text = item.label, color = null, singleLine = true))
+            // Icon-with-label is the UITabBar idiom; the small medium-weight caption matches the system tab
+            // label. Reads the same animated content color via LocalContentColor.
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text = item.label,
+                        color = null,
+                        fontSize = IosLabelSize,
+                        fontWeight = FontWeight.Medium,
+                        singleLine = true,
+                    ),
+            )
         }
     }
 }

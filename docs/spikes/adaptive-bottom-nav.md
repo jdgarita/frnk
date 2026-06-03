@@ -23,13 +23,26 @@ only, as the A/B reference. See [Recommendation](#recommendation).
 
 ## What was built
 
-A live three-way A/B harness, switchable from a segmented control on the demo's Home tab ("Pill / Haze / Calf"):
+A live **four-way** A/B harness, switchable from a segmented control on the demo's Home tab
+("Pill / Haze / Native / Calf"):
 
 | Variant | File | iOS | Android |
 |---|---|---|---|
 | **Pill** (control) | existing `FrnkBottomNavBar` | floating pill | floating pill |
 | **Haze** (candidate) | `FrnkAdaptiveBottomNavBar` (`shared-ui-atoms`) | full-width frosted bar (icon+label, blurs content behind it, fills the home-indicator safe area) | delegates to the pill |
+| **Native** (candidate) | `NativeBottomBar` (`shared-demo`, `expect`/`actual`) | **real UIKit `UITabBar`** via `UIKitView` interop — SF Symbols, system material, native selection; brand tint from `FrnkTheme`. **No Material3.** | delegates to the pill |
 | **Calf** (reference) | `CalfAdaptiveBottomNavBar` (`shared-demo` only) | native UIKit `UITabBar` | Material3 `NavigationBar` |
+
+> **Important distinction.** The **Haze** bar is a Compose-drawn *imitation* of the iOS frosted look — it
+> will never be pixel-identical to a stock `UITabBar` (no SF Symbols, no UIKit vibrancy material, Compose
+> typography). The **Native** variant is a *genuine* `UITabBar`. The trade is: Native looks exactly like iOS
+> but is UIKit interop (so it can't be Haze-sampled, follows UIKit appearance beyond the tint, and its
+> collapse-on-scroll/haptics would need bridging); Haze stays pure Compose, fully themeable, and unified with
+> the toolkit's ripple/haptics/collapsible-bars. **Native is the no-Material3 answer to Calf** — same real
+> UITabBar, without pulling Material3.
+
+The Haze frosted bar was also **tuned toward UITabBar proportions** (≈50dp bar, ≈25dp glyphs, 10sp medium
+labels, even item spacing, a more chrome-like frost) — starting values to fine-tune on a simulator.
 
 Key implementation choices:
 

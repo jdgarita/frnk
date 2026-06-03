@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,6 +43,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.demo.nav.CalfAdaptiveBottomNavBar
+import dev.jdgarita.frnk.demo.nav.NativeBottomBar
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.frnkPaywallDestination
@@ -400,6 +404,8 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
  *  - [Baseline] — the toolkit's current `FrnkBottomNavBar` floating pill (the control group).
  *  - [HazeAdaptive] — the candidate `FrnkAdaptiveBottomNavBar`: a Haze-frosted full-width bar on iOS, the
  *    pill on Android. Pure Compose, no Material3, stays in the toolkit.
+ *  - [NativeUIKit] — `NativeBottomBar`: a *real* UIKit `UITabBar` on iOS (interop, no Material3), the pill
+ *    on Android. The "true native, no Material3" candidate.
  *  - [CalfAdaptive] — Calf's `AdaptiveNavigationBar`: a native UIKit `UITabBar` on iOS, Material3 elsewhere.
  *    Demo-only (drags in Material3).
  */
@@ -408,8 +414,12 @@ private enum class DemoNavVariant(
 ) {
     Baseline("Pill"),
     HazeAdaptive("Haze"),
+    NativeUIKit("Native"),
     CalfAdaptive("Calf"),
 }
+
+// Native UITabBar content height (≈UIKit's 49pt); the demo adds the bottom safe-area inset on top.
+private val NativeTabBarContentHeight = 49.dp
 
 /** The floating bottom-nav bar overlay, dispatching to the selected [DemoNavVariant] (SPIKE). */
 @Composable
@@ -450,6 +460,22 @@ private fun DemoBottomBar(
                         FrnkAdaptiveBottomNavBarDefaults.barHeightWithSafeArea(hazeStyle),
                     ),
             )
+
+        DemoNavVariant.NativeUIKit -> {
+            // Real UITabBar on iOS / pill on Android. Give it the native content height + bottom safe-area
+            // inset, and slide that full height off-screen on collapse.
+            val nativeHeight = NativeTabBarContentHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            NativeBottomBar(
+                items = items,
+                selectedIndex = selectedIndex,
+                onItemSelected = onSelect,
+                modifier =
+                    modifier
+                        .fillMaxWidth()
+                        .height(nativeHeight)
+                        .collapsibleBarOffset(collapsibleBars, nativeHeight),
+            )
+        }
 
         DemoNavVariant.CalfAdaptive ->
             CalfAdaptiveBottomNavBar(
