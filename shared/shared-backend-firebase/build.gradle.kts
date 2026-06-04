@@ -1,12 +1,11 @@
 plugins {
-    id("frnk.kmp.library")
+    id("frnk.kmp.library.hosttest")
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.backend.firebase"
-        withHostTest {}
     }
     sourceSets {
         commonMain.dependencies {
@@ -24,9 +23,5 @@ kotlin {
         // (the Crashlytics Android SDK already hooks uncaught JVM exceptions). It has no JVM
         // variant, so it must stay out of commonMain (would break compileAndroidMain).
         iosMain.dependencies { implementation(libs.crashkios.crashlytics) }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
-        }
     }
 }

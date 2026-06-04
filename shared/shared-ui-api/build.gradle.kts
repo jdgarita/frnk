@@ -1,12 +1,11 @@
 plugins {
-    id("frnk.kmp.library")
+    id("frnk.kmp.library.hosttest")
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.ui.api"
-        withHostTest {}
     }
     sourceSets {
         commonMain.dependencies {
@@ -16,10 +15,6 @@ kotlin {
             // Type-safe nav routes (ToolkitRoute is @Serializable). Core only — navigation-compose
             // encodes routes via its own SavedStateEncoder, so kotlinx-serialization-json is not needed.
             api(libs.kotlinx.serialization.core)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

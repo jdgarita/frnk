@@ -1,12 +1,11 @@
 plugins {
-    id("frnk.kmp.library")
+    id("frnk.kmp.library.hosttest")
     alias(libs.plugins.sqldelight)
 }
 
 kotlin {
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.database.impl"
-        withHostTest {}
     }
     sourceSets {
         commonMain.dependencies {
@@ -14,10 +13,6 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.settings.core)
             implementation(libs.settings.coroutines)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
         }
         androidMain.dependencies { implementation(libs.sqldelight.android.driver) }
         iosMain.dependencies { implementation(libs.sqldelight.native.driver) }

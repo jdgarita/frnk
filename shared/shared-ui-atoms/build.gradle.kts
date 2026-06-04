@@ -1,9 +1,11 @@
 plugins {
-    id("frnk.kmp.library")
-    alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.kotlin.compose)
+    id("frnk.kmp.library.compose")
     alias(libs.plugins.kotlin.serialization)
 }
+
+// NB: this module does NOT use frnk.kmp.library.hosttest — its tests live in an `androidHostTest`
+// source set (Compose UI tests under Robolectric), and it needs the `isIncludeAndroidResources = true`
+// withHostTest variant below, not the plain withHostTest + commonTest deps the hosttest plugin adds.
 
 kotlin {
     // Apply the default source-set hierarchy explicitly. This module adds a custom `commonDebug`
@@ -23,9 +25,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUiApi)
-            api(compose.runtime)
-            api(compose.foundation)
-            api(compose.ui)
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
             // Lifecycle-aware Compose collection (collectAsStateWithLifecycle / repeatOnLifecycle)

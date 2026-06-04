@@ -1,11 +1,10 @@
 plugins {
-    id("frnk.kmp.library")
+    id("frnk.kmp.library.hosttest")
 }
 
 kotlin {
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.monetization.revenuecat"
-        withHostTest {}
     }
     sourceSets {
         commonMain.dependencies {
@@ -13,9 +12,6 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.revenuecat.core)
             implementation(libs.revenuecat.result)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }

@@ -1,24 +1,17 @@
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
+    id("frnk.kmp.base")
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
 }
 
 kotlin {
-    jvmToolchain(17)
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.shared"
-        compileSdk =
-            libs.versions.android.compileSdk
-                .get()
-                .toInt()
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
         withHostTest {}
     }
+    // Bare iOS targets — NO framework: :shared is aggregated into FrnkKit by :iosApp (which exports it),
+    // so it must not declare its own framework binary. That's why :shared uses frnk.kmp.base, not
+    // frnk.kmp.library (which would add a framework).
     iosArm64()
     iosSimulatorArm64()
     sourceSets {

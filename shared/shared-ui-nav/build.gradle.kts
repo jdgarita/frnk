@@ -1,20 +1,15 @@
 plugins {
-    id("frnk.kmp.library")
-    alias(libs.plugins.compose.multiplatform)
-    alias(libs.plugins.kotlin.compose)
+    id("frnk.kmp.library.compose")
+    id("frnk.kmp.library.hosttest")
 }
 
 kotlin {
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.ui.bottomnav"
-        withHostTest {}
     }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUiAtoms)
-            api(compose.runtime)
-            api(compose.foundation)
-            api(compose.ui)
 
             // The platform-adaptive bottom nav: Calf renders a native UIKit UITabBar on iOS and a
             // Material3 NavigationBar on Android. This is the SOLE place the toolkit takes Material3 —
@@ -24,10 +19,6 @@ kotlin {
             // consumer's existing dynamic_lookup.
             implementation(libs.calf.ui)
             implementation(compose.material3)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

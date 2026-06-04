@@ -8,12 +8,15 @@ repositories {
     gradlePluginPortal()
 }
 
-// Plugin-marker dependencies so the precompiled `frnk.kmp.library` convention plugin can apply the
-// Kotlin Multiplatform + AGP-9 KMP-Android-library plugins. Versions resolve from the shared catalog
-// (imported via settings.gradle.kts) — no version duplication.
+// Plugin-marker dependencies so the precompiled convention plugins can apply these plugins:
+//  - frnk.kmp.library         → Kotlin Multiplatform + AGP-9 KMP-Android-library
+//  - frnk.kmp.library.compose → + Compose Multiplatform plugin pair
+// Versions resolve from the shared catalog (imported via settings.gradle.kts) — no version duplication.
 dependencies {
     implementation(libs.plugins.kotlin.multiplatform.toMarker())
     implementation(libs.plugins.android.kotlin.multiplatform.library.toMarker())
+    implementation(libs.plugins.compose.multiplatform.toMarker())
+    implementation(libs.plugins.kotlin.compose.toMarker())
 }
 
 // A plugin id `x.y.z` is published with the marker artifact `x.y.z:x.y.z.gradle.plugin:<version>`.
