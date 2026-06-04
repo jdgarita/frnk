@@ -34,7 +34,6 @@ import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
-import dev.jdgarita.frnk.ui.theme.iconCoffee
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.labelSmall
 import dev.jdgarita.frnk.ui.theme.shapeFull
@@ -268,25 +267,9 @@ private fun SettingsFooter(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FrnkText(
-                state = FrnkTextState.BodySmall(text = footer.text, color = colorOnSurfaceVariant),
-            )
-            if (footer.showCoffeeIcon) {
-                FrnkIcon(
-                    state =
-                        FrnkIconState(
-                            imageVector = Theme[icons][iconCoffee],
-                            contentDescription = null,
-                            size = FrnkIconSize.sm,
-                            tint = colorOnSurfaceVariant,
-                        ),
-                )
-            }
-        }
+        FrnkText(
+            state = FrnkTextState.BodySmall(text = footer.text, color = colorOnSurfaceVariant),
+        )
         FrnkText(
             state =
                 FrnkTextState.Raw(

@@ -32,7 +32,7 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - `bootstrapFrnkKit` (iOS entry point) gained an `observability` parameter (additive, default `ObservabilityChoice.None`) so iOS hosts can select Firebase observability and trigger the CrashKiOS hook.
 - `FrnkTheme` gained a `haptics: HapticFeedback = rememberFrnkHaptics()` parameter (additive, default-provided) and now installs `LocalFrnkHaptics`. The default Settings catalog (`rememberDefaultSettingsState`) groups Notifications + the new "Haptic feedback" toggle under a titled **"Preferences"** section (Notifications was previously an untitled section).
 - `FrnkScreenScaffold` gained an additive `containerColor: Color = Theme[colors][colorBackground]` parameter, painted behind the whole screen (overridable to `colorSurface` / `Color.Transparent`) so every screen on the standard template follows the active light/dark palette.
-- The default Settings footer is now the minimalist **"Built by JD in 🇨🇷"** (`stringSettingsFooter`), with the trailing coffee icon off by default in the catalog (`SettingsFooterState.showCoffeeIcon` is still opt-in for hosts that want it).
+- The default Settings footer is now the minimalist **"Built by JD in 🇨🇷"** (`stringSettingsFooter`). The footer's trailing coffee icon was dropped — `SettingsFooterState` no longer has a `showCoffeeIcon` field (it renders just the text + version).
 
 ### Fixed
 

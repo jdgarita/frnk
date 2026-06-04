@@ -300,7 +300,7 @@ fun rememberDefaultSettingsState(
         SettingsScreenState(
             title = title,
             sections = sections,
-            footer = SettingsFooterState(text = footerText, showCoffeeIcon = false, version = version),
+            footer = SettingsFooterState(text = footerText, version = version),
         )
     }
 }
