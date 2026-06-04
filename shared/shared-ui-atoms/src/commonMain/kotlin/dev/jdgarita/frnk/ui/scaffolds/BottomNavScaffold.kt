@@ -59,22 +59,17 @@ fun BottomNavScaffold(
 
 /**
  * Stateless renderer: the selected destination fills the whole area and the [FrnkBottomNavBar] floats
- * on top, aligned to the bottom. Because the bar's wrapper is transparent, the destination shows
- * through around and behind the pill as it scrolls. [tabContent] is handed a [PaddingValues] whose
- * bottom equals [FrnkBottomNavBarDefaults.BarHeight] — apply it to scrollable content so the last
- * item can rest just above the pill rather than under it. [onIntent] receives
+ * on top, pinned to the bottom and permanently visible. Because the bar's wrapper is transparent, the
+ * destination shows through around and behind the pill as it scrolls. [tabContent] is handed a
+ * [PaddingValues] whose bottom equals [FrnkBottomNavBarDefaults.BarHeight] — apply it to scrollable
+ * content so the last item can rest just above the pill rather than under it. [onIntent] receives
  * [BottomNavIntent.TabSelected] when a tab is tapped.
- *
- * Pass [collapsibleBars] (the same instance the destinations' [FrnkScreenScaffold]s use) to make the
- * bar slide down off-screen as content scrolls down and back up when it scrolls up — in lock-step with
- * the top bar. Leave it null for a permanently visible bar.
  */
 @Composable
 fun BottomNavScaffoldContent(
     state: BottomNavScaffoldState,
     onIntent: (BottomNavIntent) -> Unit,
     modifier: Modifier = Modifier,
-    collapsibleBars: CollapsibleBarsState? = null,
     tabContent: @Composable (tab: BottomNavTab, contentPadding: PaddingValues) -> Unit,
 ) {
     Box(
@@ -95,17 +90,7 @@ fun BottomNavScaffoldContent(
                     selectedIndex = state.selectedIndex,
                 ),
             onItemSelected = { onIntent(BottomNavIntent.TabSelected(it)) },
-            modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .then(
-                        // Slide down off the bottom edge to hide, in lock-step with the top bar.
-                        if (collapsibleBars != null) {
-                            Modifier.collapsibleBarOffset(collapsibleBars, FrnkBottomNavBarDefaults.BarHeight)
-                        } else {
-                            Modifier
-                        },
-                    ),
+            modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
 }

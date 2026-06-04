@@ -9,16 +9,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.scaffolds.CollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
-import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
 /**
  * The toolkit's standard VM-backed screen — the state-hosting primitive host apps build their own
  * screens on. Binds an [MviViewModel] to the [FrnkScreenScaffold] page template so a host writes one
  * call and gets: lifecycle-aware state collection, a stateless `(state, onIntent)` content slot, the
- * floating collapsing top bar, and (optionally) one-shot effect handling.
+ * fixed top bar, and (optionally) one-shot effect handling.
  *
  * ```
  * FrnkMviScreen(
@@ -38,15 +36,14 @@ import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
  * the host); the screen then just binds state + renders the scaffold.
  *
  * The top-bar callbacks ([onNavigationClick] / [onActionClick] / [onSearchQueryChange] /
- * [onSearchClose]) and [collapsibleBars] / [bottomInset] / [contentPadding] mirror [FrnkScreenScaffold]
- * one-to-one; wire the callbacks to `viewModel::send` when the bar should drive intents.
+ * [onSearchClose]) and [bottomInset] / [contentPadding] mirror [FrnkScreenScaffold] one-to-one; wire
+ * the callbacks to `viewModel::send` when the bar should drive intents.
  */
 @Composable
 fun <S : UiState, I : UiIntent, E : UiEffect> FrnkMviScreen(
     viewModel: MviViewModel<S, I, E>,
     topBar: FrnkTopAppBarState,
     modifier: Modifier = Modifier,
-    collapsibleBars: CollapsibleBarsState = rememberCollapsibleBarsState(),
     bottomInset: Dp = 0.dp,
     contentPadding: PaddingValues = PaddingValues(FrnkSpacing.lg),
     onNavigationClick: () -> Unit = {},
@@ -64,7 +61,6 @@ fun <S : UiState, I : UiIntent, E : UiEffect> FrnkMviScreen(
 
     FrnkScreenScaffold(
         topBar = topBar,
-        collapsibleBars = collapsibleBars,
         modifier = modifier,
         bottomInset = bottomInset,
         contentPadding = contentPadding,

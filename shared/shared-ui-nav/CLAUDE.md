@@ -27,10 +27,14 @@ consumer's existing `-undefined dynamic_lookup`.
   bars take selected = `colorPrimary`, unselected = `colorOnSurfaceVariant` (Android adds a
   `colorPrimaryContainer` indicator) via Calf's `UIKitTabBarConfiguration` on iOS (→ `UITabBar.tintColor`) and
   `NavigationBarItemDefaults.colors(...)` on Android, so the host's brand flows through instead of iOS system
-  blue / the Material baseline. (Caveat: iOS 26 "Liquid Glass" ignores the *unselected* tint; the selected
-  brand tint still applies.) Use directly only when wiring your own selected-tab state / navigation (as the
-  demo does); most hosts use the scaffold. For the Material-free floating pill, use `FrnkBottomNavBar` in
-  `shared-ui-atoms` instead.
+  blue / the Material baseline. The bar **surface** is themed too: `containerColor = colorSurface` /
+  `contentColor = colorOnSurface` are passed to `AdaptiveNavigationBar`, otherwise the Android Material3
+  `NavigationBar` would fall back to `NavigationBarDefaults.containerColor` (the unthemed Material baseline,
+  i.e. light) and **ignore dark mode**. (Calf's iOS `UITabBar` takes no background token in 0.12.0 — it keeps
+  its native translucent material, the desired native look there.) (Caveat: iOS 26 "Liquid Glass" ignores the
+  *unselected* tint; the selected brand tint still applies.) Use directly only when wiring your own
+  selected-tab state / navigation (as the demo does); most hosts use the scaffold. For the Material-free
+  floating pill, use `FrnkBottomNavBar` in `shared-ui-atoms` instead.
 - `FrnkAdaptiveBottomNavScaffold.kt` — `FrnkAdaptiveBottomNavScaffold` (VM-backed) + `…Content` (stateless).
   The **default** scaffold: owns which tab is selected (reusing `BottomNavViewModel` + `BottomNavScaffoldState`
   from atoms, so `BottomNavEffect.TabSelected` behaves identically to the pill `BottomNavScaffold`) and pins

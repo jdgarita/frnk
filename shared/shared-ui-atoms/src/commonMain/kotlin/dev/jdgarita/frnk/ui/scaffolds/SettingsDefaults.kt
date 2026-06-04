@@ -49,7 +49,7 @@ import dev.jdgarita.frnk.ui.theme.strings
  * Builds a batteries-included [SettingsScreenState] from the toolkit's default catalogue: a theme
  * toggle, an optional notifications switch, a subscription section driven by [isPro] (see below), a
  * support section (Send Feedback, Rate, Show Onboarding), a legal section (Privacy, Terms), and the
- * "Made in 🇨🇷 by JD with ☕ / [version]" footer. All copy and icons resolve from `FrnkStrings` /
+ * "Built by JD in 🇨🇷 / [version]" footer. All copy and icons resolve from `FrnkStrings` /
  * `FrnkIcons`, so hosts re-skin every label and glyph through `FrnkThemeConfig`.
  *
  * The subscription section follows a strict Free/Pro visibility matrix:

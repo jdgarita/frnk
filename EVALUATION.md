@@ -83,8 +83,7 @@ apps are local-storage-only. The remaining headline gaps are **RevenueCat** and 
   `FrnkTopAppBar`, plus `FrnkSkeleton` + a full `placeholder/` package
   (Shimmer/Fade/Coordinator).
 - **Scaffolds (4+):** `OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`,
-  `FrnkScreenScaffold`, with `CollapsibleBarsState` scroll coordination and
-  `FeedbackEmailLauncher`.
+  `FrnkScreenScaffold` (fixed top bar + bottom nav), and `FeedbackEmailLauncher`.
 - **Previews infra:** dedicated `commonDebug` source set with `PreviewSurface`
   and per-atom/scaffold preview files.
 - **No-Material constraint holds:** repo-wide search returns zero Material
@@ -158,8 +157,8 @@ apps are local-storage-only. The remaining headline gaps are **RevenueCat** and 
   `testAndroidHostTest :androidDemoApp:testDebugUnitTest` and executes real tests.
   The earlier `testDebugUnitTest` reference was the root cause of the no-op gate and
   has been corrected across the docs.
-- **Remaining:** broader coverage (scaffold reducers, `CollapsibleBarsState`, atoms)
-  is still open — see BACKLOG P4-4. Requirement §5 is now partially met.
+- **Remaining:** broader coverage (scaffold reducers, atoms) is still open — see
+  BACKLOG P4-4. Requirement §5 is now partially met.
 
 ---
 

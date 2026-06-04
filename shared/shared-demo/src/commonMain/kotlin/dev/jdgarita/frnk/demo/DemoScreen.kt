@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -24,6 +24,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
@@ -83,21 +84,18 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
-import dev.jdgarita.frnk.ui.scaffolds.CollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
-import dev.jdgarita.frnk.ui.scaffolds.SettingsClickableRowState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreen
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
 import dev.jdgarita.frnk.ui.scaffolds.rememberBottomNavScaffoldState
-import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
@@ -113,7 +111,6 @@ import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconError
-import dev.jdgarita.frnk.ui.theme.iconManageSubscription
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconPrivacy
 import dev.jdgarita.frnk.ui.theme.iconRestore
@@ -214,13 +211,8 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         )
     val tabRoutes = remember { listOf<DemoRoute>(DemoRoute.Home, DemoRoute.Components, DemoRoute.Settings) }
 
-    // A single collapse coordinator shared by every destination's top bar and the one floating bottom
-    // bar, so they hide/reveal together on scroll. Reset to "shown" on every destination change — keyed
-    // on the back-stack entry id (unique per instance), so even two ComponentDetail(name)s reset.
-    val collapsibleBars = rememberCollapsibleBarsState()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    LaunchedEffect(backStackEntry?.id) { collapsibleBars.reset() }
 
     // The tab route that owns the current destination — drives the pill highlight (its index in
     // tabRoutes) and whether the bar shows at all. Pushed full screens (Onboarding / Paywall) own no
@@ -251,7 +243,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             frnkComposable<DemoRoute.Home> {
                 HomeTab(
                     vm = vm,
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onEffect = onEffect,
                 )
@@ -260,7 +251,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                 ComponentsListScreen(
                     state = state,
                     onIntent = vm::send,
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onOpenComponent = { name -> navigator.navigate(DemoRoute.ComponentDetail(name)) },
                 )
@@ -268,7 +258,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             frnkComposable<DemoRoute.ComponentDetail> { route ->
                 ComponentDetailScreen(
                     name = route.name,
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onBack = { navigator.popBackStack() },
                 ) {
@@ -278,7 +267,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             frnkComposable<DemoRoute.Settings> {
                 SettingsTab(
                     initialState = demoSettingsState(appearanceController.appearance, state.isPro, state.isGodMode),
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onEffect = settingsHandler,
                     // Re-seed the settings VM when entitlement state changes so the Subscription section
@@ -359,7 +347,6 @@ private val DemoBottomBarHeight = 80.dp
 @Composable
 private fun HomeTab(
     vm: DemoViewModel,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onEffect: (DemoEffect) -> Unit,
 ) {
@@ -378,7 +365,6 @@ private fun HomeTab(
                 title = "frnk",
                 actions = if (homeState.isPro) emptyList() else listOf(upgradeAction),
             ),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         onActionClick = { action -> if (action.key == upgradeAction.key) vm.send(DemoIntent.RequestUpgrade) },
     ) { state, onIntent, padding ->
@@ -542,7 +528,6 @@ private fun HomeTab(
 private fun ComponentsListScreen(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onOpenComponent: (String) -> Unit,
 ) {
@@ -567,7 +552,6 @@ private fun ComponentsListScreen(
                 searchQuery = query,
                 searchPlaceholder = "Search components",
             ),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         onActionClick = { onIntent(DemoIntent.SearchOpened) },
         onSearchQueryChange = { onIntent(DemoIntent.SearchQueryChanged(it)) },
@@ -635,14 +619,13 @@ private fun ComponentRow(
 
 /**
  * Pushed detail destination for a single component — its name in the top bar over a scrollable list of
- * all that component's variants. Uses the same [FrnkScreenScaffold] template as every other screen (so
- * its bars collapse on scroll too). Back is handled by the `FrnkNavHost` (system back / swipe-back pop
- * the stack automatically); the top bar's back arrow calls [onBack].
+ * all that component's variants. Uses the same [FrnkScreenScaffold] template as every other screen.
+ * Back is handled by the `FrnkNavHost` (system back / swipe-back pop the stack automatically); the top
+ * bar's back arrow calls [onBack].
  */
 @Composable
 private fun ComponentDetailScreen(
     name: String,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onBack: () -> Unit,
     content: @Composable () -> Unit,
@@ -654,7 +637,6 @@ private fun ComponentDetailScreen(
                 navigationIcon = Theme[icons][iconBack],
                 navigationContentDescription = "Back",
             ),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         onNavigationClick = onBack,
     ) { padding ->
@@ -679,15 +661,25 @@ private fun ComponentDetailScreen(
 @Composable
 private fun SettingsTab(
     initialState: SettingsScreenState,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onEffect: (SettingsEffect) -> Unit,
     vmKey: String? = null,
 ) {
     FrnkScreenScaffold(
         topBar = FrnkTopAppBarState(title = "Settings"),
-        collapsibleBars = collapsibleBars,
+        // SettingsScreenContent paints its own colorBackground (so it works standalone too), so let the
+        // scaffold's backdrop be transparent here to avoid a redundant full-screen overdraw.
+        containerColor = Color.Transparent,
         bottomInset = bottomInset,
+        // Extra bottom padding so the footer/version clears the floating bottom nav bar with breathing
+        // room (the default lg leaves it sitting right on the bar; xl gives a more comfortable gap).
+        contentPadding =
+            PaddingValues(
+                start = FrnkSpacing.lg,
+                top = FrnkSpacing.lg,
+                end = FrnkSpacing.lg,
+                bottom = FrnkSpacing.xl,
+            ),
     ) { padding ->
         SettingsScreen(
             initialState = initialState,
@@ -1313,12 +1305,10 @@ private fun demoSettingsState(
 @Composable
 private fun demoExtraSettingsSections(): List<SettingsSectionState> {
     // Haptic feedback lives in the toolkit's *default* catalog now (a real `LocalFrnkHaptics`-backed
-    // toggle), so the demo no longer hand-rolls a haptics row — it just appends a couple of demo-only
-    // rows to keep the Settings screen long enough that the collapsing bars engage.
+    // toggle), so the demo no longer hand-rolls a haptics row — it just appends a demo-only Privacy
+    // section to keep the Settings screen long enough that the collapsing bars engage.
     val analyticsIcon = Theme[icons][iconPrivacy]
-    val accountIcon = Theme[icons][iconManageSubscription]
-    val signOutIcon = Theme[icons][iconRestore]
-    return remember(analyticsIcon, accountIcon, signOutIcon) {
+    return remember(analyticsIcon) {
         fun rowIcon(vector: ImageVector) = FrnkIconState(imageVector = vector, contentDescription = null, tint = colorPrimary)
         listOf(
             SettingsSectionState(
@@ -1331,24 +1321,6 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
                             title = "Share analytics",
                             subtitle = "Help improve the app",
                             checked = true,
-                        ),
-                    ),
-            ),
-            SettingsSectionState(
-                title = "Account",
-                rows =
-                    listOf(
-                        SettingsClickableRowState(
-                            id = "manage_account",
-                            icon = rowIcon(accountIcon),
-                            title = "Manage account",
-                            action = SettingsAction.Custom("manage_account"),
-                        ),
-                        SettingsClickableRowState(
-                            id = "sign_out",
-                            icon = rowIcon(signOutIcon),
-                            title = "Sign out",
-                            action = SettingsAction.Custom("sign_out"),
                         ),
                     ),
             ),

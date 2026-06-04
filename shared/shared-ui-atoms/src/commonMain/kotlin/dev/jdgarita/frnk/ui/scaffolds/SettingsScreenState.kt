@@ -100,13 +100,12 @@ data class SettingsSectionState(
 
 /**
  * Footer copy. [text] defaults (via the catalog) to the `stringSettingsFooter` token —
- * "Made in 🇨🇷 by JD with" — followed by a coffee icon when [showCoffeeIcon] is true. [version] is
- * the *host app's* version string (the host passes its own `BuildConfig.versionName`).
+ * "Built by JD in 🇨🇷". [version] is the *host app's* version string (the host passes its own
+ * `BuildConfig.versionName`).
  */
 @Immutable
 data class SettingsFooterState(
     val text: String,
-    val showCoffeeIcon: Boolean = true,
     val version: String,
 )
 
