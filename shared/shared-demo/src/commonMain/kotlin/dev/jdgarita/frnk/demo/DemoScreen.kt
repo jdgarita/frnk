@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -686,6 +687,15 @@ private fun SettingsTab(
         topBar = FrnkTopAppBarState(title = "Settings"),
         collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
+        // Extra bottom padding so the footer/version clears the floating bottom nav bar with breathing
+        // room (the default lg leaves it sitting right on the bar; xl gives a more comfortable gap).
+        contentPadding =
+            PaddingValues(
+                start = FrnkSpacing.lg,
+                top = FrnkSpacing.lg,
+                end = FrnkSpacing.lg,
+                bottom = FrnkSpacing.xl,
+            ),
     ) { padding ->
         SettingsScreen(
             initialState = initialState,
