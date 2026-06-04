@@ -8,10 +8,21 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+    // Apply the default source-set hierarchy explicitly. This module adds a custom `commonDebug`
+    // intermediate (cross-platform @Preview code) via manual `dependsOn` edges below; those edges
+    // otherwise make KGP skip auto-applying the default template and emit a "template not applied"
+    // warning. Calling it here applies the template (the standard commonMain → android/ios… graph)
+    // and leaves the commonDebug edges as additive parents on top.
+    applyDefaultHierarchyTemplate()
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.ui.atoms"
         compileSdk = ProjectConfiguration.COMPILE_SDK
         minSdk = ProjectConfiguration.MIN_SDK
+        // P4-4: design-system tests run as JVM host tests (testAndroidHostTest) under Robolectric.
+        // Robolectric needs the merged Android resources/manifest to inflate the Compose test host.
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
     }
     listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_ui_atoms" } }
     sourceSets {
@@ -67,5 +78,20 @@ kotlin {
         }
         val iosArm64Main by getting { dependsOn(commonDebug) }
         val iosSimulatorArm64Main by getting { dependsOn(commonDebug) }
+
+        // P4-4: Compose UI tests for the highest-value atoms. They drive the headless atoms through
+        // a real composition (runComposeUiTest) on the JVM host via Robolectric, so they run under
+        // `testAndroidHostTest` (what CI gates) with no device/emulator. Android-host-only — the
+        // Compose test runtime + Robolectric have no common/iOS variant, so this stays out of
+        // commonTest (matches shared-database-impl's androidHostTest-scoped JDBC driver precedent).
+        getByName("androidHostTest").dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.compose.ui.test)
+            // Registers androidx.activity.ComponentActivity in the test manifest so the Compose test
+            // host (runComposeUiTest) can launch it under Robolectric.
+            implementation(libs.androidx.compose.ui.test.manifest)
+            implementation(libs.robolectric)
+        }
     }
 }

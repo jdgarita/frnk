@@ -21,6 +21,15 @@ crashkios = "0.9.0"
 supabase = "3.6.0"
 revenuecat = "3.0.2"
 multihaptic = "0.3.2"
+robolectric = "4.15.1"
+# AndroidX Compose UI version that compose-multiplatform 1.11.0 resolves to on Android — used only to
+# pin the matching ui-test-manifest artifact (provides the ComponentActivity the Compose test host launches).
+# ⚠️ BUMP TOGETHER WITH `compose-multiplatform`: this is the lone hand-pinned AndroidX Compose version in
+# the catalog (everything else routes through the CMP plugin). On a CMP upgrade, re-resolve the value via
+# `./gradlew :shared-ui-atoms:dependencies --configuration androidHostTestRuntimeClasspath | grep 'compose.ui:ui:'`
+# and update this to match, or ui-test-manifest can lag the rest of the compose-ui graph (obscure
+# ComponentActivity/test-host failures rather than a clear version conflict).
+androidx-compose-ui = "1.11.1"
 # Calf adaptive nav bar: native UITabBar on iOS / Material3 NavigationBar on Android. Lives in the
 # :shared-ui-nav module (the toolkit's sole, deliberate Material3 dependency).
 calf = "0.12.0"
@@ -76,6 +85,10 @@ supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt", versi
 revenuecat-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "revenuecat" }
 revenuecat-result = { module = "com.revenuecat.purchases:purchases-kmp-result", version.ref = "revenuecat" }
 
+# Robolectric: runs Compose UI tests (runComposeUiTest) on the JVM host (testAndroidHostTest),
+# so the design-system tests gate in CI without a device/emulator. Test-only, androidHostTest source set.
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
 # Cross-platform haptics (Android + iOS), no native cinterop. Core is Compose-free; -compose adds rememberVibrator().
 multihaptic-core = { module = "top.ltfan.multihaptic:multihaptic-core", version.ref = "multihaptic" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihaptic" }
@@ -97,6 +110,13 @@ compose-ripple-indication = { module = "com.composables:ripple-indication", vers
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
 compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
 compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
+# Compose Multiplatform UI-test runtime (runComposeUiTest). Referenced via the direct coordinate
+# rather than the `compose.uiTest` Gradle accessor, which is gated behind an @ExperimentalComposeLibrary
+# opt-in. Test-only, androidHostTest source set (runs under Robolectric).
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
+# Contributes the androidx.activity.ComponentActivity declaration to the (host) test manifest so the
+# Compose test host can launch it under Robolectric. Pinned to the AndroidX Compose version CMP resolves to.
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-ui" }
 
 
 [plugins]

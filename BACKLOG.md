@@ -535,14 +535,46 @@ version 7×) that now persists through `booleanPreference` — `:shared-demo` (i
 platform), `androidDemoApp` (real `SharedPreferences`-backed store, device-verified), `iosDemoApp`
 (`DemoKit`, `NSUserDefaults`-backed). No new demo surface needed.
 
-### P4-4 — Backfill tests for the existing design system
+### P4-4 — Backfill tests for the existing design system ✅ DONE (2026-06-04)
 **Description:** Add Compose/unit tests for the highest-value existing atoms and
 scaffolds (state-driven rendering, skeleton toggling).
 **Rationale (priority):** The design system is the most-used surface and is
 currently untested; do this once the harness (P0-3) exists.
+**Key decisions:**
+- **Compose UI tests, not reducer tests.** The atoms are headless, fully state-hoisted
+  composables — there's no reducer to unit-test. Their state-driven behavior is verified by
+  driving a real composition with `runComposeUiTest` and querying the semantics tree
+  (`onNode(isToggleable())`, `onNodeWithText`, `onNodeWithContentDescription`, `performClick`,
+  `performTextInput`). This is the **first** design-system test code — the atoms/molecules/organisms
+  tier was previously "previews only," and this task carves out the documented exception for the
+  highest-value atoms.
+- **Robolectric on the JVM host, so it gates in CI.** Tests run as `testAndroidHostTest` (the task
+  CI already runs) under Robolectric — **no device/emulator**. They live in a new `androidHostTest`
+  source set (not `commonTest`): the Compose UI-test runtime + Robolectric have no common/iOS variant,
+  mirroring `shared-database-impl`'s androidHostTest-scoped JDBC driver. A shared annotated base
+  `RobolectricComposeTest` (`@RunWith(RobolectricTestRunner)` + `@Config(sdk=[34])` + `GraphicsMode.NATIVE`)
+  centralises the wiring/rationale (the first two are `@Inherited`).
+- **No JVM/desktop test target.** A desktop Skiko target would be the other CMP UI-test path, but
+  `:shared-ui-atoms` depends on `multihaptic` (Android+iOS only), which has no JVM artifact — so a
+  `jvm()` target can't resolve. Robolectric-on-androidHostTest is the only path that fits the pins.
+- **New test-only deps (catalog):** `org.jetbrains.compose.ui:ui-test` (referenced by direct
+  coordinate, not the `compose.uiTest` accessor, which is gated behind `@ExperimentalComposeLibrary`),
+  `androidx.compose.ui:ui-test-manifest` (registers the `ComponentActivity` the test host launches),
+  and `org.robolectric:robolectric`. All scoped to `androidHostTest`. `withHostTest { isIncludeAndroidResources = true }`
+  so Robolectric can inflate the test host. No production/`commonMain` surface change; XCFrameworks stay clean.
 **Acceptance Criteria:**
-- [ ] At least the most complex atoms (`FrnkSegmentedControl`, `FrnkSwitch`,
+- [x] At least the most complex atoms (`FrnkSegmentedControl`, `FrnkSwitch`,
       `FrnkTopAppBar` search mode) have state-driven tests.
+      *(Evidence: 18 green tests across `FrnkSwitchTest` (5: on/off semantics, toggle emits flipped
+      value, disabled + skeleton suppress interaction), `FrnkSegmentedControlTest` (6: renders all
+      options, tap emits index, re-tap of selected still emits, out-of-range `selectedIndex` clamps
+      and stays interactive, disabled + skeleton don't emit), and `FrnkTopAppBarTest` (7: title-mode
+      title+action, search mode swaps in close+placeholder and hides title/trigger, clear button shown
+      only for a non-empty query, typing streams `onSearchQueryChange`, clear emits "", close fires
+      `onSearchClose`). Run via `:shared-ui-atoms:testAndroidHostTest`; `compileAndroidMain` +
+      `testAndroidHostTest` green project-wide, `ktlintFormat` clean.)*
+**Demo rule:** N/A — these are library tests with no UI of their own; the atoms under test are already
+exercised in all three demo layers (Components gallery + Settings).
 
 ### P4-5 — Cross-platform haptics ✅ DONE (2026-06-02)
 **Description:** A simplified, host-facing haptics API backed by `multihaptic`
@@ -582,7 +614,7 @@ P2-1 ✅ (navigation — FrnkNavHost over CMP navigation-compose; unblocks featu
         │
 P3-1 (PostHog)   P3-2 ✅ (RevenueCat entitlements) → P3-3 ✅ (paywall/purchase + frnk Pro layer + god mode)
         │
-P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 ✅ (typed prefs)   P4-4 (DS tests, needs P0-3)
+P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 ✅ (typed prefs)   P4-4 ✅ (DS tests, Robolectric)
         ┊
         ┊  ⏸ DEFERRED until a networked/auth app is planned (local-storage-only for now):
         └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
@@ -590,8 +622,8 @@ P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 ✅ (typed prefs)   P4-4 (D
 
 **Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, **P3-3 ✅ (paywall +
 frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, **P4-1 ✅ (molecules)**, **P4-2 ✅ (organisms)**,
-and **P4-3 ✅ (typed preferences wrapper)** are done — the Atomic Design hierarchy (Atoms → Molecules →
-Organisms → Scaffolds) is complete and `KeyValueStore` now has a typed convenience layer.
-Recommended next is **P3-1 (PostHog)** to round out analytics, or **P4-4 (DS backfill tests)** now that
-the P0-3 harness exists. P2-2 (verify `BackendChoice` swap) and P1-2/P1-3/P1-4 stay deferred while apps
-are local-storage-only.
+**P4-3 ✅ (typed preferences wrapper)**, and **P4-4 ✅ (design-system tests)** are done — the Atomic
+Design hierarchy (Atoms → Molecules → Organisms → Scaffolds) is complete, `KeyValueStore` has a typed
+convenience layer, and the highest-value atoms now have Robolectric-backed Compose UI tests that gate in CI.
+Recommended next is **P3-1 (PostHog)** to round out analytics. P2-2 (verify `BackendChoice` swap) and
+P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.
