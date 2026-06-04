@@ -9,7 +9,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButton
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorError
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -28,23 +27,9 @@ import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 private fun FrnkIcon_Skeleton_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md)) {
-            FrnkIcon(
-                state =
-                    FrnkIconState(
-                        imageVector = Theme[icons][iconCheck],
-                        contentDescription = null,
-                        size = FrnkIconSize.lg,
-                        tint = colorPrimary,
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
-            )
+            FrnkIcon(state = FrnkIconState.Skeleton())
             FrnkIconButton(
-                state =
-                    FrnkIconButtonState(
-                        imageVector = Theme[icons][iconSettings],
-                        contentDescription = "Settings",
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                state = FrnkIconButtonState.Skeleton,
                 onClick = {},
             )
         }
@@ -58,7 +43,7 @@ private fun FrnkIcon_Sizes_Light() {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md)) {
             FrnkIcon(
                 state =
-                    FrnkIconState(
+                    FrnkIconState.Content(
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "xs",
                         size = FrnkIconSize.xs,
@@ -67,7 +52,7 @@ private fun FrnkIcon_Sizes_Light() {
             )
             FrnkIcon(
                 state =
-                    FrnkIconState(
+                    FrnkIconState.Content(
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "md",
                         size = FrnkIconSize.md,
@@ -76,7 +61,7 @@ private fun FrnkIcon_Sizes_Light() {
             )
             FrnkIcon(
                 state =
-                    FrnkIconState(
+                    FrnkIconState.Content(
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "xl",
                         size = FrnkIconSize.xl,
@@ -92,11 +77,11 @@ private fun FrnkIcon_Sizes_Light() {
 private fun FrnkIcon_Registry_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md)) {
-            FrnkIcon(state = FrnkIconState(Theme[icons][iconBack], "back"))
-            FrnkIcon(state = FrnkIconState(Theme[icons][iconClose], "close"))
-            FrnkIcon(state = FrnkIconState(Theme[icons][iconSearch], "search"))
-            FrnkIcon(state = FrnkIconState(Theme[icons][iconSettings], "settings"))
-            FrnkIcon(state = FrnkIconState(Theme[icons][iconError], "error", tint = colorError))
+            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconBack], "back"))
+            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconClose], "close"))
+            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconSearch], "search"))
+            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconSettings], "settings"))
+            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconError], "error", tint = colorError))
         }
     }
 }
@@ -108,7 +93,7 @@ private fun FrnkIconButton_Light() {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkIconButton(
                 state =
-                    FrnkIconButtonState(
+                    FrnkIconButtonState.Content(
                         imageVector = Theme[icons][iconBack],
                         contentDescription = "Back",
                         tint = colorPrimary,
@@ -117,7 +102,7 @@ private fun FrnkIconButton_Light() {
             )
             FrnkIconButton(
                 state =
-                    FrnkIconButtonState(
+                    FrnkIconButtonState.Content(
                         imageVector = Theme[icons][iconSettings],
                         contentDescription = "Settings",
                     ),
@@ -125,7 +110,7 @@ private fun FrnkIconButton_Light() {
             )
             FrnkIconButton(
                 state =
-                    FrnkIconButtonState(
+                    FrnkIconButtonState.Content(
                         imageVector = Theme[icons][iconClose],
                         contentDescription = "Disabled",
                         tint = colorPrimary,

@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.platformtheme.buildPlatformTheme
 import com.composeunstyled.theme.ComponentInteractiveSize
@@ -24,7 +25,9 @@ import dev.jdgarita.frnk.ui.haptics.HapticFeedback
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.haptics.rememberFrnkHaptics
 import dev.jdgarita.frnk.ui.tokens.FrnkColors
+import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkShapes
+import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.ui.tokens.FrnkTypography
 
 // region ThemeProperty axes
@@ -33,6 +36,12 @@ val textStyles = ThemeProperty<TextStyle>("textStyles")
 val shapes = ThemeProperty<Shape>("shapes")
 val strings = ThemeProperty<String>("strings")
 val icons = ThemeProperty<ImageVector>("icons")
+
+// Dp axes (P-host-alignment): spacing/padding + icon sizes are host-overridable theme axes, mirroring
+// the colors/shapes pattern. Defaults come from the FrnkSpacing / FrnkIconSize objects; hosts override
+// per token via FrnkThemeConfig.spacingOverrides / iconSizeOverrides.
+val spacing = ThemeProperty<Dp>("spacing")
+val iconSizes = ThemeProperty<Dp>("iconSizes")
 // endregion
 
 // region Color tokens.
@@ -102,6 +111,34 @@ val shapeButton = ThemeToken<Shape>("shape_button")
 val shapeCard = ThemeToken<Shape>("shape_card")
 val shapeTextField = ThemeToken<Shape>("shape_text_field")
 val shapeBottomSheet = ThemeToken<Shape>("shape_bottom_sheet")
+// endregion
+
+// region Spacing tokens (Dp). Prefixed `spacing*` so they don't shadow common locals.
+val spacingNone = ThemeToken<Dp>("spacing_none")
+val spacingXxs = ThemeToken<Dp>("spacing_xxs")
+val spacingXs = ThemeToken<Dp>("spacing_xs")
+val spacingSm = ThemeToken<Dp>("spacing_sm")
+val spacingMd = ThemeToken<Dp>("spacing_md")
+val spacingLg = ThemeToken<Dp>("spacing_lg")
+val spacingXl = ThemeToken<Dp>("spacing_xl")
+val spacingXxl = ThemeToken<Dp>("spacing_xxl")
+val spacingScreenPadding = ThemeToken<Dp>("spacing_screen_padding")
+val spacingIconPadding = ThemeToken<Dp>("spacing_icon_padding")
+val spacingListItemPadding = ThemeToken<Dp>("spacing_list_item_padding")
+val spacingSectionSpacing = ThemeToken<Dp>("spacing_section_spacing")
+// endregion
+
+// region Icon-size tokens (Dp).
+val iconSizeXs = ThemeToken<Dp>("icon_size_xs")
+val iconSizeSm = ThemeToken<Dp>("icon_size_sm")
+val iconSizeMd = ThemeToken<Dp>("icon_size_md")
+val iconSizeLg = ThemeToken<Dp>("icon_size_lg")
+val iconSizeXl = ThemeToken<Dp>("icon_size_xl")
+val iconSizeXxl = ThemeToken<Dp>("icon_size_xxl")
+val iconSizeButton = ThemeToken<Dp>("icon_size_button")
+val iconSizeFab = ThemeToken<Dp>("icon_size_fab")
+val iconSizeAppBar = ThemeToken<Dp>("icon_size_app_bar")
+val iconSizeEmptyState = ThemeToken<Dp>("icon_size_empty_state")
 // endregion
 
 enum class Appearance {
@@ -202,6 +239,36 @@ internal val DefaultShapes: Map<ThemeToken<Shape>, Shape> =
         shapeBottomSheet to FrnkShapes.bottomSheet,
     )
 
+internal val DefaultSpacing: Map<ThemeToken<Dp>, Dp> =
+    mapOf(
+        spacingNone to FrnkSpacing.none,
+        spacingXxs to FrnkSpacing.xxs,
+        spacingXs to FrnkSpacing.xs,
+        spacingSm to FrnkSpacing.sm,
+        spacingMd to FrnkSpacing.md,
+        spacingLg to FrnkSpacing.lg,
+        spacingXl to FrnkSpacing.xl,
+        spacingXxl to FrnkSpacing.xxl,
+        spacingScreenPadding to FrnkSpacing.screenPadding,
+        spacingIconPadding to FrnkSpacing.iconPadding,
+        spacingListItemPadding to FrnkSpacing.listItemPadding,
+        spacingSectionSpacing to FrnkSpacing.sectionSpacing,
+    )
+
+internal val DefaultIconSizes: Map<ThemeToken<Dp>, Dp> =
+    mapOf(
+        iconSizeXs to FrnkIconSize.xs,
+        iconSizeSm to FrnkIconSize.sm,
+        iconSizeMd to FrnkIconSize.md,
+        iconSizeLg to FrnkIconSize.lg,
+        iconSizeXl to FrnkIconSize.xl,
+        iconSizeXxl to FrnkIconSize.xxl,
+        iconSizeButton to FrnkIconSize.button,
+        iconSizeFab to FrnkIconSize.fab,
+        iconSizeAppBar to FrnkIconSize.appBar,
+        iconSizeEmptyState to FrnkIconSize.emptyState,
+    )
+
 /**
  * Animates [base] colors towards (override-or-base) targets with a 450ms tween. The animation
  * call count is exactly `base.size` on every composition, so `animateColorAsState` slot positions
@@ -267,6 +334,8 @@ private val FrnkPlatformTheme =
         properties[shapes] = DefaultShapes + config.shapeOverrides
         properties[strings] = DefaultFrnkStrings + config.stringOverrides
         properties[icons] = DefaultFrnkIcons + config.iconOverrides
+        properties[spacing] = DefaultSpacing + config.spacingOverrides
+        properties[iconSizes] = DefaultIconSizes + config.iconSizeOverrides
 
         defaultTextStyle =
             textStylesForTheme[bodyLarge] ?: FrnkTypography.bodyLarge

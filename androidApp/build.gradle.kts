@@ -9,8 +9,14 @@ kotlin {
     jvmToolchain(17)
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.android"
-        compileSdk = ProjectConfiguration.COMPILE_SDK
-        minSdk = ProjectConfiguration.MIN_SDK
+        compileSdk =
+            libs.versions.android.compileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
     }
     sourceSets.androidMain.dependencies {
         api(projects.shared)

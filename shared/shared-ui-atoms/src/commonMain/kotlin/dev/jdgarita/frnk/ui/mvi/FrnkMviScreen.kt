@@ -7,10 +7,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
 
 /**
  * The toolkit's standard VM-backed screen — the state-hosting primitive host apps build their own
@@ -45,7 +47,7 @@ fun <S : UiState, I : UiIntent, E : UiEffect> FrnkMviScreen(
     topBar: FrnkTopAppBarState,
     modifier: Modifier = Modifier,
     bottomInset: Dp = 0.dp,
-    contentPadding: PaddingValues = PaddingValues(FrnkSpacing.lg),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
     onNavigationClick: () -> Unit = {},
     onActionClick: (FrnkTopAppBarAction) -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},

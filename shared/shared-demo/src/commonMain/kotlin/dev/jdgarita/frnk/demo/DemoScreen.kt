@@ -382,12 +382,12 @@ private fun HomeTab(
                         // Entry point #1 mirror: open the toolkit paywall (also reachable from the
                         // top-right crown action and from Settings).
                         FrnkButton(
-                            state = FrnkButtonState(text = "Open Paywall"),
+                            state = FrnkButtonState.Content(text = "Open Paywall"),
                             onClick = { onIntent(DemoIntent.RequestUpgrade) },
                         )
                         FrnkButton(
                             state =
-                                FrnkButtonState(
+                                FrnkButtonState.Content(
                                     text = "Restore",
                                     variant = FrnkButtonVariant.Outlined,
                                 ),
@@ -398,7 +398,7 @@ private fun HomeTab(
                     // via Settings → tap version 7× → Developer. Surfaced here too for demo discoverability.
                     FrnkButton(
                         state =
-                            FrnkButtonState(
+                            FrnkButtonState.Content(
                                 text = if (state.isGodMode) "God mode: ON" else "God mode: OFF",
                                 variant = FrnkButtonVariant.Outlined,
                             ),
@@ -422,12 +422,12 @@ private fun HomeTab(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                     FrnkButton(
-                        state = FrnkButtonState(text = "Add note"),
+                        state = FrnkButtonState.Content(text = "Add note"),
                         onClick = { onIntent(DemoIntent.AddNote) },
                     )
                     FrnkButton(
                         state =
-                            FrnkButtonState(
+                            FrnkButtonState.Content(
                                 text = "Clear",
                                 variant = FrnkButtonVariant.Outlined,
                                 enabled = state.notes.isNotEmpty(),
@@ -465,21 +465,21 @@ private fun HomeTab(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                     FrnkButton(
-                        state = FrnkButtonState(text = "Track event"),
+                        state = FrnkButtonState.Content(text = "Track event"),
                         onClick = { onIntent(DemoIntent.TrackEvent) },
                     )
                     FrnkButton(
-                        state = FrnkButtonState(text = "User property", variant = FrnkButtonVariant.Outlined),
+                        state = FrnkButtonState.Content(text = "User property", variant = FrnkButtonVariant.Outlined),
                         onClick = { onIntent(DemoIntent.SetUserProperty) },
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                     FrnkButton(
-                        state = FrnkButtonState(text = "Log breadcrumb", variant = FrnkButtonVariant.Outlined),
+                        state = FrnkButtonState.Content(text = "Log breadcrumb", variant = FrnkButtonVariant.Outlined),
                         onClick = { onIntent(DemoIntent.LogBreadcrumb) },
                     )
                     FrnkButton(
-                        state = FrnkButtonState(text = "Record non-fatal", variant = FrnkButtonVariant.Outlined),
+                        state = FrnkButtonState.Content(text = "Record non-fatal", variant = FrnkButtonVariant.Outlined),
                         onClick = { onIntent(DemoIntent.RecordTestCrash) },
                     )
                 }
@@ -494,7 +494,7 @@ private fun HomeTab(
                         ),
                 )
                 FrnkButton(
-                    state = FrnkButtonState(text = "Force crash (unhandled)", variant = FrnkButtonVariant.Outlined),
+                    state = FrnkButtonState.Content(text = "Force crash (unhandled)", variant = FrnkButtonVariant.Outlined),
                     onClick = { onIntent(DemoIntent.ForceUnhandledCrash) },
                 )
             }
@@ -607,7 +607,7 @@ private fun ComponentRow(
         )
         FrnkIcon(
             state =
-                FrnkIconState(
+                FrnkIconState.Content(
                     imageVector = Theme[icons][iconChevronRight],
                     contentDescription = null,
                     size = FrnkIconSize.md,
@@ -751,24 +751,24 @@ private fun ComponentContent(
         }
         "FrnkButton" -> {
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                FrnkButton(state = FrnkButtonState(text = "Filled"), onClick = {})
+                FrnkButton(state = FrnkButtonState.Content(text = "Filled"), onClick = {})
                 FrnkButton(
-                    state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
+                    state = FrnkButtonState.Content(text = "Outlined", variant = FrnkButtonVariant.Outlined),
                     onClick = {},
                 )
                 FrnkButton(
-                    state = FrnkButtonState(text = "Ghost", variant = FrnkButtonVariant.Ghost),
+                    state = FrnkButtonState.Content(text = "Ghost", variant = FrnkButtonVariant.Ghost),
                     onClick = {},
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                 FrnkButton(
-                    state = FrnkButtonState(text = "Filled", enabled = false),
+                    state = FrnkButtonState.Content(text = "Filled", enabled = false),
                     onClick = {},
                 )
                 FrnkButton(
                     state =
-                        FrnkButtonState(
+                        FrnkButtonState.Content(
                             text = "Outlined",
                             variant = FrnkButtonVariant.Outlined,
                             enabled = false,
@@ -779,16 +779,12 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                 FrnkButton(
-                    state = FrnkButtonState(text = "Loading", skeleton = FrnkSkeleton(enabled = true)),
+                    state = FrnkButtonState.Skeleton,
                     onClick = {},
                 )
                 FrnkButton(
                     state =
-                        FrnkButtonState(
-                            text = "Outlined",
-                            variant = FrnkButtonVariant.Outlined,
-                            skeleton = FrnkSkeleton(enabled = true),
-                        ),
+                        FrnkButtonState.Skeleton,
                     onClick = {},
                 )
             }
@@ -800,7 +796,7 @@ private fun ComponentContent(
             ) {
                 FrnkIcon(
                     state =
-                        FrnkIconState(
+                        FrnkIconState.Content(
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = "Search",
                             size = FrnkIconSize.md,
@@ -809,7 +805,7 @@ private fun ComponentContent(
                 )
                 FrnkIcon(
                     state =
-                        FrnkIconState(
+                        FrnkIconState.Content(
                             imageVector = Theme[icons][iconCheck],
                             contentDescription = "Check",
                             size = FrnkIconSize.lg,
@@ -818,7 +814,7 @@ private fun ComponentContent(
                 )
                 FrnkIconButton(
                     state =
-                        FrnkIconButtonState(
+                        FrnkIconButtonState.Content(
                             imageVector = Theme[icons][iconSettings],
                             contentDescription = "Settings",
                             tint = colorOnBackground,
@@ -833,22 +829,11 @@ private fun ComponentContent(
             ) {
                 FrnkIcon(
                     state =
-                        FrnkIconState(
-                            imageVector = Theme[icons][iconCheck],
-                            contentDescription = null,
-                            size = FrnkIconSize.lg,
-                            tint = colorPrimary,
-                            skeleton = FrnkSkeleton(enabled = true),
-                        ),
+                        FrnkIconState.Skeleton(),
                 )
                 FrnkIconButton(
                     state =
-                        FrnkIconButtonState(
-                            imageVector = Theme[icons][iconSettings],
-                            contentDescription = "Settings",
-                            tint = colorOnBackground,
-                            skeleton = FrnkSkeleton(enabled = true),
-                        ),
+                        FrnkIconButtonState.Skeleton,
                     onClick = {},
                 )
             }
@@ -871,26 +856,26 @@ private fun ComponentContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 FrnkSwitch(
-                    state = FrnkSwitchState(checked = state.gallerySwitchOn),
+                    state = FrnkSwitchState.Content(checked = state.gallerySwitchOn),
                     onCheckedChange = { onIntent(DemoIntent.GallerySwitchChanged(it)) },
                 )
                 FrnkText(state = FrnkTextState.BodySmall(text = if (state.gallerySwitchOn) "On" else "Off"))
                 FrnkSwitch(
-                    state = FrnkSwitchState(checked = true, enabled = false),
+                    state = FrnkSwitchState.Content(checked = true, enabled = false),
                     onCheckedChange = {},
                 )
                 FrnkText(state = FrnkTextState.BodySmall(text = "Disabled"))
             }
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkSwitch(
-                state = FrnkSwitchState(checked = true, skeleton = FrnkSkeleton(enabled = true)),
+                state = FrnkSwitchState.Skeleton,
                 onCheckedChange = {},
             )
         }
         "FrnkSegmentedControl" -> {
             FrnkSegmentedControl(
                 state =
-                    FrnkSegmentedControlState(
+                    FrnkSegmentedControlState.Content(
                         options = listOf("One", "Two", "Three"),
                         selectedIndex = state.gallerySegmentIndex,
                     ),
@@ -899,11 +884,7 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkSegmentedControl(
                 state =
-                    FrnkSegmentedControlState(
-                        options = listOf("One", "Two", "Three"),
-                        selectedIndex = 0,
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                    FrnkSegmentedControlState.Skeleton,
                 onOptionSelected = {},
             )
         }
@@ -981,16 +962,16 @@ private fun ComponentContent(
             )
             FrnkListRow(
                 state =
-                    FrnkListRowState(
+                    FrnkListRowState.Content(
                         title = "Notifications",
                         subtitle = "Push, email and in-app alerts",
-                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                     ),
                 onClick = { onEffect(DemoEffect.Toast("Tapped Notifications")) },
                 trailing = {
                     FrnkIcon(
                         state =
-                            FrnkIconState(
+                            FrnkIconState.Content(
                                 imageVector = Theme[icons][iconChevronRight],
                                 contentDescription = null,
                                 tint = colorOnSurfaceVariant,
@@ -999,17 +980,12 @@ private fun ComponentContent(
                 },
             )
             FrnkListRow(
-                state = FrnkListRowState(title = "Title only, non-interactive"),
+                state = FrnkListRowState.Content(title = "Title only, non-interactive"),
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkListRow(
                 state =
-                    FrnkListRowState(
-                        title = "Loading row",
-                        subtitle = "Loading subtitle",
-                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                    FrnkListRowState.Skeleton,
                 onClick = {},
             )
         }
@@ -1026,12 +1002,12 @@ private fun ComponentContent(
             )
             val deleteAction =
                 FrnkSwipeAction(
-                    icon = FrnkIconState(Theme[icons][iconError], contentDescription = "Delete"),
+                    icon = FrnkIconState.Content(Theme[icons][iconError], contentDescription = "Delete"),
                     label = "Delete",
                 )
             val archiveAction =
                 FrnkSwipeAction(
-                    icon = FrnkIconState(Theme[icons][iconRestore], contentDescription = "Archive"),
+                    icon = FrnkIconState.Content(Theme[icons][iconRestore], contentDescription = "Archive"),
                     containerColor = colorSuccess,
                     contentColor = colorOnSuccess,
                     label = "Archive",
@@ -1039,10 +1015,10 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "Reveal (drag left)", color = colorOnSurfaceVariant))
             FrnkListRow(
                 state =
-                    FrnkListRowState(
+                    FrnkListRowState.Content(
                         title = "Project Apollo",
                         subtitle = "Swipe left to reveal actions",
-                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                     ),
                 onClick = { onEffect(DemoEffect.Toast("Tapped Project Apollo")) },
                 swipe =
@@ -1056,10 +1032,10 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "Dismiss (drag left)", color = colorOnSurfaceVariant))
             FrnkListRow(
                 state =
-                    FrnkListRowState(
+                    FrnkListRowState.Content(
                         title = "Swipe-to-delete",
                         subtitle = "Release past the threshold to fire",
-                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                     ),
                 swipe =
                     FrnkSwipeableState(
@@ -1080,13 +1056,13 @@ private fun ComponentContent(
                         color = colorOnSurfaceVariant,
                     ),
             )
-            FrnkLabeledValue(state = FrnkLabeledValueState(label = "Plan", value = "Pro"))
+            FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Plan", value = "Pro"))
             FrnkDivider(state = FrnkDividerState.Horizontal())
-            FrnkLabeledValue(state = FrnkLabeledValueState(label = "Renews", value = "Jun 2026"))
+            FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Renews", value = "Jun 2026"))
             FrnkDivider(state = FrnkDividerState.Horizontal())
             FrnkLabeledValue(
                 state =
-                    FrnkLabeledValueState(
+                    FrnkLabeledValueState.Content(
                         label = "Storage used",
                         value = "4.2 GB",
                         orientation = FrnkLabeledValueOrientation.Stacked,
@@ -1095,11 +1071,7 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkLabeledValue(
                 state =
-                    FrnkLabeledValueState(
-                        label = "Plan",
-                        value = "Loading",
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                    FrnkLabeledValueState.Skeleton,
             )
         }
         "FrnkEmptyState" -> {
@@ -1117,7 +1089,7 @@ private fun ComponentContent(
                 state =
                     FrnkEmptyStateState(
                         icon =
-                            FrnkIconState(
+                            FrnkIconState.Content(
                                 imageVector = Theme[icons][iconSearch],
                                 contentDescription = null,
                                 size = FrnkIconSize.emptyState,
@@ -1143,15 +1115,15 @@ private fun ComponentContent(
             )
             val sectionRows =
                 listOf(
-                    FrnkListRowState(
+                    FrnkListRowState.Content(
                         title = "Notifications",
                         subtitle = "Push, email and in-app alerts",
-                        icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                     ),
-                    FrnkListRowState(
+                    FrnkListRowState.Content(
                         title = "Preferences",
                         subtitle = "Theme, language and units",
-                        icon = FrnkIconState(Theme[icons][iconSettings], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null),
                     ),
                 )
             FrnkListSection(
@@ -1165,7 +1137,7 @@ private fun ComponentContent(
                 trailing = {
                     FrnkIcon(
                         state =
-                            FrnkIconState(
+                            FrnkIconState.Content(
                                 imageVector = Theme[icons][iconChevronRight],
                                 contentDescription = null,
                                 tint = colorOnSurfaceVariant,
@@ -1178,7 +1150,7 @@ private fun ComponentContent(
                 state =
                     FrnkListSectionState(
                         title = "Account",
-                        rows = sectionRows.map { it.copy(skeleton = FrnkSkeleton(enabled = true)) },
+                        rows = List(3) { FrnkListRowState.Skeleton },
                     ),
             )
         }
@@ -1194,7 +1166,7 @@ private fun ComponentContent(
                     ),
             )
             val avatar =
-                FrnkIconState(
+                FrnkIconState.Content(
                     imageVector = Theme[icons][iconSettings],
                     contentDescription = null,
                     size = FrnkIconSize.lg,
@@ -1202,13 +1174,13 @@ private fun ComponentContent(
                 )
             val stats =
                 listOf(
-                    FrnkLabeledValueState(label = "Projects", value = "12"),
-                    FrnkLabeledValueState(label = "Streak", value = "48d"),
-                    FrnkLabeledValueState(label = "Plan", value = "Pro"),
+                    FrnkLabeledValueState.Content(label = "Projects", value = "12"),
+                    FrnkLabeledValueState.Content(label = "Streak", value = "48d"),
+                    FrnkLabeledValueState.Content(label = "Plan", value = "Pro"),
                 )
             FrnkProfileHeader(
                 state =
-                    FrnkProfileHeaderState(
+                    FrnkProfileHeaderState.Content(
                         name = "Juan Diego",
                         subtitle = "juandiego@example.com",
                         avatar = avatar,
@@ -1218,7 +1190,7 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "No stats", color = colorOnSurfaceVariant))
             FrnkProfileHeader(
                 state =
-                    FrnkProfileHeaderState(
+                    FrnkProfileHeaderState.Content(
                         name = "Juan Diego",
                         subtitle = "Free plan",
                         avatar = avatar,
@@ -1227,13 +1199,7 @@ private fun ComponentContent(
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkProfileHeader(
                 state =
-                    FrnkProfileHeaderState(
-                        name = "Loading name",
-                        subtitle = "loading@example.com",
-                        avatar = avatar,
-                        stats = stats,
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                    FrnkProfileHeaderState.Skeleton,
             )
         }
         else ->
@@ -1279,7 +1245,7 @@ private fun demoSettingsState(
                     listOf(
                         SettingsToggleRowState(
                             id = GOD_MODE_TOGGLE_ID,
-                            icon = FrnkIconState(imageVector = godModeIcon, contentDescription = null, tint = colorPrimary),
+                            icon = FrnkIconState.Content(imageVector = godModeIcon, contentDescription = null, tint = colorPrimary),
                             title = "God mode",
                             subtitle = "Force Pro on this device (testing)",
                             checked = isGodMode,
@@ -1309,7 +1275,7 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
     // section to keep the Settings screen long enough that the collapsing bars engage.
     val analyticsIcon = Theme[icons][iconPrivacy]
     return remember(analyticsIcon) {
-        fun rowIcon(vector: ImageVector) = FrnkIconState(imageVector = vector, contentDescription = null, tint = colorPrimary)
+        fun rowIcon(vector: ImageVector) = FrnkIconState.Content(imageVector = vector, contentDescription = null, tint = colorPrimary)
         listOf(
             SettingsSectionState(
                 title = "Privacy",
@@ -1346,7 +1312,7 @@ private fun demoOnboardingState(): OnboardingScreenState {
                                 text = "A Kotlin Multiplatform toolkit to ship polished apps in days, not weeks.",
                             ),
                         icon =
-                            FrnkIconState(
+                            FrnkIconState.Content(
                                 imageVector = checkIcon,
                                 contentDescription = null,
                                 size = FrnkIconSize.xxl,
@@ -1360,7 +1326,7 @@ private fun demoOnboardingState(): OnboardingScreenState {
                                 text = "Typed, paginated, offline-ready data access across every source.",
                             ),
                         icon =
-                            FrnkIconState(
+                            FrnkIconState.Content(
                                 imageVector = searchIcon,
                                 contentDescription = null,
                                 size = FrnkIconSize.xxl,
@@ -1372,7 +1338,7 @@ private fun demoOnboardingState(): OnboardingScreenState {
                         description =
                             FrnkTextState.Body(text = "Tap Get Started to begin your first session."),
                         icon =
-                            FrnkIconState(
+                            FrnkIconState.Content(
                                 imageVector = settingsIcon,
                                 contentDescription = null,
                                 size = FrnkIconSize.xxl,

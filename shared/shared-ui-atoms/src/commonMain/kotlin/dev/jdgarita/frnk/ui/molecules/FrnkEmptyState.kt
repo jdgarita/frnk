@@ -9,6 +9,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
@@ -17,7 +18,10 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
+import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXs
 
 /**
  * View state for [FrnkEmptyState] — a centered icon + title + optional subtitle + optional action
@@ -54,9 +58,9 @@ fun FrnkEmptyState(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth().padding(FrnkSpacing.lg),
+        modifier = modifier.fillMaxWidth().padding(Theme[spacing][spacingLg]),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
     ) {
         FrnkIcon(state = state.icon)
         FrnkText(state = FrnkTextState.Title(text = state.title, textAlign = TextAlign.Center))
@@ -72,9 +76,9 @@ fun FrnkEmptyState(
         }
         if (state.actionLabel != null && onActionClick != null) {
             FrnkButton(
-                state = FrnkButtonState(text = state.actionLabel, variant = FrnkButtonVariant.Filled),
+                state = FrnkButtonState.Content(text = state.actionLabel, variant = FrnkButtonVariant.Filled),
                 onClick = onActionClick,
-                modifier = Modifier.padding(top = FrnkSpacing.xs),
+                modifier = Modifier.padding(top = Theme[spacing][spacingXs]),
             )
         }
     }

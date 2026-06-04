@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.haptics.HapticType
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
@@ -26,15 +28,25 @@ import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.labelLarge
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingXs
+import dev.jdgarita.frnk.ui.theme.spacingXxs
 
-@Immutable
-data class FrnkSegmentedControlState(
-    val options: List<String>,
-    val selectedIndex: Int,
-    val enabled: Boolean = true,
-    val skeleton: FrnkSkeleton = FrnkSkeleton(),
-)
+/**
+ * Sealed visual state for [FrnkSegmentedControl]. [Content] is the interactive option group;
+ * [Skeleton] (an `object`) is the track-shaped loading placeholder. Toolkit-standard sealed-state +
+ * `Skeleton`-object shape.
+ */
+sealed interface FrnkSegmentedControlState {
+    @Immutable
+    data class Content(
+        val options: List<String>,
+        val selectedIndex: Int,
+        val enabled: Boolean = true,
+    ) : FrnkSegmentedControlState
+
+    data object Skeleton : FrnkSegmentedControlState
+}
 
 /**
  * Headless segmented control — a horizontal group of mutually exclusive options where the selected
@@ -50,20 +62,28 @@ fun FrnkSegmentedControl(
     onOptionSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val content =
+        when (state) {
+            is FrnkSegmentedControlState.Content -> state
+            FrnkSegmentedControlState.Skeleton -> {
+                FrnkSkeletonBox(modifier.fillMaxWidth().height(40.dp), shape = shapeFull)
+                return
+            }
+        }
+
     val haptics = LocalFrnkHaptics.current
-    val selected = state.selectedIndex.coerceIn(0, (state.options.size - 1).coerceAtLeast(0))
+    val selected = content.selectedIndex.coerceIn(0, (content.options.size - 1).coerceAtLeast(0))
     Row(
         modifier =
             modifier
-                .alpha(if (state.enabled) 1f else 0.4f)
+                .alpha(if (content.enabled) 1f else 0.4f)
                 .clip(Theme[shapes][shapeFull])
                 .background(Theme[colors][colorSurfaceVariant])
-                .frnkSkeleton(state.skeleton)
-                .padding(FrnkSpacing.xxs),
-        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+                .padding(Theme[spacing][spacingXxs]),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        state.options.forEachIndexed { index, label ->
+        content.options.forEachIndexed { index, label ->
             val isSelected = index == selected
             // Idle segments fade to the track's `colorSurfaceVariant` rather than `Color.Transparent`.
             // `Color.Transparent` carries black RGB channels, so animating to/from it drags the
@@ -80,10 +100,10 @@ fun FrnkSegmentedControl(
                         .weight(1f)
                         .clip(Theme[shapes][shapeFull])
                         .background(segmentColor)
-                        .clickable(enabled = state.enabled && !state.skeleton.enabled) {
+                        .clickable(enabled = content.enabled) {
                             if (index != selected) haptics.perform(HapticType.Selection)
                             onOptionSelected(index)
-                        }.padding(vertical = FrnkSpacing.xs),
+                        }.padding(vertical = Theme[spacing][spacingXs]),
                 horizontalArrangement = Arrangement.Center,
             ) {
                 FrnkText(

@@ -1,5 +1,7 @@
 package dev.jdgarita.frnk.ui.atoms
 
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -9,6 +11,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import com.composeunstyled.LocalContentColor
 import com.composeunstyled.LocalTextStyle
 import com.composeunstyled.Text
@@ -148,6 +151,14 @@ sealed class FrnkTextState(
         override val fontWeight: FontWeight = FontWeight.Bold,
         override val skeleton: FrnkSkeleton = FrnkSkeleton(),
     ) : FrnkTextState(text, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
+
+    /**
+     * Standalone loading placeholder (a single bar). The content subtypes above also carry a
+     * [skeleton] field for **content-sized** text skeletons (a block sized to the real string, used
+     * when a parent knows the text) — this `object` is the generic, content-agnostic case mandated by
+     * the toolkit's sealed-state + `Skeleton`-object convention.
+     */
+    data object Skeleton : FrnkTextState(text = "")
 }
 
 @Composable
@@ -155,6 +166,11 @@ fun FrnkText(
     state: FrnkTextState,
     modifier: Modifier = Modifier,
 ) {
+    if (state is FrnkTextState.Skeleton) {
+        FrnkSkeletonBox(modifier.width(120.dp).height(16.dp), shape = shapeSmall)
+        return
+    }
+
     val styleToken = state.style
     val colorToken = state.color
     val resolvedStyle =

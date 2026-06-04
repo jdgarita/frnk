@@ -12,13 +12,18 @@
   Supabase-backed app can still pick `ObservabilityChoice.Firebase`. `noopObservabilityModule` (here)
   is the `None` default over `shared-backend-api`'s `Noop{Analytics,Crash}`; `firebaseObservabilityModule`
   (in `shared-backend-firebase`) is the Firebase one.
-- `frnkModules(backend = Supabase, observability = None): List<Module>` — returns `databaseModule` +
-  chosen-backend module + chosen-observability module + `revenueCatModule`. Unchosen modules are **not**
-  installed, so their bindings never appear in the graph at runtime — even though everything is bundled
-  at compile time.
-- `initializeFrnk(backend, observability, extraConfig)` — one-shot
-  `startKoin { modules(frnkModules(backend, observability)); extraConfig() }`. Hosts plug in
-  `androidContext(...)` and their own modules via `extraConfig`.
+- `MonetizationChoice` (enum) — `RevenueCat` (default) or `None`. A third axis, independent of backend
+  and observability: `RevenueCat` installs `revenueCatModule` + `monetizationModule` +
+  `paywallScaffoldModule`; `None` installs **no** monetization bindings (for apps that don't monetize or
+  use a different billing provider — they supply their own `EntitlementProvider` via `additionalModules`).
+- `frnkModules(backend = Supabase, observability = None, monetization = RevenueCat, additionalModules = []): List<Module>`
+  — returns `databaseModule` + chosen-backend module + chosen-observability module + the chosen
+  monetization modules + the host's `additionalModules`. Unchosen modules are **not** installed, so their
+  bindings never appear in the graph at runtime — even though everything is bundled at compile time.
+- `initializeFrnk(backend, observability, monetization, additionalModules, extraConfig)` — one-shot
+  `startKoin { modules(frnkModules(…)); extraConfig() }`. Hosts register their own Koin modules via the
+  first-class `additionalModules` param, and use `extraConfig` for `androidContext(...)` /
+  `allowOverride(true)` / logging.
 
 Keep this surface tiny. Adding a new top-level entry point here is a public-API change for every downstream consumer.
 

@@ -34,12 +34,17 @@ import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
+import dev.jdgarita.frnk.ui.theme.iconSizeSm
+import dev.jdgarita.frnk.ui.theme.iconSizes
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.labelSmall
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXxs
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -59,7 +64,7 @@ fun SettingsScreen(
     initialState: SettingsScreenState,
     modifier: Modifier = Modifier,
     vmKey: String? = null,
-    contentPadding: PaddingValues = PaddingValues(FrnkSpacing.lg),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
     onEffect: (SettingsEffect) -> Unit = {},
 ) {
     val vm: SettingsViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
@@ -84,7 +89,7 @@ fun SettingsScreenContent(
     state: SettingsScreenState,
     onIntent: (SettingsIntent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(FrnkSpacing.lg),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
 ) {
     Column(
         modifier =
@@ -93,7 +98,7 @@ fun SettingsScreenContent(
                 .background(Theme[colors][colorBackground])
                 .verticalScroll(rememberScrollState())
                 .padding(contentPadding),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg]),
     ) {
         // Hosts that render their own header (e.g. a FrnkTopAppBar) pass a blank title to suppress
         // this one and avoid a duplicate heading.
@@ -143,11 +148,11 @@ private fun SettingsRow(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = FrnkSpacing.md, vertical = FrnkSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+                        .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
+                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                    horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     row.icon?.let { FrnkIcon(state = it) }
@@ -155,7 +160,7 @@ private fun SettingsRow(
                 }
                 FrnkSegmentedControl(
                     state =
-                        FrnkSegmentedControlState(
+                        FrnkSegmentedControlState.Content(
                             options = row.optionLabels,
                             selectedIndex = selectedIndex,
                         ),
@@ -176,10 +181,10 @@ private fun SettingsRow(
             ) {
                 FrnkIcon(
                     state =
-                        FrnkIconState(
+                        FrnkIconState.Content(
                             imageVector = Theme[icons][iconChevronRight],
                             contentDescription = null,
-                            size = FrnkIconSize.sm,
+                            size = Theme[iconSizes][iconSizeSm],
                             tint = colorOnSurfaceVariant,
                         ),
                 )
@@ -192,7 +197,7 @@ private fun SettingsRow(
                 subtitle = row.subtitle,
             ) {
                 FrnkSwitch(
-                    state = FrnkSwitchState(checked = row.checked),
+                    state = FrnkSwitchState.Content(checked = row.checked),
                     onCheckedChange = { checked -> onIntent(SettingsIntent.ToggleChanged(row.id, checked)) },
                 )
             }
@@ -222,7 +227,7 @@ private fun SettingsBadge(text: String) {
             Modifier
                 .clip(Theme[shapes][shapeFull])
                 .background(Theme[colors][colorPrimaryContainer])
-                .padding(horizontal = FrnkSpacing.sm, vertical = FrnkSpacing.xxs),
+                .padding(horizontal = Theme[spacing][spacingSm], vertical = Theme[spacing][spacingXxs]),
     )
 }
 
@@ -239,14 +244,14 @@ private fun SettingsRowScaffold(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = FrnkSpacing.md, vertical = FrnkSpacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FrnkIcon(state = icon)
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
         ) {
             FrnkText(state = FrnkTextState.TitleMedium(text = title))
             subtitle?.let {
@@ -265,7 +270,7 @@ private fun SettingsFooter(
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
     ) {
         FrnkText(
             state = FrnkTextState.BodySmall(text = footer.text, color = colorOnSurfaceVariant),

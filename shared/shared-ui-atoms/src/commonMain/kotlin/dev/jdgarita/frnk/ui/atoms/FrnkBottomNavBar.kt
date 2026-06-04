@@ -170,7 +170,7 @@ fun FrnkBottomNavBar(
                     ProvideContentColor(iconTint) {
                         FrnkIcon(
                             state =
-                                FrnkIconState(
+                                FrnkIconState.Content(
                                     imageVector = item.icon,
                                     contentDescription = item.label,
                                     size = NavIconSize,

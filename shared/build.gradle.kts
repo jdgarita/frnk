@@ -9,12 +9,22 @@ kotlin {
     jvmToolchain(17)
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.shared"
-        compileSdk = ProjectConfiguration.COMPILE_SDK
-        minSdk = ProjectConfiguration.MIN_SDK
+        compileSdk =
+            libs.versions.android.compileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        withHostTest {}
     }
     iosArm64()
     iosSimulatorArm64()
     sourceSets {
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
         commonMain.dependencies {
             api(projects.sharedUtils)
             api(projects.sharedUiApi)

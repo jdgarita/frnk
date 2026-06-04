@@ -9,11 +9,13 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
+import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingXxs
 
 /** How a [FrnkLabeledValue] arranges its label and value. */
 enum class FrnkLabeledValueOrientation {
@@ -25,41 +27,54 @@ enum class FrnkLabeledValueOrientation {
 }
 
 /**
- * View state for [FrnkLabeledValue] — a muted label paired with a value, composed from two
- * [FrnkText] atoms. Use it for key/value detail rows ("Plan / Pro", "Renews / Jun 2026") or small
- * stacked stats.
- *
- * @property label the descriptor (rendered as muted `BodySmall`).
- * @property value the value (rendered as `TitleMedium`).
- * @property orientation [Inline] (label start, value end) or [Stacked] (label over value).
- * @property skeleton loading placeholder. The label is treated as static chrome and stays visible;
- *   the **value** carries the skeleton, so only the figure collapses to a placeholder block while
- *   `enabled` (the natural loading shape for a key/value pair).
+ * Sealed visual state for [FrnkLabeledValue] — a muted label paired with a value, composed from two
+ * [FrnkText] atoms (for key/value detail rows or small stacked stats). [Content] holds the label,
+ * value, and orientation; [Skeleton] (an `object`) renders label + value as placeholder bars.
+ * Toolkit-standard sealed-state + `Skeleton`-object shape.
  */
-@Immutable
-data class FrnkLabeledValueState(
-    val label: String,
-    val value: String,
-    val orientation: FrnkLabeledValueOrientation = FrnkLabeledValueOrientation.Inline,
-    val skeleton: FrnkSkeleton = FrnkSkeleton(),
-)
+sealed interface FrnkLabeledValueState {
+    @Immutable
+    data class Content(
+        val label: String,
+        val value: String,
+        val orientation: FrnkLabeledValueOrientation = FrnkLabeledValueOrientation.Inline,
+    ) : FrnkLabeledValueState
 
-/** A label paired with a value, laid out per [FrnkLabeledValueState.orientation]. */
+    data object Skeleton : FrnkLabeledValueState
+}
+
+/** A label paired with a value, laid out per [FrnkLabeledValueState.Content.orientation]. */
 @Composable
 fun FrnkLabeledValue(
     state: FrnkLabeledValueState,
     modifier: Modifier = Modifier,
 ) {
-    val label =
-        FrnkTextState.BodySmall(text = state.label, color = colorOnSurfaceVariant)
-    val value =
-        FrnkTextState.TitleMedium(text = state.value, skeleton = state.skeleton)
+    val content =
+        when (state) {
+            is FrnkLabeledValueState.Content -> state
+            FrnkLabeledValueState.Skeleton -> {
+                Row(
+                    modifier = modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FrnkText(state = FrnkTextState.Skeleton, modifier = Modifier.weight(1f))
+                    FrnkText(state = FrnkTextState.Skeleton)
+                }
+                return
+            }
+        }
 
-    when (state.orientation) {
+    val label =
+        FrnkTextState.BodySmall(text = content.label, color = colorOnSurfaceVariant)
+    val value =
+        FrnkTextState.TitleMedium(text = content.value)
+
+    when (content.orientation) {
         FrnkLabeledValueOrientation.Inline ->
             Row(
                 modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 FrnkText(state = label, modifier = Modifier.weight(1f))
@@ -69,7 +84,7 @@ fun FrnkLabeledValue(
         FrnkLabeledValueOrientation.Stacked ->
             Column(
                 modifier = modifier,
-                verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
             ) {
                 FrnkText(state = label)
                 FrnkText(state = value)

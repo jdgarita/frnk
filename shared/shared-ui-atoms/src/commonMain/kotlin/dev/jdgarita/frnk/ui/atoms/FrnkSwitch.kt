@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
@@ -27,12 +26,19 @@ import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
 
-@Immutable
-data class FrnkSwitchState(
-    val checked: Boolean,
-    val enabled: Boolean = true,
-    val skeleton: FrnkSkeleton = FrnkSkeleton(),
-)
+/**
+ * Sealed visual state for [FrnkSwitch]. [Content] is the interactive toggle; [Skeleton] (an `object`)
+ * is the track-shaped loading placeholder. Toolkit-standard sealed-state + `Skeleton`-object shape.
+ */
+sealed interface FrnkSwitchState {
+    @Immutable
+    data class Content(
+        val checked: Boolean,
+        val enabled: Boolean = true,
+    ) : FrnkSwitchState
+
+    data object Skeleton : FrnkSwitchState
+}
 
 private val TrackWidth = 44.dp
 private val TrackHeight = 26.dp
@@ -51,30 +57,35 @@ fun FrnkSwitch(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val content =
+        when (state) {
+            is FrnkSwitchState.Content -> state
+            FrnkSwitchState.Skeleton -> {
+                FrnkSkeletonBox(modifier.size(width = TrackWidth, height = TrackHeight), shape = shapeFull)
+                return
+            }
+        }
+
     val haptics = LocalFrnkHaptics.current
     val trackColor by animateColorAsState(
-        targetValue = Theme[colors][if (state.checked) colorPrimary else colorOutline],
+        targetValue = Theme[colors][if (content.checked) colorPrimary else colorOutline],
         label = "switch_track",
     )
     val thumbOffset by animateDpAsState(
-        targetValue = if (state.checked) TrackWidth - ThumbSize - ThumbPadding else ThumbPadding,
+        targetValue = if (content.checked) TrackWidth - ThumbSize - ThumbPadding else ThumbPadding,
         label = "switch_thumb",
     )
 
     Box(
         modifier =
             modifier
-                .alpha(if (state.enabled) 1f else 0.4f)
+                .alpha(if (content.enabled) 1f else 0.4f)
                 .size(width = TrackWidth, height = TrackHeight)
                 .clip(Theme[shapes][shapeFull])
-                // When the skeleton is on, the placeholder block fully covers the track, but its
-                // antialiased rim sits ~1px inside the clip — enough to reveal a hairline of the brand
-                // track color underneath. Drop the track fill so there's nothing to peek through.
-                .background(if (state.skeleton.enabled) Color.Transparent else trackColor)
-                .frnkSkeleton(state.skeleton)
+                .background(trackColor)
                 .toggleable(
-                    value = state.checked,
-                    enabled = state.enabled && !state.skeleton.enabled,
+                    value = content.checked,
+                    enabled = content.enabled,
                     role = Role.Switch,
                     onValueChange = {
                         // Convention: selection atoms fire on an actual change. For a switch every

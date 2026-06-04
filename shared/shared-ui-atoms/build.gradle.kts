@@ -1,13 +1,11 @@
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
+    id("frnk.kmp.library")
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
-    jvmToolchain(17)
     // Apply the default source-set hierarchy explicitly. This module adds a custom `commonDebug`
     // intermediate (cross-platform @Preview code) via manual `dependsOn` edges below; those edges
     // otherwise make KGP skip auto-applying the default template and emit a "template not applied"
@@ -16,15 +14,12 @@ kotlin {
     applyDefaultHierarchyTemplate()
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.ui.atoms"
-        compileSdk = ProjectConfiguration.COMPILE_SDK
-        minSdk = ProjectConfiguration.MIN_SDK
         // P4-4: design-system tests run as JVM host tests (testAndroidHostTest) under Robolectric.
         // Robolectric needs the merged Android resources/manifest to inflate the Compose test host.
         withHostTest {
             isIncludeAndroidResources = true
         }
     }
-    listOf(iosArm64(), iosSimulatorArm64()).forEach { it.binaries.framework { baseName = "shared_ui_atoms" } }
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUiApi)

@@ -21,7 +21,8 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colors
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
 
 /**
  * The standard screen template: a [FrnkTopAppBar] pinned at the top over a single edge-to-edge
@@ -47,7 +48,7 @@ fun FrnkScreenScaffold(
     modifier: Modifier = Modifier,
     containerColor: Color = Theme[colors][colorBackground],
     bottomInset: Dp = 0.dp,
-    contentPadding: PaddingValues = PaddingValues(FrnkSpacing.lg),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
     onNavigationClick: () -> Unit = {},
     onActionClick: (FrnkTopAppBarAction) -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},

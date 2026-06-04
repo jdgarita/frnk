@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControl
 import dev.jdgarita.frnk.ui.atoms.FrnkSegmentedControlState
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.theme.Appearance
 
 private val themeOptions = listOf("System", "Light", "Dark")
@@ -16,12 +15,7 @@ private val themeOptions = listOf("System", "Light", "Dark")
 private fun FrnkSegmentedControl_Skeleton_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkSegmentedControl(
-            state =
-                FrnkSegmentedControlState(
-                    options = themeOptions,
-                    selectedIndex = 0,
-                    skeleton = FrnkSkeleton(enabled = true),
-                ),
+            state = FrnkSegmentedControlState.Skeleton,
             onOptionSelected = {},
             modifier = Modifier.fillMaxWidth(),
         )
@@ -33,17 +27,17 @@ private fun FrnkSegmentedControl_Skeleton_Light() {
 private fun FrnkSegmentedControl_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkSegmentedControl(
-            state = FrnkSegmentedControlState(options = themeOptions, selectedIndex = 0),
+            state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 0),
             onOptionSelected = {},
             modifier = Modifier.fillMaxWidth(),
         )
         FrnkSegmentedControl(
-            state = FrnkSegmentedControlState(options = themeOptions, selectedIndex = 1),
+            state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 1),
             onOptionSelected = {},
             modifier = Modifier.fillMaxWidth(),
         )
         FrnkSegmentedControl(
-            state = FrnkSegmentedControlState(options = themeOptions, selectedIndex = 2),
+            state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 2),
             onOptionSelected = {},
             modifier = Modifier.fillMaxWidth(),
         )
@@ -55,7 +49,7 @@ private fun FrnkSegmentedControl_Light() {
 private fun FrnkSegmentedControl_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         FrnkSegmentedControl(
-            state = FrnkSegmentedControlState(options = themeOptions, selectedIndex = 1),
+            state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 1),
             onOptionSelected = {},
             modifier = Modifier.fillMaxWidth(),
         )

@@ -5,7 +5,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface
 import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
 import dev.jdgarita.frnk.ui.organisms.FrnkListSection
@@ -21,7 +20,7 @@ import dev.jdgarita.frnk.ui.theme.icons
 private fun chevronTrailing() {
     FrnkIcon(
         state =
-            FrnkIconState(
+            FrnkIconState.Content(
                 imageVector = Theme[icons][iconChevronRight],
                 contentDescription = null,
                 tint = colorOnSurfaceVariant,
@@ -32,15 +31,15 @@ private fun chevronTrailing() {
 private val accountRows: List<FrnkListRowState>
     @Composable get() =
         listOf(
-            FrnkListRowState(
+            FrnkListRowState.Content(
                 title = "Notifications",
                 subtitle = "Push, email and in-app alerts",
-                icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
             ),
-            FrnkListRowState(
+            FrnkListRowState.Content(
                 title = "Preferences",
                 subtitle = "Theme, language and units",
-                icon = FrnkIconState(Theme[icons][iconSettings], contentDescription = null),
+                icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null),
             ),
         )
 
@@ -82,7 +81,7 @@ private fun FrnkListSection_Skeleton_Light() {
                 FrnkListSectionState(
                     title = "Account",
                     rows =
-                        accountRows.map { it.copy(skeleton = FrnkSkeleton(enabled = true)) },
+                        List(3) { FrnkListRowState.Skeleton },
                 ),
         )
     }

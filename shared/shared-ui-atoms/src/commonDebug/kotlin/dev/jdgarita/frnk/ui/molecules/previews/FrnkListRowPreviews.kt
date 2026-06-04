@@ -5,7 +5,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface
 import dev.jdgarita.frnk.ui.molecules.FrnkListRow
 import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
@@ -25,7 +24,7 @@ import dev.jdgarita.frnk.ui.theme.icons
 private fun chevronTrailing() {
     FrnkIcon(
         state =
-            FrnkIconState(
+            FrnkIconState.Content(
                 imageVector = Theme[icons][iconChevronRight],
                 contentDescription = null,
                 tint = colorOnSurfaceVariant,
@@ -39,25 +38,25 @@ private fun FrnkListRow_Variants_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkListRow(
             state =
-                FrnkListRowState(
+                FrnkListRowState.Content(
                     title = "Notifications",
                     subtitle = "Push, email and in-app alerts",
-                    icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                 ),
             onClick = {},
             trailing = { chevronTrailing() },
         )
         FrnkListRow(
-            state = FrnkListRowState(title = "Title only"),
+            state = FrnkListRowState.Content(title = "Title only"),
             onClick = {},
             trailing = { chevronTrailing() },
         )
         FrnkListRow(
             state =
-                FrnkListRowState(
+                FrnkListRowState.Content(
                     title = "Non-interactive row",
                     subtitle = "No onClick, no trailing",
-                    icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                 ),
         )
     }
@@ -68,13 +67,7 @@ private fun FrnkListRow_Variants_Light() {
 private fun FrnkListRow_Skeleton_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkListRow(
-            state =
-                FrnkListRowState(
-                    title = "Loading row",
-                    subtitle = "Loading subtitle",
-                    icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
-                    skeleton = FrnkSkeleton(enabled = true),
-                ),
+            state = FrnkListRowState.Skeleton,
             onClick = {},
             trailing = { chevronTrailing() },
         )
@@ -87,10 +80,10 @@ private fun FrnkListRow_Swipe_Open_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkListRow(
             state =
-                FrnkListRowState(
+                FrnkListRowState.Content(
                     title = "Project Apollo",
                     subtitle = "Swipe left to reveal actions",
-                    icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                 ),
             onClick = {},
             swipe =
@@ -98,11 +91,11 @@ private fun FrnkListRow_Swipe_Open_Light() {
                     rightActions =
                         listOf(
                             FrnkSwipeAction(
-                                icon = FrnkIconState(Theme[icons][iconError], contentDescription = "Delete"),
+                                icon = FrnkIconState.Content(Theme[icons][iconError], contentDescription = "Delete"),
                                 label = "Delete",
                             ),
                             FrnkSwipeAction(
-                                icon = FrnkIconState(Theme[icons][iconRestore], contentDescription = "Archive"),
+                                icon = FrnkIconState.Content(Theme[icons][iconRestore], contentDescription = "Archive"),
                                 containerColor = colorSuccess,
                                 contentColor = colorOnSuccess,
                                 label = "Archive",
@@ -119,10 +112,10 @@ private fun FrnkListRow_Variants_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         FrnkListRow(
             state =
-                FrnkListRowState(
+                FrnkListRowState.Content(
                     title = "Notifications",
                     subtitle = "Push, email and in-app alerts",
-                    icon = FrnkIconState(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
                 ),
             onClick = {},
             trailing = { chevronTrailing() },

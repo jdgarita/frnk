@@ -21,7 +21,7 @@ private fun FrnkEmptyState_WithAction_Light() {
             state =
                 FrnkEmptyStateState(
                     icon =
-                        FrnkIconState(
+                        FrnkIconState.Content(
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = null,
                             size = FrnkIconSize.emptyState,
@@ -44,7 +44,7 @@ private fun FrnkEmptyState_NoAction_Light() {
             state =
                 FrnkEmptyStateState(
                     icon =
-                        FrnkIconState(
+                        FrnkIconState.Content(
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = null,
                             size = FrnkIconSize.emptyState,
@@ -64,7 +64,7 @@ private fun FrnkEmptyState_WithAction_Dark() {
             state =
                 FrnkEmptyStateState(
                     icon =
-                        FrnkIconState(
+                        FrnkIconState.Content(
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = null,
                             size = FrnkIconSize.emptyState,

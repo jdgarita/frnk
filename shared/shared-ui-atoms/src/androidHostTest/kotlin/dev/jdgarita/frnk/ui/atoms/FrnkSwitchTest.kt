@@ -16,14 +16,14 @@ class FrnkSwitchTest : RobolectricComposeTest() {
     @Test
     fun checkedState_reportsOn() =
         runComposeUiTest {
-            setFrnkContent { FrnkSwitch(state = FrnkSwitchState(checked = true), onCheckedChange = {}) }
+            setFrnkContent { FrnkSwitch(state = FrnkSwitchState.Content(checked = true), onCheckedChange = {}) }
             onNode(isToggleable()).assertIsOn()
         }
 
     @Test
     fun uncheckedState_reportsOff() =
         runComposeUiTest {
-            setFrnkContent { FrnkSwitch(state = FrnkSwitchState(checked = false), onCheckedChange = {}) }
+            setFrnkContent { FrnkSwitch(state = FrnkSwitchState.Content(checked = false), onCheckedChange = {}) }
             onNode(isToggleable()).assertIsOff()
         }
 
@@ -32,7 +32,7 @@ class FrnkSwitchTest : RobolectricComposeTest() {
         runComposeUiTest {
             var received: Boolean? = null
             setFrnkContent {
-                FrnkSwitch(state = FrnkSwitchState(checked = false), onCheckedChange = { received = it })
+                FrnkSwitch(state = FrnkSwitchState.Content(checked = false), onCheckedChange = { received = it })
             }
 
             onNode(isToggleable()).performClick()
@@ -46,7 +46,7 @@ class FrnkSwitchTest : RobolectricComposeTest() {
             var received: Boolean? = null
             setFrnkContent {
                 FrnkSwitch(
-                    state = FrnkSwitchState(checked = false, enabled = false),
+                    state = FrnkSwitchState.Content(checked = false, enabled = false),
                     onCheckedChange = { received = it },
                 )
             }
@@ -63,13 +63,13 @@ class FrnkSwitchTest : RobolectricComposeTest() {
             var received: Boolean? = null
             setFrnkContent {
                 FrnkSwitch(
-                    state = FrnkSwitchState(checked = true, skeleton = FrnkSkeleton(enabled = true)),
+                    state = FrnkSwitchState.Skeleton,
                     onCheckedChange = { received = it },
                 )
             }
 
-            // Interaction is gated by enabled and not-skeleton, so the loading switch is inert.
-            onNode(isToggleable()).assertIsNotEnabled().performClick()
+            // The skeleton state renders an inert placeholder — no toggleable node exists to tap.
+            onNode(isToggleable()).assertDoesNotExist()
             assertNull(received)
         }
 }

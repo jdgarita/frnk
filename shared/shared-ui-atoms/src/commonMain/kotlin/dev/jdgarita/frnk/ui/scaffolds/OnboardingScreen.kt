@@ -44,12 +44,15 @@ import dev.jdgarita.frnk.ui.theme.iconClose
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingXs
 import dev.jdgarita.frnk.ui.theme.stringBack
 import dev.jdgarita.frnk.ui.theme.stringClose
 import dev.jdgarita.frnk.ui.theme.stringGetStarted
 import dev.jdgarita.frnk.ui.theme.stringNext
 import dev.jdgarita.frnk.ui.theme.strings
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -131,14 +134,14 @@ fun OnboardingScreenContent(
             modifier
                 .fillMaxSize()
                 .background(Theme[colors][colorBackground])
-                .padding(horizontal = FrnkSpacing.lg, vertical = FrnkSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                .padding(horizontal = Theme[spacing][spacingLg], vertical = Theme[spacing][spacingMd]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             FrnkIconButton(
                 modifier = Modifier.align(Alignment.TopEnd),
                 state =
-                    FrnkIconButtonState(
+                    FrnkIconButtonState.Content(
                         imageVector = Theme[icons][iconClose],
                         contentDescription = Theme[strings][stringClose],
                         tint = colorOnSurfaceVariant,
@@ -180,8 +183,8 @@ fun OnboardingScreenContent(
 @Composable
 private fun OnboardingPageContent(state: OnboardingPageState) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = FrnkSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md, Alignment.CenterVertically),
+        modifier = Modifier.fillMaxSize().padding(horizontal = Theme[spacing][spacingMd]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd], Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         state.icon?.let { FrnkIcon(state = it) }
@@ -199,7 +202,7 @@ private fun OnboardingNavigationRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (isFirstPage) {
@@ -207,7 +210,7 @@ private fun OnboardingNavigationRow(
         } else {
             FrnkButton(
                 state =
-                    FrnkButtonState(
+                    FrnkButtonState.Content(
                         text = Theme[strings][stringBack],
                         variant = FrnkButtonVariant.Outlined,
                     ),
@@ -218,7 +221,7 @@ private fun OnboardingNavigationRow(
 
         val nextLabel = Theme[strings][if (isLastPage) stringGetStarted else stringNext]
         FrnkButton(
-            state = FrnkButtonState(text = nextLabel),
+            state = FrnkButtonState.Content(text = nextLabel),
             onClick = onNext,
             modifier = Modifier.weight(1f),
         )
@@ -235,7 +238,7 @@ private fun OnboardingPips(
     val inactiveColor = Theme[colors][colorOutline]
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(pageCount) { index ->
@@ -270,4 +273,5 @@ private fun FrnkTextState.centered(): FrnkTextState =
         is FrnkTextState.BodySmall -> copy(textAlign = TextAlign.Center)
         is FrnkTextState.AppName -> copy(textAlign = TextAlign.Center)
         is FrnkTextState.Raw -> copy(textAlign = TextAlign.Center)
+        FrnkTextState.Skeleton -> this
     }

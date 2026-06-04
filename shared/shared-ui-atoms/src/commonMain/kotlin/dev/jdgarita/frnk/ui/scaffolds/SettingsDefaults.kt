@@ -161,7 +161,7 @@ fun rememberDefaultSettingsState(
         iconPrivacyVec,
         iconTermsVec,
     ) {
-        fun rowIcon(vector: ImageVector) = FrnkIconState(imageVector = vector, contentDescription = null, tint = colorPrimary)
+        fun rowIcon(vector: ImageVector) = FrnkIconState.Content(imageVector = vector, contentDescription = null, tint = colorPrimary)
 
         val sections =
             buildList {

@@ -19,6 +19,9 @@ allprojects {
                 .pluginId,
     )
     extensions.configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        // NB: this is the ktlint *engine* version, distinct from `libs.plugins.ktlint` (14.2.0), which
+        // is the org.jlleitschuh.gradle.ktlint *Gradle plugin* version applied just above. They are two
+        // separate artifacts and intentionally differ — not a version conflict.
         version.set("1.3.1")
         ignoreFailures.set(false)
         filter { exclude { it.file.path.contains("build/") } }

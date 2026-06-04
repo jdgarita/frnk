@@ -12,32 +12,56 @@ import com.composeunstyled.UnstyledIcon
 import com.composeunstyled.theme.Theme
 import com.composeunstyled.theme.ThemeToken
 import dev.jdgarita.frnk.ui.theme.colors
-import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
+import dev.jdgarita.frnk.ui.theme.iconSizeMd
+import dev.jdgarita.frnk.ui.theme.iconSizes
+import dev.jdgarita.frnk.ui.theme.shapeFull
 
-@Immutable
-data class FrnkIconState(
-    val imageVector: ImageVector,
-    val contentDescription: String?,
-    val size: Dp = FrnkIconSize.md,
-    val tint: ThemeToken<Color>? = null,
-    val tintAlpha: Float = 1f,
-    val skeleton: FrnkSkeleton = FrnkSkeleton(),
-)
+/**
+ * Sealed visual state for [FrnkIcon]. [Content] renders the glyph; [Skeleton] renders a loading
+ * placeholder block. Both [Content.size] and [Skeleton.size] default to `null` = the theme's icon-size
+ * axis (`Theme[iconSizes][iconSizeMd]`), so a host's `iconSizeOverrides` apply to default-sized icons;
+ * pass an explicit token (e.g. `Theme[iconSizes][iconSizeLg]`) for a specific size. Toolkit-standard
+ * sealed-state + `Skeleton` shape — see HOST_ALIGNMENT.md → "Component style guide".
+ */
+sealed interface FrnkIconState {
+    @Immutable
+    data class Content(
+        val imageVector: ImageVector,
+        val contentDescription: String?,
+        val size: Dp? = null,
+        val tint: ThemeToken<Color>? = null,
+        val tintAlpha: Float = 1f,
+    ) : FrnkIconState
+
+    /**
+     * Loading placeholder. [size] `null` uses the theme default icon size; pass the **eventual icon's
+     * size** so the placeholder matches its footprint and the layout doesn't jump when content loads.
+     */
+    data class Skeleton(
+        val size: Dp? = null,
+    ) : FrnkIconState
+}
 
 @Composable
 fun FrnkIcon(
     state: FrnkIconState,
     modifier: Modifier = Modifier,
 ) {
-    val tintToken = state.tint
-    val resolvedTint =
-        (if (tintToken == null) LocalContentColor.current else Theme[colors][tintToken])
-            .copy(alpha = state.tintAlpha)
+    when (state) {
+        is FrnkIconState.Content -> {
+            val tintToken = state.tint
+            val resolvedTint =
+                (if (tintToken == null) LocalContentColor.current else Theme[colors][tintToken])
+                    .copy(alpha = state.tintAlpha)
+            UnstyledIcon(
+                imageVector = state.imageVector,
+                contentDescription = state.contentDescription,
+                tint = resolvedTint,
+                modifier = modifier.size(state.size ?: Theme[iconSizes][iconSizeMd]),
+            )
+        }
 
-    UnstyledIcon(
-        imageVector = state.imageVector,
-        contentDescription = state.contentDescription,
-        tint = resolvedTint,
-        modifier = modifier.size(state.size).frnkSkeleton(state.skeleton),
-    )
+        is FrnkIconState.Skeleton ->
+            FrnkSkeletonBox(modifier.size(state.size ?: Theme[iconSizes][iconSizeMd]), shape = shapeFull)
+    }
 }
