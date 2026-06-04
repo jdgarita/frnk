@@ -13,9 +13,11 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
+import dev.jdgarita.frnk.ui.theme.colorOnSurface
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
+import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
 
 /**
@@ -44,8 +46,17 @@ fun FrnkAdaptiveBottomNavBar(
     val selectedColor = Theme[colors][colorPrimary]
     val unselectedColor = Theme[colors][colorOnSurfaceVariant]
     val indicatorColor = Theme[colors][colorPrimaryContainer]
+    // Theme the bar's *surface* too — otherwise the Android Material3 NavigationBar falls back to
+    // NavigationBarDefaults.containerColor (the unthemed Material baseline), so it ignores the
+    // FrnkTheme light/dark palette and stays light in dark mode. (Calf's iOS UITabBar takes no
+    // background token in 0.12.0 — it keeps its native translucent material, which is the desired
+    // native look there.)
+    val containerColor = Theme[colors][colorSurface]
+    val onContainerColor = Theme[colors][colorOnSurface]
     AdaptiveNavigationBar(
         modifier = modifier,
+        containerColor = containerColor,
+        contentColor = onContainerColor,
         // iOS path: native UITabBar. Calf rasterises each ImageVector to a UIImage; the configuration maps
         // selected/unselected colors onto UITabBar.tintColor / unselectedItemTintColor.
         iosItems = items.map { UIKitUITabBarItem(title = it.label, image = UIKitImage.Vector(it.icon)) },

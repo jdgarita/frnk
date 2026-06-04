@@ -1,5 +1,6 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -10,16 +11,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBar
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarDefaults
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.theme.colorBackground
+import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import kotlin.math.roundToInt
 
@@ -41,12 +46,18 @@ import kotlin.math.roundToInt
  *
  * This is a layout scaffold (no MVI/ViewModel) — the top bar's title/actions/search are driven purely
  * by [topBar] and its callbacks, which mirror [FrnkTopAppBar].
+ *
+ * [containerColor] is painted behind the whole screen (the content draws over it), so every screen
+ * built on this template follows the active light/dark palette without each host painting its own
+ * background. Defaults to `Theme[colors][colorBackground]`; override (e.g. `colorSurface`, or
+ * `Color.Transparent` when the host paints its own backdrop behind the scaffold).
  */
 @Composable
 fun FrnkScreenScaffold(
     topBar: FrnkTopAppBarState,
     collapsibleBars: CollapsibleBarsState,
     modifier: Modifier = Modifier,
+    containerColor: Color = Theme[colors][colorBackground],
     bottomInset: Dp = 0.dp,
     contentPadding: PaddingValues = PaddingValues(FrnkSpacing.lg),
     onNavigationClick: () -> Unit = {},
@@ -78,6 +89,7 @@ fun FrnkScreenScaffold(
         modifier =
             modifier
                 .fillMaxSize()
+                .background(containerColor)
                 .nestedScroll(collapsibleBars.nestedScrollConnection),
     ) {
         content(mergedPadding)
