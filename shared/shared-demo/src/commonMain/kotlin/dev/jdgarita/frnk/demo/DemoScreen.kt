@@ -90,7 +90,6 @@ import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
-import dev.jdgarita.frnk.ui.scaffolds.SettingsClickableRowState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreen
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState
@@ -113,7 +112,6 @@ import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconError
-import dev.jdgarita.frnk.ui.theme.iconManageSubscription
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconPrivacy
 import dev.jdgarita.frnk.ui.theme.iconRestore
@@ -1313,12 +1311,10 @@ private fun demoSettingsState(
 @Composable
 private fun demoExtraSettingsSections(): List<SettingsSectionState> {
     // Haptic feedback lives in the toolkit's *default* catalog now (a real `LocalFrnkHaptics`-backed
-    // toggle), so the demo no longer hand-rolls a haptics row — it just appends a couple of demo-only
-    // rows to keep the Settings screen long enough that the collapsing bars engage.
+    // toggle), so the demo no longer hand-rolls a haptics row — it just appends a demo-only Privacy
+    // section to keep the Settings screen long enough that the collapsing bars engage.
     val analyticsIcon = Theme[icons][iconPrivacy]
-    val accountIcon = Theme[icons][iconManageSubscription]
-    val signOutIcon = Theme[icons][iconRestore]
-    return remember(analyticsIcon, accountIcon, signOutIcon) {
+    return remember(analyticsIcon) {
         fun rowIcon(vector: ImageVector) = FrnkIconState(imageVector = vector, contentDescription = null, tint = colorPrimary)
         listOf(
             SettingsSectionState(
@@ -1331,24 +1327,6 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
                             title = "Share analytics",
                             subtitle = "Help improve the app",
                             checked = true,
-                        ),
-                    ),
-            ),
-            SettingsSectionState(
-                title = "Account",
-                rows =
-                    listOf(
-                        SettingsClickableRowState(
-                            id = "manage_account",
-                            icon = rowIcon(accountIcon),
-                            title = "Manage account",
-                            action = SettingsAction.Custom("manage_account"),
-                        ),
-                        SettingsClickableRowState(
-                            id = "sign_out",
-                            icon = rowIcon(signOutIcon),
-                            title = "Sign out",
-                            action = SettingsAction.Custom("sign_out"),
                         ),
                     ),
             ),
