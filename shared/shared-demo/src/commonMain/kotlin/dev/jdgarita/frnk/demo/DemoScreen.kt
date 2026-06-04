@@ -24,6 +24,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
@@ -666,6 +667,9 @@ private fun SettingsTab(
 ) {
     FrnkScreenScaffold(
         topBar = FrnkTopAppBarState(title = "Settings"),
+        // SettingsScreenContent paints its own colorBackground (so it works standalone too), so let the
+        // scaffold's backdrop be transparent here to avoid a redundant full-screen overdraw.
+        containerColor = Color.Transparent,
         bottomInset = bottomInset,
         // Extra bottom padding so the footer/version clears the floating bottom nav bar with breathing
         // room (the default lg leaves it sitting right on the bar; xl gives a more comfortable gap).
