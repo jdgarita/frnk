@@ -103,7 +103,7 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringRateApp to "Rate the App",
         stringPrivacyPolicy to "Privacy Policy",
         stringTermsOfService to "Terms of Service",
-        stringSettingsFooter to "Made in 🇨🇷 by JD with",
+        stringSettingsFooter to "Built by JD in 🇨🇷",
         stringFeedbackSubject to "Feedback",
         stringFeedbackBodyHint to "Tell us what you think:",
         stringAppName to "frnk",
