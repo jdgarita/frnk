@@ -7,7 +7,6 @@ import com.composables.icons.lucide.BookOpen
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.CircleAlert
-import com.composables.icons.lucide.Coffee
 import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.FileText
@@ -34,7 +33,6 @@ val iconError = ThemeToken<ImageVector>("icon_error")
 // Settings scaffold icons. Used by the default settings catalog
 // (SettingsDefaults.rememberDefaultSettingsState); hosts override per token.
 val iconChevronRight = ThemeToken<ImageVector>("icon_chevron_right")
-val iconCoffee = ThemeToken<ImageVector>("icon_coffee")
 val iconUpgrade = ThemeToken<ImageVector>("icon_upgrade")
 val iconRestore = ThemeToken<ImageVector>("icon_restore")
 val iconManageSubscription = ThemeToken<ImageVector>("icon_manage_subscription")
@@ -60,7 +58,6 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconCheck to Lucide.Check,
         iconError to Lucide.CircleAlert,
         iconChevronRight to Lucide.ChevronRight,
-        iconCoffee to Lucide.Coffee,
         iconUpgrade to Lucide.Crown,
         iconRestore to Lucide.RefreshCw,
         iconManageSubscription to Lucide.CreditCard,
