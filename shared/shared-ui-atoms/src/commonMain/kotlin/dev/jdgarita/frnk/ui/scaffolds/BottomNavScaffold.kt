@@ -61,8 +61,9 @@ fun BottomNavScaffold(
  * Stateless renderer: the selected destination fills the whole area and the [FrnkBottomNavBar] floats
  * on top, pinned to the bottom and permanently visible. Because the bar's wrapper is transparent, the
  * destination shows through around and behind the pill as it scrolls. [tabContent] is handed a
- * [PaddingValues] whose bottom equals [FrnkBottomNavBarDefaults.BarHeight] — apply it to scrollable
- * content so the last item can rest just above the pill rather than under it. [onIntent] receives
+ * [PaddingValues] whose bottom equals [FrnkBottomNavBarDefaults.reservedHeight] (the pill's body plus
+ * the system-nav inset it floats above) — apply it to scrollable content so the last item rests just
+ * above the pill rather than under it (or under the system nav). [onIntent] receives
  * [BottomNavIntent.TabSelected] when a tab is tapped.
  */
 @Composable
@@ -80,7 +81,9 @@ fun BottomNavScaffoldContent(
     ) {
         tabContent(
             state.selectedTab,
-            PaddingValues(bottom = FrnkBottomNavBarDefaults.BarHeight),
+            // Full bar footprint = body + the system-nav inset the pill floats above, so the last item
+            // clears both the pill and the system nav (see FrnkBottomNavBarDefaults.reservedHeight).
+            PaddingValues(bottom = FrnkBottomNavBarDefaults.reservedHeight),
         )
 
         FrnkBottomNavBar(

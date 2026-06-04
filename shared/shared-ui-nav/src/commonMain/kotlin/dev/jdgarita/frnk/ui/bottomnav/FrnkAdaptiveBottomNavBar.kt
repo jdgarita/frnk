@@ -1,11 +1,16 @@
 package dev.jdgarita.frnk.ui.bottomnav
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
@@ -19,6 +24,29 @@ import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
+
+/** Shared layout metrics for [FrnkAdaptiveBottomNavBar]. */
+object FrnkAdaptiveBottomNavBarDefaults {
+    /**
+     * Body height of the bar (the Material3 `NavigationBar`'s 80.dp; the native iOS `UITabBar` lands
+     * close). Does **not** include the bottom system-bar inset the bar floats above — use
+     * [reservedHeight] when you need the bar's full on-screen footprint.
+     */
+    val BarHeight: Dp = 80.dp
+
+    /**
+     * The bar's **full** reserved height = [BarHeight] + the bottom navigation-bar inset the bar sits
+     * above (the Material3 `NavigationBar` consumes `WindowInsets.navigationBars`, so its real height
+     * grows by that inset on devices with a non-zero bottom inset). Hosts that **overlay** the bar over
+     * scrollable content (e.g. a bar pinned at `Alignment.BottomCenter` over a `NavHost`) must reserve
+     * this much as the content's bottom inset so the last item clears the bar — reserving only
+     * [BarHeight] clips it. (Hosts using [FrnkAdaptiveBottomNavScaffold], which lays content *above* the
+     * bar rather than behind it, don't need this — the scaffold already accounts for the bar's space.)
+     */
+    val reservedHeight: Dp
+        @Composable
+        get() = BarHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+}
 
 /**
  * The toolkit's **platform-adaptive** bottom navigation bar: a genuine native UIKit `UITabBar` on iOS and

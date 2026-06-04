@@ -7,9 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -70,12 +74,22 @@ private const val ACTIVE_TINT_FRACTION = 0.14f
 /** Shared layout metrics for the floating bottom-nav bar. */
 object FrnkBottomNavBarDefaults {
     /**
-     * Total vertical space the floating bar occupies (wrapper insets + pill height). Hosts that let
-     * content scroll *behind* the bar should reserve this as bottom content padding so the last item
-     * can settle just above the pill instead of being trapped under it — `BottomNavScaffoldContent`
-     * passes exactly this through to its `tabContent` slot.
+     * Body height of the floating bar (wrapper insets + pill height), **excluding** the bottom
+     * system-bar inset the bar floats above. Use [reservedHeight] for the value to pad scrollable
+     * content with.
      */
     val BarHeight: Dp = WrapperTopPadding + PillInnerPadding * 2 + ButtonSize + WrapperBottomPadding
+
+    /**
+     * The bar's **full** reserved height = [BarHeight] + the bottom navigation-bar inset the pill
+     * floats above (the bar applies `WindowInsets.navigationBars` so it never sits over the system nav
+     * buttons). Hosts that let content scroll *behind* the bar reserve this as bottom content padding so
+     * the last item settles just above the pill instead of being trapped under it (or under the system
+     * nav) — `BottomNavScaffoldContent` passes exactly this through to its `tabContent` slot.
+     */
+    val reservedHeight: Dp
+        @Composable
+        get() = BarHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 }
 
 /**
@@ -108,6 +122,11 @@ fun FrnkBottomNavBar(
         modifier =
             modifier
                 .fillMaxWidth()
+                // Float above the system navigation bar (edge-to-edge hosts) so the pill never sits over
+                // the system nav buttons; the wrapper insets below then space it off that. A no-op when
+                // the host isn't edge-to-edge (the inset is 0). FrnkBottomNavBarDefaults.reservedHeight
+                // adds the same inset so content reserves the bar's full footprint.
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(
                     PaddingValues(
                         start = WrapperHorizontalPadding,
