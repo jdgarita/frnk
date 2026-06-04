@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -230,9 +233,12 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         }
     val selectedTabIndex: Int? = selectedTabRoute?.let { route -> tabRoutes.indexOf(route).takeIf { it >= 0 } }
 
-    // Destinations under the opaque adaptive bottom bar reserve its height so the last item clears it;
-    // full-screen pushes (Onboarding / Paywall) own no tab and hide the bar.
-    val barInset = DemoBottomBarHeight
+    // Destinations under the opaque adaptive bottom bar reserve its full height so the last item clears
+    // it; full-screen pushes (Onboarding / Paywall) own no tab and hide the bar. The adaptive bar sits
+    // ABOVE the system navigation bar (Material3 NavigationBar consumes WindowInsets.navigationBars), so
+    // its real height is the bar body PLUS that inset — reserving only the body clips the last item on
+    // devices with a non-zero bottom inset (3-button nav, etc.).
+    val barInset = DemoBottomBarHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     Box(modifier = Modifier.fillMaxSize()) {
         FrnkNavHost(
@@ -334,8 +340,9 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
     }
 }
 
-// Height reserved for the opaque adaptive bottom bar (≈Material3 NavigationBar; the iOS UITabBar +
-// safe-area inset lands close enough that a single reserve clears both).
+// Body height of the opaque adaptive bottom bar (Material3 NavigationBar's 80.dp). The bottom
+// system-bar/safe-area inset the bar sits above is added separately at the reserve site (`barInset`),
+// via WindowInsets.navigationBars, so destinations reserve the bar's *full* occupied height.
 private val DemoBottomBarHeight = 80.dp
 
 /**
