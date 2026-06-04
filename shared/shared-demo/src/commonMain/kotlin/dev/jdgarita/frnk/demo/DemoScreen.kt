@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -84,7 +83,6 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
-import dev.jdgarita.frnk.ui.scaffolds.CollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
@@ -97,7 +95,6 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
 import dev.jdgarita.frnk.ui.scaffolds.rememberBottomNavScaffoldState
-import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
@@ -213,13 +210,8 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         )
     val tabRoutes = remember { listOf<DemoRoute>(DemoRoute.Home, DemoRoute.Components, DemoRoute.Settings) }
 
-    // A single collapse coordinator shared by every destination's top bar and the one floating bottom
-    // bar, so they hide/reveal together on scroll. Reset to "shown" on every destination change — keyed
-    // on the back-stack entry id (unique per instance), so even two ComponentDetail(name)s reset.
-    val collapsibleBars = rememberCollapsibleBarsState()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    LaunchedEffect(backStackEntry?.id) { collapsibleBars.reset() }
 
     // The tab route that owns the current destination — drives the pill highlight (its index in
     // tabRoutes) and whether the bar shows at all. Pushed full screens (Onboarding / Paywall) own no
@@ -250,7 +242,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             frnkComposable<DemoRoute.Home> {
                 HomeTab(
                     vm = vm,
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onEffect = onEffect,
                 )
@@ -259,7 +250,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                 ComponentsListScreen(
                     state = state,
                     onIntent = vm::send,
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onOpenComponent = { name -> navigator.navigate(DemoRoute.ComponentDetail(name)) },
                 )
@@ -267,7 +257,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             frnkComposable<DemoRoute.ComponentDetail> { route ->
                 ComponentDetailScreen(
                     name = route.name,
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onBack = { navigator.popBackStack() },
                 ) {
@@ -277,7 +266,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             frnkComposable<DemoRoute.Settings> {
                 SettingsTab(
                     initialState = demoSettingsState(appearanceController.appearance, state.isPro, state.isGodMode),
-                    collapsibleBars = collapsibleBars,
                     bottomInset = barInset,
                     onEffect = settingsHandler,
                     // Re-seed the settings VM when entitlement state changes so the Subscription section
@@ -358,7 +346,6 @@ private val DemoBottomBarHeight = 80.dp
 @Composable
 private fun HomeTab(
     vm: DemoViewModel,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onEffect: (DemoEffect) -> Unit,
 ) {
@@ -377,7 +364,6 @@ private fun HomeTab(
                 title = "frnk",
                 actions = if (homeState.isPro) emptyList() else listOf(upgradeAction),
             ),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         onActionClick = { action -> if (action.key == upgradeAction.key) vm.send(DemoIntent.RequestUpgrade) },
     ) { state, onIntent, padding ->
@@ -541,7 +527,6 @@ private fun HomeTab(
 private fun ComponentsListScreen(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onOpenComponent: (String) -> Unit,
 ) {
@@ -566,7 +551,6 @@ private fun ComponentsListScreen(
                 searchQuery = query,
                 searchPlaceholder = "Search components",
             ),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         onActionClick = { onIntent(DemoIntent.SearchOpened) },
         onSearchQueryChange = { onIntent(DemoIntent.SearchQueryChanged(it)) },
@@ -634,14 +618,13 @@ private fun ComponentRow(
 
 /**
  * Pushed detail destination for a single component — its name in the top bar over a scrollable list of
- * all that component's variants. Uses the same [FrnkScreenScaffold] template as every other screen (so
- * its bars collapse on scroll too). Back is handled by the `FrnkNavHost` (system back / swipe-back pop
- * the stack automatically); the top bar's back arrow calls [onBack].
+ * all that component's variants. Uses the same [FrnkScreenScaffold] template as every other screen.
+ * Back is handled by the `FrnkNavHost` (system back / swipe-back pop the stack automatically); the top
+ * bar's back arrow calls [onBack].
  */
 @Composable
 private fun ComponentDetailScreen(
     name: String,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onBack: () -> Unit,
     content: @Composable () -> Unit,
@@ -653,7 +636,6 @@ private fun ComponentDetailScreen(
                 navigationIcon = Theme[icons][iconBack],
                 navigationContentDescription = "Back",
             ),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         onNavigationClick = onBack,
     ) { padding ->
@@ -678,14 +660,12 @@ private fun ComponentDetailScreen(
 @Composable
 private fun SettingsTab(
     initialState: SettingsScreenState,
-    collapsibleBars: CollapsibleBarsState,
     bottomInset: Dp,
     onEffect: (SettingsEffect) -> Unit,
     vmKey: String? = null,
 ) {
     FrnkScreenScaffold(
         topBar = FrnkTopAppBarState(title = "Settings"),
-        collapsibleBars = collapsibleBars,
         bottomInset = bottomInset,
         // Extra bottom padding so the footer/version clears the floating bottom nav bar with breathing
         // room (the default lg leaves it sitting right on the bar; xl gives a more comfortable gap).

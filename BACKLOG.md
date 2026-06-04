@@ -537,11 +537,10 @@ platform), `androidDemoApp` (real `SharedPreferences`-backed store, device-verif
 
 ### P4-4 — Backfill tests for the existing design system
 **Description:** Add Compose/unit tests for the highest-value existing atoms and
-scaffolds (state-driven rendering, skeleton toggling, collapsible-bars logic).
+scaffolds (state-driven rendering, skeleton toggling).
 **Rationale (priority):** The design system is the most-used surface and is
 currently untested; do this once the harness (P0-3) exists.
 **Acceptance Criteria:**
-- [ ] `CollapsibleBarsState` scroll logic unit-tested.
 - [ ] At least the most complex atoms (`FrnkSegmentedControl`, `FrnkSwitch`,
       `FrnkTopAppBar` search mode) have state-driven tests.
 

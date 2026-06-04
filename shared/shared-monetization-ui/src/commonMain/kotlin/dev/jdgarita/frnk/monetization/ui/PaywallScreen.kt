@@ -34,7 +34,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
-import dev.jdgarita.frnk.ui.scaffolds.rememberCollapsibleBarsState
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -83,7 +82,6 @@ fun PaywallScreen(
 ) {
     val vm: PaywallViewModel = koinViewModel(key = vmKey) { parametersOf(source) }
     val state by vm.state.collectAsStateWithLifecycle()
-    val collapsibleBars = rememberCollapsibleBarsState()
 
     EffectCollector(vm.effects, onEffect = onEffect)
 
@@ -94,7 +92,6 @@ fun PaywallScreen(
                 navigationIcon = Theme[icons][iconClose],
                 navigationContentDescription = Theme[strings][stringClose],
             ),
-        collapsibleBars = collapsibleBars,
         modifier = modifier,
         onNavigationClick = { vm.send(PaywallIntent.Close) },
     ) { padding ->
