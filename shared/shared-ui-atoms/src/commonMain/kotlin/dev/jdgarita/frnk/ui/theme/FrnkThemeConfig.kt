@@ -4,6 +4,7 @@ import androidx.compose.foundation.Indication
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -37,6 +38,19 @@ data class FrnkThemeConfig(
      * from `FrnkIconSize`; supply only the tokens you want to restyle.
      */
     val iconSizeOverrides: Map<ThemeToken<Dp>, Dp> = emptyMap(),
+    /**
+     * Host-supplied tokens for the optional `shadows` axis (`Theme[shadows][...]`). The toolkit's own
+     * atoms don't use elevation shadows, so this axis ships empty — a host with an elevation/shadow
+     * design language registers its own `ThemeToken<Shadow>` tokens here and reads them back under
+     * [FrnkTheme]. Tokens are matched by name (compose-unstyled `ThemeToken` is a by-name data class).
+     */
+    val shadowOverrides: Map<ThemeToken<Shadow>, Shadow> = emptyMap(),
+    /**
+     * Host-supplied tokens for the optional `indications` axis (`Theme[indications][...]`). Separate
+     * from [indication] (the single ambient `LocalIndication`): this lets a host register *named*
+     * indication variants (e.g. a bright vs. dim ripple) and select them per call site. Ships empty.
+     */
+    val indicationOverrides: Map<ThemeToken<Indication>, Indication> = emptyMap(),
     /**
      * When non-null, every bundled text style is rebuilt with this [FontFamily] before the host
      * [textStyleOverrides] are applied. Avoids forcing hosts to redeclare 15 text-style tokens

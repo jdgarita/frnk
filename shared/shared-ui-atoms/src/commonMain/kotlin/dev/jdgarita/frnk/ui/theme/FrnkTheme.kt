@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.ui.theme
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -42,6 +44,12 @@ val icons = ThemeProperty<ImageVector>("icons")
 // per token via FrnkThemeConfig.spacingOverrides / iconSizeOverrides.
 val spacing = ThemeProperty<Dp>("spacing")
 val iconSizes = ThemeProperty<Dp>("iconSizes")
+
+// Optional axes the toolkit's own atoms don't consume, but a host design language can populate via
+// FrnkThemeConfig.shadowOverrides / indicationOverrides and read back as Theme[shadows][...] /
+// Theme[indications][...]. Ship empty by default.
+val shadows = ThemeProperty<Shadow>("shadows")
+val indications = ThemeProperty<Indication>("indications")
 // endregion
 
 // region Color tokens.
@@ -336,6 +344,8 @@ private val FrnkPlatformTheme =
         properties[icons] = DefaultFrnkIcons + config.iconOverrides
         properties[spacing] = DefaultSpacing + config.spacingOverrides
         properties[iconSizes] = DefaultIconSizes + config.iconSizeOverrides
+        properties[shadows] = config.shadowOverrides
+        properties[indications] = config.indicationOverrides
 
         defaultTextStyle =
             textStylesForTheme[bodyLarge] ?: FrnkTypography.bodyLarge
