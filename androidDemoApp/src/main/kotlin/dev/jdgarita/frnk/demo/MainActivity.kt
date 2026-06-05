@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
         when (effect) {
             is DemoEffect.Toast -> Toast.makeText(this, effect.message, Toast.LENGTH_SHORT).show()
             // Navigation effects are now consumed inside DemoScreen (routed into the toolkit's
-            // FrnkNavHost back stack), so the host no longer surfaces them as toasts.
+            // FrnkNavDisplay back stack), so the host no longer surfaces them as toasts.
             is DemoEffect.Navigate -> Unit
         }
     }

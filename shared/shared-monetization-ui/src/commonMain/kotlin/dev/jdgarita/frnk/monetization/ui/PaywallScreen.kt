@@ -73,7 +73,7 @@ import org.koin.core.parameter.parametersOf
 /**
  * The toolkit's basic paywall — a full screen of stacked, selectable plan cards over a frnk-owned
  * [PaywallViewModel]. Hosts can ship their own paywall instead; this is mounted via
- * [frnkPaywallDestination] so the toolkit owns the route.
+ * [frnkPaywallNavigation] so the toolkit owns the route.
  *
  * @param source analytics source (where the paywall was opened from).
  * @param features short benefit bullets shown above the plans (host-supplied).

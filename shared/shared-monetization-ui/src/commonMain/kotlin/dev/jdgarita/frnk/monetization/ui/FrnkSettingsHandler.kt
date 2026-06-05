@@ -5,13 +5,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
-import dev.jdgarita.frnk.ui.nav.FrnkNavigator
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
 import dev.jdgarita.frnk.utils.AppResult
@@ -32,7 +34,7 @@ const val GOD_MODE_TOGGLE_ID = "god_mode"
  */
 @Composable
 fun rememberFrnkSettingsHandler(
-    navigator: FrnkNavigator,
+    backStack: NavBackStack<NavKey>,
     entitlements: EntitlementManager,
     analytics: AnalyticsTracker,
     onMessage: (String) -> Unit = {},
@@ -41,14 +43,14 @@ fun rememberFrnkSettingsHandler(
     val scope: CoroutineScope = rememberCoroutineScope()
     val uriHandler: UriHandler = LocalUriHandler.current
     val haptics = LocalFrnkHaptics.current
-    return remember(navigator, entitlements, analytics, uriHandler, haptics, onMessage, fallback) {
+    return remember(backStack, entitlements, analytics, uriHandler, haptics, onMessage, fallback) {
         { effect ->
             when (effect) {
                 is SettingsEffect.ActionInvoked ->
                     when (effect.action) {
                         SettingsAction.UpgradeToPro -> {
                             analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to "settings"))
-                            navigator.navigate(ToolkitRoute.Paywall)
+                            backStack.navigateTo(ToolkitRoute.Paywall)
                         }
                         SettingsAction.RestorePurchases ->
                             scope.launch {
