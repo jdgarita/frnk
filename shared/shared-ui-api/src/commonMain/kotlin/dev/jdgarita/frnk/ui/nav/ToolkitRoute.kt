@@ -23,13 +23,13 @@ sealed interface ToolkitRoute : NavKey {
     data object Home : ToolkitRoute
 
     @Serializable
-    data object Onboarding : ToolkitRoute
+    data object Onboarding : ToolkitRoute, FrnkFullScreenRoute
 
     @Serializable
     data object Settings : ToolkitRoute
 
     @Serializable
-    data object Paywall : ToolkitRoute
+    data object Paywall : ToolkitRoute, FrnkFullScreenRoute
 
     @Serializable
     data class Custom(

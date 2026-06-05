@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.demo
 
 import androidx.navigation3.runtime.NavKey
+import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import kotlinx.serialization.Serializable
 
 /**
@@ -31,5 +32,5 @@ sealed interface DemoRoute : NavKey {
     ) : DemoRoute
 
     @Serializable
-    data object Onboarding : DemoRoute
+    data object Onboarding : DemoRoute, FrnkFullScreenRoute
 }
