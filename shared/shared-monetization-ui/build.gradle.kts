@@ -1,7 +1,6 @@
 plugins {
     id("frnk.kmp.library.compose")
     id("frnk.kmp.library.hosttest")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {

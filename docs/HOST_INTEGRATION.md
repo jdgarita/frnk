@@ -45,9 +45,9 @@ the host owns the NavHost and decides what each route renders:
 ```kotlin
 val navigator: Navigator = { route ->
     when (route) {
-        ToolkitRoute.Paywall  -> navController.navigate(HostRoutes.Paywall)
-        ToolkitRoute.SignIn   -> navController.navigate(HostRoutes.SignIn)
-        ToolkitRoute.Home     -> navController.navigate(HostRoutes.Home)
+        ToolkitRoute.Paywall    -> navController.navigate(HostRoutes.Paywall)
+        ToolkitRoute.Onboarding -> navController.navigate(HostRoutes.Onboarding)
+        ToolkitRoute.Home       -> navController.navigate(HostRoutes.Home)
         else                  -> Unit
     }
 }

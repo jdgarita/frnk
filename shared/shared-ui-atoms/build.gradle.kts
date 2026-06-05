@@ -30,10 +30,19 @@ kotlin {
             // Lifecycle-aware Compose collection (collectAsStateWithLifecycle / repeatOnLifecycle)
             // powering FrnkMviScreen + EffectCollector. api so hosts inherit it for their own screens.
             api(libs.androidx.lifecycle.runtime.compose)
-            // Toolkit navigation primitives (FrnkNavHost / frnkComposable / rememberFrnkNavigator)
-            // wrap JetBrains CMP navigation-compose. api so hosts can reference NavController types.
-            // Pure Kotlin/Compose — no native cinterop, so DemoKit.xcframework stays clean.
-            api(libs.androidx.navigation)
+            // Toolkit Navigation3 engine. `FrnkNavDisplay` wraps nav3's `NavDisplay`; the host owns the
+            // `NavBackStack<NavKey>`. ui = NavDisplay/scene, runtime = NavKey/NavBackStack (also via
+            // :shared-ui-api), viewmodel = the ViewModel-store entry decorator, koin-navigation3 =
+            // koinEntryProvider() + the navigation<Route> { } DSL. api so hosts can build their own
+            // graphs. Pure Kotlin/Compose — no native cinterop, so DemoKit/FrnkKit XCFrameworks stay clean.
+            api(libs.androidx.navigation3.ui)
+            api(libs.androidx.navigation3.runtime)
+            api(libs.androidx.navigation3.viewmodel)
+            api(libs.koin.navigation3)
+            // Multiplatform BackHandler (androidx.compose.ui.backhandler) — used by FrnkTabbedBackHandler
+            // to route system/predictive back into the tabbed nav. Not on compose.ui's classpath here, so
+            // pulled explicitly; implementation-scoped (it's internal to the helper, not in any signature).
+            implementation(libs.compose.ui.backhandler)
 
             api(libs.compose.unstyled.theming)
             implementation(libs.compose.unstyled.primitives)

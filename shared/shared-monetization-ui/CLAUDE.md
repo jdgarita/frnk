@@ -17,12 +17,15 @@ monetization domain (`:shared-monetization-api`).
 - `PaywallScaffoldModule.kt` — `paywallScaffoldModule` registers `PaywallViewModel` (`source` via
   `parametersOf`; `EntitlementManager` + `AnalyticsTracker` from the graph). `:shared`'s `frnkModules(...)`
   includes it.
-- `PaywallNav.kt` — `NavGraphBuilder.frnkPaywallDestination(features, source, onMessage, onClose)` mounts the
-  paywall at `ToolkitRoute.Paywall` in one line. **The toolkit owns the paywall destination; the host owns
-  the `NavController`** (P2-1). Needs the `kotlin-serialization` plugin (applied here) for `frnkComposable<T>`.
-- `FrnkSettingsHandler.kt` — `rememberFrnkSettingsHandler(navigator, entitlements, analytics, onMessage,
+- `PaywallNav.kt` — the Navigation3 paywall: a route-agnostic `@Composable FrnkPaywallDestination(features,
+  source, onMessage, onClose)` destination body **and** `Module.frnkPaywallNavigation(...)` which registers it
+  at `ToolkitRoute.Paywall` via Koin's `navigation<Route> { }` DSL (resolved by `FrnkNavDisplay`'s default
+  `koinEntryProvider()`). **The toolkit owns the paywall destination; the host owns the `NavBackStack`.** A host
+  with its own paywall route just calls `FrnkPaywallDestination(...)` inside its own `navigation<MyRoute.Paywall>`
+  block. (No `kotlin-serialization` plugin needed here anymore — that was for the old nav2 `frnkComposable<T>`.)
+- `FrnkSettingsHandler.kt` — `rememberFrnkSettingsHandler(backStack, entitlements, analytics, onMessage,
   fallback)` returns a `(SettingsEffect) -> Unit` that wires the monetization Settings rows for free:
-  `UpgradeToPro` → navigate `ToolkitRoute.Paywall`, `RestorePurchases` → `entitlements.restorePurchases()`,
+  `UpgradeToPro` → `backStack.navigateTo(ToolkitRoute.Paywall)`, `RestorePurchases` → `entitlements.restorePurchases()`,
   `ManageSubscription` → `entitlements.managementUrl()` opened via `LocalUriHandler`, **falling back to
   `platformManageSubscriptionsUrl()`** (the OS subscriptions deep link) when the provider has no
   customer-specific URL — so the row always lands somewhere useful; the `GOD_MODE_TOGGLE_ID` toggle →
@@ -53,5 +56,6 @@ Two always-on paywall entry points the demo wires (and real hosts copy):
 ## Dependencies
 
 - `api(projects.sharedUiAtoms)`, `api(projects.sharedMonetizationApi)` (transitively `:shared-ui-api` for
-  `ToolkitRoute`/`FrnkNavigator`). `commonTest`: `kotlin.test` + `kotlinx.coroutines.test`.
-- Plugins: compose + `kotlin-serialization`.
+  `ToolkitRoute` + the nav3 back-stack helpers, and the nav3 engine via atoms). `commonTest`: `kotlin.test` +
+  `kotlinx.coroutines.test`.
+- Plugins: compose (+ hosttest). No `kotlin-serialization` — the nav3 route serializers live in `:shared-ui-api`.

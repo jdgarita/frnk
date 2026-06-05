@@ -106,7 +106,7 @@ class DemoViewModelTest {
     fun request_upgrade_when_not_pro_emits_navigate_effect() =
         runTest(dispatcher) {
             // FakeEntitlementManager starts non-Pro, so RequestUpgrade falls through to a Navigate
-            // effect (routed into the FrnkNavHost Paywall by routeDemoEffect, covered separately).
+            // effect (routed into the FrnkNavDisplay Paywall by routeDemoEffect, covered separately).
             val vm = viewModel(RecordingAnalytics(), RecordingCrash())
             runCurrent()
             val effects = mutableListOf<DemoEffect>()

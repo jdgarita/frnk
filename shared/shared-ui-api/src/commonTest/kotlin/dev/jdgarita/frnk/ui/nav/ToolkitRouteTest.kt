@@ -1,17 +1,29 @@
 package dev.jdgarita.frnk.ui.nav
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /**
- * `ToolkitRoute` is `@Serializable` so navigation-compose can use it as a type-safe destination. The
- * real encode/decode runs against the SavedState runtime (not unit-testable here), so this guards the
- * two things that matter at the contract level: every member resolves a serializer, and each member's
- * `serialName` is stable + distinct (a silent rename would break back-stack restoration / deep links).
+ * `ToolkitRoute` is a `@Serializable` [NavKey] so Navigation3 can use it as a type-safe back-stack
+ * destination. The real encode/decode runs against the SavedState runtime (not unit-testable here), so
+ * this guards the things that matter at the contract level: every member is a `NavKey`, resolves a
+ * serializer, and each member's `serialName` is stable + distinct (a silent rename would break
+ * back-stack restoration / deep links).
  */
 class ToolkitRouteTest {
+    @Test
+    fun members_are_nav_keys() {
+        assertIs<NavKey>(ToolkitRoute.Home)
+        assertIs<NavKey>(ToolkitRoute.Onboarding)
+        assertIs<NavKey>(ToolkitRoute.Settings)
+        assertIs<NavKey>(ToolkitRoute.Paywall)
+        assertIs<NavKey>(ToolkitRoute.Custom(id = "x"))
+    }
+
     @Test
     fun sealed_route_resolves_a_serializer() {
         assertEquals(
@@ -25,10 +37,9 @@ class ToolkitRouteTest {
         val names =
             listOf(
                 serializer<ToolkitRoute.Home>().descriptor.serialName,
+                serializer<ToolkitRoute.Onboarding>().descriptor.serialName,
                 serializer<ToolkitRoute.Settings>().descriptor.serialName,
                 serializer<ToolkitRoute.Paywall>().descriptor.serialName,
-                serializer<ToolkitRoute.SignIn>().descriptor.serialName,
-                serializer<ToolkitRoute.SignUp>().descriptor.serialName,
                 serializer<ToolkitRoute.Custom>().descriptor.serialName,
             )
 

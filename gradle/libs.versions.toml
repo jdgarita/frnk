@@ -12,7 +12,13 @@ sqldelight = "2.3.2"
 settings = "1.3.0"
 ktor = "3.5.0"
 viewmodel = "2.10.0"
-navigation = "2.9.2"
+# Navigation3 (the toolkit's navigation engine). `navigation3-ui` is JetBrains' CMP port
+# (org.jetbrains.androidx.navigation3); `navigation3-runtime` is the AndroidX pure-Kotlin/MP runtime
+# (androidx.navigation3) that ships NavKey/NavBackStack — both share the 1.1.0 line. The
+# lifecycle-viewmodel-navigation3 decorator tracks the lifecycle line (2.10.0). Host apps (Still) build
+# on the SAME coordinates/versions.
+navigation3UI = "1.1.0"
+navigation3ViewModel = "2.10.0"
 gitlive-firebase = "2.4.0"
 firebase-bom = "34.13.0"
 google-services = "4.4.4"
@@ -59,7 +65,13 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "viewmodel" }
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "viewmodel" }
-androidx-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation" }
+# Navigation3 engine: ui (NavDisplay / scene), runtime (NavKey / NavBackStack / rememberNavBackStack),
+# viewmodel (rememberViewModelStoreNavEntryDecorator). Koin's nav3 integration provides koinEntryProvider()
+# + the navigation<Route> { } DSL.
+androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3UI" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3UI" }
+androidx-navigation3-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "navigation3ViewModel" }
+koin-navigation3 = { module = "io.insert-koin:koin-compose-navigation3", version.ref = "koin" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
