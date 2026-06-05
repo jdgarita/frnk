@@ -41,6 +41,21 @@ consumer's existing `-undefined dynamic_lookup`.
   the adaptive bar below the selected destination. Unlike the floating pill the native bar is opaque, so the
   `tabContent` slot is laid **above** it (a `Column`, not a `Box` overlay) and gets a zero bottom inset. The
   host supplies each tab's screen through `tabContent` — wiring its own per-tab navigation there.
+- `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, hideBarFor, entryProvider)`.
+  The **nav3 multiple-back-stack** tabbed scaffold: the single composable a host calls to get a standard
+  tabbed app. It absorbs the `FrnkNavDisplay` (driven by `tabbed.current`), the persistent
+  `FrnkAdaptiveBottomNavBar` overlay (tab switch / re-tap-to-root), `FrnkTabbedBackHandler`
+  (back-from-non-home-root→home), full-screen bar hiding (`hideBarFor`), and the bottom-inset bookkeeping
+  (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows, so screens on
+  `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically — no per-screen `bottomInset` threading).
+  **The host still owns `tabbed`** (`rememberFrnkTabbedBackStacks(navTabs = …)` in atoms) and the same
+  `List<FrnkNavTab>`, so it can drive effect-based navigation from its own `EffectCollector` — this scaffold
+  structures/renders, the host owns state. `entryProvider` defaults to `koinEntryProvider()` (pair with the
+  `navigation<Route>` DSL); pass an inline `entryProvider { entry<…> { … } }` when screens share one
+  host-scoped VM (the demo does). Contrast with `FrnkAdaptiveBottomNavScaffold` below — that one is the
+  simpler index-based scaffold (no per-tab back stacks / no pushed detail screens); use this when tabs need
+  their own navigation back stacks. `@OptIn(KoinExperimentalAPI::class)` (for the `koinEntryProvider()`
+  default — doesn't propagate to callers passing their own provider).
 - `FrnkBottomNavDefaults.kt` — `rememberFrnkBottomNavState(middleTabs = emptyList(), …)`. Builds the default
   `BottomNavScaffoldState` enforcing the product rule **every app has at least Home + Settings**: a fixed Home
   tab, the host's optional `middleTabs`, then a fixed Settings tab. Home/Settings resolve icon + label from
@@ -50,9 +65,11 @@ consumer's existing `-undefined dynamic_lookup`.
 
 - **Override the tabs**: pass `middleTabs` to `rememberFrnkBottomNavState` (Home/Settings bookends are always
   present), or build a `BottomNavScaffoldState` by hand for a fully custom shape.
-- **Wire the navigation**: the host owns each tab's content via the `tabContent` slot — render a screen, or a
-  nested `FrnkNavHost` for deep per-tab navigation. frnk owns the bar + tab switching; the host owns the tabs
-  and what each one shows.
+- **Wire the navigation**: two paths. For **single-screen tabs**, use `FrnkAdaptiveBottomNavScaffold` and
+  render each tab through the `tabContent` slot. For **tabs that need their own back stacks** (pushed detail
+  screens, per-tab navigation), use `FrnkTabbedNavScaffold` with a host-owned `rememberFrnkTabbedBackStacks`
+  + an `entryProvider` — frnk owns the display + bar + tab switching + back convention + bar-inset; the host
+  owns the back stacks and registers destinations.
 
 ## Dependencies
 

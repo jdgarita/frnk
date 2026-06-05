@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBar
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
@@ -47,7 +46,7 @@ fun FrnkScreenScaffold(
     topBar: FrnkTopAppBarState,
     modifier: Modifier = Modifier,
     containerColor: Color = Theme[colors][colorBackground],
-    bottomInset: Dp = 0.dp,
+    bottomInset: Dp = LocalFrnkBottomBarInset.current,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
     onNavigationClick: () -> Unit = {},
     onActionClick: (FrnkTopAppBarAction) -> Unit = {},

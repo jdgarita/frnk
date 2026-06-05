@@ -5,12 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
+import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
 
@@ -46,7 +46,7 @@ fun <S : UiState, I : UiIntent, E : UiEffect> FrnkMviScreen(
     viewModel: MviViewModel<S, I, E>,
     topBar: FrnkTopAppBarState,
     modifier: Modifier = Modifier,
-    bottomInset: Dp = 0.dp,
+    bottomInset: Dp = LocalFrnkBottomBarInset.current,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
     onNavigationClick: () -> Unit = {},
     onActionClick: (FrnkTopAppBarAction) -> Unit = {},

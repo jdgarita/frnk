@@ -12,6 +12,7 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlin.jvm.JvmName
 
 /** A bottom-nav tab: its stable [key] and the [root] destination its back stack starts from. */
 data class FrnkTab(
@@ -98,6 +99,31 @@ fun rememberFrnkTabbedBackStacks(
             homeTabKey = homeTabKey,
         )
     }
+}
+
+/**
+ * [rememberFrnkTabbedBackStacks] overload that seeds the per-tab back stacks from a [FrnkNavTab] list —
+ * the same list [FrnkTabbedNavScaffold] derives the bar items from, so a host describes each tab once.
+ * Maps each [FrnkNavTab] to its `key`/`root` and delegates to the [FrnkTab]-based factory.
+ *
+ * `@JvmName`'d because `List<FrnkNavTab>` and `List<FrnkTab>` erase to the same JVM signature; the Kotlin
+ * call name stays `rememberFrnkTabbedBackStacks` (overload resolution picks by element type). No-op on iOS.
+ */
+@JvmName("rememberFrnkTabbedBackStacksFromNavTabs")
+@Composable
+fun rememberFrnkTabbedBackStacks(
+    configuration: SavedStateConfiguration,
+    navTabs: List<FrnkNavTab>,
+    initialTabKey: String = navTabs.first().key,
+    homeTabKey: String = navTabs.first().key,
+): FrnkTabbedBackStacks {
+    val tabs = remember(navTabs) { navTabs.map { FrnkTab(key = it.key, root = it.root) } }
+    return rememberFrnkTabbedBackStacks(
+        configuration = configuration,
+        tabs = tabs,
+        initialTabKey = initialTabKey,
+        homeTabKey = homeTabKey,
+    )
 }
 
 /**

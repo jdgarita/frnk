@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -60,8 +59,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveBottomNavBar
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveBottomNavBarDefaults
+import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -75,9 +73,7 @@ import dev.jdgarita.frnk.ui.molecules.FrnkSwipeDirection
 import dev.jdgarita.frnk.ui.molecules.FrnkSwipeableState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
-import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
-import dev.jdgarita.frnk.ui.nav.FrnkTab
-import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
+import dev.jdgarita.frnk.ui.nav.FrnkNavTab
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.frnkNavConfiguration
@@ -87,7 +83,6 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSection
 import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
-import dev.jdgarita.frnk.ui.scaffolds.BottomNavTab
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
@@ -99,7 +94,6 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsScreen
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
-import dev.jdgarita.frnk.ui.scaffolds.rememberBottomNavScaffoldState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
@@ -115,6 +109,7 @@ import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconError
+import dev.jdgarita.frnk.ui.theme.iconNavHome
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconPrivacy
 import dev.jdgarita.frnk.ui.theme.iconRestore
@@ -125,6 +120,9 @@ import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapes
+import dev.jdgarita.frnk.ui.theme.stringNavHome
+import dev.jdgarita.frnk.ui.theme.stringSettings
+import dev.jdgarita.frnk.ui.theme.strings
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.utils.Frnk
@@ -136,9 +134,11 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Smoke harness for the toolkit, structured as a real app would be on the toolkit Navigation3 layer:
- * a host-owned set of per-tab back stacks ([rememberFrnkTabbedBackStacks]) drives a single
- * [FrnkNavDisplay], with a floating [FrnkAdaptiveBottomNavBar] overlaid above it so it persists across
- * tab swaps. Three tabs, each keeping its own back stack:
+ * a host-owned set of per-tab back stacks ([rememberFrnkTabbedBackStacks]) handed to the toolkit's
+ * [FrnkTabbedNavScaffold], which owns the nav display, the persistent adaptive bottom bar, tab switching,
+ * the back-from-non-home-root→home convention, full-screen bar hiding, and the bottom-inset that lets
+ * content scroll behind the bar — so the host writes only its tabs + destinations. Three tabs, each
+ * keeping its own back stack:
  *  - **Home** ([DemoRoute.Home]) — the toolkit showcase (theming + atoms, FeatureGate, MVI engine).
  *  - **Components** ([DemoRoute.Components]) — a gallery of every `Frnk*` atom (with a search field);
  *    tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument) onto this tab.
@@ -147,13 +147,14 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * Navigation is MVI-faithful: the shared [DemoViewModel] is resolved **once at this host scope** (so
  * its cross-tab state isn't forked per nav entry), and its single one-shot effect stream is consumed by
- * **one** [EffectCollector] above the host that routes navigation into the current tab's back stack via
- * [routeDemoEffect] and forwards the rest to the host's [onEffect]. On Android the system back button and
+ * **one** [EffectCollector] above the scaffold that routes navigation into the current tab's back stack
+ * via [routeDemoEffect] and forwards the rest to the host's [onEffect] — which is why the host keeps
+ * owning `tabbed` rather than letting the scaffold create it. On Android the system back button and
  * predictive-back gesture pop the back stack automatically; on iOS the back-gesture support depends on the
  * Compose Multiplatform runtime, so every pushed screen also carries an on-screen back affordance (the
  * detail/paywall back arrow, the onboarding close-X). Back from a non-home tab's *root* returns to the Home
- * tab (the standard tabbed-app convention) via [FrnkTabbedBackHandler] rather than exiting the app. The only
- * other manual back handling left is closing the Components search field before a pop.
+ * tab (the standard tabbed-app convention; the scaffold wires it) rather than exiting the app. The only
+ * manual back handling left in the demo is closing the Components search field before a pop.
  *
  * The host integration story: a real app passes its own [dev.jdgarita.frnk.ui.theme.FrnkThemeConfig]
  * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat).
@@ -180,20 +181,22 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                     },
             )
         }
-    val tabs =
-        remember {
+    // One declaration per tab: the back-stack root + the adaptive bar's icon/label, folded into a single
+    // FrnkNavTab list (Home/Settings resolve icon+label from theme tokens, so a host re-skins them via
+    // FrnkThemeConfig). FrnkTabbedNavScaffold below derives the bar from this same list.
+    val homeIcon = Theme[icons][iconNavHome]
+    val homeLabel = Theme[strings][stringNavHome]
+    val settingsIcon = Theme[icons][iconSettings]
+    val settingsLabel = Theme[strings][stringSettings]
+    val navTabs =
+        remember(homeIcon, homeLabel, settingsIcon, settingsLabel) {
             listOf(
-                FrnkTab(key = "home", root = DemoRoute.Home),
-                FrnkTab(key = "components", root = DemoRoute.Components),
-                FrnkTab(key = "settings", root = DemoRoute.Settings),
+                FrnkNavTab(key = "home", root = DemoRoute.Home, icon = homeIcon, label = homeLabel),
+                FrnkNavTab(key = "components", root = DemoRoute.Components, icon = Lucide.Component, label = "Components"),
+                FrnkNavTab(key = "settings", root = DemoRoute.Settings, icon = settingsIcon, label = settingsLabel),
             )
         }
-    val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = tabs)
-
-    // Back from a non-home tab's root returns to Home (rather than exiting the app); within-tab pops and
-    // the home-root exit are handled by FrnkNavDisplay / the system. The Components search field, when open,
-    // intercepts back first via its own deeper BackHandler.
-    FrnkTabbedBackHandler(tabbed)
+    val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, navTabs = navTabs)
 
     // Single central collector for the shared VM's one-shot effects (the channel is single-consumer):
     // navigation effects push onto the current tab's back stack; everything else is forwarded to the host.
@@ -235,130 +238,85 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             },
         )
 
-    // Bottom-nav tabs (icons/labels) — order matches `tabs` above (Home, Components, Settings).
-    val navState =
-        rememberBottomNavScaffoldState(
-            middleTab =
-                BottomNavTab(
-                    key = "components",
-                    icon = Lucide.Component,
-                    label = "Components",
-                ),
-        )
-    // The pill highlight tracks the selected tab; ComponentDetail belongs to the Components tab because it
-    // lives on that tab's back stack. Full-screen pushes (Onboarding / Paywall) hide the bar — derived from
-    // the current tab's top entry rather than a route→tab table.
-    val selectedTabIndex = navState.tabs.indexOfFirst { it.key == tabbed.currentTabKey }
-    val currentTop = tabbed.current.lastOrNull()
-    val isFullScreen = currentTop == DemoRoute.Onboarding || currentTop == ToolkitRoute.Paywall
-
-    // Destinations under the opaque adaptive bottom bar reserve its full footprint (body + the system-nav
-    // inset it floats above) so the last item clears it; full-screen pushes hide the bar. The toolkit owns
-    // that height — the demo just reserves what it reports.
-    val barInset = FrnkAdaptiveBottomNavBarDefaults.reservedHeight
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        FrnkNavDisplay(
-            backStack = tabbed.current,
-            modifier = Modifier.fillMaxSize(),
-            // Local entryProvider (not koinEntryProvider): the demo's screens share the one host-scoped
-            // DemoViewModel, so destinations are registered inline here rather than via the Koin DSL.
-            entryProvider =
-                entryProvider {
-                    entry<DemoRoute.Home> {
-                        HomeTab(
-                            vm = vm,
-                            bottomInset = barInset,
-                            onEffect = onEffect,
-                        )
+    // The toolkit's nav3 tabbed scaffold owns everything the demo used to hand-wire: the FrnkNavDisplay
+    // driven by the active tab's back stack, the persistent adaptive bottom bar (tab switch / re-tap-to-
+    // root), the back-from-non-home-root→home convention, full-screen bar hiding, and the bottom-inset that
+    // lets content scroll behind the bar (provided via LocalFrnkBottomBarInset, so the destinations on
+    // FrnkScreenScaffold / FrnkMviScreen reserve it automatically — no per-screen bottomInset threading).
+    // The host keeps owning `tabbed` (so the EffectCollector above drives navigation) and registers its
+    // destinations inline here, because the demo's screens share the one host-scoped DemoViewModel rather
+    // than per-entry Koin VMs; a koinEntryProvider host would drop this argument and use `navigation<Route>`.
+    FrnkTabbedNavScaffold(
+        tabbed = tabbed,
+        tabs = navTabs,
+        modifier = Modifier.fillMaxSize(),
+        // Full-screen pushes (Onboarding / Paywall) hide the bar — derived from the route, not a tab table.
+        hideBarFor = { route -> route == DemoRoute.Onboarding || route == ToolkitRoute.Paywall },
+        entryProvider =
+            entryProvider {
+                entry<DemoRoute.Home> {
+                    HomeTab(vm = vm, onEffect = onEffect)
+                }
+                entry<DemoRoute.Components> {
+                    ComponentsListScreen(
+                        state = state,
+                        onIntent = vm::send,
+                        onOpenComponent = { name -> tabbed.current.navigateTo(DemoRoute.ComponentDetail(name)) },
+                    )
+                }
+                entry<DemoRoute.ComponentDetail> { route ->
+                    ComponentDetailScreen(
+                        name = route.name,
+                        onBack = { tabbed.current.back() },
+                    ) {
+                        ComponentContent(route.name, state, vm::send, onEffect)
                     }
-                    entry<DemoRoute.Components> {
-                        ComponentsListScreen(
-                            state = state,
-                            onIntent = vm::send,
-                            bottomInset = barInset,
-                            onOpenComponent = { name -> tabbed.current.navigateTo(DemoRoute.ComponentDetail(name)) },
-                        )
-                    }
-                    entry<DemoRoute.ComponentDetail> { route ->
-                        ComponentDetailScreen(
-                            name = route.name,
-                            bottomInset = barInset,
-                            onBack = { tabbed.current.back() },
-                        ) {
-                            ComponentContent(route.name, state, vm::send, onEffect)
-                        }
-                    }
-                    entry<DemoRoute.Settings> {
-                        SettingsTab(
-                            initialState = demoSettingsState(appearanceController.appearance, state.isPro, state.isGodMode),
-                            bottomInset = barInset,
-                            onEffect = settingsHandler,
-                            // Re-seed the settings VM when entitlement state changes so the Subscription section
-                            // swaps Upgrade↔Manage (and the god-mode toggle reflects the current value). The VM is
-                            // seeded once via parametersOf, so without a fresh key it'd keep the stale initial state.
-                            vmKey = "settings-${state.isPro}-${state.isGodMode}",
-                        )
-                    }
-                    entry<DemoRoute.Onboarding> {
-                        OnboardingScreen(
-                            initialState = demoOnboardingState(),
-                            modifier = Modifier.fillMaxSize(),
-                            // A pushed destination gets a fresh nav entry (and ViewModelStoreOwner) per push,
-                            // so OnboardingScreen's koinViewModel is naturally fresh — no vmKey dance needed.
-                            onEffect = { effect ->
-                                when (effect) {
-                                    OnboardingEffect.CloseRequested,
-                                    OnboardingEffect.Completed,
-                                    -> tabbed.current.back()
-                                }
-                            },
-                        )
-                    }
-                    // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
-                    // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
-                    // EntitlementManager); the demo just mounts the destination + handles close/messages. This
-                    // is the exact destination real hosts mount (the same route `rememberFrnkSettingsHandler`
-                    // targets) — here inline; a Koin-DSL host uses `frnkPaywallNavigation` instead.
-                    entry<ToolkitRoute.Paywall> {
-                        FrnkPaywallDestination(
-                            features =
-                                listOf(
-                                    "Unlimited everything",
-                                    "No ads",
-                                    "Priority support",
-                                ),
-                            source = "demo",
-                            onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
-                            onClose = { tabbed.current.back() },
-                        )
-                    }
-                },
-        )
-
-        // The toolkit's platform-adaptive bottom bar (native UITabBar on iOS / Material3 NavigationBar on
-        // Android), pinned at the bottom and persisting across tab swaps. Hidden on full-screen pushes
-        // (Onboarding / Paywall). The demo wires its own navigation here — the lower-level
-        // FrnkAdaptiveBottomNavBar override path; simpler hosts use FrnkAdaptiveBottomNavScaffold instead.
-        if (!isFullScreen && selectedTabIndex >= 0) {
-            FrnkAdaptiveBottomNavBar(
-                items = navState.tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) },
-                selectedIndex = selectedTabIndex,
-                onItemSelected = { index ->
-                    val targetKey = navState.tabs[index].key
-                    if (targetKey == tabbed.currentTabKey) {
-                        // Re-tapping the active tab returns to its root, popping any pushed child
-                        // (e.g. ComponentDetail) off this tab's stack.
-                        tabbed.resetCurrentToRoot()
-                    } else {
-                        // Switch tabs, keeping each tab's own back stack (multiple back stacks).
-                        tabbed.switchTo(targetKey)
-                    }
-                },
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-            )
-        }
-    }
+                }
+                entry<DemoRoute.Settings> {
+                    SettingsTab(
+                        initialState = demoSettingsState(appearanceController.appearance, state.isPro, state.isGodMode),
+                        onEffect = settingsHandler,
+                        // Re-seed the settings VM when entitlement state changes so the Subscription section
+                        // swaps Upgrade↔Manage (and the god-mode toggle reflects the current value). The VM is
+                        // seeded once via parametersOf, so without a fresh key it'd keep the stale initial state.
+                        vmKey = "settings-${state.isPro}-${state.isGodMode}",
+                    )
+                }
+                entry<DemoRoute.Onboarding> {
+                    OnboardingScreen(
+                        initialState = demoOnboardingState(),
+                        modifier = Modifier.fillMaxSize(),
+                        // A pushed destination gets a fresh nav entry (and ViewModelStoreOwner) per push,
+                        // so OnboardingScreen's koinViewModel is naturally fresh — no vmKey dance needed.
+                        onEffect = { effect ->
+                            when (effect) {
+                                OnboardingEffect.CloseRequested,
+                                OnboardingEffect.Completed,
+                                -> tabbed.current.back()
+                            }
+                        },
+                    )
+                }
+                // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
+                // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
+                // EntitlementManager); the demo just mounts the destination + handles close/messages. This
+                // is the exact destination real hosts mount (the same route `rememberFrnkSettingsHandler`
+                // targets) — here inline; a Koin-DSL host uses `frnkPaywallNavigation` instead.
+                entry<ToolkitRoute.Paywall> {
+                    FrnkPaywallDestination(
+                        features =
+                            listOf(
+                                "Unlimited everything",
+                                "No ads",
+                                "Priority support",
+                            ),
+                        source = "demo",
+                        onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
+                        onClose = { tabbed.current.back() },
+                    )
+                }
+            },
+    )
 }
 
 /**
@@ -370,7 +328,6 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
 @Composable
 private fun HomeTab(
     vm: DemoViewModel,
-    bottomInset: Dp,
     onEffect: (DemoEffect) -> Unit,
 ) {
     val homeState by vm.state.collectAsState()
@@ -388,7 +345,6 @@ private fun HomeTab(
                 title = "frnk",
                 actions = if (homeState.isPro) emptyList() else listOf(upgradeAction),
             ),
-        bottomInset = bottomInset,
         onActionClick = { action -> if (action.key == upgradeAction.key) vm.send(DemoIntent.RequestUpgrade) },
     ) { state, onIntent, padding ->
         Column(
@@ -551,7 +507,6 @@ private fun HomeTab(
 private fun ComponentsListScreen(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    bottomInset: Dp,
     onOpenComponent: (String) -> Unit,
 ) {
     val searchActive = state.searchActive
@@ -575,7 +530,6 @@ private fun ComponentsListScreen(
                 searchQuery = query,
                 searchPlaceholder = "Search components",
             ),
-        bottomInset = bottomInset,
         onActionClick = { onIntent(DemoIntent.SearchOpened) },
         onSearchQueryChange = { onIntent(DemoIntent.SearchQueryChanged(it)) },
         onSearchClose = { onIntent(DemoIntent.SearchClosed) },
@@ -649,7 +603,6 @@ private fun ComponentRow(
 @Composable
 private fun ComponentDetailScreen(
     name: String,
-    bottomInset: Dp,
     onBack: () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -660,7 +613,6 @@ private fun ComponentDetailScreen(
                 navigationIcon = Theme[icons][iconBack],
                 navigationContentDescription = "Back",
             ),
-        bottomInset = bottomInset,
         onNavigationClick = onBack,
     ) { padding ->
         Column(
@@ -684,7 +636,6 @@ private fun ComponentDetailScreen(
 @Composable
 private fun SettingsTab(
     initialState: SettingsScreenState,
-    bottomInset: Dp,
     onEffect: (SettingsEffect) -> Unit,
     vmKey: String? = null,
 ) {
@@ -693,8 +644,8 @@ private fun SettingsTab(
         // SettingsScreenContent paints its own colorBackground (so it works standalone too), so let the
         // scaffold's backdrop be transparent here to avoid a redundant full-screen overdraw.
         containerColor = Color.Transparent,
-        bottomInset = bottomInset,
-        // Extra bottom padding so the footer/version clears the floating bottom nav bar with breathing
+        // bottomInset is inherited from LocalFrnkBottomBarInset (the bar's reserved height, provided by
+        // FrnkTabbedNavScaffold). The extra bottom padding below clears the bar with breathing
         // room (the default lg leaves it sitting right on the bar; xl gives a more comfortable gap).
         contentPadding =
             PaddingValues(
