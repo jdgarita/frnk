@@ -22,6 +22,16 @@ private val versionCatalog = extensions.getByType<VersionCatalogsExtension>().na
 private val catalogCompileSdk = versionCatalog.findVersion("android-compileSdk").get().requiredVersion.toInt()
 private val catalogMinSdk = versionCatalog.findVersion("android-minSdk").get().requiredVersion.toInt()
 
+// Advertise the Maven group so host apps consuming frnk as a Gradle composite build
+// (`includeBuild("frnk")`) can substitute `dev.jdgarita.frnk:<module>` dependencies with the
+// matching included-build project. Without a group, substitution can't match the coordinate and
+// the host fails with "Could not find dev.jdgarita.frnk:<module>".
+//
+// Hard-coded (not ProjectConfiguration.GROUP_ID) because this `build-logic` convention plugin is a
+// standalone included build that cannot see `buildSrc`. Keep in sync with
+// ProjectConfiguration.GROUP_ID.
+group = "dev.jdgarita.frnk"
+
 kotlin {
     jvmToolchain(17)
     android {
