@@ -1,6 +1,6 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.unit.dp
 
 /**
@@ -14,7 +14,9 @@ import androidx.compose.ui.unit.dp
  * destination. An explicit `bottomInset` argument still wins. Declared in `:shared-ui-atoms` (where the
  * scaffolds that read it live); `:shared-ui-nav`'s `FrnkTabbedNavScaffold` provides the real value.
  *
- * `static` because it changes rarely (only when the bar's reserved height changes); a static local skips
- * tracking reads for cheaper propagation.
+ * Non-static (`compositionLocalOf`, **not** `staticCompositionLocalOf`) because the provided value **does
+ * change** at runtime: `FrnkTabbedNavScaffold` flips it between the bar's reserved height and `0.dp` when a
+ * full-screen route hides the bar. A static local would invalidate the *entire* provider subtree on each
+ * flip; the tracked local recomposes only the screens that actually read the inset.
  */
-val LocalFrnkBottomBarInset = staticCompositionLocalOf { 0.dp }
+val LocalFrnkBottomBarInset = compositionLocalOf { 0.dp }

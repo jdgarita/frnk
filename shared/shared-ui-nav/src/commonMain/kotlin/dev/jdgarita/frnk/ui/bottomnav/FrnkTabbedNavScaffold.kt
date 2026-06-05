@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
+import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
 import dev.jdgarita.frnk.ui.nav.FrnkNavTab
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
@@ -33,16 +34,27 @@ import org.koin.core.annotation.KoinExperimentalAPI
  * [tabs] list ([FrnkNavTab] folds the back-stack root and the bar's icon/label into one declaration), so
  * the host can drive effect-based navigation (`tabbed.current.navigateTo(route)`) from its own
  * `EffectCollector`. This scaffold structures and renders; the host owns the state — matching the
- * toolkit's "host owns the back stack" philosophy.
+ * toolkit's "host owns the back stack" philosophy. Pass a **remembered** [tabs] list (a plain `List` is
+ * an unstable Compose parameter, so a fresh list every recomposition would make this scaffold
+ * non-skippable) — `rememberFrnkTabbedBackStacks(navTabs = …)` already wants the same `remember`ed list.
  *
  * [hideBarFor] returns `true` for routes that should hide the bar (full-screen pushes like an onboarding
- * flow or a paywall); the bar's reserved height is provided through [LocalFrnkBottomBarInset] only while
- * it shows, so screens built on `FrnkScreenScaffold` / `FrnkMviScreen` reserve it automatically (no
- * per-screen `bottomInset` threading) and reserve nothing on a full-screen push.
+ * flow or a paywall). It **defaults to `{ it is FrnkFullScreenRoute }`**, so a route declares the intent
+ * on itself (implement [FrnkFullScreenRoute] next to where it's defined + registered in [entryProvider])
+ * rather than the host maintaining a separate predicate that can drift out of sync with the routes. Pass
+ * an explicit [hideBarFor] only for ad-hoc rules. The bar's reserved height is provided through
+ * [LocalFrnkBottomBarInset] only while it shows, so screens built on `FrnkScreenScaffold` / `FrnkMviScreen`
+ * reserve it automatically (no per-screen `bottomInset` threading) and reserve nothing on a full-screen push.
  *
  * [entryProvider] defaults to Koin's [koinEntryProvider] (pair with the `navigation<Route> { … }` DSL);
  * pass a local `entryProvider { entry<Route> { … } }` to register destinations inline (e.g. when every
  * screen shares one host-scoped ViewModel, as the demo does).
+ *
+ * This is the **Material3 adaptive-bar** tabbed scaffold by design — it renders [FrnkAdaptiveBottomNavBar]
+ * (the toolkit's sole Material3 surface). A host that wants nav3 multiple-back-stack navigation **without**
+ * Material3 (e.g. behind the Material-free `FrnkBottomNavBar` pill) wires the lower-level primitives
+ * directly — `rememberFrnkTabbedBackStacks` + `FrnkNavDisplay(backStack = tabbed.current)` +
+ * `FrnkTabbedBackHandler` + a bar of its choosing — which is the hand-wired path this scaffold replaces.
  *
  * Contrast with [FrnkAdaptiveBottomNavScaffold], which is the simpler **index-based** scaffold (swaps
  * `tabContent` by selected index, no per-tab back stacks / no pushed detail screens) — use that when each
@@ -54,7 +66,7 @@ fun FrnkTabbedNavScaffold(
     tabbed: FrnkTabbedBackStacks,
     tabs: List<FrnkNavTab>,
     modifier: Modifier = Modifier,
-    hideBarFor: (NavKey) -> Boolean = { false },
+    hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     entryProvider: (NavKey) -> NavEntry<NavKey> = koinEntryProvider(),
 ) {
     // Back from a non-home tab's root returns to the home tab (rather than exiting the app); within-tab

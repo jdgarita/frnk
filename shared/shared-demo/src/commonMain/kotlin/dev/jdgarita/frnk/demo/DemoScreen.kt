@@ -250,8 +250,9 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         tabbed = tabbed,
         tabs = navTabs,
         modifier = Modifier.fillMaxSize(),
-        // Full-screen pushes (Onboarding / Paywall) hide the bar — derived from the route, not a tab table.
-        hideBarFor = { route -> route == DemoRoute.Onboarding || route == ToolkitRoute.Paywall },
+        // hideBarFor is left at its default ({ it is FrnkFullScreenRoute }): the full-screen pushes
+        // (DemoRoute.Onboarding + ToolkitRoute.Paywall) declare the intent on the route itself, so the bar
+        // hides automatically with no predicate to keep in sync with the entryProvider below.
         entryProvider =
             entryProvider {
                 entry<DemoRoute.Home> {

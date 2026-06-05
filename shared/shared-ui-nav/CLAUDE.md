@@ -49,12 +49,18 @@ consumer's existing `-undefined dynamic_lookup`.
   (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows, so screens on
   `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically — no per-screen `bottomInset` threading).
   **The host still owns `tabbed`** (`rememberFrnkTabbedBackStacks(navTabs = …)` in atoms) and the same
-  `List<FrnkNavTab>`, so it can drive effect-based navigation from its own `EffectCollector` — this scaffold
-  structures/renders, the host owns state. `entryProvider` defaults to `koinEntryProvider()` (pair with the
-  `navigation<Route>` DSL); pass an inline `entryProvider { entry<…> { … } }` when screens share one
-  host-scoped VM (the demo does). Contrast with `FrnkAdaptiveBottomNavScaffold` below — that one is the
-  simpler index-based scaffold (no per-tab back stacks / no pushed detail screens); use this when tabs need
-  their own navigation back stacks. `@OptIn(KoinExperimentalAPI::class)` (for the `koinEntryProvider()`
+  (remembered) `List<FrnkNavTab>`, so it can drive effect-based navigation from its own `EffectCollector` —
+  this scaffold structures/renders, the host owns state. `hideBarFor` **defaults to
+  `{ it is FrnkFullScreenRoute }`** (the marker in `:shared-ui-api`), so full-screen routes declare the
+  intent on themselves rather than the host keeping a predicate in sync with `entryProvider`; override only
+  for ad-hoc rules. `entryProvider` defaults to `koinEntryProvider()` (pair with the `navigation<Route>`
+  DSL); pass an inline `entryProvider { entry<…> { … } }` when screens share one host-scoped VM (the demo
+  does). This is the **Material3 adaptive-bar** scaffold by design (it renders `FrnkAdaptiveBottomNavBar`); a
+  host that wants multiple-back-stack nav3 **without** Material3 (e.g. the Material-free `FrnkBottomNavBar`
+  pill) hand-wires the primitives instead (`rememberFrnkTabbedBackStacks` + `FrnkNavDisplay` +
+  `FrnkTabbedBackHandler` + its own bar). Contrast with `FrnkAdaptiveBottomNavScaffold` below — that one is
+  the simpler index-based scaffold (no per-tab back stacks / no pushed detail screens); use this when tabs
+  need their own navigation back stacks. `@OptIn(KoinExperimentalAPI::class)` (for the `koinEntryProvider()`
   default — doesn't propagate to callers passing their own provider).
 - `FrnkBottomNavDefaults.kt` — `rememberFrnkBottomNavState(middleTabs = emptyList(), …)`. Builds the default
   `BottomNavScaffoldState` enforcing the product rule **every app has at least Home + Settings**: a fixed Home
