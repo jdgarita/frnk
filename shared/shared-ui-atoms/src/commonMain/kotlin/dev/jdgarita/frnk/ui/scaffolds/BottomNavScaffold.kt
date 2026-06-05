@@ -3,7 +3,10 @@ package dev.jdgarita.frnk.ui.scaffolds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -93,7 +96,13 @@ fun BottomNavScaffoldContent(
                     selectedIndex = state.selectedIndex,
                 ),
             onItemSelected = { onIntent(BottomNavIntent.TabSelected(it)) },
-            modifier = Modifier.align(Alignment.BottomCenter),
+            // Pin the pill above the system navigation bar (edge-to-edge hosts) so it never sits over
+            // the system nav buttons. The inset belongs here at the bottom-pinned call site, not in the
+            // position-agnostic atom; reservedHeight above adds the same inset so content clears it.
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars),
         )
     }
 }
