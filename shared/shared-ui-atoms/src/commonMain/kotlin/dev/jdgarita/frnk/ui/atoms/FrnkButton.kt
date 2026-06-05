@@ -22,7 +22,9 @@ import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.labelLarge
 import dev.jdgarita.frnk.ui.theme.shapeButton
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingSm
 
 enum class FrnkButtonVariant {
     Filled,
@@ -30,13 +32,20 @@ enum class FrnkButtonVariant {
     Ghost,
 }
 
-@Immutable
-data class FrnkButtonState(
-    val text: String,
-    val enabled: Boolean = true,
-    val variant: FrnkButtonVariant = FrnkButtonVariant.Filled,
-    val skeleton: FrnkSkeleton = FrnkSkeleton(),
-)
+/**
+ * Sealed visual state for [FrnkButton]. [Content] is the interactive button; [Skeleton] is the loading
+ * placeholder. Toolkit-standard sealed-state + `Skeleton` shape.
+ */
+sealed interface FrnkButtonState {
+    @Immutable
+    data class Content(
+        val text: String,
+        val enabled: Boolean = true,
+        val variant: FrnkButtonVariant = FrnkButtonVariant.Filled,
+    ) : FrnkButtonState
+
+    data object Skeleton : FrnkButtonState
+}
 
 @Composable
 fun FrnkButton(
@@ -44,28 +53,40 @@ fun FrnkButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val haptics = LocalFrnkHaptics.current
+    val content =
+        when (state) {
+            is FrnkButtonState.Content -> state
+            FrnkButtonState.Skeleton -> {
+                FrnkSkeletonBox(
+                    modifier.defaultMinSize(minWidth = 96.dp, minHeight = 48.dp),
+                    shape = shapeButton,
+                )
+                return
+            }
+        }
+
     val shape = Theme[shapes][shapeButton]
+    val haptics = LocalFrnkHaptics.current
     val primary = Theme[colors][colorPrimary]
     val onPrimary = Theme[colors][colorOnPrimary]
 
     val backgroundColor: Color =
-        when (state.variant) {
-            FrnkButtonVariant.Filled -> if (state.enabled) primary else primary.copy(alpha = 0.4f)
+        when (content.variant) {
+            FrnkButtonVariant.Filled -> if (content.enabled) primary else primary.copy(alpha = 0.4f)
             FrnkButtonVariant.Outlined -> Color.Transparent
             FrnkButtonVariant.Ghost -> Color.Transparent
         }
     val contentColor: Color =
-        when (state.variant) {
+        when (content.variant) {
             FrnkButtonVariant.Filled -> onPrimary
             FrnkButtonVariant.Outlined -> primary
             FrnkButtonVariant.Ghost -> primary
-        }.let { if (state.enabled) it else it.copy(alpha = 0.4f) }
+        }.let { if (content.enabled) it else it.copy(alpha = 0.4f) }
     val border: BorderStroke? =
-        if (state.variant == FrnkButtonVariant.Outlined) {
+        if (content.variant == FrnkButtonVariant.Outlined) {
             // Mirror the Filled disabled treatment: fade the brand color rather than swapping in a
             // neutral outline, so disabled Filled and disabled Outlined read as the same component.
-            BorderStroke(1.dp, if (state.enabled) primary else primary.copy(alpha = 0.4f))
+            BorderStroke(1.dp, if (content.enabled) primary else primary.copy(alpha = 0.4f))
         } else {
             null
         }
@@ -76,21 +97,20 @@ fun FrnkButton(
             .clip(shape)
             .background(backgroundColor)
             .let { if (border != null) it.border(border, shape) else it }
-            .frnkSkeleton(state.skeleton, shape = shapeButton)
 
     UnstyledButton(
         onClick = {
             haptics.perform(HapticType.Click)
             onClick()
         },
-        enabled = state.enabled && !state.skeleton.enabled,
+        enabled = content.enabled,
         modifier = shapedModifier,
-        contentPadding = PaddingValues(horizontal = FrnkSpacing.md, vertical = FrnkSpacing.sm),
+        contentPadding = PaddingValues(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
     ) {
         ProvideContentColor(contentColor) {
             // labelLarge (14sp / Medium) matches the M3 button-label convention. Inherits color
             // from ProvideContentColor above so the disabled alpha applies uniformly.
-            FrnkText(state = FrnkTextState.Raw(text = state.text, style = labelLarge))
+            FrnkText(state = FrnkTextState.Raw(text = content.text, style = labelLarge))
         }
     }
 }

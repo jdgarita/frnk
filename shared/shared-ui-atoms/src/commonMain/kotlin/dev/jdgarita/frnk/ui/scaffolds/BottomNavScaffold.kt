@@ -3,7 +3,10 @@ package dev.jdgarita.frnk.ui.scaffolds
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -61,8 +64,9 @@ fun BottomNavScaffold(
  * Stateless renderer: the selected destination fills the whole area and the [FrnkBottomNavBar] floats
  * on top, pinned to the bottom and permanently visible. Because the bar's wrapper is transparent, the
  * destination shows through around and behind the pill as it scrolls. [tabContent] is handed a
- * [PaddingValues] whose bottom equals [FrnkBottomNavBarDefaults.BarHeight] — apply it to scrollable
- * content so the last item can rest just above the pill rather than under it. [onIntent] receives
+ * [PaddingValues] whose bottom equals [FrnkBottomNavBarDefaults.reservedHeight] (the pill's body plus
+ * the system-nav inset it floats above) — apply it to scrollable content so the last item rests just
+ * above the pill rather than under it (or under the system nav). [onIntent] receives
  * [BottomNavIntent.TabSelected] when a tab is tapped.
  */
 @Composable
@@ -80,7 +84,9 @@ fun BottomNavScaffoldContent(
     ) {
         tabContent(
             state.selectedTab,
-            PaddingValues(bottom = FrnkBottomNavBarDefaults.BarHeight),
+            // Full bar footprint = body + the system-nav inset the pill floats above, so the last item
+            // clears both the pill and the system nav (see FrnkBottomNavBarDefaults.reservedHeight).
+            PaddingValues(bottom = FrnkBottomNavBarDefaults.reservedHeight),
         )
 
         FrnkBottomNavBar(
@@ -90,7 +96,13 @@ fun BottomNavScaffoldContent(
                     selectedIndex = state.selectedIndex,
                 ),
             onItemSelected = { onIntent(BottomNavIntent.TabSelected(it)) },
-            modifier = Modifier.align(Alignment.BottomCenter),
+            // Pin the pill above the system navigation bar (edge-to-edge hosts) so it never sits over
+            // the system nav buttons. The inset belongs here at the bottom-pinned call site, not in the
+            // position-agnostic atom; reservedHeight above adds the same inset so content clears it.
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars),
         )
     }
 }

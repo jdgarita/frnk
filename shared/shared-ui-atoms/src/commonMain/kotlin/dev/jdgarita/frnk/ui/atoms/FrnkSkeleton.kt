@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.atoms
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -74,6 +75,20 @@ internal fun Modifier.frnkSkeleton(
             highlight = resolveHighlight(skeleton),
         )
     }
+
+/**
+ * The toolkit's standard loading-placeholder block: an empty [Box] painted with the skeleton effect
+ * (a token-styled, animated-highlight rectangle). Every atom's `Skeleton` state renders this instead of
+ * re-wiring `Box(...).frnkSkeleton(FrnkSkeleton(enabled = true), …)` by hand — size it via [modifier]
+ * (`.size(...)` / `.fillMaxWidth().height(...)`), and pass the atom's resting [shape] token.
+ */
+@Composable
+internal fun FrnkSkeletonBox(
+    modifier: Modifier = Modifier,
+    shape: ThemeToken<Shape> = shapeFull,
+) {
+    Box(modifier.frnkSkeleton(FrnkSkeleton(enabled = true), shape = shape))
+}
 
 @Composable
 private fun resolveHighlight(skeleton: FrnkSkeleton): PlaceholderHighlight? {

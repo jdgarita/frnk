@@ -38,7 +38,10 @@ import dev.jdgarita.frnk.ui.theme.colorSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.shapeMedium
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -356,7 +359,7 @@ private fun FrnkSwipeActionPanel(
                         .background(Theme[colors][action.containerColor]),
                 contentAlignment = alignment,
             ) {
-                Box(modifier = Modifier.padding(horizontal = FrnkSpacing.xl)) {
+                Box(modifier = Modifier.padding(horizontal = Theme[spacing][spacingXl])) {
                     FrnkIcon(state = action.icon.copy(tint = action.contentColor))
                 }
             }
@@ -375,8 +378,8 @@ private fun FrnkSwipeActionPanel(
                         Modifier
                             .fillMaxHeight()
                             .align(alignment)
-                            .padding(horizontal = FrnkSpacing.md),
-                    horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+                            .padding(horizontal = Theme[spacing][spacingMd]),
+                    horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     actions.forEach { action ->

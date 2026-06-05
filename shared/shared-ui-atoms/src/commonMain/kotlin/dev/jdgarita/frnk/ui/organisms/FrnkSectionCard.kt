@@ -20,7 +20,8 @@ import dev.jdgarita.frnk.ui.theme.labelMedium
 import dev.jdgarita.frnk.ui.theme.labelSmall
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingXs
 
 /**
  * Shared section-card chrome: an optional uppercase [title] over a `shapeCard`/`colorSurface` card
@@ -48,7 +49,7 @@ internal fun <T> FrnkSectionCard(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xs),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs]),
     ) {
         title?.let {
             FrnkText(

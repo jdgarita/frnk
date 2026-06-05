@@ -43,11 +43,20 @@ kotlin {
 
 android {
     namespace = "${ProjectConfiguration.GROUP_ID}.demo"
-    compileSdk = ProjectConfiguration.COMPILE_SDK
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
     defaultConfig {
         applicationId = "${ProjectConfiguration.GROUP_ID}.demo"
-        minSdk = ProjectConfiguration.MIN_SDK
-        targetSdk = ProjectConfiguration.TARGET_SDK
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "0.1.0"
         buildConfigField("String", "REVENUECAT_ANDROID_API_KEY", "\"$revenueCatAndroidApiKey\"")

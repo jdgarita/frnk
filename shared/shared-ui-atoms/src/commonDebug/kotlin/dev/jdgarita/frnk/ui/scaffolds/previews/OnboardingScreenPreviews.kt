@@ -43,7 +43,7 @@ private fun samplePages(): List<OnboardingPageState> {
                 title = FrnkTextState.Title(text = title),
                 description = FrnkTextState.Body(text = body),
                 icon =
-                    FrnkIconState(
+                    FrnkIconState.Content(
                         imageVector = pageIcons[i],
                         contentDescription = null,
                         size = FrnkIconSize.xxl,

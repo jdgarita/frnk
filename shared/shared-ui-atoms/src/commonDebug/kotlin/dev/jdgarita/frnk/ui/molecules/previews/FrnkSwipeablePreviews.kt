@@ -36,14 +36,14 @@ private fun sampleCard(text: String) {
 @Composable
 private fun deleteAction() =
     FrnkSwipeAction(
-        icon = FrnkIconState(Theme[icons][iconError], contentDescription = "Delete"),
+        icon = FrnkIconState.Content(Theme[icons][iconError], contentDescription = "Delete"),
         label = "Delete",
     )
 
 @Composable
 private fun archiveAction() =
     FrnkSwipeAction(
-        icon = FrnkIconState(Theme[icons][iconRestore], contentDescription = "Archive"),
+        icon = FrnkIconState.Content(Theme[icons][iconRestore], contentDescription = "Archive"),
         containerColor = colorSuccess,
         contentColor = colorOnSuccess,
         label = "Archive",

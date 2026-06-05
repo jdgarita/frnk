@@ -7,7 +7,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
@@ -17,16 +16,11 @@ private fun FrnkButton_Skeleton_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkButton(
-                state = FrnkButtonState(text = "Loading", skeleton = FrnkSkeleton(enabled = true)),
+                state = FrnkButtonState.Skeleton,
                 onClick = {},
             )
             FrnkButton(
-                state =
-                    FrnkButtonState(
-                        text = "Outlined",
-                        variant = FrnkButtonVariant.Outlined,
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                state = FrnkButtonState.Skeleton,
                 onClick = {},
             )
         }
@@ -38,21 +32,21 @@ private fun FrnkButton_Skeleton_Light() {
 private fun FrnkButton_Variants_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-            FrnkButton(state = FrnkButtonState(text = "Filled"), onClick = {})
+            FrnkButton(state = FrnkButtonState.Content(text = "Filled"), onClick = {})
             FrnkButton(
-                state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
+                state = FrnkButtonState.Content(text = "Outlined", variant = FrnkButtonVariant.Outlined),
                 onClick = {},
             )
             FrnkButton(
-                state = FrnkButtonState(text = "Ghost", variant = FrnkButtonVariant.Ghost),
+                state = FrnkButtonState.Content(text = "Ghost", variant = FrnkButtonVariant.Ghost),
                 onClick = {},
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-            FrnkButton(state = FrnkButtonState(text = "Disabled", enabled = false), onClick = {})
+            FrnkButton(state = FrnkButtonState.Content(text = "Disabled", enabled = false), onClick = {})
             FrnkButton(
                 state =
-                    FrnkButtonState(
+                    FrnkButtonState.Content(
                         text = "Disabled Outlined",
                         variant = FrnkButtonVariant.Outlined,
                         enabled = false,
@@ -68,9 +62,9 @@ private fun FrnkButton_Variants_Light() {
 private fun FrnkButton_Variants_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-            FrnkButton(state = FrnkButtonState(text = "Filled"), onClick = {})
+            FrnkButton(state = FrnkButtonState.Content(text = "Filled"), onClick = {})
             FrnkButton(
-                state = FrnkButtonState(text = "Outlined", variant = FrnkButtonVariant.Outlined),
+                state = FrnkButtonState.Content(text = "Outlined", variant = FrnkButtonVariant.Outlined),
                 onClick = {},
             )
         }

@@ -5,7 +5,10 @@ object ProjectConfiguration {
     /** SQLDelight database class name + generated package (see :shared-database-impl). */
     const val DATABASE_NAME = "FrnkDB"
     const val DATABASE_PACKAGE = "dev.jdgarita.frnk.database.sql"
-    const val MIN_SDK = 26
-    const val COMPILE_SDK = 36
-    const val TARGET_SDK = 36
+
+    // SDK floor/ceiling are NOT here: they live in gradle/libs.versions.toml
+    // (android-minSdk / android-compileSdk / android-targetSdk) as the single source of truth, read by
+    // both the `frnk.kmp.library` convention plugin (build-logic can't see buildSrc) and the special
+    // modules' build scripts (`libs.versions.android.compileSdk.get().toInt()`), and inherited by host
+    // apps via the shared catalog. Keeping them only in the catalog avoids the two-source drift.
 }

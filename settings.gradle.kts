@@ -1,6 +1,10 @@
 @file:Suppress("UnstableApiUsage")
 
 pluginManagement {
+    // frnk's Gradle convention plugins (frnk.kmp.library, …) live in a standalone included build so
+    // their plugin classpath attaches only to projects that apply them — avoiding the buildSrc
+    // whole-build classpath leak that clashes with `alias(...) apply false` version requests.
+    includeBuild("build-logic")
     repositories {
         google {
             content {

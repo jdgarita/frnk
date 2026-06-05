@@ -41,11 +41,19 @@ import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconClose
+import dev.jdgarita.frnk.ui.theme.iconSizeLg
+import dev.jdgarita.frnk.ui.theme.iconSizeSm
+import dev.jdgarita.frnk.ui.theme.iconSizes
 import dev.jdgarita.frnk.ui.theme.iconUpgrade
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.labelSmall
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapes
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXxs
 import dev.jdgarita.frnk.ui.theme.stringAppName
 import dev.jdgarita.frnk.ui.theme.stringClose
 import dev.jdgarita.frnk.ui.theme.stringPaywallContinue
@@ -59,8 +67,6 @@ import dev.jdgarita.frnk.ui.theme.stringPerMonthSuffix
 import dev.jdgarita.frnk.ui.theme.stringProName
 import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
 import dev.jdgarita.frnk.ui.theme.strings
-import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -113,7 +119,7 @@ fun PaywallScreenContent(
     modifier: Modifier = Modifier,
     contentPadding: androidx.compose.foundation.layout.PaddingValues =
         androidx.compose.foundation.layout
-            .PaddingValues(FrnkSpacing.lg),
+            .PaddingValues(Theme[spacing][spacingLg]),
 ) {
     val title = "${Theme[strings][stringPaywallTitlePrefix]} ${Theme[strings][stringAppName]} ${Theme[strings][stringProName]}"
     Column(
@@ -122,18 +128,18 @@ fun PaywallScreenContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(contentPadding),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg]),
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             FrnkIcon(
                 state =
-                    FrnkIconState(
+                    FrnkIconState.Content(
                         imageVector = Theme[icons][iconUpgrade],
                         contentDescription = null,
-                        size = FrnkIconSize.lg,
+                        size = Theme[iconSizes][iconSizeLg],
                         tint = colorPrimary,
                     ),
             )
@@ -141,7 +147,7 @@ fun PaywallScreenContent(
         }
 
         if (features.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])) {
                 features.forEach { FeatureRow(text = it) }
             }
         }
@@ -151,7 +157,7 @@ fun PaywallScreenContent(
             state.products.isEmpty() ->
                 FrnkText(state = FrnkTextState.Body(text = Theme[strings][stringPaywallEmpty], color = colorOnSurfaceVariant))
             else ->
-                Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])) {
                     state.products.forEach { product ->
                         PaywallProductCard(
                             product = product,
@@ -170,7 +176,7 @@ fun PaywallScreenContent(
             }
         FrnkButton(
             state =
-                FrnkButtonState(
+                FrnkButtonState.Content(
                     text = ctaText,
                     enabled = state.selectedProductId != null && !state.isPurchasing,
                 ),
@@ -181,10 +187,10 @@ fun PaywallScreenContent(
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
         ) {
             FrnkButton(
-                state = FrnkButtonState(text = Theme[strings][stringRestorePurchases], variant = FrnkButtonVariant.Ghost),
+                state = FrnkButtonState.Content(text = Theme[strings][stringRestorePurchases], variant = FrnkButtonVariant.Ghost),
                 onClick = { onIntent(PaywallIntent.Restore) },
             )
             FrnkText(
@@ -202,15 +208,15 @@ fun PaywallScreenContent(
 @Composable
 private fun FeatureRow(text: String) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         FrnkIcon(
             state =
-                FrnkIconState(
+                FrnkIconState.Content(
                     imageVector = Theme[icons][iconCheck],
                     contentDescription = null,
-                    size = FrnkIconSize.sm,
+                    size = Theme[iconSizes][iconSizeSm],
                     tint = colorPrimary,
                 ),
         )
@@ -235,12 +241,12 @@ private fun PaywallProductCard(
                     shape = Theme[shapes][shapeCard],
                 ).background(Theme[colors][colorSurface])
                 .clickable { onClick() }
-                .padding(FrnkSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                .padding(Theme[spacing][spacingMd]),
+        horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioDot(selected = selected)
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])) {
             FrnkText(state = FrnkTextState.TitleMedium(text = product.title))
             product.pricePerMonthFormatted?.let { perMonth ->
                 FrnkText(
@@ -252,7 +258,7 @@ private fun PaywallProductCard(
                 )
             }
         }
-        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs)) {
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])) {
             FrnkText(state = FrnkTextState.TitleMedium(text = product.priceFormatted))
             val badge = product.badge ?: if (product.hasFreeTrial) Theme[strings][stringPaywallFreeTrialBadge] else null
             badge?.let {
@@ -290,7 +296,7 @@ private fun SkeletonCard() {
                 .fillMaxWidth()
                 .clip(Theme[shapes][shapeCard])
                 .border(width = 1.dp, color = Theme[colors][colorOutline], shape = Theme[shapes][shapeCard])
-                .padding(FrnkSpacing.md),
+                .padding(Theme[spacing][spacingMd]),
     ) {
         FrnkText(
             state =

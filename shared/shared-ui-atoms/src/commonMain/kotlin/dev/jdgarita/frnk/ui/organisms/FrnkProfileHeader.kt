@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
-import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -28,37 +27,36 @@ import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingLg
+import dev.jdgarita.frnk.ui.theme.spacingMd
+import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXxs
+import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 
 /**
- * View state for [FrnkProfileHeader] — an **organism**: a leading avatar glyph + a name/subtitle block,
- * with an optional row of [FrnkLabeledValueState] stat tiles beneath. The header block for a profile,
- * account, or detail screen, composed from the [FrnkIcon]/[FrnkText] atoms + the [FrnkLabeledValue]
- * molecule.
- *
- * @property name the primary line (rendered as `Title`).
- * @property avatar the leading glyph, shown inside a circular `primaryContainer` chip. Decorative by
- *   default (pass `contentDescription = null`); if the avatar conveys identity for the caller, set a
- *   meaningful `contentDescription` on it so screen readers announce it — the organism passes it through
- *   verbatim and never synthesises one from [name].
- * @property subtitle optional secondary line (muted `BodyMedium`); omitted when `null`.
- * @property stats optional stat tiles laid out evenly in a row below the identity block (each
- *   [FrnkLabeledValueState] is forced to [Stacked][FrnkLabeledValueOrientation.Stacked]); the stats
- *   row and its top divider are omitted when empty. Keep stat **values** short/compact (e.g. `"48d"`,
- *   `"Pro"`): each tile gets an equal `weight(1f)` slice, so a wide value wraps to multiple lines and
- *   leaves its column taller than its siblings.
- * @property skeleton loading placeholder. Content-bearing, so the flag is **passed through** to every
- *   child (avatar, name, subtitle, each stat value collapses to a block) and the avatar chip drops its
- *   `primaryContainer` fill while loading so its rim doesn't peek around the glyph skeleton.
+ * Sealed visual state for [FrnkProfileHeader] — an **organism**: the header block for a profile,
+ * account, or detail screen (a leading avatar glyph + name/subtitle, with an optional even row of
+ * [FrnkLabeledValueState.Content] stat tiles). [Content] holds the name, avatar (set its
+ * `contentDescription` if it conveys identity), optional subtitle, and stats (each forced to
+ * [Stacked][FrnkLabeledValueOrientation.Stacked]); [Skeleton] (an `object`) renders the whole card as
+ * placeholder blocks (the avatar chip drops its `primaryContainer` fill while loading). Toolkit-standard
+ * sealed-state + `Skeleton`-object shape.
  */
-@Immutable
-data class FrnkProfileHeaderState(
-    val name: String,
-    val avatar: FrnkIconState,
-    val subtitle: String? = null,
-    val stats: List<FrnkLabeledValueState> = emptyList(),
-    val skeleton: FrnkSkeleton = FrnkSkeleton(),
-)
+sealed interface FrnkProfileHeaderState {
+    @Immutable
+    data class Content(
+        val name: String,
+        val avatar: FrnkIconState,
+        val subtitle: String? = null,
+        val stats: List<FrnkLabeledValueState.Content> = emptyList(),
+    ) : FrnkProfileHeaderState
+
+    data object Skeleton : FrnkProfileHeaderState
+}
+
+/** Number of placeholder stat tiles rendered in [FrnkProfileHeaderState.Skeleton]. */
+private const val SKELETON_STAT_COUNT = 3
 
 /** A profile/account header card: circular avatar + name/subtitle, with an optional even stats row. */
 @Composable
@@ -66,7 +64,7 @@ fun FrnkProfileHeader(
     state: FrnkProfileHeaderState,
     modifier: Modifier = Modifier,
 ) {
-    val loading = state.skeleton.enabled
+    val loading = state is FrnkProfileHeaderState.Skeleton
 
     Column(
         modifier =
@@ -74,12 +72,12 @@ fun FrnkProfileHeader(
                 .fillMaxWidth()
                 .clip(Theme[shapes][shapeCard])
                 .background(Theme[colors][colorSurface])
-                .padding(FrnkSpacing.lg),
-        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                .padding(Theme[spacing][spacingLg]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+            horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -90,43 +88,53 @@ fun FrnkProfileHeader(
                         // glyph skeleton block (same precedent as FrnkSwitch).
                         .let {
                             if (loading) it else it.background(Theme[colors][colorPrimaryContainer])
-                        }.padding(FrnkSpacing.sm),
+                        }.padding(Theme[spacing][spacingSm]),
                 contentAlignment = Alignment.Center,
             ) {
-                FrnkIcon(state = state.avatar.copy(skeleton = state.skeleton))
+                FrnkIcon(
+                    state =
+                        when (state) {
+                            is FrnkProfileHeaderState.Content -> state.avatar
+                            // Size the placeholder to the header's conventional avatar (lg) so the
+                            // chip doesn't resize when the real avatar loads.
+                            FrnkProfileHeaderState.Skeleton -> FrnkIconState.Skeleton(size = FrnkIconSize.lg)
+                        },
+                )
             }
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(FrnkSpacing.xxs),
+                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
             ) {
-                FrnkText(state = FrnkTextState.Title(text = state.name, skeleton = state.skeleton))
-                state.subtitle?.let {
-                    FrnkText(
-                        state =
-                            FrnkTextState.BodyMedium(
-                                text = it,
-                                color = colorOnSurfaceVariant,
-                                skeleton = state.skeleton,
-                            ),
-                    )
+                when (state) {
+                    is FrnkProfileHeaderState.Content -> {
+                        FrnkText(state = FrnkTextState.Title(text = state.name))
+                        state.subtitle?.let {
+                            FrnkText(
+                                state = FrnkTextState.BodyMedium(text = it, color = colorOnSurfaceVariant),
+                            )
+                        }
+                    }
+
+                    FrnkProfileHeaderState.Skeleton -> {
+                        FrnkText(state = FrnkTextState.Skeleton)
+                        FrnkText(state = FrnkTextState.Skeleton)
+                    }
                 }
             }
         }
 
-        if (state.stats.isNotEmpty()) {
+        val stats: List<FrnkLabeledValueState> =
+            when (state) {
+                is FrnkProfileHeaderState.Content -> state.stats.map { it.copy(orientation = FrnkLabeledValueOrientation.Stacked) }
+                FrnkProfileHeaderState.Skeleton -> List(SKELETON_STAT_COUNT) { FrnkLabeledValueState.Skeleton }
+            }
+        if (stats.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
             ) {
-                state.stats.forEach { stat ->
-                    FrnkLabeledValue(
-                        state =
-                            stat.copy(
-                                orientation = FrnkLabeledValueOrientation.Stacked,
-                                skeleton = state.skeleton,
-                            ),
-                        modifier = Modifier.weight(1f),
-                    )
+                stats.forEach { stat ->
+                    FrnkLabeledValue(state = stat, modifier = Modifier.weight(1f))
                 }
             }
         }

@@ -9,9 +9,19 @@ import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import org.koin.core.module.Module
 
+/**
+ * Assembles the toolkit's Koin modules for the chosen backend / observability / monetization axes,
+ * plus any host-supplied [additionalModules].
+ *
+ * @param additionalModules host modules appended to the graph (repositories, feature ViewModels, a
+ *   custom `EntitlementProvider`, a host `SqlDriver` schema, …). They install **after** the toolkit's,
+ *   so a host can override a toolkit binding by enabling Koin override in `extraConfig`/`startKoin`.
+ */
 fun frnkModules(
     backend: BackendChoice = BackendChoice.Supabase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
+    monetization: MonetizationChoice = MonetizationChoice.RevenueCat,
+    additionalModules: List<Module> = emptyList(),
 ): List<Module> =
     buildList {
         add(databaseModule)
@@ -27,9 +37,17 @@ fun frnkModules(
                 ObservabilityChoice.Firebase -> firebaseObservabilityModule
             },
         )
-        // RevenueCat supplies the EntitlementProvider; monetizationModule binds the frnk-owned
-        // EntitlementManager (god mode + Free/Pro layer) + FeatureGate over it.
-        add(revenueCatModule)
-        add(monetizationModule)
-        add(paywallScaffoldModule)
+        when (monetization) {
+            // RevenueCat supplies the EntitlementProvider; monetizationModule binds the frnk-owned
+            // EntitlementManager (god mode + Free/Pro layer) + FeatureGate over it; paywallScaffoldModule
+            // registers the paywall VM.
+            MonetizationChoice.RevenueCat -> {
+                add(revenueCatModule)
+                add(monetizationModule)
+                add(paywallScaffoldModule)
+            }
+            // No monetization bindings — the host opts out or wires its own provider via additionalModules.
+            MonetizationChoice.None -> Unit
+        }
+        addAll(additionalModules)
     }

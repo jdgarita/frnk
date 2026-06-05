@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Dp
 import com.composeunstyled.theme.ThemeToken
 
 /**
@@ -25,6 +26,17 @@ data class FrnkThemeConfig(
     val shapeOverrides: Map<ThemeToken<Shape>, Shape> = emptyMap(),
     val stringOverrides: Map<ThemeToken<String>, String> = emptyMap(),
     val iconOverrides: Map<ThemeToken<ImageVector>, ImageVector> = emptyMap(),
+    /**
+     * Per-token overrides for the spacing/padding axis (`Theme[spacing][spacingMd]`, …). Defaults
+     * come from `FrnkSpacing`; supply only the tokens you want to restyle. Lets a host rescale the
+     * toolkit's whitespace (e.g. a denser layout) without forking atoms.
+     */
+    val spacingOverrides: Map<ThemeToken<Dp>, Dp> = emptyMap(),
+    /**
+     * Per-token overrides for the icon-size axis (`Theme[iconSizes][iconSizeMd]`, …). Defaults come
+     * from `FrnkIconSize`; supply only the tokens you want to restyle.
+     */
+    val iconSizeOverrides: Map<ThemeToken<Dp>, Dp> = emptyMap(),
     /**
      * When non-null, every bundled text style is rebuilt with this [FontFamily] before the host
      * [textStyleOverrides] are applied. Avoids forcing hosts to redeclare 15 text-style tokens

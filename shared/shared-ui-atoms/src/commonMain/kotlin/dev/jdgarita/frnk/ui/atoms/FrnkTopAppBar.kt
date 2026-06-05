@@ -37,8 +37,11 @@ import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconClose
 import dev.jdgarita.frnk.ui.theme.icons
+import dev.jdgarita.frnk.ui.theme.spacing
+import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXs
+import dev.jdgarita.frnk.ui.theme.spacingXxs
 import dev.jdgarita.frnk.ui.theme.textStyles
-import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 
 /** A single trailing action rendered as an icon button on the right of [FrnkTopAppBar]. */
 @Immutable
@@ -127,8 +130,8 @@ fun FrnkTopAppBar(
                 Modifier
                     .fillMaxWidth()
                     .height(FrnkTopAppBarDefaults.BarHeight)
-                    .padding(horizontal = FrnkSpacing.xs),
-            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.xs),
+                    .padding(horizontal = Theme[spacing][spacingXs]),
+            horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs]),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (state.isSearchActive) {
@@ -142,7 +145,7 @@ fun FrnkTopAppBar(
                 state.navigationIcon?.let { icon ->
                     FrnkIconButton(
                         state =
-                            FrnkIconButtonState(
+                            FrnkIconButtonState.Content(
                                 imageVector = icon,
                                 contentDescription = state.navigationContentDescription ?: "Back",
                                 tint = colorOnBackground,
@@ -162,13 +165,13 @@ fun FrnkTopAppBar(
                     modifier =
                         Modifier
                             .weight(1f)
-                            .padding(start = if (state.navigationIcon == null) FrnkSpacing.sm else FrnkSpacing.xxs),
+                            .padding(start = if (state.navigationIcon == null) Theme[spacing][spacingSm] else Theme[spacing][spacingXxs]),
                 )
 
                 state.actions.forEach { action ->
                     FrnkIconButton(
                         state =
-                            FrnkIconButtonState(
+                            FrnkIconButtonState.Content(
                                 imageVector = action.icon,
                                 contentDescription = action.contentDescription,
                                 tint = colorOnBackground,
@@ -195,7 +198,7 @@ private fun RowScope.SearchRow(
 ) {
     FrnkIconButton(
         state =
-            FrnkIconButtonState(
+            FrnkIconButtonState.Content(
                 imageVector = Theme[icons][iconBack],
                 contentDescription = "Close search",
                 tint = colorOnBackground,
@@ -237,7 +240,7 @@ private fun RowScope.SearchRow(
     if (query.isNotEmpty()) {
         FrnkIconButton(
             state =
-                FrnkIconButtonState(
+                FrnkIconButtonState.Content(
                     imageVector = Theme[icons][iconClose],
                     contentDescription = "Clear search",
                     tint = colorOnSurfaceVariant,

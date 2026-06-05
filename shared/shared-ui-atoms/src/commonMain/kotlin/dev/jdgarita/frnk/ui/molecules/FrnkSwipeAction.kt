@@ -50,7 +50,7 @@ enum class FrnkSwipeDirection { Left, Right, Both }
  */
 @Immutable
 data class FrnkSwipeAction(
-    val icon: FrnkIconState,
+    val icon: FrnkIconState.Content,
     val containerColor: ThemeToken<Color> = colorError,
     val contentColor: ThemeToken<Color> = colorOnError,
     val autoClose: Boolean = true,

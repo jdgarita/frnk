@@ -18,7 +18,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
         runComposeUiTest {
             setFrnkContent {
                 FrnkSegmentedControl(
-                    state = FrnkSegmentedControlState(options = options, selectedIndex = 0),
+                    state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 0),
                     onOptionSelected = {},
                 )
             }
@@ -31,7 +31,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             var selected: Int? = null
             setFrnkContent {
                 FrnkSegmentedControl(
-                    state = FrnkSegmentedControlState(options = options, selectedIndex = 0),
+                    state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 0),
                     onOptionSelected = { selected = it },
                 )
             }
@@ -47,7 +47,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             var selected: Int? = null
             setFrnkContent {
                 FrnkSegmentedControl(
-                    state = FrnkSegmentedControlState(options = options, selectedIndex = 1),
+                    state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 1),
                     onOptionSelected = { selected = it },
                 )
             }
@@ -65,7 +65,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSegmentedControl(
                     // selectedIndex is coerced into bounds; the control must still render + respond.
-                    state = FrnkSegmentedControlState(options = options, selectedIndex = 99),
+                    state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 99),
                     onOptionSelected = { selected = it },
                 )
             }
@@ -81,7 +81,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             var selected: Int? = null
             setFrnkContent {
                 FrnkSegmentedControl(
-                    state = FrnkSegmentedControlState(options = options, selectedIndex = 0, enabled = false),
+                    state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 0, enabled = false),
                     onOptionSelected = { selected = it },
                 )
             }
@@ -97,18 +97,13 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             var selected: Int? = null
             setFrnkContent {
                 FrnkSegmentedControl(
-                    state =
-                        FrnkSegmentedControlState(
-                            options = options,
-                            selectedIndex = 0,
-                            skeleton = FrnkSkeleton(enabled = true),
-                        ),
+                    state = FrnkSegmentedControlState.Skeleton,
                     onOptionSelected = { selected = it },
                 )
             }
 
-            onNodeWithText("Dark").performClick()
-
+            // The skeleton state renders no option labels, so there is nothing to tap.
+            onNodeWithText("Dark").assertDoesNotExist()
             assertNull(selected)
         }
 }
