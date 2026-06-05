@@ -3,13 +3,17 @@ package dev.jdgarita.frnk.ui.atoms
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
@@ -19,6 +23,8 @@ import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.colorOnPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.iconSizeSm
+import dev.jdgarita.frnk.ui.theme.iconSizes
 import dev.jdgarita.frnk.ui.theme.labelLarge
 import dev.jdgarita.frnk.ui.theme.shapeButton
 import dev.jdgarita.frnk.ui.theme.shapes
@@ -42,6 +48,9 @@ sealed interface FrnkButtonState {
         val text: String,
         val enabled: Boolean = true,
         val variant: FrnkButtonVariant = FrnkButtonVariant.Filled,
+        /** Optional glyph rendered before the label at the small icon-size token, inheriting the
+         *  button's content color. `null` (default) = label only. */
+        val leadingIcon: ImageVector? = null,
     ) : FrnkButtonState
 
     data object Skeleton : FrnkButtonState
@@ -110,7 +119,27 @@ fun FrnkButton(
         ProvideContentColor(contentColor) {
             // labelLarge (14sp / Medium) matches the M3 button-label convention. Inherits color
             // from ProvideContentColor above so the disabled alpha applies uniformly.
-            FrnkText(state = FrnkTextState.Raw(text = content.text, style = labelLarge))
+            val label = @Composable { FrnkText(state = FrnkTextState.Raw(text = content.text, style = labelLarge)) }
+            val leading = content.leadingIcon
+            if (leading == null) {
+                label()
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
+                ) {
+                    // tint = null → inherits LocalContentColor (the ProvideContentColor above).
+                    FrnkIcon(
+                        state =
+                            FrnkIconState.Content(
+                                imageVector = leading,
+                                contentDescription = null,
+                                size = Theme[iconSizes][iconSizeSm],
+                            ),
+                    )
+                    label()
+                }
+            }
         }
     }
 }
