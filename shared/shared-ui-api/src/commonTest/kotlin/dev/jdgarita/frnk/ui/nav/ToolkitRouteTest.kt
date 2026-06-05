@@ -18,10 +18,9 @@ class ToolkitRouteTest {
     @Test
     fun members_are_nav_keys() {
         assertIs<NavKey>(ToolkitRoute.Home)
+        assertIs<NavKey>(ToolkitRoute.Onboarding)
         assertIs<NavKey>(ToolkitRoute.Settings)
         assertIs<NavKey>(ToolkitRoute.Paywall)
-        assertIs<NavKey>(ToolkitRoute.SignIn)
-        assertIs<NavKey>(ToolkitRoute.SignUp)
         assertIs<NavKey>(ToolkitRoute.Custom(id = "x"))
     }
 
@@ -38,10 +37,9 @@ class ToolkitRouteTest {
         val names =
             listOf(
                 serializer<ToolkitRoute.Home>().descriptor.serialName,
+                serializer<ToolkitRoute.Onboarding>().descriptor.serialName,
                 serializer<ToolkitRoute.Settings>().descriptor.serialName,
                 serializer<ToolkitRoute.Paywall>().descriptor.serialName,
-                serializer<ToolkitRoute.SignIn>().descriptor.serialName,
-                serializer<ToolkitRoute.SignUp>().descriptor.serialName,
                 serializer<ToolkitRoute.Custom>().descriptor.serialName,
             )
 

@@ -33,10 +33,9 @@ fun frnkNavConfiguration(hostRoutes: SerializersModule = EmptySerializersModule(
             SerializersModule {
                 polymorphic(NavKey::class) {
                     subclass(ToolkitRoute.Home::class, ToolkitRoute.Home.serializer())
+                    subclass(ToolkitRoute.Onboarding::class, ToolkitRoute.Onboarding.serializer())
                     subclass(ToolkitRoute.Settings::class, ToolkitRoute.Settings.serializer())
                     subclass(ToolkitRoute.Paywall::class, ToolkitRoute.Paywall.serializer())
-                    subclass(ToolkitRoute.SignIn::class, ToolkitRoute.SignIn.serializer())
-                    subclass(ToolkitRoute.SignUp::class, ToolkitRoute.SignUp.serializer())
                     subclass(ToolkitRoute.Custom::class, ToolkitRoute.Custom.serializer())
                 }
                 include(hostRoutes)
