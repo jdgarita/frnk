@@ -29,7 +29,7 @@ Selecting `observability: .firebase` installs Firebase Analytics + Crashlytics *
 `:shared` always bundles `shared-monetization-revenuecat`, so `FeatureGate` / `EntitlementManager`
 are in every build. The toolkit never calls `Purchases.configure(...)`; the consumer iOS app must:
 1. Add the **`RevenueCat`** Swift package (`github.com/RevenueCat/purchases-ios`, a 5.x compatible with
-   `purchases-kmp` 3.0.2 — e.g. `from: 5.58.0`) via SPM — resolved at the app's link step under the
+   `purchases-kmp` 3.0.5 — e.g. `from: 5.58.0`) via SPM — resolved at the app's link step under the
    existing `dynamic_lookup` (do **not** add a per-framework `linkerOpts`). *(purchases-kmp 3.0+ binds
    directly against `purchases-ios`; the old `PurchasesHybridCommon` framework is no longer the integration
    point.)*

@@ -41,14 +41,14 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 
 ## 🧰 Tech stack
 
-- **Language:** Kotlin 2.3.21
-- **UI:** Compose Multiplatform 1.11.0 + `compose-unstyled` 2.4.0 (the granular `com.composables:composeunstyled-*` artifacts — **not** `com.composables:core`, **not** Material3) + Lucide icons (`icons-lucide-cmp` 2.2.1). The lone exception to the no-Material3 rule is `shared-ui-nav`'s adaptive bottom bar (Calf 0.12.0, `com.mohamedrejeb.calf:calf-ui`), which pulls Material3 on Android for a native `UITabBar` on iOS — isolated to that one module.
+- **Language:** Kotlin 2.4.0
+- **UI:** Compose Multiplatform 1.11.1 + `compose-unstyled` 2.5.0 (the granular `com.composables:composeunstyled-*` artifacts — **not** `com.composables:core`, **not** Material3) + Lucide icons (`icons-lucide-cmp` 2.2.1). The lone exception to the no-Material3 rule is `shared-ui-nav`'s adaptive bottom bar (Calf 0.12.0, `com.mohamedrejeb.calf:calf-ui`), which pulls Material3 on Android for a native `UITabBar` on iOS — isolated to that one module.
 - **DI:** Koin 4.2.1
-- **Navigation:** Compose Multiplatform Navigation 2.9.2 (`org.jetbrains.androidx.navigation`)
+- **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
 - **Backend:** Supabase 3.6.0 + Ktor 3.5.0, and GitLive Firebase 2.4.0 — both impls bundled, host picks via `BackendChoice`
 - **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in via `ObservabilityChoice.Firebase`, independent of the backend choice
-- **Monetization:** RevenueCat 3.0.2
+- **Monetization:** RevenueCat 3.0.5
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
 - **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
 
