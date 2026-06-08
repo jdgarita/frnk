@@ -74,7 +74,7 @@ fun FrnkTabbedNavScaffold(
     tabs: List<FrnkAdaptiveNavTab>,
     modifier: Modifier = Modifier,
     engine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
-    primaryAction: FrnkNavPrimaryAction = rememberFrnkNavPrimaryAction(),
+    primaryAction: FrnkNavPrimaryAction? = null,
     onPrimaryAction: (() -> Unit)? = null,
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     entryProvider: (NavKey) -> NavEntry<NavKey> = koinEntryProvider(),
@@ -140,20 +140,27 @@ fun FrnkTabbedNavScaffold(
                                 )
                             }
                         }
+                    // Resolve the primary-action descriptor only when the action is actually wired, and
+                    // only on this engine — so the default Calf path never pays for the Theme lookup +
+                    // remember (the host-supplied [primaryAction] wins; otherwise fall back to the toolkit
+                    // default).
+                    val action = onPrimaryAction
+                    val resolvedPrimaryAction =
+                        if (action != null) primaryAction ?: rememberFrnkNavPrimaryAction() else null
                     FrnkAdaptiveNavBarBottomBar(
                         items = navBarItems,
                         selectedIndex = selectedIndex,
                         onItemSelected = onItemSelected,
                         modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                        primaryAction = if (onPrimaryAction != null) primaryAction else null,
-                        onPrimaryAction = onPrimaryAction,
+                        primaryAction = resolvedPrimaryAction,
+                        onPrimaryAction = action,
                     )
                     // The library renders the primary-action FAB inline on iOS only; dock the Android FAB
                     // ourselves above the bar (guarded to Android via the library's getPlatform()).
-                    if (onPrimaryAction != null && getPlatform() == Platform.Android) {
+                    if (action != null && resolvedPrimaryAction != null && getPlatform() == Platform.Android) {
                         FrnkAdaptiveNavBarPrimaryActionFab(
-                            primaryAction = primaryAction,
-                            onPrimaryAction = onPrimaryAction,
+                            primaryAction = resolvedPrimaryAction,
+                            onPrimaryAction = action,
                             modifier =
                                 Modifier
                                     .align(Alignment.BottomEnd)

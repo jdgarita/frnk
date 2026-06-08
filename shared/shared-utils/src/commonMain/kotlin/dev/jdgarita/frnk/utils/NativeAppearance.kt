@@ -7,7 +7,8 @@ package dev.jdgarita.frnk.utils
  *
  * [dark] = `true` forces dark, `false` forces light, `null` defers to the system.
  *
- * On **iOS** this sets `overrideUserInterfaceStyle` on the app's windows. Without it, native `UIKit`
+ * On **iOS** this sets `overrideUserInterfaceStyle` on the windows of the foreground-active scene(s)
+ * (not secondary surfaces like CarPlay / external displays). Without it, native `UIKit`
  * views (e.g. the adaptive bottom bar's `UIBlurEffect` / `UIGlassEffect` materials) resolve their
  * appearance against the *system* trait collection — so when the app is forced to the opposite theme
  * (e.g. light on a dark-mode device) a freshly created/recreated native view flashes the system style

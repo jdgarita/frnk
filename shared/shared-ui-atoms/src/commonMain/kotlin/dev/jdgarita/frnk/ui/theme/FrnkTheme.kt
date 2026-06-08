@@ -331,14 +331,9 @@ private val FrnkPlatformTheme =
         // Mirror the chosen appearance onto the native interface style (iOS only; no-op on Android) so
         // native chrome — e.g. the adaptive bottom bar's UIKit blur/glass — follows the toolkit theme
         // instead of the device's system setting, and freshly created native views don't flash the
-        // system style. System → null lets the OS decide. Scoped to this block so toggling appearance
-        // doesn't widen recomposition past the palette re-resolve.
-        val nativeDark =
-            when (appearance) {
-                Appearance.Light -> false
-                Appearance.Dark -> true
-                Appearance.System -> null
-            }
+        // system style. System → null lets the OS decide (so we don't pin the window when the host wants
+        // to follow the device). Derived from isDark to avoid a second appearance ladder that could drift.
+        val nativeDark = if (appearance == Appearance.System) null else isDark
         LaunchedEffect(nativeDark) { applyNativeInterfaceStyle(nativeDark) }
         val basePalette = if (isDark) DarkPalette else LightPalette
         val paletteOverrides = if (isDark) config.darkColorOverrides else config.lightColorOverrides

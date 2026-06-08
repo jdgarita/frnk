@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.theme.colorOnPrimary
@@ -56,16 +59,25 @@ fun FrnkAdaptiveNavBarBottomBar(
     val containerColor = Theme[colors][colorSurface]
     val onPrimaryColor = Theme[colors][colorOnPrimary]
 
+    // The iOS 26+ bar captures its FAB tap handler once in the library's UIKitView factory and never
+    // re-associates it (its update block only syncs the selected item), and the factory only re-runs when
+    // we toggle `key(...)` below. rememberUpdatedState keeps the click delegating to the *latest*
+    // onPrimaryAction, so a host that rebinds the callback (capturing changing state) isn't left firing a
+    // stale closure while the FAB's presence is unchanged.
+    val latestOnPrimaryAction by rememberUpdatedState(onPrimaryAction)
+
     val navItems =
-        items.map { item ->
-            NavigationItem(
-                title = item.label,
-                icon = item.androidIcon,
-                systemIcon = item.iosSystemIcon,
-                selectedIcon = item.selectedAndroidIcon,
-                selectedSystemIcon = item.selectedIosSystemIcon,
-                contentDescription = item.label,
-            )
+        remember(items) {
+            items.map { item ->
+                NavigationItem(
+                    title = item.label,
+                    icon = item.androidIcon,
+                    systemIcon = item.iosSystemIcon,
+                    selectedIcon = item.selectedAndroidIcon,
+                    selectedSystemIcon = item.selectedIosSystemIcon,
+                    contentDescription = item.label,
+                )
+            }
         }
 
     // The library renders the FAB inline only on iOS; on Android it's the caller's job (see the Fab below).
@@ -99,8 +111,15 @@ fun FrnkAdaptiveNavBarBottomBar(
     // exposes no Compose-animatable hook — the frame is factory-set and the view is `placedAsOverlay`, so
     // Crossfade/alpha/animateContentSize can't touch it. A smooth slide would mean owning the iOS-26 bar
     // natively (iosMain + Core Animation); intentionally deferred. See docs/spikes/adaptive-bottom-nav.md.
+    //
+    // The color tokens are part of the key too: on iOS 26+ the library bakes the brand palette into the
+    // native `UITabBarAppearance` in the factory (explicit UIColors, so a trait change doesn't re-resolve
+    // them) and its update block never re-applies them. Without keying on the colors, a light↔dark toggle
+    // while the FAB's presence is unchanged would leave the native bar's tints stale until the next
+    // recreate. Color values are stable across recompositions (only the palette swap changes them), so this
+    // recreates on theme toggle only — not every frame.
     Box(modifier = modifier) {
-        key(iosFab != null) {
+        key(iosFab != null, selectedColor, unselectedColor, indicatorColor, containerColor) {
             AdaptiveNavigationBar(
                 items = navItems,
                 iosFab = iosFab,
@@ -115,7 +134,7 @@ fun FrnkAdaptiveNavBarBottomBar(
                         unselectedTextColor = unselectedColor,
                     ),
                 onItemSelected = onItemSelected,
-                onIosFabClick = { onPrimaryAction?.invoke() },
+                onIosFabClick = { latestOnPrimaryAction?.invoke() },
             )
         }
     }
