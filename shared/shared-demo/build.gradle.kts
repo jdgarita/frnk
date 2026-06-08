@@ -7,6 +7,13 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Demo-bundled drawable for the Components tab icon under the adaptive-nav-bar engine (which takes a
+// DrawableResource, unlike Calf's ImageVector). Pin the generated accessor package for deterministic imports.
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "${ProjectConfiguration.GROUP_ID}.demo.generated.resources"
+}
+
 kotlin {
     android {
         namespace = "${ProjectConfiguration.GROUP_ID}.demo.shared"
@@ -66,6 +73,8 @@ kotlin {
             // middle "Stats" tab). Real consumers only need this if they likewise name Lucide icons
             // directly; otherwise every icon is overridable through FrnkThemeConfig.
             implementation(libs.icons.lucide)
+            // Demo-bundled drawable for the Components tab under the adaptive-nav-bar engine (resource icons).
+            implementation(compose.components.resources)
         }
         // iOS-only native SDKs the demo opts into (kept out of commonMain so the Android demo +
         // DemoKit's common surface stay SDK-free):

@@ -4,6 +4,60 @@ The toolkit's **platform-adaptive bottom navigation** module: a genuine native U
 a Material3 `NavigationBar` on Android, plus the default scaffold + tab builder that wire it up. Depends on
 `shared-ui-atoms` (tokens, theme, `BottomNavScaffoldState`/`BottomNavViewModel`, `FrnkBottomNavItem`).
 
+## POC: two bar engines (A/B), selectable at runtime
+
+`FrnkTabbedNavScaffold` carries an `engine: FrnkAdaptiveNavEngine` so a host can A/B two bar
+implementations live (compare UX/performance before committing to one):
+
+- **`FrnkAdaptiveNavEngine.Calf`** (**default**) — the original `FrnkAdaptiveBottomNavBar` over
+  [Calf](https://github.com/MohamedRejeb/Calf): a genuine native UIKit `UITabBar` on iOS, Material3
+  `NavigationBar` on Android. No built-in "add" button.
+- **`FrnkAdaptiveNavEngine.AdaptiveNavBar`** — `FrnkAdaptiveNavBarBottomBar` over
+  [narendraanjana09/adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)
+  (`io.github.narendraanjana09:adaptive-nav-bar`): Material3 `NavigationBar` on Android, a native glassy
+  `UITabBar` (iOS 26+) / Material3 Compose bar (older iOS) on iOS, **with a built-in primary-action
+  button** — a Material3 FAB on Android (docked above the bar by the scaffold) and an inline button beside
+  the items on iOS (the library's `IosFabItem`). The primary-action button is frnk-owned
+  (`FrnkNavPrimaryAction` + `stringPrimaryAction` token, same bookend treatment as Home/Settings) and
+  surfaced to hosts via the scaffold's `onPrimaryAction` callback — the host decides what tapping it does,
+  **per screen** (re-skin per surface by passing a custom `primaryAction`). It shows only on this engine
+  and only when `onPrimaryAction` is non-null.
+
+Both engines keep Material3 confined to this module (no rule change). `adaptive-nav-bar`'s icons are
+**resource-based** (`DrawableResource` on Android + SF-Symbol string on iOS), not `ImageVector`, so this
+module also pulls in `compose.components.resources` and bundles the toolkit's default nav icons
+(`composeResources/drawable/frnk_nav_{home,settings,primary_action}.xml`). The new tab type `FrnkAdaptiveNavTab`
+carries **both** icon forms (the `ImageVector` for Calf + the resource icons for adaptive-nav-bar) so one
+tab list feeds either engine; `rememberFrnkAdaptiveNavTabs(...)` builds the Home + middle + Settings
+bookends with the bundled icons. Neither library adds native cinterop (adaptive-nav-bar resolves SF
+Symbols via built-in `platform.UIKit` interop), so the XCFrameworks still link under `dynamic_lookup`.
+
+**iOS note:** Calf gives a genuine native `UITabBar`; adaptive-nav-bar gives a native glassy `UITabBar`
+only on iOS 26+, falling back to a Material3 Compose bar on older iOS — the headline thing the A/B exists
+to evaluate.
+
+### ⚠️ Android packaging blocker (key POC finding)
+
+The adaptive-nav-bar engine's `DrawableResource` icons **do not package into the Android APK** from a
+`shared-*` KMP **library** module under the current toolchain (AGP 9.2.1 `com.android.kotlin.multiplatform.library`
++ Compose Multiplatform 1.11.1). The Compose-resources Gradle plugin can't wire its
+`copyAndroidMainComposeResourcesToAndroidAssets` task into the new KMP-Android-library variant —
+`prepareComposeResourcesTaskForAndroidMain` is `NO-SOURCE` and the copy task fails with
+`outputDirectory doesn't have a configured value`. So the bundled drawables assemble for **iOS** but are
+**absent from Android assets**, and switching to this engine throws
+`MissingResourceException: composeResources/dev.jdgarita.frnk.ui.bottomnav.generated.resources/drawable/frnk_nav_home.xml`
+at runtime. Since the library hard-requires `DrawableResource` (no `ImageVector`/composable-slot path),
+this is a genuine adoption blocker for shipping the engine from a toolkit library — not a wiring mistake.
+
+**POC workaround (demo only):** the consuming **application** module
+(`androidDemoApp/src/main/assets/composeResources/<resourcePackage>/drawable/…`) ships the raw XML at the
+exact path the generated `Res` reads, so the runtime `AssetManager` finds it. See
+`androidDemoApp/src/main/assets/composeResources/README.md`. This is a hack — a real host would have to
+copy these assets too, which is why it counts against adopting this library in the toolkit as-is. The Calf
+engine (and `:shared-ui-atoms`' `ImageVector` pill) have no such issue. Proper resolution would need an
+AGP/Compose-resources fix for the KMP-Android-library variant, or generating the icons a non-Compose-resources
+way.
+
 ## Why this is its own module
 
 It is the **one place in the toolkit that intentionally takes a Material3 dependency.** The adaptive bar is

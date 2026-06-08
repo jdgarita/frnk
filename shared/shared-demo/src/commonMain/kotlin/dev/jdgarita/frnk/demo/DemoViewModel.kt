@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.Feature
 import dev.jdgarita.frnk.monetization.FeatureGate
 import dev.jdgarita.frnk.monetization.ProSource
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
@@ -36,6 +37,8 @@ data class DemoState(
     val gallerySwitchOn: Boolean = true,
     val gallerySegmentIndex: Int = 0,
     val galleryNavIndex: Int = 0,
+    // POC: which adaptive bottom-bar engine FrnkTabbedNavScaffold renders (A/B Calf vs adaptive-nav-bar).
+    val navEngine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
 ) : UiState
 
 sealed interface DemoIntent : UiIntent {
@@ -88,6 +91,11 @@ sealed interface DemoIntent : UiIntent {
     ) : DemoIntent
 
     data class GalleryNavChanged(
+        val index: Int,
+    ) : DemoIntent
+
+    // POC: switch the adaptive bottom-bar engine (0 = Calf, 1 = AdaptiveNavBar).
+    data class NavEngineChanged(
         val index: Int,
     ) : DemoIntent
 }
@@ -193,6 +201,13 @@ class DemoViewModel(
             is DemoIntent.GallerySwitchChanged -> setState { copy(gallerySwitchOn = intent.checked) }
             is DemoIntent.GallerySegmentChanged -> setState { copy(gallerySegmentIndex = intent.index) }
             is DemoIntent.GalleryNavChanged -> setState { copy(galleryNavIndex = intent.index) }
+            is DemoIntent.NavEngineChanged ->
+                setState {
+                    copy(
+                        navEngine =
+                            if (intent.index == 0) FrnkAdaptiveNavEngine.Calf else FrnkAdaptiveNavEngine.AdaptiveNavBar,
+                    )
+                }
         }
     }
 
