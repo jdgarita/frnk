@@ -49,7 +49,7 @@ tester needed. The native RevenueCat Apple SDK must be linked into this Xcode pr
 
 1. In Xcode: **File ▸ Add Package Dependencies…**
 2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.58.0` or later**
-   (a 5.x compatible with `purchases-kmp` 3.0.2).
+   (a 5.x compatible with `purchases-kmp` 3.0.5).
 3. Add the **`RevenueCat`** product to the `iosDemoApp` target. *(purchases-kmp 3.0+ binds
    directly against `purchases-ios` — **not** `PurchasesHybridCommon`.)*
 4. The Test Store `test_` API key is already wired in `iosDemoAppApp.swift`

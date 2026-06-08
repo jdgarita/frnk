@@ -1,8 +1,8 @@
 [versions]
 agp = "9.2.1"
-kotlin = "2.3.21"
-compose-multiplatform = "1.11.0"
-compose-unstyled = "2.4.0"
+kotlin = "2.4.0"
+compose-multiplatform = "1.11.1"
+compose-unstyled = "2.5.0"
 ripple-indication = "1.1.0"
 coroutines = "1.11.0"
 serialization = "1.11.0"
@@ -14,28 +14,33 @@ ktor = "3.5.0"
 viewmodel = "2.10.0"
 # Navigation3 (the toolkit's navigation engine). `navigation3-ui` is JetBrains' CMP port
 # (org.jetbrains.androidx.navigation3); `navigation3-runtime` is the AndroidX pure-Kotlin/MP runtime
-# (androidx.navigation3) that ships NavKey/NavBackStack — both share the 1.1.0 line. The
-# lifecycle-viewmodel-navigation3 decorator tracks the lifecycle line (2.10.0). Host apps (Still) build
-# on the SAME coordinates/versions.
-navigation3UI = "1.1.0"
+# (androidx.navigation3) that ships NavKey/NavBackStack. The lifecycle-viewmodel-navigation3 decorator
+# tracks the lifecycle line (2.10.0). Host apps (Still) build on the SAME coordinates/versions.
+# ⚠️ These are two INDEPENDENTLY-versioned coordinate groups that share this one ref, so it must stay
+# at the highest version BOTH publish — they don't release in lockstep. AndroidX shipped 1.1.2 but the
+# JetBrains CMP port stops at 1.1.1, so bumping this past 1.1.1 fails to resolve `navigation3-ui` until
+# JetBrains catches up (or split this into two refs). Verify both before bumping:
+#   navigation3-ui:      https://repo.maven.apache.org/maven2/org/jetbrains/androidx/navigation3/navigation3-ui/maven-metadata.xml
+#   navigation3-runtime: https://dl.google.com/dl/android/maven2/androidx/navigation3/navigation3-runtime/maven-metadata.xml
+navigation3UI = "1.1.1"
 navigation3ViewModel = "2.10.0"
 gitlive-firebase = "2.4.0"
-firebase-bom = "34.13.0"
+firebase-bom = "34.14.0"
 google-services = "4.4.4"
 firebase-crashlytics-gradle = "3.0.7"
 crashkios = "0.9.0"
 supabase = "3.6.0"
-revenuecat = "3.0.2"
+revenuecat = "3.0.5"
 multihaptic = "0.3.2"
-robolectric = "4.15.1"
-# AndroidX Compose UI version that compose-multiplatform 1.11.0 resolves to on Android — used only to
+robolectric = "4.16.1"
+# AndroidX Compose UI version that compose-multiplatform 1.11.1 resolves to on Android — used only to
 # pin the matching ui-test-manifest artifact (provides the ComponentActivity the Compose test host launches).
 # ⚠️ BUMP TOGETHER WITH `compose-multiplatform`: this is the lone hand-pinned AndroidX Compose version in
 # the catalog (everything else routes through the CMP plugin). On a CMP upgrade, re-resolve the value via
 # `./gradlew :shared-ui-atoms:dependencies --configuration androidHostTestRuntimeClasspath | grep 'compose.ui:ui:'`
 # and update this to match, or ui-test-manifest can lag the rest of the compose-ui graph (obscure
 # ComponentActivity/test-host failures rather than a clear version conflict).
-androidx-compose-ui = "1.11.1"
+androidx-compose-ui = "1.11.2"  # re-resolved for CMP 1.11.1
 # Calf adaptive nav bar: native UITabBar on iOS / Material3 NavigationBar on Android. Lives in the
 # :shared-ui-nav module (the toolkit's sole, deliberate Material3 dependency).
 calf = "0.12.0"
