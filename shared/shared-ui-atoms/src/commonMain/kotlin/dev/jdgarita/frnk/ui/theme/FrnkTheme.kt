@@ -7,6 +7,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +32,7 @@ import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkShapes
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.ui.tokens.FrnkTypography
+import dev.jdgarita.frnk.utils.applyNativeInterfaceStyle
 
 // region ThemeProperty axes
 val colors = ThemeProperty<Color>("colors")
@@ -319,12 +321,20 @@ private val FrnkPlatformTheme =
             )
 
         val config = LocalFrnkThemeConfig.current
+        val appearance = LocalAppearanceController.current.appearance
         val isDark =
-            when (LocalAppearanceController.current.appearance) {
+            when (appearance) {
                 Appearance.Light -> false
                 Appearance.Dark -> true
                 Appearance.System -> isSystemInDarkTheme()
             }
+        // Mirror the chosen appearance onto the native interface style (iOS only; no-op on Android) so
+        // native chrome — e.g. the adaptive bottom bar's UIKit blur/glass — follows the toolkit theme
+        // instead of the device's system setting, and freshly created native views don't flash the
+        // system style. System → null lets the OS decide (so we don't pin the window when the host wants
+        // to follow the device). Derived from isDark to avoid a second appearance ladder that could drift.
+        val nativeDark = if (appearance == Appearance.System) null else isDark
+        LaunchedEffect(nativeDark) { applyNativeInterfaceStyle(nativeDark) }
         val basePalette = if (isDark) DarkPalette else LightPalette
         val paletteOverrides = if (isDark) config.darkColorOverrides else config.lightColorOverrides
         val animatedPalette = animateColorPalette(basePalette, paletteOverrides)

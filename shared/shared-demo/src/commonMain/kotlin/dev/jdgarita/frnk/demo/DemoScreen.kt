@@ -34,6 +34,8 @@ import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Lucide
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.backend.AnalyticsTracker
+import dev.jdgarita.frnk.demo.generated.resources.Res
+import dev.jdgarita.frnk.demo.generated.resources.frnk_demo_components
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
@@ -59,7 +61,10 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
+import dev.jdgarita.frnk.ui.bottomnav.rememberFrnkAdaptiveNavTabs
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -73,7 +78,7 @@ import dev.jdgarita.frnk.ui.molecules.FrnkSwipeDirection
 import dev.jdgarita.frnk.ui.molecules.FrnkSwipeableState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
-import dev.jdgarita.frnk.ui.nav.FrnkNavTab
+import dev.jdgarita.frnk.ui.nav.FrnkTab
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.frnkNavConfiguration
@@ -109,7 +114,6 @@ import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconError
-import dev.jdgarita.frnk.ui.theme.iconNavHome
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconPrivacy
 import dev.jdgarita.frnk.ui.theme.iconRestore
@@ -120,9 +124,6 @@ import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapes
-import dev.jdgarita.frnk.ui.theme.stringNavHome
-import dev.jdgarita.frnk.ui.theme.stringSettings
-import dev.jdgarita.frnk.ui.theme.strings
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import dev.jdgarita.frnk.utils.Frnk
@@ -158,6 +159,14 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * The host integration story: a real app passes its own [dev.jdgarita.frnk.ui.theme.FrnkThemeConfig]
  * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat).
+ *
+ * **Bottom-bar A/B (POC).** A segmented control on the Home tab flips `state.navEngine` between
+ * `FrnkAdaptiveNavEngine.Calf` (native iOS `UITabBar`, no primary-action button) and `.AdaptiveNavBar`
+ * (the new `adaptive-nav-bar` lib, with a built-in primary-action button — FAB on Android / inline on iOS).
+ * The button is **per-screen**: the demo shows it on the **Home tab only** (`onPrimaryAction` is null on the
+ * other tabs, which hides it), demonstrating that a host wires the action — or nothing — per surface. See
+ * `docs/spikes/adaptive-bottom-nav.md`; note the Android resource-packaging workaround in
+ * `androidDemoApp/src/main/assets/composeResources/`.
  */
 @Composable
 fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
@@ -181,22 +190,31 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
                     },
             )
         }
-    // One declaration per tab: the back-stack root + the adaptive bar's icon/label, folded into a single
-    // FrnkNavTab list (Home/Settings resolve icon+label from theme tokens, so a host re-skins them via
-    // FrnkThemeConfig). FrnkTabbedNavScaffold below derives the bar from this same list.
-    val homeIcon = Theme[icons][iconNavHome]
-    val homeLabel = Theme[strings][stringNavHome]
-    val settingsIcon = Theme[icons][iconSettings]
-    val settingsLabel = Theme[strings][stringSettings]
-    val navTabs =
-        remember(homeIcon, homeLabel, settingsIcon, settingsLabel) {
-            listOf(
-                FrnkNavTab(key = "home", root = DemoRoute.Home, icon = homeIcon, label = homeLabel),
-                FrnkNavTab(key = "components", root = DemoRoute.Components, icon = Lucide.Component, label = "Components"),
-                FrnkNavTab(key = "settings", root = DemoRoute.Settings, icon = settingsIcon, label = settingsLabel),
+    // One declaration per tab, carrying BOTH icon forms so the same list feeds either bar engine in the
+    // A/B (the ImageVector for Calf, plus a DrawableResource + SF-Symbol for adaptive-nav-bar).
+    // rememberFrnkAdaptiveNavTabs supplies the Home/Settings bookends (icons/labels from theme tokens +
+    // the toolkit's bundled resources); the host only adds its middle "Components" tab, bundling its own
+    // resource icon (frnk_demo_components) the way a real host would.
+    val componentsTab =
+        remember {
+            FrnkAdaptiveNavTab(
+                key = "components",
+                root = DemoRoute.Components,
+                label = "Components",
+                icon = Lucide.Component,
+                androidIcon = Res.drawable.frnk_demo_components,
+                iosSystemIcon = "square.grid.2x2",
             )
         }
-    val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, navTabs = navTabs)
+    val navTabs =
+        rememberFrnkAdaptiveNavTabs(
+            homeRoot = DemoRoute.Home,
+            settingsRoot = DemoRoute.Settings,
+            middleTabs = listOf(componentsTab),
+        )
+    // The back stacks only need key + root; FrnkTabbedNavScaffold derives the bar items from navTabs.
+    val backStackTabs = remember(navTabs) { navTabs.map { FrnkTab(key = it.key, root = it.root) } }
+    val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = backStackTabs)
 
     // Single central collector for the shared VM's one-shot effects (the channel is single-consumer):
     // navigation effects push onto the current tab's back stack; everything else is forwarded to the host.
@@ -250,6 +268,19 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
         tabbed = tabbed,
         tabs = navTabs,
         modifier = Modifier.fillMaxSize(),
+        // POC A/B: the engine is host-state, flipped live from the segmented control on the Home tab.
+        engine = state.navEngine,
+        // The built-in primary-action button (adaptive-nav-bar engine only). "Host decides" — and it's
+        // **per-screen**: here the button shows on the Home tab *only* (null on Components/Settings hides
+        // it). Reading `tabbed.currentTabKey` (snapshot state) at the call site recomposes the scaffold on
+        // tab switch, so the button appears/disappears as tabs change. A real host wires a different action
+        // per surface (or null to hide) the same way.
+        onPrimaryAction =
+            if (tabbed.currentTabKey == tabbed.homeTabKey) {
+                { onEffect(DemoEffect.Toast("New item tapped")) }
+            } else {
+                null
+            },
         // hideBarFor is left at its default ({ it is FrnkFullScreenRoute }): the full-screen pushes
         // (DemoRoute.Onboarding + ToolkitRoute.Paywall) declare the intent on the route itself, so the bar
         // hides automatically with no predicate to keep in sync with the entryProvider below.
@@ -356,6 +387,27 @@ private fun HomeTab(
                     .padding(padding),
             verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
         ) {
+            Section(title = "0. Bottom nav engine (A/B POC)") {
+                FrnkText(
+                    state =
+                        FrnkTextState.BodySmall(
+                            text =
+                                "Flip the bottom bar live. Calf = native iOS UITabBar (no add button). " +
+                                    "AdaptiveNavBar = the new lib with a built-in add button (FAB on Android, " +
+                                    "inline on iOS) — tap it for a toast.",
+                            color = colorOnSurfaceVariant,
+                        ),
+                )
+                FrnkSegmentedControl(
+                    state =
+                        FrnkSegmentedControlState.Content(
+                            options = listOf("Calf", "AdaptiveNavBar"),
+                            selectedIndex = if (state.navEngine == FrnkAdaptiveNavEngine.Calf) 0 else 1,
+                        ),
+                    onOptionSelected = { onIntent(DemoIntent.NavEngineChanged(it)) },
+                )
+            }
+
             Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
                 Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {

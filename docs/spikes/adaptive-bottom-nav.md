@@ -188,3 +188,65 @@ M3/Calf quarantine grep                              ✅   (only :shared-demo + 
 comparison — live blur quality, frost over scrolling content, collapsible-bars + `hazeSource` interaction at
 the safe-area edge, Android < 12 tint fallback, and the iOS frame cost of the Skia blur shader. The harness is
 in place (toggle on the Home tab); these need a manual pass on both platforms before a ship decision.
+
+---
+
+## POC addendum (2026-06): `adaptive-nav-bar` vs Calf, with a built-in primary-action button
+
+A second A/B, independent of the haze spike above: evaluate
+[`io.github.narendraanjana09:adaptive-nav-bar:1.0.1`](https://github.com/narendraanjana09/adaptive-navigation-bar)
+as a Calf replacement, and wire its built-in **primary-action** button (FAB on Android / inline on iOS) as
+a first-class frnk concept (theme-tokenised label `stringPrimaryAction` + bundled icon, surfaced via an
+`onPrimaryAction` callback — same bookend treatment as Home/Settings). It is a generic *primary action*,
+not a fixed "add": a host wires it **per screen** (re-skin per surface via a custom `primaryAction`).
+
+**Harness.** `FrnkTabbedNavScaffold` gained `engine: FrnkAdaptiveNavEngine` (Calf default / AdaptiveNavBar)
+plus `primaryAction` + `onPrimaryAction`. New types in `:shared-ui-nav`: `FrnkAdaptiveNavEngine`,
+`FrnkAdaptiveNavTab` (carries **both** an `ImageVector` for Calf and `DrawableResource`+SF-Symbol for the
+new lib), `FrnkAdaptiveNavItem`, `FrnkNavPrimaryAction` + `rememberFrnkNavPrimaryAction`, and
+`rememberFrnkAdaptiveNavTabs(...)`. The demo flips the engine live from a segmented control on the Home tab
+and wires a **per-tab** primary action (the toast names the active tab's action).
+
+**Verified on Android (Pixel 7a, physical):** both engines render; tab switch / re-tap-to-root /
+back-to-home work on both; the AdaptiveNavBar engine shows the purple "+" FAB docked above the bar, and
+tapping it fires the context-specific `onPrimaryAction` toast. Calf has no primary-action button (expected).
+Compiles for Android + iOS; host tests green; ktlint clean. iOS run is a manual follow-up
+(`DemoKit.xcframework` assembles).
+
+**🔴 Key finding — Android resource packaging is a blocker.** The new lib's icons are resource-based
+(`DrawableResource` + SF-Symbol string; no `ImageVector`/slot). Under AGP 9.2.1
+`com.android.kotlin.multiplatform.library` + CMP 1.11.1, the Compose-resources plugin does **not** package
+`DrawableResource`s from a `shared-*` KMP **library** into the Android APK
+(`copyAndroidMainComposeResourcesToAndroidAssets` fails: `outputDirectory` unconfigured;
+`prepareComposeResourcesTaskForAndroidMain` is `NO-SOURCE`). iOS assembles fine; Android throws
+`MissingResourceException` at runtime. Worked around for the POC by shipping the raw XML in the **app**
+module's assets (`androidDemoApp/src/main/assets/composeResources/<pkg>/drawable/…`, see its README). A real
+host would have to do the same — a meaningful strike against adopting this library in the toolkit until the
+AGP/Compose-resources gap is fixed.
+
+**Other evaluation notes (open):** iOS chrome is a native glassy `UITabBar` only on iOS 26+, else a Material3
+Compose bar (Calf is always a true native `UITabBar`); `AdaptiveNavigationBarDefaults.colors()` defaults to
+`MaterialTheme`, so the brand palette is passed explicitly; relative scroll/recomposition/first-frame cost
+vs Calf still to be measured.
+
+**🟡 Finding — the primary-action FAB show/hide snaps on iOS 26+ (no animation hook).** When the FAB is
+gated per-screen (e.g. shown on Home only), the iOS 26+ native `UITabBar` repositions (narrow/left ↔
+full-width/centered) with a **hard snap**. The reposition is unanimatable from frnk: the lib builds the bar
+inside its `UIKitView` **factory** (frame set once; its `update` block never re-lays-it-out), and renders it
+with `placedAsOverlay = true`, so Compose-level animation (`Crossfade`/alpha/`animateContentSize`) cannot
+touch the native overlay. frnk's `key(iosFab != null)` (which is what hides the FAB at all — the lib's
+update block doesn't) therefore swaps the view instantly. A smooth slide would require frnk to **own the
+iOS-26 bar** (an `iosMain` source set + UIKit/Core Animation, ~200+ lines, departing from this module's
+`commonMain`-only library-delegation convention) — deliberately deferred. Another strike toward Calf, which
+has no FAB and so never repositions. (On iOS &lt;26 and Android the FAB is a regular Compose/Material3
+`FloatingActionButton`, so it hides cleanly with no native-overlay caveat.)
+
+**✅ Fixed — native interface-style flash on forced light/dark.** With per-screen gating, recreating the
+bar's `UIKitView` (the `key(iosFab != null)` above) exposed a latent issue: the toolkit's appearance was a
+**Compose-only** palette swap, so native UIKit blur/glass materials resolved against the *device system*
+trait — a freshly recreated bar flashed the system style (e.g. dark) for a frame when the app was forced to
+the opposite theme. Fixed toolkit-wide by `applyNativeInterfaceStyle(dark)` (`shared-utils` `expect/actual`,
+called from a `LaunchedEffect` in `FrnkTheme`): on iOS it pins every window's `overrideUserInterfaceStyle`
+to the chosen appearance (`System` → unspecified), so native chrome follows the toggle and new native views
+inherit it immediately; no-op on Android. Not adaptive-nav-bar-specific — it corrects any native chrome
+under a forced theme.

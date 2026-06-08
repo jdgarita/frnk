@@ -32,7 +32,10 @@ Keep this surface tiny. Adding a new top-level entry point here is a public-API 
 `commonMain` `api`-depends on:
 - All six `*-api` modules (utils, ui-api, ui-atoms, database-api, backend-api, monetization-api).
 - `shared-ui-nav` (platform-adaptive bottom navigation; **the toolkit's sole Material3 dependency** — it
-  ships in FrnkKit for every consumer, a deliberate trade isolated to that one module).
+  ships in FrnkKit for every consumer, a deliberate trade isolated to that one module). **POC in flight:**
+  a second bar engine (`adaptive-nav-bar`, with a built-in primary-action button) is wired alongside Calf for an A/B
+  via `FrnkTabbedNavScaffold(engine = …)` — see `shared/shared-ui-nav/CLAUDE.md` (incl. the Android
+  resource-packaging caveat) and `docs/spikes/adaptive-bottom-nav.md`.
 - All four `*-impl` modules (database-impl, backend-firebase, backend-supabase, monetization-revenuecat).
 
 `koin.core` is `implementation` here because consumers get Koin via the impl modules' `api` exports anyway.

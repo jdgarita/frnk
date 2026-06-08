@@ -44,6 +44,10 @@ androidx-compose-ui = "1.11.2"  # re-resolved for CMP 1.11.1
 # Calf adaptive nav bar: native UITabBar on iOS / Material3 NavigationBar on Android. Lives in the
 # :shared-ui-nav module (the toolkit's sole, deliberate Material3 dependency).
 calf = "0.12.0"
+# POC (side-by-side A/B with Calf): narendraanjana09's adaptive-nav-bar — Material3 NavigationBar on
+# Android, a native glassy UITabBar (iOS 26+) / Material3 bar (older) on iOS, plus a built-in add FAB.
+# Also in :shared-ui-nav; selectable at runtime via FrnkAdaptiveNavEngine. Evaluated vs Calf.
+adaptive-nav-bar = "1.0.1"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
 androidx-activity = "1.13.0"
@@ -119,6 +123,8 @@ multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", ve
 # Calf adaptive nav bar (native UITabBar on iOS / Material3 NavigationBar on Android). Hosted in
 # :shared-ui-nav — the toolkit's single, deliberate Material3 dependency, shipped via :shared/FrnkKit.
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
+# POC alternative bar (A/B vs Calf), also in :shared-ui-nav. Same Material3 footprint.
+adaptive-nav-bar = { module = "io.github.narendraanjana09:adaptive-nav-bar", version.ref = "adaptive-nav-bar" }
 
 # Compose Unstyled
 icons-lucide = { module = "com.composables:icons-lucide-cmp", version.ref = "iconsLucide" }
