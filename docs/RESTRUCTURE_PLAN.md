@@ -22,20 +22,24 @@ frnk-repo (root)
     │   ├── di                  # Koin helpers/extensions (new scaffold)
     │   └── util                # AppResult, Logger, DateTimeFormat, PlatformInfo, FeedbackEmail
     ├── data
-    │   ├── db-api              # NoteStore, SqlDriverFactory
-    │   ├── db-impl             # SQLDelight (Note.sq, SqlDelightNoteStore)
+    │   ├── db-api              # SqlDriverFactory SPI (NoteStore is demo-only → demo/shared, OQ-2)
+    │   ├── db-impl             # platform SQLDelight driver wiring (Android/Native/JDBC)
     │   ├── prefs-api           # KeyValueStore, Preference<T>
     │   └── prefs-impl          # multiplatform-settings (SettingsKeyValueStore)
     ├── ui
     │   ├── theme               # FrnkTheme, FrnkThemeConfig, tokens, FrnkStrings/Icons/Ripple
     │   ├── components          # atoms + molecules + organisms + placeholder
-    │   ├── bottom-nav          # quarantined Material3/Calf module (UIKit on iOS)
-    │   └── scaffolds           # FrnkScreenScaffold, Onboarding/Settings/BottomNav scaffolds,
-    │                           #   Compose MVI bindings (FrnkMviScreen, EffectCollector),
-    │                           #   Compose nav wiring (FrnkNavDisplay, tabbed stacks, animations)
+    │   ├── bottom-nav          # quarantined Material3/Calf module (UIKit on iOS) + FrnkAppShell
+    │   ├── scaffolds           # FrnkScreenScaffold, Onboarding/Settings/BottomNav scaffolds,
+    │   │                       #   Compose MVI bindings (FrnkMviScreen, EffectCollector),
+    │   │                       #   Compose nav wiring (FrnkNavDisplay, tabbed stacks, animations)
+    │   └── app                 # FrnkAppScaffold — batteries-included apex (OQ-7); Material3
+    │                           #   arrives transitively via bottom-nav; hand-wiring hosts skip it
     └── capabilities
         ├── analytics-api       # AnalyticsTracker, CrashReporter contracts + no-ops
         ├── analytics-impl      # Firebase analytics/crashlytics (CrashKiOS in iosMain)
+        ├── remote-config-api   # RemoteConfigService contract (OQ-1; separate from analytics)
+        ├── remote-config-impl  # Firebase Remote Config bindings
         ├── monetization-api    # EntitlementProvider/Manager, FeatureGate, …
         ├── monetization-impl   # RevenueCat bindings (Compose-free)
         ├── monetization-ui     # PaywallScreen + subscription management (Compose)
@@ -82,15 +86,18 @@ pattern the repo already uses for `shared/<name>` today.
 | `:core-util` | `frnk/core/util` | `shared-utils` (AppResult, Logger, DateTimeFormat, PlatformInfo, FeedbackEmail) |
 | `:core-mvi` | `frnk/core/mvi` | `shared-ui-api` → `ui/mvi/*` + `UiText.kt` |
 | `:core-nav` | `frnk/core/nav` | `shared-ui-api` → `ui/nav/*` (Compose-free contract) |
-| `:core-di` | `frnk/core/di` | new scaffold (replaces deleted `ToolkitDiModule` stub) |
-| `:data-db-api` | `frnk/data/db-api` | `shared-database-api` → NoteStore, SqlDriverFactory |
-| `:data-db-impl` | `frnk/data/db-impl` | `shared-database-impl` → Note.sq, SqlDelightNoteStore, driver wiring |
+| `:core-di` | `frnk/core/di` | host-facing Koin assembly helpers (OQ-5/OQ-7): slimmed `initializeFrnk(context, modules)`, fail-fast assertion, androidMain context absorption; replaces deleted `ToolkitDiModule` stub |
+| `:data-db-api` | `frnk/data/db-api` | `shared-database-api` → SqlDriverFactory SPI (NoteStore → `demo/shared`, OQ-2) |
+| `:data-db-impl` | `frnk/data/db-impl` | `shared-database-impl` → platform driver wiring (Note.sq + SqlDelightNoteStore → `demo/shared`, OQ-2) |
 | `:data-prefs-api` | `frnk/data/prefs-api` | `shared-database-api` → KeyValueStore, Preference |
 | `:data-prefs-impl` | `frnk/data/prefs-impl` | `shared-database-impl` → SettingsKeyValueStore |
 | `:ui-theme` | `frnk/ui/theme` | `shared-ui-atoms` → `ui/theme/*` + `ui/tokens/*` |
 | `:ui-components` | `frnk/ui/components` | `shared-ui-atoms` → `ui/atoms/*`, `ui/molecules/*`, `ui/organisms/*`, `ui/placeholder/*` |
 | `:ui-scaffolds` | `frnk/ui/scaffolds` | `shared-ui-atoms` → `ui/scaffolds/*` + Compose `ui/mvi/*` (FrnkMviScreen, EffectCollector) + Compose `ui/nav/*` (FrnkNavDisplay, FrnkNavTab, FrnkTabbedBackStacks/-Handler, animations) |
-| `:ui-bottom-nav` | `frnk/ui/bottom-nav` | `shared-ui-nav` (Calf/Material3 quarantine — unchanged rule: Material3 nowhere else) |
+| `:ui-bottom-nav` | `frnk/ui/bottom-nav` | `shared-ui-nav` (Calf/Material3 quarantine — unchanged rule: Material3 nowhere else; keeps `FrnkAppShell`/`FrnkAppScope`) |
+| `:ui-app` | `frnk/ui/app` | `:shared` → `FrnkAppScaffold` + `frnkUiModules()` (OQ-7); apex of the ui column, no `*-impl` compile deps |
+| `:remote-config-api` | `frnk/capabilities/remote-config-api` | `:shared:backend:api` → `RemoteData.kt` reshaped to `RemoteConfigService` (OQ-1) |
+| `:remote-config-impl` | `frnk/capabilities/remote-config-impl` | `:shared:backend:firebase` → Firestore remote-data impl replaced by Firebase Remote Config |
 | `:analytics-api` | `frnk/capabilities/analytics-api` | `:shared:backend:api` (post Auth drop: Analytics.kt, NoopObservability.kt, RemoteData.kt pending OQ-1) |
 | `:analytics-impl` | `frnk/capabilities/analytics-impl` | `:shared:backend:firebase` (FirebaseAnalyticsTracker, FirebaseCrashReporter, CrashKiOS iosMain) |
 | `:monetization-api` | `frnk/capabilities/monetization-api` | `shared-monetization-api` (minus `di/`) |
@@ -117,10 +124,12 @@ and DemoKit links via Gradle, but see OQ-4.
 core-util ← everything
 core-mvi, core-nav, core-di:    no Compose, no upward deps (core-mvi ← core-util)
 data-*-api ← data-*-impl;        capabilities may depend on data-*-api, never on a *-impl
-haptics ← ui-theme ← ui-components ← ui-scaffolds ← ui-bottom-nav
+haptics ← ui-theme ← ui-components ← ui-scaffolds ← ui-bottom-nav ← ui-app
+ui-app ← {monetization-ui, analytics-api}   # resolves impls via Koin at runtime, never at compile time
 monetization-api ← {analytics-api, data-prefs-api}
 monetization-ui  ← {ui-scaffolds, monetization-api}
-Material3 only in ui-bottom-nav
+remote-config-api ← remote-config-impl      # sibling of analytics, never merged into it
+Material3 only in ui-bottom-nav (ui-app inherits it transitively — the accepted batteries-included trade)
 Only demo modules may depend on *-impl modules from code; hosts wire impls via Koin modules only
 ```
 
@@ -180,18 +189,30 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 
 ### ☐ Stage 1 — Delete the aggregators (`:shared`, `:androidApp`, `:iosApp`)  — risk: **medium** (was low-med; raised by PR #46)
 
-- ⚠️ **Amended by PR #46**: `:shared` is no longer wiring-only — it now owns **`FrnkAppScaffold`**
-  (the batteries-included app root over `shared-ui-nav`'s `FrnkAppShell`, importing monetization-ui
-  + bottomnav + atoms + backend) and the substantive one-call bootstrap
-  (`initializeFrnk(context, …)` androidMain overload, `frnkModules()` installing scaffold VM
-  modules). These are consumer-facing features and **must be relocated, not deleted**. Resolve
-  OQ-7 (new home for `FrnkAppScaffold` + the bootstrap) before starting this stage.
-- Pre-flight: repo-wide grep for `frnkModules|initializeFrnk|FrnkAppScaffold|FrnkKit|projects.shared\b|projects.androidApp` to find hidden consumers (`:shared-demo` uses `FrnkAppScaffold` as of #46).
-- Relocate `FrnkAppScaffold` + bootstrap per OQ-7, then delete `shared/src/` +
-  `shared/build.gradle.kts` (the `shared/` directory keeps housing the other modules until
-  Stage 3), `androidApp/`, `iosApp/`; remove the three from `settings.gradle.kts`. This deletes
-  `BackendChoice`/`ObservabilityChoice`/`MonetizationChoice` (the choice enums die with
-  `frnkModules` only if OQ-7 decides the bootstrap doesn't survive — otherwise they move with it).
+- **OQ-7 resolved (2026-06-10)** — `:shared` is no longer wiring-only (PR #46 added
+  `FrnkAppScaffold` + the substantive bootstrap), so this stage relocates before deleting:
+  - **`FrnkAppScaffold` → new `:ui-app`** (`frnk/ui/app`; until Stage 3, dir can sit at
+    `shared/ui-app`): deps `ui-bottom-nav` (composes `FrnkAppShell`) + `monetization-ui` +
+    `analytics-api` — at this stage still spelled `:shared-ui-nav`/`:shared-monetization-ui`/
+    `:shared:backend:api`; resolves `EntitlementManager`/`AnalyticsTracker` from Koin at runtime,
+    **no `*-impl` compile deps**. Also exposes `frnkUiModules()` (the SDK-free scaffold VM modules
+    `frnkModules()` installs unconditionally today).
+  - **Slimmed bootstrap → new `:core-di`** (created here, not Stage 8): generic
+    `initializeFrnk(context, modules: List<Module>)` (Koin start + `androidContext` +
+    `DatabaseContext.application` absorption; androidMain gets the `koin-android` dep), plus the
+    fail-fast Koin assertion `FrnkAppScaffold` uses. **The choice enums
+    (`BackendChoice`/`ObservabilityChoice`/`MonetizationChoice`) and `frnkModules()` are retired** —
+    hosts pass an explicit module list: `initializeFrnk(context, frnkUiModules() +
+    revenueCatModule + firebaseObservabilityModule + …)`. Copy-paste snippet goes in
+    `docs/HOST_INTEGRATION.md` in the same PR.
+- Pre-flight: repo-wide grep for `frnkModules|initializeFrnk|FrnkAppScaffold|FrnkKit|projects.shared\b|projects.androidApp` to find hidden consumers (`:shared-demo` uses `FrnkAppScaffold` as of #46 — re-point it to `:ui-app`).
+- Then delete `shared/src/` + `shared/build.gradle.kts` (the `shared/` directory keeps housing the
+  other modules until Stage 3), `androidApp/`, `iosApp/`; remove the three from
+  `settings.gradle.kts`.
+- **Per OQ-3/OQ-4**: also drop the per-module iOS framework declarations from
+  `frnk.kmp.library` (keep the bare iOS targets). iOS consumption is umbrella-only — `DemoKit`
+  (explicit `XCFramework` in the demo shared module) for the demo, and each host's own shared-module
+  framework (e.g. still's `FreshTrackKit`) for hosts; no per-module `.framework`s, no FrnkKit.
 - `androidDemoApp/build.gradle.kts`: replace `implementation(projects.androidApp)` with the
   individual modules it actually uses (it imports `firebaseObservabilityModule`, `revenueCatModule`,
   `FrnkTheme`; most arrive transitively via `:shared-demo` — add explicit deps as the compiler demands).
@@ -232,11 +253,17 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
   generated-source paths.
 - still impact: none (substitution is by name, not path).
 
-### ☐ Stage 4 — Data split: db vs prefs  — risk: medium
+### ☐ Stage 4 — Data split: db vs prefs (+ NoteStore → demo, OQ-2)  — risk: medium
 
-- `shared-database-api` → `:data-db-api` (NoteStore, SqlDriverFactory) + new `:data-prefs-api`
-  (KeyValueStore, Preference). `shared-database-impl` → `:data-db-impl` (SQLDelight half) +
-  `:data-prefs-impl` (SettingsKeyValueStore).
+- `shared-database-api` → `:data-db-api` (SqlDriverFactory SPI) + new `:data-prefs-api`
+  (KeyValueStore, Preference). `shared-database-impl` → `:data-db-impl` (platform driver wiring:
+  AndroidSqliteDriver / NativeSqliteDriver / JDBC-for-host-tests) + `:data-prefs-impl`
+  (SettingsKeyValueStore).
+- **OQ-2 resolved**: `NoteStore`, `Note.sq`, `SqlDelightNoteStore` are demo scaffolding — move
+  them into the demo shared module (which gains the SQLDelight plugin + a demo-owned schema,
+  consuming `:data-db-api`'s `SqlDriverFactory` exactly the way a real host would). The JDBC
+  round-trip tests follow the schema to the demo module; driver-factory tests stay in
+  `:data-db-impl`.
 - Split the Koin `databaseModule` into `databaseModule` + `prefsModule`; if demo wiring references
   the old name, keep a `@Deprecated` combined module for one stage.
 - Re-point `monetization-api`'s `api(projects.sharedDatabaseApi)` → `api(projects.dataPrefsApi)`
@@ -292,16 +319,13 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
 - still impact: none yet (facade). Budget for iteration — this is the largest module with the most
   interleaved internals.
 
-### ☐ Stage 8 — Monetization tidy + `:core-di`  — risk: low
+### ☐ Stage 8 — Monetization tidy  — risk: low
 
 - Delete `di/ToolkitDiModule.kt` + platform actuals from `monetization-api` (vestigial — both
   actuals return `emptyList()`; pre-flight grep `toolkitCoreModules|frnk.di` in frnk **and** still).
-- Scaffold `:core-di` (`frnk/core/di`, `frnk.kmp.library.hosttest`, dep on koin-core). Seed content:
-  see OQ-5; minimum viable = the host-facing Koin assembly helpers worth standardizing, else it
-  ships with docs + an extension or two.
+- `:core-di` already exists (created at Stage 1 with the slimmed bootstrap, per OQ-5/OQ-7);
+  fold in any further host-facing Koin assembly helpers that surfaced during Stages 4–7.
 - Verify `monetization-ui` deps are exactly `{ui-scaffolds, monetization-api}` after Stage 7.
-- Document the host wiring contract ("hosts compose per-capability Koin modules explicitly") in
-  `docs/HOST_INTEGRATION.md`.
 - still impact: none.
 
 ### ☐ Stage 9 — The coordinate flip (the only still-churn stage)  — risk: medium, mechanical
@@ -335,15 +359,15 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
   device/emulator.
 - still impact: none.
 
-### ☐ Stage 11 — Optional / deferred follow-ups  — risk: low (additive)
+### ☐ Stage 11 — Remote Config capability + new capability scaffolds  — risk: low (additive)
 
 - Scaffold `:camera` + `:permissions`: api-only modules (interfaces + no-op defaults,
   `frnk.kmp.library.hosttest`), no impl (D4).
-- **Remote Config repurpose** (needs OQ-1 sign-off): reshape `RemoteDataService` →
-  `RemoteConfigService`, replace `FirestoreRemoteData` with a Firebase Remote Config impl.
-  Placement: own `remote-config-api`/`-impl` capability pair vs folded into `analytics-impl`.
-  Note still already does Remote Config natively on Android (`:androidApp`, legal-URL resolution) —
-  candidate first consumer.
+- **Remote Config (OQ-1 resolved)**: own capability pair `:remote-config-api` /
+  `:remote-config-impl` under `frnk/capabilities/` — **sibling of analytics, kept separate from
+  it**. Reshape `RemoteDataService` → `RemoteConfigService`; replace `FirestoreRemoteData` with a
+  Firebase Remote Config impl exposed as a Koin module. Note still already does Remote Config
+  natively on Android (`:androidApp`, legal-URL resolution) — candidate first consumer.
 
 ### ☐ Stage 12 — CI + docs consistency sweep  — risk: low
 
@@ -363,14 +387,14 @@ Compression floor if fewer PRs are wanted: merge 1+2 (pure deletions), 4+5 (stil
 renames), fold 8 into 9 → **~7 still PRs**. Never merge Stage 7 with anything else; keep Stage 9
 isolated and small.
 
-## 8. Open questions (resolve before the affected stage)
+## 8. Open questions — **all resolved 2026-06-10**
 
-| # | Question | Affects |
-|---|----------|---------|
-| OQ-1 | Remote Config repurpose: confirm scope + module placement (own capability pair vs inside `analytics-impl`). | Stage 11 (Stage 2 deliberately leaves `RemoteData.kt` untouched) |
-| OQ-2 | `NoteStore`/`Note.sq`: real toolkit feature or demo scaffolding? If demo-only, move to `demo/shared` instead of creating `data/db-*`. | Stage 4 |
-| OQ-3 | Per-module iOS framework binaries (from `frnk.kmp.library`): keep, or drop for build-time savings now that FrnkKit is gone and DemoKit links via Gradle? | Stage 1+ |
-| OQ-4 | Confirm nothing (Xcode scripts, still's iOS build) references per-module framework baseNames (`shared_ui_atoms` etc.) before renames land. | Stage 9 |
-| OQ-5 | What real content seeds `:core-di` — extract host-facing Koin assembly helpers, or start docs-only? | Stage 8 |
-| ~~OQ-6~~ | **RESOLVED**: flat descriptive project names everywhere; PR #47's nested `:shared:backend:*` paths are overridden (re-flattened at Stage 5, `frnk.backend.*` plugins folded back into `frnk.kmp.*`). See the ✅ note in §3. | — |
-| OQ-7 | New home for `FrnkAppScaffold` + the one-call bootstrap (PR #46, currently in `:shared`). The original sketch puts AppScaffold in `ui/scaffolds`, but it imports monetization-ui + bottomnav, so it sits **above** both — candidates: a new top-of-stack `ui-app` module, or fold into `ui-bottom-nav` (already hosts `FrnkAppShell`). Also decide whether `initializeFrnk`/`frnkModules` (and the choice enums) survive the aggregator deletion as a feature of that module, given the host-side-explicit-Koin direction (D6). | Stage 1 |
+| # | Resolution |
+|---|------------|
+| OQ-1 | Remote Config = own capability pair `:remote-config-api`/`:remote-config-impl` under `capabilities/`, **sibling of analytics, kept separate from it** (Stage 11). |
+| OQ-2 | `NoteStore`/`Note.sq`/`SqlDelightNoteStore` are demo-only → move to the demo shared module at Stage 4. `data/db-*` keeps the `SqlDriverFactory` SPI + platform driver wiring; the demo consumes it like a real host. |
+| OQ-3 | iOS consumption is **umbrella-only for demo AND hosts**: `DemoKit` for the demo, each host's own shared-module framework (e.g. still's `FreshTrackKit`) for hosts. Per-module framework declarations dropped from `frnk.kmp.library` at Stage 1 (bare iOS targets remain). |
+| OQ-4 | Ignore still for now — no baseName pre-check needed (moot anyway: per-module frameworks die at Stage 1 per OQ-3). |
+| OQ-5 | `:core-di` = **host-facing Koin assembly helpers**: slimmed `initializeFrnk(context, modules)`, fail-fast Koin assertion, androidMain context absorption. Created at Stage 1 (not 8) since the bootstrap relocation needs it. |
+| OQ-6 | Flat descriptive project names everywhere; PR #47's nested `:shared:backend:*` paths overridden (re-flattened at Stage 5, `frnk.backend.*` plugins folded back into `frnk.kmp.*`). See the ✅ note in §3. |
+| OQ-7 | `FrnkAppScaffold` → new top-of-stack `:ui-app` (no `*-impl` compile deps; resolves via Koin). Choice enums + `frnkModules()` retired; explicit module lists + `frnkUiModules()` instead. See Stage 1. |
