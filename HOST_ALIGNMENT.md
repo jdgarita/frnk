@@ -79,19 +79,21 @@ A host that adds its own KMP library modules can apply the same plugin by adding
 frnk assembles its Koin graph from three independent axes — **backend** (`BackendChoice`), **observability**
 (`ObservabilityChoice`), **monetization** (`MonetizationChoice`) — plus the host's own modules.
 
-**Android** (`Application.onCreate`):
+**Android** (`Application.onCreate`) — use the androidMain `initializeFrnk(context, …)` overload, which
+also sets the SQLDelight `DatabaseContext.application` and registers `androidContext(...)` for you:
 
 ```kotlin
 class StillApp : Application() {
     override fun onCreate() {
         super.onCreate()
         initializeFrnk(
-            backend = BackendChoice.Supabase,            // or .Firebase
+            context = this,                               // ← DatabaseContext + androidContext absorbed
+            backend = BackendChoice.Supabase,             // or .Firebase
             observability = ObservabilityChoice.Firebase, // independent of backend; .None by default
             monetization = MonetizationChoice.RevenueCat, // or .None to opt out of billing
             additionalModules = listOf(stillModule),      // ← the host's own Koin modules, first-class
         ) {
-            androidContext(this@StillApp)                 // extraConfig: Koin DSL escape hatch
+            // extraConfig: Koin DSL escape hatch
             // allowOverride(true)  // if a host module overrides a toolkit binding
         }
     }
@@ -116,6 +118,47 @@ FrnkKitKt.bootstrapFrnkKit(
     additionalModules: [/* host Koin modules */]
 )
 ```
+
+---
+
+## 3b. Spin up the whole app with `FrnkAppScaffold`
+
+After `initializeFrnk(...)`, the **batteries-included app root** stands up a complete tabbed app —
+theme, type-safe nav3 with per-tab back stacks, the adaptive bottom bar (Home + your middle tabs +
+Settings), a Home template you fill with content, the default Settings catalogue driven by the live
+`EntitlementManager` (Upgrade → paywall, Restore, Manage Subscription, appearance, feedback), an
+optional onboarding flow, and the auto-mounted paywall — in one call:
+
+```kotlin
+setContent {
+    FrnkAppScaffold(
+        appName = "Still",
+        appVersion = "v1.0.0",
+        themeConfig = stillThemeConfig(),                      // §4 token overrides
+        middleTabs = listOf(sessionsTab),                      // FrnkAdaptiveNavTab, remembered
+        hostRoutes = SerializersModule { /* your @Serializable routes */ },
+        settingsExtraSections = listOf(stillPrefsSection),     // injected before Legal by default
+        onboardingPages = stillOnboardingPages,                // omit → no onboarding entry
+        homePrimaryActionEnabled = true,                       // Home claims the bar's Create/Add button
+        onHomeEffect = { effect -> /* HomeEffect.PrimaryActionInvoked / ActionInvoked(key) */ },
+        entries = { scope -> entry<SessionsRoute> { … } },     // your destinations + pushes
+        effects = { scope -> EffectCollector(vm.effects) { scope.navigateTo(it.route) } },
+    ) {
+        // Home tab body — the scaffold owns the scrolling column + bar insets.
+        StillHomeCards()
+    }
+}
+```
+
+- Every extension point receives a **`FrnkAppScope`** (`navigateTo` / `back` / `clearAndNavigateTo` +
+  the primary-action registry) so a single `EffectCollector` drives navigation.
+- Don't re-register the built-in routes (`ToolkitRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
+  `entries` — nav3 throws on duplicate entry registrations.
+- Any screen can claim the bar's primary-action button for its lifetime with
+  `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button renders on the
+  `AdaptiveNavBar` engine; it hides while no screen holds a claim and no host fallback is wired).
+- A module that can't depend on `:shared` composes **`FrnkAppShell`** (`:shared-ui-nav`) directly —
+  the same shell minus the monetization batteries; `:shared-demo`'s `DemoScreen` is the reference.
 
 ---
 

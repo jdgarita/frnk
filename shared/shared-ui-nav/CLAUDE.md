@@ -21,7 +21,11 @@ implementations live (compare UX/performance before committing to one):
   (`FrnkNavPrimaryAction` + `stringPrimaryAction` token, same bookend treatment as Home/Settings) and
   surfaced to hosts via the scaffold's `onPrimaryAction` callback — the host decides what tapping it does,
   **per screen** (re-skin per surface by passing a custom `primaryAction`). It shows only on this engine
-  and only when `onPrimaryAction` is non-null.
+  and only when an action is wired. **Screen routing:** pass `primaryActionRegistry`
+  (`FrnkPrimaryActionRegistry`, `shared-ui-api`) and the currently active screen claims the button via
+  `FrnkPrimaryActionHandler { onIntent(...) }` (`shared-ui-atoms`) — the scaffold provides the registry
+  through `LocalFrnkPrimaryActionRegistry`, a screen claim wins over `onPrimaryAction` (the host-level
+  fallback), and the button hides when neither is wired. `FrnkAppShell` wires the registry automatically.
 
 Both engines keep Material3 confined to this module (no rule change). `adaptive-nav-bar`'s icons are
 **resource-based** (`DrawableResource` on Android + SF-Symbol string on iOS), not `ImageVector`, so this
@@ -71,6 +75,25 @@ favour of the maintained component; see `docs/spikes/adaptive-bottom-nav.md`).
 
 Calf is pure Kotlin/Compose (no extra native cinterop / SPM package), so the XCFramework still links under the
 consumer's existing `-undefined dynamic_lookup`.
+
+## Contents (`ui/app/`)
+
+- `FrnkAppShell.kt` — **the one-call app shell** (host-enablement). Stands up a complete tabbed app:
+  `FrnkTheme(themeConfig)` wrap, `frnkNavConfiguration(hostRoutes)`, `rememberFrnkAdaptiveNavTabs`
+  (Home + `middleTabs` + Settings), `rememberFrnkTabbedBackStacks`, `FrnkTabbedNavScaffold`, built-in
+  **Home** (`HomeScreen` with the host's `homeContent` `ColumnScope` slot; `homeTopBar`/`homeVmKey`/
+  `homePrimaryActionEnabled`/`onHomeEffect`), **Settings** (default catalogue + `settingsExtraSections`,
+  overridable via the `settingsState`/`settingsEffects` composable factories + `settingsVmKey`),
+  optional **Onboarding** (`onboardingPages` → registers `ToolkitRoute.Onboarding`; back/close pops),
+  deep-links (`pendingRoutes: FrnkPendingRouteRequest?`), and a shell-owned `FrnkPrimaryActionRegistry`.
+  Host extension points — `effects` (the single `EffectCollector` home), `entries`
+  (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; **never** re-register the built-in routes,
+  nav3 `require`-throws on duplicates), and the effect handlers — all receive the `FrnkAppScope`.
+  Assumes **Koin is already started** (`frnkModules()` installs all scaffold VM modules). `:shared`'s
+  `FrnkAppScaffold` layers the monetization batteries over this; `:shared-demo` uses the shell
+  directly (it can't see `:shared`) and is the reference integration.
+- `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` + `primaryActions` registry +
+  `navigateTo`/`back`/`clearAndNavigateTo`) handed to every shell extension point.
 
 ## Contents (`ui/bottomnav/`)
 
