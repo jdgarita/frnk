@@ -79,6 +79,7 @@ fun FrnkAppScaffold(
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     pendingRoutes: FrnkPendingRouteRequest? = null,
     homeTopBar: FrnkTopAppBarState? = null,
+    homeVmKey: String? = null,
     homePrimaryActionEnabled: Boolean = false,
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
     settingsExtraSections: List<SettingsSectionState> = emptyList(),
@@ -115,6 +116,7 @@ fun FrnkAppScaffold(
         hideBarFor = hideBarFor,
         pendingRoutes = pendingRoutes,
         homeTopBar = homeTopBar ?: FrnkTopAppBarState(title = appName),
+        homeVmKey = homeVmKey,
         homePrimaryActionEnabled = homePrimaryActionEnabled,
         onHomeEffect = onHomeEffect,
         settingsState = { _ ->

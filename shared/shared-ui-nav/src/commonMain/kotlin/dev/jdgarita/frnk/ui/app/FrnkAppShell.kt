@@ -103,6 +103,7 @@ fun FrnkAppShell(
     pendingRoutes: FrnkPendingRouteRequest? = null,
     // Built-in Home tab.
     homeTopBar: FrnkTopAppBarState? = null,
+    homeVmKey: String? = null,
     homePrimaryActionEnabled: Boolean = false,
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
     // Built-in Settings tab.
@@ -165,6 +166,9 @@ fun FrnkAppShell(
                                     topBar = topBar,
                                     primaryActionEnabled = homePrimaryActionEnabled,
                                 ),
+                            // The VM is seeded once via parametersOf — pass a fresh homeVmKey when a
+                            // dynamic [homeTopBar] (e.g. an action hidden once Pro) must re-seed it.
+                            vmKey = homeVmKey,
                             onEffect = { effect -> scope.onHomeEffect(effect) },
                             content = homeContent,
                         )
