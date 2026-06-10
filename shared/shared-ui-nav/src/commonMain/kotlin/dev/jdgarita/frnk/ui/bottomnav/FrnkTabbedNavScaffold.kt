@@ -6,17 +6,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
+import dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks
+import dev.jdgarita.frnk.ui.nav.LocalFrnkPrimaryActionRegistry
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import io.github.narendraanjana09.adaptivenavbar.Platform
 import io.github.narendraanjana09.adaptivenavbar.getPlatform
@@ -47,8 +51,17 @@ import org.koin.core.annotation.KoinExperimentalAPI
  *    primary-action button**: pass [onPrimaryAction] to wire it (the host decides what tapping it does)
  *    and optionally a custom [primaryAction] to re-skin it per screen. On iOS the button renders inline
  *    beside the items; on Android this scaffold docks a Material3 FAB above the bar. The button shows only
- *    on this engine and only when [onPrimaryAction] is non-null. Tabs render through their
+ *    on this engine and only when an action is wired. Tabs render through their
  *    `androidIcon`/`iosSystemIcon` here, through their `icon` `ImageVector` on Calf.
+ *
+ * **Primary-action routing.** Two complementary ways to wire the button:
+ *  - [primaryActionRegistry] — pass a remembered [FrnkPrimaryActionRegistry] and the **currently active
+ *    screen** claims the button for its lifetime via `FrnkPrimaryActionHandler { … }` (typically sending
+ *    an MVI intent to its own ViewModel). The scaffold provides the registry through
+ *    [LocalFrnkPrimaryActionRegistry] to every destination; the button shows only while some screen
+ *    holds a claim. This replaces hand-rolled `tabbed.currentTabKey == …` conditionals at the host root.
+ *  - [onPrimaryAction] — a host-level fallback used while **no** screen has registered a handler
+ *    (or when no registry is passed at all — the pre-registry behavior, unchanged).
  *
  * [hideBarFor] returns `true` for routes that should hide the bar (full-screen pushes like an onboarding
  * flow or a paywall). It **defaults to `{ it is FrnkFullScreenRoute }`**, so a route declares the intent
@@ -76,6 +89,7 @@ fun FrnkTabbedNavScaffold(
     engine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
     primaryAction: FrnkNavPrimaryAction? = null,
     onPrimaryAction: (() -> Unit)? = null,
+    primaryActionRegistry: FrnkPrimaryActionRegistry? = null,
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     entryProvider: (NavKey) -> NavEntry<NavKey> = koinEntryProvider(),
 ) {
@@ -105,8 +119,22 @@ fun FrnkTabbedNavScaffold(
         }
     }
 
+    // The screen-registered handler wins over the host-level fallback; the button hides when neither
+    // is wired. Collected lifecycle-aware so a claim made/released while backgrounded settles on resume.
+    val registeredAction =
+        if (primaryActionRegistry != null) {
+            val active by primaryActionRegistry.active.collectAsStateWithLifecycle()
+            active
+        } else {
+            null
+        }
+    val effectivePrimaryAction = registeredAction ?: onPrimaryAction
+
     Box(modifier = modifier.fillMaxSize()) {
-        CompositionLocalProvider(LocalFrnkBottomBarInset provides contentInset) {
+        CompositionLocalProvider(
+            LocalFrnkBottomBarInset provides contentInset,
+            LocalFrnkPrimaryActionRegistry provides primaryActionRegistry,
+        ) {
             FrnkNavDisplay(
                 backStack = tabbed.current,
                 modifier = Modifier.fillMaxSize(),
@@ -144,7 +172,7 @@ fun FrnkTabbedNavScaffold(
                     // only on this engine — so the default Calf path never pays for the Theme lookup +
                     // remember (the host-supplied [primaryAction] wins; otherwise fall back to the toolkit
                     // default).
-                    val action = onPrimaryAction
+                    val action = effectivePrimaryAction
                     val resolvedPrimaryAction =
                         if (action != null) primaryAction ?: rememberFrnkNavPrimaryAction() else null
                     FrnkAdaptiveNavBarBottomBar(

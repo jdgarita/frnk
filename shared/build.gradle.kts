@@ -38,5 +38,10 @@ kotlin {
 
             implementation(libs.koin.core)
         }
+        androidMain.dependencies {
+            // androidContext(...) for the initializeFrnk(context) overload — absorbs the
+            // DatabaseContext.application requirement so Android hosts bootstrap in one call.
+            api(libs.koin.android)
+        }
     }
 }

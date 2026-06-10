@@ -5,6 +5,9 @@ import dev.jdgarita.frnk.backend.supabase.supabaseBackendModule
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import kotlin.test.Test
@@ -26,6 +29,23 @@ class FrnkModulesTest {
         assertTrue(revenueCatModule in modules, "RevenueCat is the default monetization provider")
         assertTrue(monetizationModule in modules)
         assertTrue(paywallScaffoldModule in modules)
+    }
+
+    @Test
+    fun scaffold_view_models_install_for_every_axis_combination() {
+        val combinations =
+            BackendChoice.entries.flatMap { backend ->
+                ObservabilityChoice.entries.flatMap { observability ->
+                    MonetizationChoice.entries.map { monetization ->
+                        frnkModules(backend, observability, monetization)
+                    }
+                }
+            }
+        combinations.forEach { modules ->
+            assertTrue(settingsScaffoldModule in modules, "settings scaffold VM is always installed")
+            assertTrue(onboardingScaffoldModule in modules, "onboarding scaffold VM is always installed")
+            assertTrue(bottomNavScaffoldModule in modules, "bottom-nav scaffold VM is always installed")
+        }
     }
 
     @Test
