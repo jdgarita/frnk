@@ -6,7 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,14 +23,16 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
+import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.Component
+import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Search
+import com.composables.icons.lucide.Settings
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.demo.generated.resources.Res
@@ -40,6 +41,8 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
+import dev.jdgarita.frnk.ui.app.FrnkAppScope
+import dev.jdgarita.frnk.ui.app.FrnkAppShell
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
 import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
@@ -63,8 +66,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
-import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
-import dev.jdgarita.frnk.ui.bottomnav.rememberFrnkAdaptiveNavTabs
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -77,22 +78,16 @@ import dev.jdgarita.frnk.ui.molecules.FrnkSwipeBehavior
 import dev.jdgarita.frnk.ui.molecules.FrnkSwipeDirection
 import dev.jdgarita.frnk.ui.molecules.FrnkSwipeableState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.mvi.FrnkMviScreen
-import dev.jdgarita.frnk.ui.nav.FrnkTab
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.nav.back
-import dev.jdgarita.frnk.ui.nav.frnkNavConfiguration
 import dev.jdgarita.frnk.ui.nav.navigateTo
-import dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks
 import dev.jdgarita.frnk.ui.organisms.FrnkListSection
 import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect
+import dev.jdgarita.frnk.ui.scaffolds.HomeEffect
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreen
@@ -101,6 +96,7 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
+import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
@@ -134,95 +130,192 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Smoke harness for the toolkit, structured as a real app would be on the toolkit Navigation3 layer:
- * a host-owned set of per-tab back stacks ([rememberFrnkTabbedBackStacks]) handed to the toolkit's
- * [FrnkTabbedNavScaffold], which owns the nav display, the persistent adaptive bottom bar, tab switching,
- * the back-from-non-home-root→home convention, full-screen bar hiding, and the bottom-inset that lets
- * content scroll behind the bar — so the host writes only its tabs + destinations. Three tabs, each
- * keeping its own back stack:
- *  - **Home** ([DemoRoute.Home]) — the toolkit showcase (theming + atoms, FeatureGate, MVI engine).
- *  - **Components** ([DemoRoute.Components]) — a gallery of every `Frnk*` atom (with a search field);
- *    tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument) onto this tab.
- *  - **Settings** ([DemoRoute.Settings]) — the real `SettingsScreen` scaffold; Onboarding is launched
- *    from here as a pushed [DemoRoute.Onboarding].
+ * Smoke harness for the toolkit — and the reference integration of **[FrnkAppShell]**, the one-call
+ * app root. The shell owns the theme wrap, the nav3 saved-state config, the Home + Components +
+ * Settings adaptive tabs with per-tab back stacks, the persistent bottom bar (tab switching, back
+ * conventions, full-screen hiding, bottom-inset), the built-in Home / Settings / Onboarding
+ * destinations, and the primary-action registry; the demo supplies only its content:
+ *  - **Home** (`ToolkitRoute.Home`, the shell's built-in `HomeScreen`) — the toolkit showcase via
+ *    [HomeTabContent] in the `homeContent` slot; the crown Upgrade action + the bar's primary-action
+ *    button arrive as `HomeEffect`s.
+ *  - **Components** ([DemoRoute.Components], the demo's middle tab) — a gallery of every `Frnk*`
+ *    atom; tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
+ *  - **Settings** (`ToolkitRoute.Settings`, the shell's built-in tab) — the default catalogue with
+ *    the demo's extra sections injected via `extraSections`, effects handled by
+ *    [demoSettingsHandler] (the toolkit monetization wiring + demo fallbacks).
  *
- * Navigation is MVI-faithful: the shared [DemoViewModel] is resolved **once at this host scope** (so
- * its cross-tab state isn't forked per nav entry), and its single one-shot effect stream is consumed by
- * **one** [EffectCollector] above the scaffold that routes navigation into the current tab's back stack
- * via [routeDemoEffect] and forwards the rest to the host's [onEffect] — which is why the host keeps
- * owning `tabbed` rather than letting the scaffold create it. On Android the system back button and
- * predictive-back gesture pop the back stack automatically; on iOS the back-gesture support depends on the
- * Compose Multiplatform runtime, so every pushed screen also carries an on-screen back affordance (the
- * detail/paywall back arrow, the onboarding close-X). Back from a non-home tab's *root* returns to the Home
- * tab (the standard tabbed-app convention; the scaffold wires it) rather than exiting the app. The only
- * manual back handling left in the demo is closing the Components search field before a pop.
+ * Navigation stays MVI-faithful: the shared [DemoViewModel] is resolved **once at this host scope**,
+ * and its single one-shot effect stream is consumed by **one** [EffectCollector] in the shell's
+ * `effects` slot, routing navigation via `scope.navigateTo(route)` ([routeDemoEffect]) and forwarding
+ * the rest to the host's [onEffect]. On Android system/predictive back pops automatically; on iOS
+ * every pushed screen also carries an on-screen back affordance. The only manual back handling left
+ * is closing the Components search field before a pop.
  *
  * The host integration story: a real app passes its own [dev.jdgarita.frnk.ui.theme.FrnkThemeConfig]
- * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat).
+ * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat). A host that
+ * *can* depend on `:shared` uses `FrnkAppScaffold` instead, which layers the Koin assertion + live
+ * entitlement-driven Settings + auto-mounted paywall over this same shell.
  *
  * **Bottom-bar A/B (POC).** A segmented control on the Home tab flips `state.navEngine` between
  * `FrnkAdaptiveNavEngine.Calf` (native iOS `UITabBar`, no primary-action button) and `.AdaptiveNavBar`
- * (the new `adaptive-nav-bar` lib, with a built-in primary-action button — FAB on Android / inline on iOS).
- * The button is **per-screen**: the demo shows it on the **Home tab only** (`onPrimaryAction` is null on the
- * other tabs, which hides it), demonstrating that a host wires the action — or nothing — per surface. See
+ * (with the built-in primary-action button — FAB on Android / inline on iOS). The button is
+ * **screen-routed** through the shell's registry: the Home tab claims it (`homePrimaryActionEnabled`),
+ * so it shows there and hides on the other tabs with no host-level conditional. See
  * `docs/spikes/adaptive-bottom-nav.md`; note the Android resource-packaging workaround in
  * `androidDemoApp/src/main/assets/composeResources/`.
  */
 @Composable
-fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
+fun DemoScreen(
+    appearanceController: AppearanceController? = null,
+    onEffect: (DemoEffect) -> Unit = {},
+) {
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
-    // Per-tab back stacks (the nav3 multiple-back-stack model). The config registers every DemoRoute plus
-    // the toolkit-owned ToolkitRoute.Paywall so back stacks persist/restore across config + process death.
-    val navConfig =
+    // The demo's only remaining host routes: the middle "Components" tab root + its pushed detail.
+    // Home / Settings / Onboarding / Paywall are the toolkit-owned ToolkitRoute defaults now.
+    val hostRoutes =
         remember {
-            frnkNavConfiguration(
-                hostRoutes =
-                    SerializersModule {
-                        polymorphic(NavKey::class) {
-                            subclass(DemoRoute.Home::class, DemoRoute.Home.serializer())
-                            subclass(DemoRoute.Components::class, DemoRoute.Components.serializer())
-                            subclass(DemoRoute.ComponentDetail::class, DemoRoute.ComponentDetail.serializer())
-                            subclass(DemoRoute.Settings::class, DemoRoute.Settings.serializer())
-                            subclass(DemoRoute.Onboarding::class, DemoRoute.Onboarding.serializer())
-                        }
+            SerializersModule {
+                polymorphic(NavKey::class) {
+                    subclass(DemoRoute.Components::class, DemoRoute.Components.serializer())
+                    subclass(DemoRoute.ComponentDetail::class, DemoRoute.ComponentDetail.serializer())
+                }
+            }
+        }
+    // One declaration per tab, carrying BOTH icon forms so the same list feeds either bar engine in the
+    // A/B (the ImageVector for Calf, plus a DrawableResource + SF-Symbol for adaptive-nav-bar). The
+    // shell supplies the Home/Settings bookends (icons/labels from theme tokens + the toolkit's bundled
+    // resources); the host only adds its middle "Components" tab, bundling its own resource icon
+    // (frnk_demo_components) the way a real host would.
+    val middleTabs =
+        remember {
+            listOf(
+                FrnkAdaptiveNavTab(
+                    key = "components",
+                    root = DemoRoute.Components,
+                    label = "Components",
+                    icon = Lucide.Component,
+                    androidIcon = Res.drawable.frnk_demo_components,
+                    iosSystemIcon = "square.grid.2x2",
+                ),
+            )
+        }
+
+    // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro. Built
+    // with a plain Lucide icon — DemoScreen sits outside the theme (FrnkAppShell installs it).
+    val homeTopBar =
+        remember(state.isPro) {
+            FrnkTopAppBarState(
+                title = "frnk",
+                actions =
+                    if (state.isPro) {
+                        emptyList()
+                    } else {
+                        listOf(FrnkTopAppBarAction(icon = Lucide.Crown, contentDescription = "Upgrade to Pro", key = "upgrade"))
                     },
             )
         }
-    // One declaration per tab, carrying BOTH icon forms so the same list feeds either bar engine in the
-    // A/B (the ImageVector for Calf, plus a DrawableResource + SF-Symbol for adaptive-nav-bar).
-    // rememberFrnkAdaptiveNavTabs supplies the Home/Settings bookends (icons/labels from theme tokens +
-    // the toolkit's bundled resources); the host only adds its middle "Components" tab, bundling its own
-    // resource icon (frnk_demo_components) the way a real host would.
-    val componentsTab =
-        remember {
-            FrnkAdaptiveNavTab(
-                key = "components",
-                root = DemoRoute.Components,
-                label = "Components",
-                icon = Lucide.Component,
-                androidIcon = Res.drawable.frnk_demo_components,
-                iosSystemIcon = "square.grid.2x2",
-            )
-        }
-    val navTabs =
-        rememberFrnkAdaptiveNavTabs(
-            homeRoot = DemoRoute.Home,
-            settingsRoot = DemoRoute.Settings,
-            middleTabs = listOf(componentsTab),
-        )
-    // The back stacks only need key + root; FrnkTabbedNavScaffold derives the bar items from navTabs.
-    val backStackTabs = remember(navTabs) { navTabs.map { FrnkTab(key = it.key, root = it.root) } }
-    val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = backStackTabs)
 
-    // Single central collector for the shared VM's one-shot effects (the channel is single-consumer):
-    // navigation effects push onto the current tab's back stack; everything else is forwarded to the host.
-    // EffectCollector is lifecycle-aware + rememberUpdatedState-wraps the handler, so it survives swaps.
-    EffectCollector(vm.effects) { effect -> routeDemoEffect(effect, { route -> tabbed.current.navigateTo(route) }, onEffect) }
+    FrnkAppShell(
+        appVersion = "v${Frnk.VERSION}",
+        modifier = Modifier.fillMaxSize(),
+        themeConfig = demoPurpleThemeConfig(),
+        appearanceController = appearanceController,
+        middleTabs = middleTabs,
+        hostRoutes = hostRoutes,
+        // POC A/B: the engine is host-state, flipped live from the segmented control on the Home tab.
+        engine = state.navEngine,
+        homeTopBar = homeTopBar,
+        // The Home VM is seeded once via parametersOf; re-key it when isPro flips so the Upgrade
+        // action appears/disappears (same trick as the Settings VM below).
+        homeVmKey = "home-${state.isPro}",
+        // The Home tab claims the bar's primary-action button (adaptive-nav-bar engine only) through
+        // the registry — replacing the old `tabbed.currentTabKey` conditional at the host root. The
+        // other tabs hold no claim, so the button hides there automatically.
+        homePrimaryActionEnabled = true,
+        onHomeEffect = { effect ->
+            when (effect) {
+                is HomeEffect.ActionInvoked -> if (effect.key == "upgrade") vm.send(DemoIntent.RequestUpgrade)
+                HomeEffect.PrimaryActionInvoked -> onEffect(DemoEffect.Toast("New item tapped"))
+                HomeEffect.NavigationInvoked -> Unit
+            }
+        },
+        settingsState = { _ ->
+            demoSettingsState(LocalAppearanceController.current.appearance, state.isPro, state.isGodMode)
+        },
+        // Re-seed the settings VM when entitlement state changes so the Subscription section swaps
+        // Upgrade↔Manage (and the god-mode toggle reflects the current value). The VM is seeded once
+        // via parametersOf, so without a fresh key it'd keep the stale initial state.
+        settingsVmKey = "settings-${state.isPro}-${state.isGodMode}",
+        settingsEffects = { scope -> demoSettingsHandler(scope, onEffect) },
+        onboardingPages = demoOnboardingPages,
+        // Single central collector for the shared VM's one-shot effects (the channel is single-
+        // consumer): navigation effects push onto the current tab's back stack; everything else is
+        // forwarded to the host. Lives in the shell's `effects` slot so one lifecycle-aware collector
+        // survives tab swaps.
+        effects = { scope ->
+            EffectCollector(vm.effects) { effect ->
+                routeDemoEffect(effect, { route -> scope.navigateTo(route) }, onEffect)
+            }
+        },
+        // Host destinations, registered on the shell's entryProvider. The demo's screens share the one
+        // host-scoped DemoViewModel rather than per-entry Koin VMs, hence the inline entries. The
+        // paywall is mounted here because :shared-demo can't see :shared (whose FrnkAppScaffold
+        // auto-mounts it) — any host on the bare shell registers it the same way.
+        entries = { scope ->
+            entry<DemoRoute.Components> {
+                ComponentsListScreen(
+                    state = state,
+                    onIntent = vm::send,
+                    onOpenComponent = { name -> scope.navigateTo(DemoRoute.ComponentDetail(name)) },
+                )
+            }
+            entry<DemoRoute.ComponentDetail> { route ->
+                ComponentDetailScreen(
+                    name = route.name,
+                    onBack = { scope.back() },
+                ) {
+                    ComponentContent(route.name, state, vm::send, onEffect)
+                }
+            }
+            // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
+            // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
+            // EntitlementManager); the demo just mounts the destination + handles close/messages.
+            entry<ToolkitRoute.Paywall> {
+                FrnkPaywallDestination(
+                    features =
+                        listOf(
+                            "Unlimited everything",
+                            "No ads",
+                            "Priority support",
+                        ),
+                    source = "demo",
+                    onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
+                    onClose = { scope.back() },
+                )
+            }
+        },
+    ) {
+        HomeTabContent(state = state, onIntent = vm::send)
+    }
+}
 
+/**
+ * The demo's Settings effect handler — Entry point #2: the toolkit's monetization wiring
+ * ([rememberFrnkSettingsHandler]: Upgrade → paywall, Restore, god mode, Manage Subscription) with a
+ * fallback for the non-monetization effects (appearance, the shell's built-in onboarding flow,
+ * feedback). A composable factory because it's built inside the shell's settings entry, where the
+ * ambient theme and the [FrnkAppScope] exist.
+ */
+@Composable
+private fun demoSettingsHandler(
+    scope: FrnkAppScope,
+    onEffect: (DemoEffect) -> Unit,
+): (SettingsEffect) -> Unit {
     val appearanceController = LocalAppearanceController.current
-
+    val entitlements: EntitlementManager = koinInject()
+    val analytics: AnalyticsTracker = koinInject()
     // Opens the platform mail composer prefilled with app + OS diagnostics. A real host passes its
     // own app name/version and may override `recipient` to route feedback to its own inbox.
     val sendFeedback =
@@ -230,323 +323,195 @@ fun DemoScreen(onEffect: (DemoEffect) -> Unit = {}) {
             appName = "frnk",
             appVersion = "v${Frnk.VERSION}",
         )
-
-    // Entry point #2: Settings rows (Upgrade / Restore / god-mode toggle) handled by the toolkit's
-    // monetization wiring — navigation to the paywall, restore, and setGodMode all come for free; the
-    // demo only supplies a fallback for the non-monetization effects (theme, onboarding, feedback).
-    val entitlements: EntitlementManager = koinInject()
-    val analytics: AnalyticsTracker = koinInject()
-    val settingsHandler =
-        rememberFrnkSettingsHandler(
-            backStack = tabbed.current,
-            entitlements = entitlements,
-            analytics = analytics,
-            onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
-            fallback = { effect ->
-                when (effect) {
-                    is SettingsEffect.AppearanceChanged -> appearanceController.appearance = effect.appearance
-                    is SettingsEffect.ActionInvoked ->
-                        when (effect.action) {
-                            SettingsAction.ShowOnboarding -> tabbed.current.navigateTo(DemoRoute.Onboarding)
-                            SettingsAction.SendFeedback -> sendFeedback()
-                            else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
-                        }
-                    is SettingsEffect.ToggleChanged -> onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
-                }
-            },
-        )
-
-    // The toolkit's nav3 tabbed scaffold owns everything the demo used to hand-wire: the FrnkNavDisplay
-    // driven by the active tab's back stack, the persistent adaptive bottom bar (tab switch / re-tap-to-
-    // root), the back-from-non-home-root→home convention, full-screen bar hiding, and the bottom-inset that
-    // lets content scroll behind the bar (provided via LocalFrnkBottomBarInset, so the destinations on
-    // FrnkScreenScaffold / FrnkMviScreen reserve it automatically — no per-screen bottomInset threading).
-    // The host keeps owning `tabbed` (so the EffectCollector above drives navigation) and registers its
-    // destinations inline here, because the demo's screens share the one host-scoped DemoViewModel rather
-    // than per-entry Koin VMs; a koinEntryProvider host would drop this argument and use `navigation<Route>`.
-    FrnkTabbedNavScaffold(
-        tabbed = tabbed,
-        tabs = navTabs,
-        modifier = Modifier.fillMaxSize(),
-        // POC A/B: the engine is host-state, flipped live from the segmented control on the Home tab.
-        engine = state.navEngine,
-        // The built-in primary-action button (adaptive-nav-bar engine only). "Host decides" — and it's
-        // **per-screen**: here the button shows on the Home tab *only* (null on Components/Settings hides
-        // it). Reading `tabbed.currentTabKey` (snapshot state) at the call site recomposes the scaffold on
-        // tab switch, so the button appears/disappears as tabs change. A real host wires a different action
-        // per surface (or null to hide) the same way.
-        onPrimaryAction =
-            if (tabbed.currentTabKey == tabbed.homeTabKey) {
-                { onEffect(DemoEffect.Toast("New item tapped")) }
-            } else {
-                null
-            },
-        // hideBarFor is left at its default ({ it is FrnkFullScreenRoute }): the full-screen pushes
-        // (DemoRoute.Onboarding + ToolkitRoute.Paywall) declare the intent on the route itself, so the bar
-        // hides automatically with no predicate to keep in sync with the entryProvider below.
-        entryProvider =
-            entryProvider {
-                entry<DemoRoute.Home> {
-                    HomeTab(vm = vm, onEffect = onEffect)
-                }
-                entry<DemoRoute.Components> {
-                    ComponentsListScreen(
-                        state = state,
-                        onIntent = vm::send,
-                        onOpenComponent = { name -> tabbed.current.navigateTo(DemoRoute.ComponentDetail(name)) },
-                    )
-                }
-                entry<DemoRoute.ComponentDetail> { route ->
-                    ComponentDetailScreen(
-                        name = route.name,
-                        onBack = { tabbed.current.back() },
-                    ) {
-                        ComponentContent(route.name, state, vm::send, onEffect)
+    return rememberFrnkSettingsHandler(
+        backStack = scope.tabbed.current,
+        entitlements = entitlements,
+        analytics = analytics,
+        onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
+        fallback = { effect ->
+            when (effect) {
+                is SettingsEffect.AppearanceChanged -> appearanceController.appearance = effect.appearance
+                is SettingsEffect.ActionInvoked ->
+                    when (effect.action) {
+                        SettingsAction.ShowOnboarding -> scope.navigateTo(ToolkitRoute.Onboarding)
+                        SettingsAction.SendFeedback -> sendFeedback()
+                        else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
                     }
-                }
-                entry<DemoRoute.Settings> {
-                    SettingsTab(
-                        initialState = demoSettingsState(appearanceController.appearance, state.isPro, state.isGodMode),
-                        onEffect = settingsHandler,
-                        // Re-seed the settings VM when entitlement state changes so the Subscription section
-                        // swaps Upgrade↔Manage (and the god-mode toggle reflects the current value). The VM is
-                        // seeded once via parametersOf, so without a fresh key it'd keep the stale initial state.
-                        vmKey = "settings-${state.isPro}-${state.isGodMode}",
-                    )
-                }
-                entry<DemoRoute.Onboarding> {
-                    OnboardingScreen(
-                        initialState = demoOnboardingState(),
-                        modifier = Modifier.fillMaxSize(),
-                        // A pushed destination gets a fresh nav entry (and ViewModelStoreOwner) per push,
-                        // so OnboardingScreen's koinViewModel is naturally fresh — no vmKey dance needed.
-                        onEffect = { effect ->
-                            when (effect) {
-                                OnboardingEffect.CloseRequested,
-                                OnboardingEffect.Completed,
-                                -> tabbed.current.back()
-                            }
-                        },
-                    )
-                }
-                // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
-                // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
-                // EntitlementManager); the demo just mounts the destination + handles close/messages. This
-                // is the exact destination real hosts mount (the same route `rememberFrnkSettingsHandler`
-                // targets) — here inline; a Koin-DSL host uses `frnkPaywallNavigation` instead.
-                entry<ToolkitRoute.Paywall> {
-                    FrnkPaywallDestination(
-                        features =
-                            listOf(
-                                "Unlimited everything",
-                                "No ads",
-                                "Priority support",
-                            ),
-                        source = "demo",
-                        onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
-                        onClose = { tabbed.current.back() },
-                    )
-                }
-            },
+                is SettingsEffect.ToggleChanged -> onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
+            }
+        },
     )
 }
 
 /**
- * Home tab — the toolkit showcase. Dogfoods [FrnkMviScreen] (the state-hosting primitive host apps use)
- * over the shared [DemoViewModel]; `onEffect` is left null there because the demo's single effect stream
- * is already collected centrally in [DemoScreen] (the channel is single-consumer). The few direct toasts
- * below go through the captured [onEffect] lambda, which bypasses the VM channel.
+ * Home tab body — the toolkit showcase, rendered inside the shell's built-in `HomeScreen` slot (the
+ * scaffold owns the pinned top bar + the scrolling column + the merged padding; this just supplies
+ * the items). The top-bar Upgrade action and the bar's primary-action button arrive as `HomeEffect`s
+ * handled in [DemoScreen]'s `onHomeEffect`.
  */
 @Composable
-private fun HomeTab(
-    vm: DemoViewModel,
-    onEffect: (DemoEffect) -> Unit,
+private fun HomeTabContent(
+    state: DemoState,
+    onIntent: (DemoIntent) -> Unit,
 ) {
-    val homeState by vm.state.collectAsState()
-    val upgradeAction =
-        FrnkTopAppBarAction(
-            icon = Theme[icons][iconUpgrade],
-            contentDescription = "Upgrade to Pro",
-            key = "upgrade",
+    Section(title = "0. Bottom nav engine (A/B POC)") {
+        FrnkText(
+            state =
+                FrnkTextState.BodySmall(
+                    text =
+                        "Flip the bottom bar live. Calf = native iOS UITabBar (no add button). " +
+                            "AdaptiveNavBar = the new lib with a built-in add button (FAB on Android, " +
+                            "inline on iOS) — tap it for a toast.",
+                    color = colorOnSurfaceVariant,
+                ),
         )
-    FrnkMviScreen(
-        viewModel = vm,
-        // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro.
-        topBar =
-            FrnkTopAppBarState(
-                title = "frnk",
-                actions = if (homeState.isPro) emptyList() else listOf(upgradeAction),
-            ),
-        onActionClick = { action -> if (action.key == upgradeAction.key) vm.send(DemoIntent.RequestUpgrade) },
-    ) { state, onIntent, padding ->
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-        ) {
-            Section(title = "0. Bottom nav engine (A/B POC)") {
-                FrnkText(
-                    state =
-                        FrnkTextState.BodySmall(
-                            text =
-                                "Flip the bottom bar live. Calf = native iOS UITabBar (no add button). " +
-                                    "AdaptiveNavBar = the new lib with a built-in add button (FAB on Android, " +
-                                    "inline on iOS) — tap it for a toast.",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
-                FrnkSegmentedControl(
-                    state =
-                        FrnkSegmentedControlState.Content(
-                            options = listOf("Calf", "AdaptiveNavBar"),
-                            selectedIndex = if (state.navEngine == FrnkAdaptiveNavEngine.Calf) 0 else 1,
-                        ),
-                    onOptionSelected = { onIntent(DemoIntent.NavEngineChanged(it)) },
-                )
-            }
+        FrnkSegmentedControl(
+            state =
+                FrnkSegmentedControlState.Content(
+                    options = listOf("Calf", "AdaptiveNavBar"),
+                    selectedIndex = if (state.navEngine == FrnkAdaptiveNavEngine.Calf) 0 else 1,
+                ),
+            onOptionSelected = { onIntent(DemoIntent.NavEngineChanged(it)) },
+        )
+    }
 
-            Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
-                Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                        // Entry point #1 mirror: open the toolkit paywall (also reachable from the
-                        // top-right crown action and from Settings).
-                        FrnkButton(
-                            state = FrnkButtonState.Content(text = "Open Paywall"),
-                            onClick = { onIntent(DemoIntent.RequestUpgrade) },
-                        )
-                        FrnkButton(
-                            state =
-                                FrnkButtonState.Content(
-                                    text = "Restore",
-                                    variant = FrnkButtonVariant.Outlined,
-                                ),
-                            onClick = { onIntent(DemoIntent.RestorePurchases) },
-                        )
-                    }
-                    // God mode: a frnk-level Pro override (independent of RevenueCat), normally reached
-                    // via Settings → tap version 7× → Developer. Surfaced here too for demo discoverability.
-                    FrnkButton(
-                        state =
-                            FrnkButtonState.Content(
-                                text = if (state.isGodMode) "God mode: ON" else "God mode: OFF",
-                                variant = FrnkButtonVariant.Outlined,
-                            ),
-                        onClick = { onIntent(DemoIntent.ToggleGodMode) },
-                    )
-                }
-            }
-
-            FrnkDivider(state = FrnkDividerState.Horizontal())
-
-            Section(title = "2. Persistence (FrnkDB — ${state.notes.size} saved)") {
-                FrnkText(
-                    state =
-                        FrnkTextState.Body(
-                            text =
-                                "NoteStore (shared-database-api) over SQLDelight's FrnkDB. The demo binds an " +
-                                    "in-memory fake so DemoKit stays cinterop-free; the real driver path is " +
-                                    "covered by NoteStoreRoundTripTest.",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(
-                        state = FrnkButtonState.Content(text = "Add note"),
-                        onClick = { onIntent(DemoIntent.AddNote) },
-                    )
-                    FrnkButton(
-                        state =
-                            FrnkButtonState.Content(
-                                text = "Clear",
-                                variant = FrnkButtonVariant.Outlined,
-                                enabled = state.notes.isNotEmpty(),
-                            ),
-                        onClick = { onIntent(DemoIntent.ClearNotes) },
-                    )
-                }
-                if (state.notes.isEmpty()) {
-                    FrnkText(
-                        state =
-                            FrnkTextState.BodySmall(
-                                text = "No notes yet — tap Add note to persist one.",
-                                color = colorOnSurfaceVariant,
-                            ),
-                    )
-                } else {
-                    state.notes.forEach { note ->
-                        FrnkText(state = FrnkTextState.Body(text = "• $note"))
-                    }
-                }
-            }
-
-            FrnkDivider(state = FrnkDividerState.Horizontal())
-
-            Section(title = "3. Analytics & Crash") {
-                FrnkText(
-                    state =
-                        FrnkTextState.Body(
-                            text =
-                                "AnalyticsTracker + CrashReporter (shared-backend-api), a backend-independent " +
-                                    "axis (ObservabilityChoice). The demo binds logging fakes so DemoKit stays " +
-                                    "SDK-free; androidDemoApp installs the real firebaseObservabilityModule.",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(
-                        state = FrnkButtonState.Content(text = "Track event"),
-                        onClick = { onIntent(DemoIntent.TrackEvent) },
-                    )
-                    FrnkButton(
-                        state = FrnkButtonState.Content(text = "User property", variant = FrnkButtonVariant.Outlined),
-                        onClick = { onIntent(DemoIntent.SetUserProperty) },
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
-                    FrnkButton(
-                        state = FrnkButtonState.Content(text = "Log breadcrumb", variant = FrnkButtonVariant.Outlined),
-                        onClick = { onIntent(DemoIntent.LogBreadcrumb) },
-                    )
-                    FrnkButton(
-                        state = FrnkButtonState.Content(text = "Record non-fatal", variant = FrnkButtonVariant.Outlined),
-                        onClick = { onIntent(DemoIntent.RecordTestCrash) },
-                    )
-                }
-                FrnkText(
-                    state =
-                        FrnkTextState.BodySmall(
-                            text =
-                                "Force crash throws an UNHANDLED Kotlin exception — on iOS the CrashKiOS hook " +
-                                    "(installed with ObservabilityChoice.Firebase) reports it symbolicated; on Android " +
-                                    "the Crashlytics SDK catches it. This terminates the app.",
-                            color = colorOnSurfaceVariant,
-                        ),
+    Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
+        Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                // Entry point #1 mirror: open the toolkit paywall (also reachable from the
+                // top-right crown action and from Settings).
+                FrnkButton(
+                    state = FrnkButtonState.Content(text = "Open Paywall"),
+                    onClick = { onIntent(DemoIntent.RequestUpgrade) },
                 )
                 FrnkButton(
-                    state = FrnkButtonState.Content(text = "Force crash (unhandled)", variant = FrnkButtonVariant.Outlined),
-                    onClick = { onIntent(DemoIntent.ForceUnhandledCrash) },
+                    state =
+                        FrnkButtonState.Content(
+                            text = "Restore",
+                            variant = FrnkButtonVariant.Outlined,
+                        ),
+                    onClick = { onIntent(DemoIntent.RestorePurchases) },
                 )
             }
+            // God mode: a frnk-level Pro override (independent of RevenueCat), normally reached
+            // via Settings → tap version 7× → Developer. Surfaced here too for demo discoverability.
+            FrnkButton(
+                state =
+                    FrnkButtonState.Content(
+                        text = if (state.isGodMode) "God mode: ON" else "God mode: OFF",
+                        variant = FrnkButtonVariant.Outlined,
+                    ),
+                onClick = { onIntent(DemoIntent.ToggleGodMode) },
+            )
+        }
+    }
 
-            FrnkDivider(state = FrnkDividerState.Horizontal())
+    FrnkDivider(state = FrnkDividerState.Horizontal())
 
-            Section(title = "4. MVI + Navigation") {
-                FrnkText(
-                    state =
-                        FrnkTextState.Body(
-                            text =
-                                "DemoViewModel = MviViewModel<DemoState, DemoIntent, DemoEffect>.\n" +
-                                    "Every interaction above flows: Composable → send(Intent) → reducer → State → " +
-                                    "recomposition. Navigation is a one-shot effect routed into the toolkit's " +
-                                    "FrnkNavDisplay — Request Upgrade pushes the Paywall; the bottom bar switches tabs.",
-                            color = colorOnSurfaceVariant,
-                        ),
-                )
+    Section(title = "2. Persistence (FrnkDB — ${state.notes.size} saved)") {
+        FrnkText(
+            state =
+                FrnkTextState.Body(
+                    text =
+                        "NoteStore (shared-database-api) over SQLDelight's FrnkDB. The demo binds an " +
+                            "in-memory fake so DemoKit stays cinterop-free; the real driver path is " +
+                            "covered by NoteStoreRoundTripTest.",
+                    color = colorOnSurfaceVariant,
+                ),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "Add note"),
+                onClick = { onIntent(DemoIntent.AddNote) },
+            )
+            FrnkButton(
+                state =
+                    FrnkButtonState.Content(
+                        text = "Clear",
+                        variant = FrnkButtonVariant.Outlined,
+                        enabled = state.notes.isNotEmpty(),
+                    ),
+                onClick = { onIntent(DemoIntent.ClearNotes) },
+            )
+        }
+        if (state.notes.isEmpty()) {
+            FrnkText(
+                state =
+                    FrnkTextState.BodySmall(
+                        text = "No notes yet — tap Add note to persist one.",
+                        color = colorOnSurfaceVariant,
+                    ),
+            )
+        } else {
+            state.notes.forEach { note ->
+                FrnkText(state = FrnkTextState.Body(text = "• $note"))
             }
         }
+    }
+
+    FrnkDivider(state = FrnkDividerState.Horizontal())
+
+    Section(title = "3. Analytics & Crash") {
+        FrnkText(
+            state =
+                FrnkTextState.Body(
+                    text =
+                        "AnalyticsTracker + CrashReporter (shared-backend-api), a backend-independent " +
+                            "axis (ObservabilityChoice). The demo binds logging fakes so DemoKit stays " +
+                            "SDK-free; androidDemoApp installs the real firebaseObservabilityModule.",
+                    color = colorOnSurfaceVariant,
+                ),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "Track event"),
+                onClick = { onIntent(DemoIntent.TrackEvent) },
+            )
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "User property", variant = FrnkButtonVariant.Outlined),
+                onClick = { onIntent(DemoIntent.SetUserProperty) },
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "Log breadcrumb", variant = FrnkButtonVariant.Outlined),
+                onClick = { onIntent(DemoIntent.LogBreadcrumb) },
+            )
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "Record non-fatal", variant = FrnkButtonVariant.Outlined),
+                onClick = { onIntent(DemoIntent.RecordTestCrash) },
+            )
+        }
+        FrnkText(
+            state =
+                FrnkTextState.BodySmall(
+                    text =
+                        "Force crash throws an UNHANDLED Kotlin exception — on iOS the CrashKiOS hook " +
+                            "(installed with ObservabilityChoice.Firebase) reports it symbolicated; on Android " +
+                            "the Crashlytics SDK catches it. This terminates the app.",
+                    color = colorOnSurfaceVariant,
+                ),
+        )
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Force crash (unhandled)", variant = FrnkButtonVariant.Outlined),
+            onClick = { onIntent(DemoIntent.ForceUnhandledCrash) },
+        )
+    }
+
+    FrnkDivider(state = FrnkDividerState.Horizontal())
+
+    Section(title = "4. MVI + Navigation") {
+        FrnkText(
+            state =
+                FrnkTextState.Body(
+                    text =
+                        "DemoViewModel = MviViewModel<DemoState, DemoIntent, DemoEffect>.\n" +
+                            "Every interaction above flows: Composable → send(Intent) → reducer → State → " +
+                            "recomposition. Navigation is a one-shot effect routed into the toolkit's " +
+                            "FrnkNavDisplay — Request Upgrade pushes the Paywall; the bottom bar switches tabs.",
+                    color = colorOnSurfaceVariant,
+                ),
+        )
     }
 }
 
@@ -678,43 +643,6 @@ private fun ComponentDetailScreen(
         ) {
             content()
         }
-    }
-}
-
-/**
- * Settings tab — a top bar over the real [SettingsScreen] scaffold (no back arrow: it's a tab root,
- * switched via the bottom bar). [initialState] uses a blank title so the bar's "Settings" heading
- * isn't doubled.
- */
-@Composable
-private fun SettingsTab(
-    initialState: SettingsScreenState,
-    onEffect: (SettingsEffect) -> Unit,
-    vmKey: String? = null,
-) {
-    FrnkScreenScaffold(
-        topBar = FrnkTopAppBarState(title = "Settings"),
-        // SettingsScreenContent paints its own colorBackground (so it works standalone too), so let the
-        // scaffold's backdrop be transparent here to avoid a redundant full-screen overdraw.
-        containerColor = Color.Transparent,
-        // bottomInset is inherited from LocalFrnkBottomBarInset (the bar's reserved height, provided by
-        // FrnkTabbedNavScaffold). The extra bottom padding below clears the bar with breathing
-        // room (the default lg leaves it sitting right on the bar; xl gives a more comfortable gap).
-        contentPadding =
-            PaddingValues(
-                start = FrnkSpacing.lg,
-                top = FrnkSpacing.lg,
-                end = FrnkSpacing.lg,
-                bottom = FrnkSpacing.xl,
-            ),
-    ) { padding ->
-        SettingsScreen(
-            initialState = initialState,
-            modifier = Modifier.fillMaxSize(),
-            vmKey = vmKey,
-            contentPadding = padding,
-            onEffect = onEffect,
-        )
     }
 }
 
@@ -1257,8 +1185,9 @@ private fun demoSettingsState(
             appearance = appearance,
             isPro = isPro,
             title = "",
+            // Exercises the extraSections injection API (default placement: before the Legal section).
+            extraSections = demoExtraSettingsSections(),
         )
-    val extraSettings = demoExtraSettingsSections()
     val godModeIcon = Theme[icons][iconUpgrade]
     // "Developer" section holding the god-mode toggle. The demo always shows it (showDeveloperSection =
     // true) so it stays stable across the isPro/isGodMode VM re-key (toggling god mode flips isPro, which
@@ -1280,9 +1209,8 @@ private fun demoSettingsState(
                     ),
             )
         }
-    return remember(baseSettings, extraSettings, developerSection) {
+    return remember(baseSettings, developerSection) {
         baseSettings.copy(
-            sections = baseSettings.sections + extraSettings,
             developerSection = developerSection,
             showDeveloperSection = true,
         )
@@ -1321,61 +1249,54 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
     }
 }
 
-@Composable
-private fun demoOnboardingState(): OnboardingScreenState {
-    // Resolve icon tokens once per composition; keys are stable across recompositions unless
-    // the host swaps its FrnkThemeConfig.iconOverrides, so remember rarely invalidates.
-    val checkIcon = Theme[icons][iconCheck]
-    val searchIcon = Theme[icons][iconSearch]
-    val settingsIcon = Theme[icons][iconSettings]
-    return remember(checkIcon, searchIcon, settingsIcon) {
-        OnboardingScreenState(
-            pages =
-                listOf(
-                    OnboardingPageState(
-                        title = FrnkTextState.Title(text = "Welcome to Frnk"),
-                        description =
-                            FrnkTextState.Body(
-                                text = "A Kotlin Multiplatform toolkit to ship polished apps in days, not weeks.",
-                            ),
-                        icon =
-                            FrnkIconState.Content(
-                                imageVector = checkIcon,
-                                contentDescription = null,
-                                size = FrnkIconSize.xxl,
-                                tint = colorPrimary,
-                            ),
-                    ),
-                    OnboardingPageState(
-                        title = FrnkTextState.Title(text = "Search everything"),
-                        description =
-                            FrnkTextState.Body(
-                                text = "Typed, paginated, offline-ready data access across every source.",
-                            ),
-                        icon =
-                            FrnkIconState.Content(
-                                imageVector = searchIcon,
-                                contentDescription = null,
-                                size = FrnkIconSize.xxl,
-                                tint = colorPrimary,
-                            ),
-                    ),
-                    OnboardingPageState(
-                        title = FrnkTextState.Title(text = "Ready when you are"),
-                        description =
-                            FrnkTextState.Body(text = "Tap Get Started to begin your first session."),
-                        icon =
-                            FrnkIconState.Content(
-                                imageVector = settingsIcon,
-                                contentDescription = null,
-                                size = FrnkIconSize.xxl,
-                                tint = colorPrimary,
-                            ),
-                    ),
+/**
+ * The shell's built-in onboarding flow ([FrnkAppShell]'s `onboardingPages`) — plain data built with
+ * Lucide icons directly (it's constructed outside the theme, so token lookups aren't available; a
+ * host that wants token-driven icons builds the pages inside its own themed composable instead).
+ */
+private val demoOnboardingPages: List<OnboardingPageState> =
+    listOf(
+        OnboardingPageState(
+            title = FrnkTextState.Title(text = "Welcome to Frnk"),
+            description =
+                FrnkTextState.Body(
+                    text = "A Kotlin Multiplatform toolkit to ship polished apps in days, not weeks.",
                 ),
-        )
-    }
-}
+            icon =
+                FrnkIconState.Content(
+                    imageVector = Lucide.Check,
+                    contentDescription = null,
+                    size = FrnkIconSize.xxl,
+                    tint = colorPrimary,
+                ),
+        ),
+        OnboardingPageState(
+            title = FrnkTextState.Title(text = "Search everything"),
+            description =
+                FrnkTextState.Body(
+                    text = "Typed, paginated, offline-ready data access across every source.",
+                ),
+            icon =
+                FrnkIconState.Content(
+                    imageVector = Lucide.Search,
+                    contentDescription = null,
+                    size = FrnkIconSize.xxl,
+                    tint = colorPrimary,
+                ),
+        ),
+        OnboardingPageState(
+            title = FrnkTextState.Title(text = "Ready when you are"),
+            description =
+                FrnkTextState.Body(text = "Tap Get Started to begin your first session."),
+            icon =
+                FrnkIconState.Content(
+                    imageVector = Lucide.Settings,
+                    contentDescription = null,
+                    size = FrnkIconSize.xxl,
+                    tint = colorPrimary,
+                ),
+        ),
+    )
 
 @Composable
 private fun Section(

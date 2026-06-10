@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
-import dev.jdgarita.frnk.ui.theme.FrnkTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,9 +35,9 @@ class MainActivity : ComponentActivity() {
                 controller.isAppearanceLightNavigationBars = !isDark
             }
 
-            FrnkTheme(config = demoPurpleThemeConfig(), appearanceController = appearanceController) {
-                DemoScreen(onEffect = ::handleEffect)
-            }
+            // DemoScreen owns the FrnkTheme wrap now (via FrnkAppShell); the hoisted controller is
+            // passed through so the system-bar sync above keeps observing the in-app toggle.
+            DemoScreen(appearanceController = appearanceController, onEffect = ::handleEffect)
         }
     }
 

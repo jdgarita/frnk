@@ -23,7 +23,19 @@
 - `initializeFrnk(backend, observability, monetization, additionalModules, extraConfig)` — one-shot
   `startKoin { modules(frnkModules(…)); extraConfig() }`. Hosts register their own Koin modules via the
   first-class `additionalModules` param, and use `extraConfig` for `androidContext(...)` /
-  `allowOverride(true)` / logging.
+  `allowOverride(true)` / logging. `frnkModules` also installs the SDK-free scaffold VM modules
+  (home/settings/onboarding/bottomNav) unconditionally, so the VM-backed scaffolds resolve with no
+  per-host `includes(...)`.
+- **androidMain** `initializeFrnk(context, …)` — the Android one-call bootstrap: sets
+  `DatabaseContext.application` (this module's sanctioned `*-impl` import) and registers
+  `androidContext(...)`, then delegates to the common overload. The `koin-android` dep lives in this
+  module's androidMain only.
+- `FrnkAppScaffold(appName, appVersion, …) { homeContent }` — the **batteries-included app root** over
+  `:shared-ui-nav`'s `FrnkAppShell`: fail-fast Koin-started assertion, Settings driven by the live
+  `EntitlementManager.isPro` (VM re-keys on flips; degrades to Free under `MonetizationChoice.None`),
+  `rememberFrnkSettingsHandler` with appearance/onboarding/feedback fallbacks, auto-mounted
+  `ToolkitRoute.Paywall`. Lives here (not `:shared-ui-nav`) because only `:shared` sees the
+  monetization wiring — the Compose plugin is already applied to this module.
 
 Keep this surface tiny. Adding a new top-level entry point here is a public-API change for every downstream consumer.
 
