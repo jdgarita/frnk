@@ -69,16 +69,13 @@ drives composite-build substitution. We keep **flat, hyphenated project names** 
 physical directories, reconciled by `projectDir` remaps in `settings.gradle.kts` — the exact
 pattern the repo already uses for `shared/<name>` today.
 
-> ⚠️ **Naming-scheme tension (OQ-6).** PR #47 (landed after this plan was drafted) moved the
-> backend modules to **nested Gradle paths** (`:shared:backend:api|firebase|supabase`, dirs
-> `shared/backend/<name>/`, new `frnk.backend.*` convention plugins) and the settings comment
-> signals intent to migrate other domains to nested groups. Caveat before extending that pattern:
-> composite-build substitution matches `group:name` where *name is the leaf project name* — so
-> `:shared:backend:api` advertises `dev.jdgarita.frnk:api`. Generic leaves (`api`, `impl`) collide
-> in coordinate space as soon as a second nested domain uses them, and any module a host consumes
-> needs a unique, descriptive artifact name. Either keep host-consumable modules on flat
-> descriptive names (this plan's default), or extend `frnk.kmp.base` to derive the artifactId from
-> the full project path before nesting further. Resolve OQ-6 before Stage 4.
+> ✅ **OQ-6 resolved (2026-06-10): flat descriptive names everywhere; PR #47's nested paths are
+> overridden.** Rationale: composite-build substitution matches `group:name` where *name is the
+> leaf project name* — `:shared:backend:api` advertises `dev.jdgarita.frnk:api`, and generic
+> leaves (`api`, `impl`) collide in coordinate space as soon as a second nested domain uses them.
+> Consequence: Stage 5's rename of `:shared:backend:*` → `:analytics-api`/`:analytics-impl` is
+> also the re-flattening (no other nested groups may be introduced before then), and the
+> `frnk.backend.*` convention plugins fold back into the standard `frnk.kmp.*` set at Stage 5.
 
 | New project (= artifact `dev.jdgarita.frnk:<name>`) | Directory | Origin |
 |---|---|---|
@@ -375,5 +372,5 @@ isolated and small.
 | OQ-3 | Per-module iOS framework binaries (from `frnk.kmp.library`): keep, or drop for build-time savings now that FrnkKit is gone and DemoKit links via Gradle? | Stage 1+ |
 | OQ-4 | Confirm nothing (Xcode scripts, still's iOS build) references per-module framework baseNames (`shared_ui_atoms` etc.) before renames land. | Stage 9 |
 | OQ-5 | What real content seeds `:core-di` — extract host-facing Koin assembly helpers, or start docs-only? | Stage 8 |
-| OQ-6 | Flat descriptive project names (this plan's default) vs the nested module groups PR #47 introduced for backend (`:shared:backend:api`). Nested leaves like `api`/`impl` collide in substitution coordinate space (`dev.jdgarita.frnk:api`); pick one scheme — or teach `frnk.kmp.base` to derive artifactId from the project path — before creating new modules. | Stages 4+ (every stage that creates/renames modules) |
+| ~~OQ-6~~ | **RESOLVED**: flat descriptive project names everywhere; PR #47's nested `:shared:backend:*` paths are overridden (re-flattened at Stage 5, `frnk.backend.*` plugins folded back into `frnk.kmp.*`). See the ✅ note in §3. | — |
 | OQ-7 | New home for `FrnkAppScaffold` + the one-call bootstrap (PR #46, currently in `:shared`). The original sketch puts AppScaffold in `ui/scaffolds`, but it imports monetization-ui + bottomnav, so it sits **above** both — candidates: a new top-of-stack `ui-app` module, or fold into `ui-bottom-nav` (already hosts `FrnkAppShell`). Also decide whether `initializeFrnk`/`frnkModules` (and the choice enums) survive the aggregator deletion as a feature of that module, given the host-side-explicit-Koin direction (D6). | Stage 1 |
