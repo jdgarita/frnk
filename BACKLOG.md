@@ -274,6 +274,17 @@ valuable ones and were previously invisible on iOS.
 
 ## P2 — Navigation & DI completeness
 
+### P2-0 — BUG: OnboardingScreen buttons unresponsive when pushed as a nav3 destination
+**Description:** With `OnboardingScreen` pushed onto a tab's back stack (Settings → Show
+Onboarding), its **buttons don't respond** — the close-X and Next/Back fire no intent — while the
+`HorizontalPager` swipe and system/predictive back work fine. Discovered during the scaffold-system
+device verification (2026-06-10); **reproduces identically on `main` (87aba0e)**, so it predates
+`FrnkAppShell` (not a regression of the shell's `entry(ToolkitRoute.Onboarding)` registration —
+verified by A/B-installing both branches on the same emulator). Repro: demo app → Settings → Show
+Onboarding → tap X or Next (emulator API 36 + Pixel 7a). Suspects: the onboarding `koinViewModel`'s
+intent collector vs. the nav-entry ViewModelStoreOwner, or the button taps never reaching the
+composables on that destination. Workaround: pager swipe + system back.
+
 ### P2-1 — Toolkit navigation layer (type-safe, MVI-integrated) ✅ DONE (2026-06-01)
 **Description:** Build the tailored navigation system: type-safe routes
 (extending the existing `ToolkitRoute`), a host-owned back stack, a `NavHost`
