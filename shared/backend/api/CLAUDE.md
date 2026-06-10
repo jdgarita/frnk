@@ -1,6 +1,6 @@
-# shared-backend-api
+# :shared:backend:api
 
-Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:shared-backend-firebase` and `:shared-backend-supabase`.
+Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:shared:backend:firebase` and `:shared:backend:supabase`.
 
 ## Contents
 
@@ -11,7 +11,7 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
 - `NoopObservability.kt` — `NoopAnalyticsTracker` / `NoopCrashReporter`, the SDK-free no-op defaults
   (BACKLOG P1-5). They live here rather than in a backend impl because observability is a
   **backend-independent axis** — `:shared`'s `noopObservabilityModule` binds them for
-  `ObservabilityChoice.None`. (Moved here from `shared-backend-supabase`.)
+  `ObservabilityChoice.None`. (Moved here from `:shared:backend:supabase`.)
 
 ## Rules
 
@@ -20,14 +20,14 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Supabase, no Seriali
 - DTOs that need `@Serializable` go in the impl module, not here. This module keeps `kotlin.serialization` off its classpath on purpose.
 - Adding a new backend capability:
   1. Define the interface + domain models here.
-  2. Implement it in **both** `shared-backend-firebase` and `shared-backend-supabase` — both backends must satisfy the contract.
+  2. Implement it in **both** `:shared:backend:firebase` and `:shared:backend:supabase` — both backends must satisfy the contract.
   3. Register in `FirebaseBackendModule.kt` and `SupabaseBackendModule.kt`.
 
 ## Dependencies
 
 - `api(projects.sharedUtils)`, `api(libs.kotlinx.coroutines.core)`. That's it.
 - `commonTest`: `kotlin-test` + `kotlinx-coroutines-test` (host tests opted in via
-  `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared-backend-api:testAndroidHostTest`).
+  `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared:backend:api:testAndroidHostTest`).
 
 ## Testing & the fake pattern
 

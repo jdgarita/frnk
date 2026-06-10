@@ -456,7 +456,7 @@ private fun HomeTabContent(
             state =
                 FrnkTextState.Body(
                     text =
-                        "AnalyticsTracker + CrashReporter (shared-backend-api), a backend-independent " +
+                        "AnalyticsTracker + CrashReporter (:shared:backend:api), a backend-independent " +
                             "axis (ObservabilityChoice). The demo binds logging fakes so DemoKit stays " +
                             "SDK-free; androidDemoApp installs the real firebaseObservabilityModule.",
                     color = colorOnSurfaceVariant,

@@ -37,7 +37,7 @@ kotlin {
             export(projects.sharedUiApi)
             export(projects.sharedUiAtoms)
             export(projects.sharedUiNav)
-            export(projects.sharedBackendApi)
+            export(projects.shared.backend.api)
             export(projects.sharedDatabaseApi)
             export(projects.sharedMonetizationApi)
             export(projects.sharedMonetizationUi)
@@ -55,7 +55,7 @@ kotlin {
             // Platform-adaptive bottom nav (Calf-backed). The demo consumes the toolkit default from here
             // rather than carrying any nav-bar implementation itself.
             api(projects.sharedUiNav)
-            api(projects.sharedBackendApi)
+            api(projects.shared.backend.api)
             api(projects.sharedDatabaseApi)
             api(projects.sharedMonetizationApi)
             api(projects.sharedMonetizationUi)

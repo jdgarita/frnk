@@ -7,7 +7,7 @@ iOS consumer entry point. Produces the **`FrnkKit.xcframework`** that downstream
 - Declares the three Apple targets (`iosX64`, `iosArm64`, `iosSimulatorArm64`) and bundles them into a single XCFramework via `XCFramework(ProjectConfiguration.IOS_FRAMEWORK_NAME)`.
 - Each framework binary `export`s `projects.shared`, so the whole toolkit surface (atoms, MVI, backend interfaces, monetization, …) is callable from Swift through one framework.
 - `isStatic = true`.
-- `linkerOpts("-undefined", "dynamic_lookup")` — **deliberate**. Bundled impls (`shared-monetization-revenuecat`, `shared-backend-firebase`) reference native iOS frameworks (`RevenueCat` / `purchases-ios`, Firebase pods) that the toolkit does **not** ship. Deferring symbol resolution makes the XCFramework link locally; the consumer Xcode project's link step resolves the symbols via SPM / CocoaPods.
+- `linkerOpts("-undefined", "dynamic_lookup")` — **deliberate**. Bundled impls (`shared-monetization-revenuecat`, `:shared:backend:firebase`) reference native iOS frameworks (`RevenueCat` / `purchases-ios`, Firebase pods) that the toolkit does **not** ship. Deferring symbol resolution makes the XCFramework link locally; the consumer Xcode project's link step resolves the symbols via SPM / CocoaPods.
 
 ## Public Swift surface
 
@@ -96,7 +96,7 @@ KMP specifics that save you work:
 Gotcha we hit (so you don't again): a crash showing as **"unprocessed — upload 1 dSYM file"** means
 the report arrived but no matching dSYM was uploaded — usually a **Debug** build (no dSYM generated)
 or a missing run-script. Crashes upload on the **next launch**, and the **first-ever** crash can take
-several minutes to surface. Details in `shared/shared-backend-firebase/CLAUDE.md`.
+several minutes to surface. Details in `shared/backend/firebase/CLAUDE.md`.
 
 ## Build
 

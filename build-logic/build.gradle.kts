@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.plugins.android.kotlin.multiplatform.library.toMarker())
     implementation(libs.plugins.compose.multiplatform.toMarker())
     implementation(libs.plugins.kotlin.compose.toMarker())
+    implementation(libs.plugins.kotlin.serialization.toMarker())
 }
 
 // A plugin id `x.y.z` is published with the marker artifact `x.y.z:x.y.z.gradle.plugin:<version>`.

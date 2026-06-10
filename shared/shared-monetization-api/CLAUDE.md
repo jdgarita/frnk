@@ -34,11 +34,11 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - **No SDK dependencies.** RevenueCat artifacts live in `:shared-monetization-revenuecat`. A new provider
   (Adapty, …) implements `EntitlementProvider` in its own `*-impl` module, bound in `:shared`;
   `monetizationModule` is unchanged.
-- `api`-exports `:shared-backend-api` (`AnalyticsTracker`, `AppResult`/error types) **and**
+- `api`-exports `:shared:backend:api` (`AnalyticsTracker`, `AppResult`/error types) **and**
   `:shared-database-api` (`KeyValueStore`, for god-mode persistence in `DefaultEntitlementManager`).
 - `koin.core` is on the `api` surface — these types are resolved via Koin at call sites.
 
 ## Dependencies
 
-- `api(projects.sharedBackendApi)`, `api(projects.sharedDatabaseApi)`, `api(libs.kotlinx.coroutines.core)`,
+- `api(projects.shared.backend.api)`, `api(projects.sharedDatabaseApi)`, `api(libs.kotlinx.coroutines.core)`,
   `api(libs.koin.core)`. `commonTest`: `kotlin.test` + `kotlinx.coroutines.test`.

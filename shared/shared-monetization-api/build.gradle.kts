@@ -8,7 +8,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.sharedBackendApi)
+            api(projects.shared.backend.api)
             api(projects.sharedDatabaseApi)
             api(libs.kotlinx.coroutines.core)
             api(libs.koin.core)

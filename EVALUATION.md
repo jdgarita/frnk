@@ -135,7 +135,7 @@ apps are local-storage-only. The remaining headline gaps are **RevenueCat** and 
 - **Now (P1-5, 2026-05-29):** `FirebaseAnalyticsTracker` / `FirebaseCrashReporter` are
   implemented against the gitlive SDKs (with `runCatching` no-op safety) and exposed via
   `firebaseObservabilityModule` on a new **backend-independent `ObservabilityChoice` axis**
-  (`frnkModules(backend, observability)`); the `Noop*` defaults moved to `shared-backend-api`
+  (`frnkModules(backend, observability)`); the `Noop*` defaults moved to `:shared:backend:api`
   and back `ObservabilityChoice.None`. So a local-only app (no backend) can ship Firebase
   telemetry. Demoed across all three layers; `androidDemoApp` runs the real SDK.
 - **Remaining:** the **provider-neutral PostHog** tracker named in Requirement §3.6 is still
@@ -152,7 +152,7 @@ apps are local-storage-only. The remaining headline gaps are **RevenueCat** and 
   modules is not even a real task (only `:androidDemoApp` has it), so the gate was a
   no-op.
 - **Update (P0-3):** `commonTest` is now stood up in `shared-ui-api` (MVI engine
-  reducer/effect test) and `shared-backend-api` (`AppResult.fold` + a reusable
+  reducer/effect test) and `:shared:backend:api` (`AppResult.fold` + a reusable
   `FakeAuthService` test double), each opted in via `withHostTest {}`. CI now runs
   `testAndroidHostTest :androidDemoApp:testDebugUnitTest` and executes real tests.
   The earlier `testDebugUnitTest` reference was the root cause of the no-op gate and

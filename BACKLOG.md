@@ -96,12 +96,12 @@ reconciled to `testAndroidHostTest :androidDemoApp:testDebugUnitTest`.
       (state transition on intent, effect emission) — `MviViewModelTest` in
       `shared-ui-api` (2 tests).
 - [x] `AppResult` success/failure folding is unit-tested — added `AppResult.fold(...)`
-      + `AppResultTest` in `shared-backend-api` (4 tests).
+      + `AppResultTest` in `:shared:backend:api` (4 tests).
 - [x] The unit-test gate executes ≥1 test and is green — `testAndroidHostTest` runs
       9 tests across the two modules (the task name was corrected from
       `testDebugUnitTest`, which is the demo app's task).
 - [x] A documented fake pattern exists for downstream tasks to reuse —
-      `FakeAuthService` (+ `FakeAuthServiceTest`, 3 tests) in `shared-backend-api`
+      `FakeAuthService` (+ `FakeAuthServiceTest`, 3 tests) in `:shared:backend:api`
       `commonTest`, documented in that module's `CLAUDE.md`. Reused by P1-2/P1-3.
 
 ---
@@ -164,7 +164,7 @@ interface in `shared-database-api`, binding in `DatabaseModule`, Android + nativ
 `dev.gitlive:firebase-auth` calls, mapping outcomes to `AppResult`.
 **Rationale (priority):** Auth is the most commonly needed backend capability;
 Firebase is one of the two default backends.
-**Scope:** `shared-backend-firebase` only; do not touch `shared-backend-api`
+**Scope:** `:shared:backend:firebase` only; do not touch `:shared:backend:api`
 contract unless a gap is found (if so, change the api first and update both
 backends).
 **Acceptance Criteria:**
@@ -207,8 +207,8 @@ local-storage-only ones.
 - **Observability is its own axis.** Analytics/crash were moved out of `firebaseBackendModule` /
   `supabaseBackendModule` into a new `ObservabilityChoice { None, Firebase }` selector on
   `frnkModules(backend, observability)` + `initializeFrnk(...)`. `firebaseObservabilityModule`
-  (in `shared-backend-firebase`) binds the real impls; `noopObservabilityModule` (in `:shared`,
-  over the relocated `NoopAnalyticsTracker`/`NoopCrashReporter` now in `shared-backend-api`) is the
+  (in `:shared:backend:firebase`) binds the real impls; `noopObservabilityModule` (in `:shared`,
+  over the relocated `NoopAnalyticsTracker`/`NoopCrashReporter` now in `:shared:backend:api`) is the
   `None` default. So an app with **no backend** (or a Supabase-backed app) can still ship Firebase
   Analytics + Crashlytics. (Pre-stages P3-1 PostHog, "selectable independently of `BackendChoice`".)
 - **Real SDK smoke-tested in `androidDemoApp`.** It applies the `google-services` +
@@ -221,9 +221,9 @@ local-storage-only ones.
       (`Firebase.analytics` / `Firebase.crashlytics`); event params coerced to Firebase types.
 - [x] No-op when Firebase isn't configured: every SDK call wrapped in `runCatching` + logged warning.
 - [x] Analytics/crash decoupled from `BackendChoice` via `ObservabilityChoice`; `None` → Noop default
-      (documented as intentional in `shared-backend-api`).
+      (documented as intentional in `:shared:backend:api`).
 - [x] Reusable `FakeAnalyticsTracker`/`FakeCrashReporter` (+ `ObservabilityTest`) in
-      `shared-backend-api` `commonTest`; `DemoViewModelTest` in `:shared-demo` covers the new intents.
+      `:shared:backend:api` `commonTest`; `DemoViewModelTest` in `:shared-demo` covers the new intents.
 - [x] Demoed in all three layers: `:shared-demo` (Analytics & Crash section + logging fakes),
       `androidDemoApp` (real Firebase via `firebaseObservabilityModule`), `iosDemoApp` (logging fakes).
 
@@ -235,7 +235,7 @@ to install the Kotlin/Native unhandled-exception hook so those crashes reach Cra
 **Rationale (priority):** Direct extension of the just-shipped P1-5; uncaught crashes are the most
 valuable ones and were previously invisible on iOS.
 **Key decisions:**
-- **iOS-only, behind the existing axis.** CrashKiOS (`0.9.0`) lives in `shared-backend-firebase`'s
+- **iOS-only, behind the existing axis.** CrashKiOS (`0.9.0`) lives in `:shared:backend:firebase`'s
   **`iosMain`** (it has no JVM variant — must stay out of `commonMain`). An `internal expect fun
   enableNativeCrashHandler()` has an iOS actual (`enableCrashlytics()` + `setCrashlyticsUnhandledExceptionHook()`,
   `runCatching`-wrapped + idempotent) and an Android **no-op** actual (the Crashlytics Android SDK
@@ -250,7 +250,7 @@ valuable ones and were previously invisible on iOS.
 **Acceptance Criteria:**
 - [x] CrashKiOS hook installed on iOS when `ObservabilityChoice.Firebase` is selected; no-op on Android;
       never installed for `ObservabilityChoice.None`.
-- [x] `*-api` stays SDK-free; CrashKiOS confined to `shared-backend-firebase` `iosMain`; no per-framework
+- [x] `*-api` stays SDK-free; CrashKiOS confined to `:shared:backend:firebase` `iosMain`; no per-framework
       `linkerOpts` (resolves under the existing `dynamic_lookup`).
 - [x] Host test (`testAndroidHostTest`): `enableNativeCrashHandler` is a safe JVM no-op and `CrashReporter`
       resolves from `firebaseObservabilityModule` without throwing (`FirebaseObservabilityModuleTest`, 2 tests).
@@ -268,7 +268,7 @@ valuable ones and were previously invisible on iOS.
       crash visible in the Firebase Crashlytics console (see `iosDemoApp/README.md`). The native
       Firebase SPM add + simulator run + console check are manual Mac/Xcode steps.
 - [x] dSYM/symbolication responsibility documented for consumers (static framework → consumer uploads
-      all dSYMs) in `iosApp/CLAUDE.md` + `shared-backend-firebase/CLAUDE.md`.
+      all dSYMs) in `iosApp/CLAUDE.md` + `:shared:backend:firebase/CLAUDE.md`.
 
 ---
 

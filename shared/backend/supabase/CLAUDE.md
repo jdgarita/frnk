@@ -1,6 +1,6 @@
-# shared-backend-supabase
+# :shared:backend:supabase
 
-Supabase implementation of `:shared-backend-api`. The **default** backend (`BackendChoice.Supabase`) — `:shared/FrnkModules.kt` installs `supabaseBackendModule` unless the host passes `BackendChoice.Firebase`.
+Supabase implementation of `:shared:backend:api`. The **default** backend (`BackendChoice.Supabase`) — `:shared/FrnkModules.kt` installs `supabaseBackendModule` unless the host passes `BackendChoice.Firebase`.
 
 ## Contents
 
@@ -10,7 +10,7 @@ Supabase implementation of `:shared-backend-api`. The **default** backend (`Back
 
 Analytics/crash are **no longer bound here** (BACKLOG P1-5). They moved to the backend-independent
 `ObservabilityChoice` axis in `:shared` — the no-op defaults (`Noop{Analytics,Crash}`, now in
-`shared-backend-api`) are bound by `noopObservabilityModule`. A Supabase-backed app that wants real
+`:shared:backend:api`) are bound by `noopObservabilityModule`. A Supabase-backed app that wants real
 analytics picks `ObservabilityChoice.Firebase` (or installs its own binding).
 
 ## Rules
@@ -30,5 +30,5 @@ If you need to tweak the Ktor `HttpClient` (interceptors, timeouts, logging), do
 
 ## Dependencies
 
-- `api(projects.sharedBackendApi)`.
+- `api(projects.shared.backend.api)`.
 - Plugin: `kotlin.serialization` (Supabase DTOs use `@Serializable`).

@@ -27,13 +27,13 @@ kotlin {
             // so it ships in FrnkKit for every consumer — a deliberate, host-approved trade.
             api(projects.sharedUiNav)
             api(projects.sharedDatabaseApi)
-            api(projects.sharedBackendApi)
+            api(projects.shared.backend.api)
             api(projects.sharedMonetizationApi)
             api(projects.sharedMonetizationUi)
 
             api(projects.sharedDatabaseImpl)
-            api(projects.sharedBackendFirebase)
-            api(projects.sharedBackendSupabase)
+            api(projects.shared.backend.firebase)
+            api(projects.shared.backend.supabase)
             api(projects.sharedMonetizationRevenuecat)
 
             implementation(libs.koin.core)
