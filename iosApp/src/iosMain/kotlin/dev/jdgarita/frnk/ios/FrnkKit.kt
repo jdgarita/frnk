@@ -17,7 +17,7 @@ import org.koin.core.module.Module
  * modules (feature ViewModels, repositories, a custom `EntitlementProvider`, …).
  */
 fun bootstrapFrnkKit(
-    backend: BackendChoice = BackendChoice.Supabase,
+    backend: BackendChoice = BackendChoice.Firebase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
     monetization: MonetizationChoice = MonetizationChoice.RevenueCat,
     additionalModules: List<Module> = emptyList(),

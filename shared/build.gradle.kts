@@ -33,7 +33,6 @@ kotlin {
 
             api(projects.sharedDatabaseImpl)
             api(projects.shared.backend.firebase)
-            api(projects.shared.backend.supabase)
             api(projects.sharedMonetizationRevenuecat)
 
             implementation(libs.koin.core)

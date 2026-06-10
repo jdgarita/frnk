@@ -28,7 +28,7 @@ import kotlin.time.Clock
 
 /**
  * Demo wiring. The point of having a separate module is that a real host would swap these for
- * `revenueCatModule` / `firebaseBackendModule` / `supabaseBackendModule` — the toolkit doesn't care.
+ * `revenueCatModule` / `firebaseBackendModule` — the toolkit doesn't care.
  */
 val demoModule =
     module {

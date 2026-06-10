@@ -25,7 +25,7 @@ import org.koin.core.module.Module
  */
 fun initializeFrnk(
     context: Context,
-    backend: BackendChoice = BackendChoice.Supabase,
+    backend: BackendChoice = BackendChoice.Firebase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
     monetization: MonetizationChoice = MonetizationChoice.RevenueCat,
     additionalModules: List<Module> = emptyList(),

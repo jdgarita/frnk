@@ -2,7 +2,6 @@ package dev.jdgarita.frnk.shared
 
 import dev.jdgarita.frnk.backend.firebase.firebaseBackendModule
 import dev.jdgarita.frnk.backend.firebase.firebaseObservabilityModule
-import dev.jdgarita.frnk.backend.supabase.supabaseBackendModule
 import dev.jdgarita.frnk.database.impl.databaseModule
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
@@ -22,7 +21,7 @@ import org.koin.core.module.Module
  *   so a host can override a toolkit binding by enabling Koin override in `extraConfig`/`startKoin`.
  */
 fun frnkModules(
-    backend: BackendChoice = BackendChoice.Supabase,
+    backend: BackendChoice = BackendChoice.Firebase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
     monetization: MonetizationChoice = MonetizationChoice.RevenueCat,
     additionalModules: List<Module> = emptyList(),
@@ -38,7 +37,6 @@ fun frnkModules(
         add(bottomNavScaffoldModule)
         add(
             when (backend) {
-                BackendChoice.Supabase -> supabaseBackendModule
                 BackendChoice.Firebase -> firebaseBackendModule
             },
         )

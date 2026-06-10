@@ -12,7 +12,7 @@ Codex guidance for this repository. Follow this file first, and use `CLAUDE.md` 
 ## Repo Shape
 
 - Most shared domain modules keep flat Gradle paths (`:shared-ui-atoms`, `:shared-database-api`, etc.).
-- Backend modules use nested Gradle paths under `:shared:backend` (`:shared:backend:api`, `:shared:backend:firebase`, `:shared:backend:supabase`).
+- Backend modules use nested Gradle paths under `:shared:backend` (`:shared:backend:api`, `:shared:backend:firebase`).
 - Most flat shared module files live physically under `shared/<module-name>/`; backend module files live under `shared/backend/<name>/`.
 - `:shared` is the consumer-facing aggregator. `androidApp` and `iosApp` re-export `:shared`.
 - Backend/database/monetization modules use an api/impl split. Do not add SDK dependencies to `*-api` modules.

@@ -221,7 +221,7 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 - still impact: **none** (no consumed coordinate touched). Pin bump only.
 - Extra verification: `./gradlew :shared-demo:assembleDemoKitDebugXCFramework`.
 
-### ☐ Stage 2 — Drop Auth + Supabase  — risk: low
+### ☑ Stage 2 — Drop Auth + Supabase  — risk: low — **landed 2026-06-10**
 
 - Delete `:shared:backend:supabase` (dir `shared/backend/supabase/`) entirely + its
   `frnk.backend.supabase` convention plugin; delete `Auth.kt` + auth fakes from

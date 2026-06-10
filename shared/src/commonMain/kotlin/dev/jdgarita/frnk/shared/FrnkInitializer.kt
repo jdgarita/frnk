@@ -15,7 +15,7 @@ import org.koin.core.module.Module
  *   (`androidContext(...)`, `allowOverride(true)`, logging, …).
  */
 fun initializeFrnk(
-    backend: BackendChoice = BackendChoice.Supabase,
+    backend: BackendChoice = BackendChoice.Firebase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
     monetization: MonetizationChoice = MonetizationChoice.RevenueCat,
     additionalModules: List<Module> = emptyList(),

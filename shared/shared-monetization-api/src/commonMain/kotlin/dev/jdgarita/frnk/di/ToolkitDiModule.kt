@@ -14,7 +14,6 @@ import org.koin.core.module.Module
  *       )
  *   }
  *
- * The host stays in control of conflicting picks (firebase OR supabase) so the
- * unused impl module is never linked.
+ * The host stays in control of backend picks so an unused impl module is never linked.
  */
 expect fun toolkitCoreModules(): List<Module>

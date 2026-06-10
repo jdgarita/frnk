@@ -40,8 +40,6 @@ jobs:
         run: |
           cp local.properties.template local.properties
           # BuildKonfig needs these set; CI does not exercise real backends.
-          sed -i 's|SUPABASE_URL=.*|SUPABASE_URL=https://ci.invalid|' local.properties
-          sed -i 's|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=ci-dummy|' local.properties
           sed -i 's|FIREBASE_API_KEY=.*|FIREBASE_API_KEY=ci-dummy|' local.properties
           sed -i 's|FIREBASE_APPLICATION_ID=.*|FIREBASE_APPLICATION_ID=ci-dummy|' local.properties
           sed -i 's|FIREBASE_PROJECT_ID=.*|FIREBASE_PROJECT_ID=ci-dummy|' local.properties

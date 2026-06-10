@@ -14,7 +14,6 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.findLibrary("firebase-auth").get())
             implementation(libs.findLibrary("firebase-firestore").get())
             implementation(libs.findLibrary("firebase-analytics").get())
             implementation(libs.findLibrary("firebase-crashlytics").get())

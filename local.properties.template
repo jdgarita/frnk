@@ -4,10 +4,6 @@
 sdk.dir=/Users/CHANGE_ME/Library/Android/sdk
 
 # --- BuildKonfig injected secrets ---
-# Supabase
-SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-
 # Firebase (GitLive) — these are read from google-services.json at runtime
 # on Android, but BuildKonfig exposes them to commonMain when needed.
 FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY

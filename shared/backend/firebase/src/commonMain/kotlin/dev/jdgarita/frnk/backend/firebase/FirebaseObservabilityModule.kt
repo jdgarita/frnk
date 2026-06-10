@@ -8,8 +8,8 @@ import org.koin.dsl.module
  * Firebase analytics + crash reporting, decoupled from the auth/data backend (BACKLOG P1-5).
  *
  * `:shared`'s `frnkModules(observability = ObservabilityChoice.Firebase)` installs this. Because
- * it is independent of `BackendChoice`, a local-storage-only app (no backend) — or a Supabase-backed
- * app — can still ship Firebase Analytics + Crashlytics by selecting `ObservabilityChoice.Firebase`.
+ * it is independent of `BackendChoice`, a local-storage-only app (no backend) can still ship
+ * Firebase Analytics + Crashlytics by selecting `ObservabilityChoice.Firebase`.
  */
 val firebaseObservabilityModule =
     module {

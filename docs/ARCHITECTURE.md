@@ -10,8 +10,7 @@
         ▼                 ▼                ▼                 ▼
  shared-ui-api    shared-database-api :shared:backend:api  (interfaces only)
         ▲                 ▲                ▲
-        │                 │                ├─── :shared:backend:firebase
-        │                 │                └─── :shared:backend:supabase
+        │                 │                └─── :shared:backend:firebase
         │                 │
  shared-ui-atoms  shared-database-impl
  (MVI engine,
@@ -82,7 +81,7 @@ The diagram above names Gradle projects, not folders. Most shared modules live i
 Each domain that pulls in a third-party SDK is split:
 
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
-- **`*-impl`** (e.g. `:shared:backend:firebase`, `:shared:backend:supabase`, `shared-database-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
+- **`*-impl`** (e.g. `:shared:backend:firebase`, `shared-database-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -91,29 +90,29 @@ Benefits:
 
 ### Why a `:shared` aggregator
 
-Before, `androidApp` and `iosApp` each listed six `api(projects.shared-*-api)` entries by hand, and host apps wired the impl modules themselves. Now `:shared` does that aggregation in one place and bundles **both** backend impls (firebase + supabase) plus the database and monetization impls. Hosts pick which backend at runtime via `BackendChoice` — the unchosen backend's Koin module is simply not registered.
+Before, `androidApp` and `iosApp` each listed six `api(projects.shared-*-api)` entries by hand, and host apps wired the impl modules themselves. Now `:shared` does that aggregation in one place and bundles the backend impl (firebase) plus the database and monetization impls. Hosts pick the backend at runtime via `BackendChoice` (Firebase is the only remaining value — Supabase and `AuthService` were dropped in the Stage 2 restructure) — a backend's Koin module is only installed when chosen.
 
 ## `:shared` public surface
 
 ```kotlin
 // dev.jdgarita.frnk.shared
-enum class BackendChoice { Supabase, Firebase }          // auth + remote data
+enum class BackendChoice { Firebase }                    // remote data
 enum class ObservabilityChoice { None, Firebase }        // analytics + crash — independent axis
 
 fun frnkModules(
-    backend: BackendChoice = BackendChoice.Supabase,
+    backend: BackendChoice = BackendChoice.Firebase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
 ): List<Module>
 
 fun initializeFrnk(
-    backend: BackendChoice = BackendChoice.Supabase,
+    backend: BackendChoice = BackendChoice.Firebase,
     observability: ObservabilityChoice = ObservabilityChoice.None,
     extraConfig: KoinApplication.() -> Unit = {},
 ): KoinApplication
 ```
 
 Analytics + crash reporting are a **separate axis from `BackendChoice`** (BACKLOG P1-5): a
-local-storage-only app with no backend — or a Supabase-backed app — can still select
+local-storage-only app with no backend can still select
 `ObservabilityChoice.Firebase` to ship Firebase Analytics + Crashlytics. `None` binds the no-op
 defaults (`Noop{Analytics,Crash}` in `:shared:backend:api`, via `noopObservabilityModule`).
 On iOS, `ObservabilityChoice.Firebase` additionally installs the CrashKiOS unhandled-exception hook
@@ -126,7 +125,7 @@ Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller 
 ## Module communication flow
 
 1. A composable dispatches a `UiIntent` via `viewModel.send(intent)`.
-2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `AuthService` from `:shared:backend:api`).
+2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `RemoteData` from `:shared:backend:api`).
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed via `frnkModules(BackendChoice.…)`.
 4. The impl returns an `AppResult<Data, AppError>`.
 5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.
@@ -138,7 +137,7 @@ Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller 
 
 ## iOS native dependency contract
 
-`:shared` bundles `shared-monetization-revenuecat` (and `:shared:backend:firebase`), which cinterop with the native `PurchasesHybridCommon` (and Firebase) frameworks. The toolkit does NOT ship those native frameworks inside `FrnkKit.xcframework` — the consumer Xcode project must bring them in via CocoaPods or SPM (`pod 'PurchasesHybridCommon'`, `pod 'FirebaseAuth'`, etc.). `:iosApp` framework binaries use `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)` to start Koin. `iosDemoApp` does NOT consume `FrnkKit.xcframework` — it uses `DemoKit.xcframework` from `:shared-demo`, which excludes those native cinterops by design and so requires no pods at all. Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
+`:shared` bundles `shared-monetization-revenuecat` (and `:shared:backend:firebase`), which cinterop with the native `PurchasesHybridCommon` (and Firebase) frameworks. The toolkit does NOT ship those native frameworks inside `FrnkKit.xcframework` — the consumer Xcode project must bring them in via CocoaPods or SPM (`pod 'PurchasesHybridCommon'`, `pod 'FirebaseFirestore'`, etc.). `:iosApp` framework binaries use `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)` to start Koin. `iosDemoApp` does NOT consume `FrnkKit.xcframework` — it uses `DemoKit.xcframework` from `:shared-demo`, which excludes those native cinterops by design and so requires no pods at all. Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
 
 ## Consuming via composite build (includeBuild)
 
@@ -180,7 +179,7 @@ import dev.jdgarita.frnk.shared.BackendChoice
 import dev.jdgarita.frnk.shared.initializeFrnk
 import org.koin.android.ext.koin.androidContext
 
-initializeFrnk(backend = BackendChoice.Supabase) {
+initializeFrnk(backend = BackendChoice.Firebase) {
     androidContext(this@MyApp)
     modules(myAppModule, sqlDelightSchemaModule)
 }

@@ -43,7 +43,6 @@ include(
     ":shared:backend",
     ":shared:backend:api",
     ":shared:backend:firebase",
-    ":shared:backend:supabase",
     ":shared-monetization-api",
     ":shared-monetization-revenuecat",
     ":shared-monetization-ui",

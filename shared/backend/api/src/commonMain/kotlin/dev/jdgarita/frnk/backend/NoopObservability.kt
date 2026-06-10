@@ -6,7 +6,7 @@ package dev.jdgarita.frnk.backend
  *
  * They live here (SDK-free `*-api`) rather than in a backend impl because observability is a
  * **backend-independent axis** (BACKLOG P1-5): a local-storage-only app with no backend still
- * needs a binding for these interfaces, and a Supabase-backed app may want Firebase analytics.
+ * needs a binding for these interfaces.
  * Hosts wanting real analytics install `firebaseObservabilityModule` (or their own binding).
  */
 class NoopAnalyticsTracker : AnalyticsTracker {

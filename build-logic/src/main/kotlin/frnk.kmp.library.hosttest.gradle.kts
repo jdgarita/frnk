@@ -12,7 +12,7 @@ import org.gradle.kotlin.dsl.getByType
 //
 // Modules that DON'T fit stay on the base `frnk.kmp.library`: :shared-ui-atoms (needs the
 // `withHostTest { isIncludeAndroidResources = true }` variant + an androidHostTest source set, not
-// commonTest) and :shared:backend:supabase (no tests).
+// commonTest).
 
 plugins {
     id("frnk.kmp.library")

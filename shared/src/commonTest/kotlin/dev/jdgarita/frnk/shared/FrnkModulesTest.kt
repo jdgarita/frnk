@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.shared
 
 import dev.jdgarita.frnk.backend.firebase.firebaseBackendModule
-import dev.jdgarita.frnk.backend.supabase.supabaseBackendModule
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
@@ -23,10 +22,9 @@ import kotlin.test.assertTrue
  */
 class FrnkModulesTest {
     @Test
-    fun defaults_install_supabase_and_revenuecat_stack() {
+    fun defaults_install_firebase_and_revenuecat_stack() {
         val modules = frnkModules()
-        assertTrue(supabaseBackendModule in modules, "default backend is Supabase")
-        assertFalse(firebaseBackendModule in modules, "Firebase backend not installed by default")
+        assertTrue(firebaseBackendModule in modules, "default backend is Firebase")
         assertTrue(revenueCatModule in modules, "RevenueCat is the default monetization provider")
         assertTrue(monetizationModule in modules)
         assertTrue(paywallScaffoldModule in modules)
@@ -48,13 +46,6 @@ class FrnkModulesTest {
             assertTrue(onboardingScaffoldModule in modules, "onboarding scaffold VM is always installed")
             assertTrue(bottomNavScaffoldModule in modules, "bottom-nav scaffold VM is always installed")
         }
-    }
-
-    @Test
-    fun firebase_backend_swaps_out_supabase() {
-        val modules = frnkModules(backend = BackendChoice.Firebase)
-        assertTrue(firebaseBackendModule in modules)
-        assertFalse(supabaseBackendModule in modules, "unchosen backend never installed")
     }
 
     @Test
