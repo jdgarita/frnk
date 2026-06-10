@@ -67,7 +67,18 @@ and name = the Gradle project name.
 Gradle project names must be unique across the build, and the **artifact name = project name**
 drives composite-build substitution. We keep **flat, hyphenated project names** with nested
 physical directories, reconciled by `projectDir` remaps in `settings.gradle.kts` — the exact
-pattern the repo already uses for `shared/<name>` today (settings.gradle.kts lines 55–74).
+pattern the repo already uses for `shared/<name>` today.
+
+> ⚠️ **Naming-scheme tension (OQ-6).** PR #47 (landed after this plan was drafted) moved the
+> backend modules to **nested Gradle paths** (`:shared:backend:api|firebase|supabase`, dirs
+> `shared/backend/<name>/`, new `frnk.backend.*` convention plugins) and the settings comment
+> signals intent to migrate other domains to nested groups. Caveat before extending that pattern:
+> composite-build substitution matches `group:name` where *name is the leaf project name* — so
+> `:shared:backend:api` advertises `dev.jdgarita.frnk:api`. Generic leaves (`api`, `impl`) collide
+> in coordinate space as soon as a second nested domain uses them, and any module a host consumes
+> needs a unique, descriptive artifact name. Either keep host-consumable modules on flat
+> descriptive names (this plan's default), or extend `frnk.kmp.base` to derive the artifactId from
+> the full project path before nesting further. Resolve OQ-6 before Stage 4.
 
 | New project (= artifact `dev.jdgarita.frnk:<name>`) | Directory | Origin |
 |---|---|---|
@@ -83,8 +94,8 @@ pattern the repo already uses for `shared/<name>` today (settings.gradle.kts lin
 | `:ui-components` | `frnk/ui/components` | `shared-ui-atoms` → `ui/atoms/*`, `ui/molecules/*`, `ui/organisms/*`, `ui/placeholder/*` |
 | `:ui-scaffolds` | `frnk/ui/scaffolds` | `shared-ui-atoms` → `ui/scaffolds/*` + Compose `ui/mvi/*` (FrnkMviScreen, EffectCollector) + Compose `ui/nav/*` (FrnkNavDisplay, FrnkNavTab, FrnkTabbedBackStacks/-Handler, animations) |
 | `:ui-bottom-nav` | `frnk/ui/bottom-nav` | `shared-ui-nav` (Calf/Material3 quarantine — unchanged rule: Material3 nowhere else) |
-| `:analytics-api` | `frnk/capabilities/analytics-api` | `shared-backend-api` (post Auth drop: Analytics.kt, NoopObservability.kt, RemoteData.kt pending OQ-1) |
-| `:analytics-impl` | `frnk/capabilities/analytics-impl` | `shared-backend-firebase` (FirebaseAnalyticsTracker, FirebaseCrashReporter, CrashKiOS iosMain) |
+| `:analytics-api` | `frnk/capabilities/analytics-api` | `:shared:backend:api` (post Auth drop: Analytics.kt, NoopObservability.kt, RemoteData.kt pending OQ-1) |
+| `:analytics-impl` | `frnk/capabilities/analytics-impl` | `:shared:backend:firebase` (FirebaseAnalyticsTracker, FirebaseCrashReporter, CrashKiOS iosMain) |
 | `:monetization-api` | `frnk/capabilities/monetization-api` | `shared-monetization-api` (minus `di/`) |
 | `:monetization-impl` | `frnk/capabilities/monetization-impl` | `shared-monetization-revenuecat` |
 | `:monetization-ui` | `frnk/capabilities/monetization-ui` | `shared-monetization-ui` |
@@ -170,12 +181,20 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 
 ## 6. Stages
 
-### ☐ Stage 1 — Delete the aggregators (`:shared`, `:androidApp`, `:iosApp`)  — risk: low-med
+### ☐ Stage 1 — Delete the aggregators (`:shared`, `:androidApp`, `:iosApp`)  — risk: **medium** (was low-med; raised by PR #46)
 
-- Pre-flight: repo-wide grep for `frnkModules|initializeFrnk|FrnkKit|projects.shared\b|projects.androidApp` to find hidden consumers.
-- Delete `shared/src/` + `shared/build.gradle.kts` (the `shared/` directory keeps housing the other
-  modules until Stage 3), `androidApp/`, `iosApp/`; remove the three from `settings.gradle.kts`.
-  This deletes `FrnkModules.kt`, `FrnkInitializer`, `BackendChoice`/`ObservabilityChoice`/`MonetizationChoice`.
+- ⚠️ **Amended by PR #46**: `:shared` is no longer wiring-only — it now owns **`FrnkAppScaffold`**
+  (the batteries-included app root over `shared-ui-nav`'s `FrnkAppShell`, importing monetization-ui
+  + bottomnav + atoms + backend) and the substantive one-call bootstrap
+  (`initializeFrnk(context, …)` androidMain overload, `frnkModules()` installing scaffold VM
+  modules). These are consumer-facing features and **must be relocated, not deleted**. Resolve
+  OQ-7 (new home for `FrnkAppScaffold` + the bootstrap) before starting this stage.
+- Pre-flight: repo-wide grep for `frnkModules|initializeFrnk|FrnkAppScaffold|FrnkKit|projects.shared\b|projects.androidApp` to find hidden consumers (`:shared-demo` uses `FrnkAppScaffold` as of #46).
+- Relocate `FrnkAppScaffold` + bootstrap per OQ-7, then delete `shared/src/` +
+  `shared/build.gradle.kts` (the `shared/` directory keeps housing the other modules until
+  Stage 3), `androidApp/`, `iosApp/`; remove the three from `settings.gradle.kts`. This deletes
+  `BackendChoice`/`ObservabilityChoice`/`MonetizationChoice` (the choice enums die with
+  `frnkModules` only if OQ-7 decides the bootstrap doesn't survive — otherwise they move with it).
 - `androidDemoApp/build.gradle.kts`: replace `implementation(projects.androidApp)` with the
   individual modules it actually uses (it imports `firebaseObservabilityModule`, `revenueCatModule`,
   `FrnkTheme`; most arrive transitively via `:shared-demo` — add explicit deps as the compiler demands).
@@ -186,8 +205,9 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 
 ### ☐ Stage 2 — Drop Auth + Supabase  — risk: low
 
-- Delete `shared-backend-supabase` entirely; delete `Auth.kt` + auth fakes from
-  `shared-backend-api`; delete `FirebaseAuthService.kt` from `shared-backend-firebase`.
+- Delete `:shared:backend:supabase` (dir `shared/backend/supabase/`) entirely + its
+  `frnk.backend.supabase` convention plugin; delete `Auth.kt` + auth fakes from
+  `:shared:backend:api`; delete `FirebaseAuthService.kt` from `:shared:backend:firebase`.
 - Pre-flight: grep `shared-demo` and demo hosts for `AuthService`/`FakeAuthService` usage.
 - Purge Supabase from `gradle/libs.versions.toml`, `local.properties.template`
   (`SUPABASE_URL`, `SUPABASE_ANON_KEY`), and CI's `local.properties` seeding block in
@@ -229,8 +249,10 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 
 ### ☐ Stage 5 — backend → analytics capability  — risk: low
 
-- Rename `:shared-backend-api` → `:analytics-api`, `:shared-backend-firebase` → `:analytics-impl`
-  (CrashKiOS iosMain cinterop rides along). Update `monetization-api`'s project dep.
+- Move/rename `:shared:backend:api` → `:analytics-api`, `:shared:backend:firebase` →
+  `:analytics-impl` (CrashKiOS iosMain cinterop rides along); drop the now-empty `:shared:backend`
+  parent. Fold/rename the `frnk.backend.*` convention plugins accordingly (subject to OQ-6's
+  flat-vs-nested resolution). Update `monetization-api`'s project dep.
 - Koin module names (`firebaseObservabilityModule`, `noopObservabilityModule`) unchanged.
 - still impact: none (still never declared these coordinates).
 
@@ -353,3 +375,5 @@ isolated and small.
 | OQ-3 | Per-module iOS framework binaries (from `frnk.kmp.library`): keep, or drop for build-time savings now that FrnkKit is gone and DemoKit links via Gradle? | Stage 1+ |
 | OQ-4 | Confirm nothing (Xcode scripts, still's iOS build) references per-module framework baseNames (`shared_ui_atoms` etc.) before renames land. | Stage 9 |
 | OQ-5 | What real content seeds `:core-di` — extract host-facing Koin assembly helpers, or start docs-only? | Stage 8 |
+| OQ-6 | Flat descriptive project names (this plan's default) vs the nested module groups PR #47 introduced for backend (`:shared:backend:api`). Nested leaves like `api`/`impl` collide in substitution coordinate space (`dev.jdgarita.frnk:api`); pick one scheme — or teach `frnk.kmp.base` to derive artifactId from the project path — before creating new modules. | Stages 4+ (every stage that creates/renames modules) |
+| OQ-7 | New home for `FrnkAppScaffold` + the one-call bootstrap (PR #46, currently in `:shared`). The original sketch puts AppScaffold in `ui/scaffolds`, but it imports monetization-ui + bottomnav, so it sits **above** both — candidates: a new top-of-stack `ui-app` module, or fold into `ui-bottom-nav` (already hosts `FrnkAppShell`). Also decide whether `initializeFrnk`/`frnkModules` (and the choice enums) survive the aggregator deletion as a feature of that module, given the host-side-explicit-Koin direction (D6). | Stage 1 |
