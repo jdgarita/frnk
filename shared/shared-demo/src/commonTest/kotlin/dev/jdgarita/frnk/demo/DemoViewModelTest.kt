@@ -23,7 +23,7 @@ import kotlin.test.assertTrue
 /**
  * Reducer-level coverage for the analytics/crash wiring added in BACKLOG P1-5: the new intents must
  * route through the injected [AnalyticsTracker] / [CrashReporter], and `AppOpened` must fire on init.
- * Uses local recording fakes (the `shared-backend-api` fakes live in that module's `commonTest`, which
+ * Uses local recording fakes (the `:shared:backend:api` fakes live in that module's `commonTest`, which
  * isn't visible here). Follows the `MviViewModelTest` template: `Dispatchers.setMain` drives the
  * `viewModelScope` intent collector.
  */

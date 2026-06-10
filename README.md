@@ -15,20 +15,20 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-A single `:shared` module is the consumer-facing surface. Internally it aggregates a flat **api / impl** module split: `*-api` modules hold only interfaces and DTOs; `*-impl` modules hold the concrete bindings (Ktor, SQLDelight, Firebase, Supabase, RevenueCat) wired via Koin. `:shared` bundles every api **and** every impl, so host apps depend on one module and pick what to install at runtime: the auth/remote backend via `BackendChoice`, and analytics + crash reporting via `ObservabilityChoice` (a **separate axis** — a local-only app with no backend can still ship Firebase telemetry).
+A single `:shared` module is the consumer-facing surface. Internally it aggregates an **api / impl** module split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Ktor, SQLDelight, Firebase, Supabase, RevenueCat) wired via Koin. Backend modules are grouped under `:shared:backend:*`; other domains currently keep flat Gradle paths. `:shared` bundles every api **and** every impl, so host apps depend on one module and pick what to install at runtime: the auth/remote backend via `BackendChoice`, and analytics + crash reporting via `ObservabilityChoice` (a **separate axis** — a local-only app with no backend can still ship Firebase telemetry).
 
 ### Module map
 
 | Module | Purpose |
 | --- | --- |
-| `shared` | Consumer-facing aggregator. Re-exports every `shared-*` module via `api(...)`, exposes `frnkModules(BackendChoice, ObservabilityChoice)` and `initializeFrnk()` for one-shot Koin bootstrap. |
+| `shared` | Consumer-facing aggregator. Re-exports every shared API/impl module via `api(...)`, exposes `frnkModules(BackendChoice, ObservabilityChoice)` and `initializeFrnk()` for one-shot Koin bootstrap. |
 | `shared-utils` | Root utilities — coroutines, datetime, `Logger`, `PlatformInfo` (the module's only `expect/actual`: OS + device), `FeedbackEmail` (`mailto:` draft builder), and `Frnk.VERSION`. Every other shared module depends on this. |
 | `shared-ui-api` | The **MVI engine**, no Compose deps: `MviContract` (`UiState` / `UiIntent` / `UiEffect`), `MviViewModel<S, I, E>` (StateFlow + intent flow + effect channel; `setState`/`onIntent`/`emit`), plus `ToolkitRoute` and `UiText`. Feature ViewModels subclass `MviViewModel` here without pulling in Compose. |
 | `shared-ui-atoms` | The **design system** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes` / `FrnkIconSize`), the `FrnkTheme` engine, `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`), molecules (compositions of atoms — `FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (self-contained sections composed from molecules/atoms — `FrnkListSection`, `FrnkProfileHeader`), and page scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `FrnkScreenScaffold`). Atoms ship a built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`), automatic **press ripple** (`FrnkTheme` installs `rememberFrnkRipple()` as `LocalIndication`), and automatic **haptics** (`FrnkTheme` installs `LocalFrnkHaptics`; atoms vibrate on press, gated by the Settings "Haptic feedback" toggle — `LocalFrnkHaptics.current.perform(HapticType.Success)` for host code). |
 | `shared-ui-nav` | **Platform-adaptive bottom navigation** — `FrnkAdaptiveBottomNavBar` rendering a native UIKit `UITabBar` on iOS and a Material3 `NavigationBar` on Android (via [Calf](https://github.com/MohamedRejeb/Calf), themed from `FrnkTheme` tokens), plus two scaffolds: `FrnkTabbedNavScaffold` (the nav3 multiple-back-stack tabbed scaffold — one call wires the display + bar + tab switching + back convention + bar inset) and `FrnkAdaptiveBottomNavScaffold` (the simpler index-based variant for single-screen tabs). **The toolkit's sole Material3 dependency**, deliberately isolated here so `shared-ui-atoms` stays `compose-unstyled`-only. |
-| `shared-backend-api` | Auth / Analytics / CrashReporter / RemoteData interfaces + the no-op observability defaults (`Noop{Analytics,Crash}`). Owns `AppResult<D, E : AppError>`. |
-| `shared-backend-firebase` | Firebase impl of `shared-backend-api`. Exposes `firebaseBackendModule` (auth + remote data) and `firebaseObservabilityModule` (analytics + crash). |
-| `shared-backend-supabase` | Supabase + Ktor impl of `shared-backend-api`. Exposes `supabaseBackendModule`. |
+| `:shared:backend:api` | Auth / Analytics / CrashReporter / RemoteData interfaces + the no-op observability defaults (`Noop{Analytics,Crash}`). Owns `AppResult<D, E : AppError>`. |
+| `:shared:backend:firebase` | Firebase impl of `:shared:backend:api`. Exposes `firebaseBackendModule` (auth + remote data) and `firebaseObservabilityModule` (analytics + crash). |
+| `:shared:backend:supabase` | Supabase + Ktor impl of `:shared:backend:api`. Exposes `supabaseBackendModule`. |
 | `shared-database-api` | Persistence contracts (`SqlDriverFactory`, `KeyValueStore` + typed `Preference` accessors, `NoteStore`). |
 | `shared-database-impl` | SQLDelight (`FrnkDB`) + Multiplatform Settings impl — `SqlDelightNoteStore`, `SettingsKeyValueStore`. Exposes `databaseModule`. |
 | `shared-monetization-api` | Entitlement / feature-gate interfaces. |
@@ -82,7 +82,7 @@ include(":app")
 **3. Declare the dependency in the consumer's app module:**
 ```kotlin
 dependencies {
-    // One dep — re-exports every shared-* api + impl transitively
+    // One dep — re-exports every shared api + impl transitively
     implementation("dev.jdgarita.frnk:androidApp")
 }
 ```

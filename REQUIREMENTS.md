@@ -58,7 +58,7 @@ descriptions.
     SQLDelight / RevenueCat dependency may ever appear here.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
-  - `shared-backend-api` ↔ `shared-backend-firebase`, `shared-backend-supabase`
+  - `:shared:backend:api` ↔ `:shared:backend:firebase`, `:shared:backend:supabase`
   - `shared-database-api` ↔ `shared-database-impl`
   - `shared-monetization-api` ↔ `shared-monetization-revenuecat`
 - **Rule:** Domain code depends only on `*-api`. Nothing imports an `*-impl`
@@ -163,7 +163,7 @@ targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`
 
 ### 3.5 Remote data sources
 
-- Pluggable backend behind `shared-backend-api`: `AuthService`, `RemoteData`,
+- Pluggable backend behind `:shared:backend:api`: `AuthService`, `RemoteData`,
   `AnalyticsTracker`, `CrashReporter`.
 - Two interchangeable implementations satisfying the same contract:
   - **Firebase** (`dev.gitlive:firebase-*`) — auth, firestore, analytics,
@@ -234,7 +234,7 @@ review regardless of other merits.
   `commonTest` + `androidHostTest`. KMP-Android modules run host unit tests under
   **`testAndroidHostTest`** (not `testDebugUnitTest`) and must opt in with
   `kotlin { android { withHostTest {} } }`. The shared `FakeAuthService` test double
-  in `shared-backend-api`'s `commonTest` is the canonical fake pattern for `*-api`
+  in `:shared:backend:api`'s `commonTest` is the canonical fake pattern for `*-api`
   interfaces.
 - **Bootstrap:** `cp local.properties.template local.properties` and fill
   Supabase/Firebase keys + `BUILD_VARIANT`; `BuildKonfig` fails configuration

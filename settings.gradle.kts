@@ -40,9 +40,10 @@ include(
     ":shared-ui-nav",
     ":shared-database-api",
     ":shared-database-impl",
-    ":shared-backend-api",
-    ":shared-backend-firebase",
-    ":shared-backend-supabase",
+    ":shared:backend",
+    ":shared:backend:api",
+    ":shared:backend:firebase",
+    ":shared:backend:supabase",
     ":shared-monetization-api",
     ":shared-monetization-revenuecat",
     ":shared-monetization-ui",
@@ -53,8 +54,8 @@ include(
 )
 
 // The shared-* modules physically live under shared/ (the :shared aggregator's
-// directory) for project-tree tidiness, while keeping flat Gradle paths so that
-// type-safe project accessors (projects.sharedUtils, …) stay unchanged.
+// directory) for project-tree tidiness, while keeping flat Gradle paths for the
+// top-level domains that have not yet moved to nested module groups.
 listOf(
     "shared-utils",
     "shared-ui-api",
@@ -62,9 +63,6 @@ listOf(
     "shared-ui-nav",
     "shared-database-api",
     "shared-database-impl",
-    "shared-backend-api",
-    "shared-backend-firebase",
-    "shared-backend-supabase",
     "shared-monetization-api",
     "shared-monetization-revenuecat",
     "shared-monetization-ui",

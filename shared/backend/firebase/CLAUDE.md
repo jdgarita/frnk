@@ -1,6 +1,6 @@
-# shared-backend-firebase
+# :shared:backend:firebase
 
-Firebase implementation of `:shared-backend-api`. Bundled inside `:shared` and selected at runtime via `BackendChoice.Firebase`.
+Firebase implementation of `:shared:backend:api`. Bundled inside `:shared` and selected at runtime via `BackendChoice.Firebase`.
 
 ## Contents
 
@@ -16,7 +16,7 @@ Firebase implementation of `:shared-backend-api`. Bundled inside `:shared` and s
 
 - This module is reachable from `:shared` **only** through Koin. Nothing else in the project should `import dev.jdgarita.frnk.backend.firebase.*` — that would defeat backend swap-ability.
 - The Koin module name is `firebaseBackendModule` (lower-camel `val`). The Supabase mirror is `supabaseBackendModule`. Keep both names symmetric; `:shared/FrnkModules.kt` `when`-switches on them.
-- Every binding here must satisfy an interface declared in `:shared-backend-api`. Return `AppResult` from every method — wrap Firebase exceptions in `AppResult.Failure(...)` rather than letting them propagate.
+- Every binding here must satisfy an interface declared in `:shared:backend:api`. Return `AppResult` from every method — wrap Firebase exceptions in `AppResult.Failure(...)` rather than letting them propagate.
 - Plugin: `kotlin.serialization` is applied (Firestore DTOs use `@Serializable`). Keep DTOs internal to this module — they should not leak into `*-api`.
 
 ## iOS note
@@ -30,7 +30,7 @@ The hook converts an uncaught Kotlin crash into a Crashlytics report, but Crashl
 
 ## Dependencies
 
-- `api(projects.sharedBackendApi)` — only api surface re-exported.
+- `api(projects.shared.backend.api)` — only api surface re-exported.
 - `implementation`: `koin.core`, `firebase.{auth,firestore,analytics,crashlytics}`. No Ktor, no Supabase, no UI.
 - `iosMain` only: `crashkios.crashlytics` (must stay out of `commonMain` — it has no JVM variant and would break `compileAndroidMain`).
-- `commonTest`: `kotlin.test` + `kotlinx.coroutines.test` (host tests opted in via `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared-backend-firebase:testAndroidHostTest`).
+- `commonTest`: `kotlin.test` + `kotlinx.coroutines.test` (host tests opted in via `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared:backend:firebase:testAndroidHostTest`).

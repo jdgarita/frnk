@@ -1,6 +1,6 @@
 # shared
 
-**The only consumer-facing module of the toolkit.** Aggregates every `shared-*-api` + every `shared-*-impl` via `api(...)` so downstream apps depend on `:shared` (or its re-exporters `:androidApp` / `:iosApp`) and nothing else.
+**The only consumer-facing module of the toolkit.** Aggregates every shared API module plus every impl module via `api(...)` so downstream apps depend on `:shared` (or its re-exporters `:androidApp` / `:iosApp`) and nothing else.
 
 ## Public surface
 
@@ -10,8 +10,8 @@
 - `ObservabilityChoice` (enum) — `None` (default, no-op) or `Firebase`. Selects analytics + crash
   reporting **independently of `BackendChoice`** (BACKLOG P1-5): a local-only app (no backend) or a
   Supabase-backed app can still pick `ObservabilityChoice.Firebase`. `noopObservabilityModule` (here)
-  is the `None` default over `shared-backend-api`'s `Noop{Analytics,Crash}`; `firebaseObservabilityModule`
-  (in `shared-backend-firebase`) is the Firebase one.
+  is the `None` default over `:shared:backend:api`'s `Noop{Analytics,Crash}`; `firebaseObservabilityModule`
+  (in `:shared:backend:firebase`) is the Firebase one.
 - `MonetizationChoice` (enum) — `RevenueCat` (default) or `None`. A third axis, independent of backend
   and observability: `RevenueCat` installs `revenueCatModule` + `monetizationModule` +
   `paywallScaffoldModule`; `None` installs **no** monetization bindings (for apps that don't monetize or
