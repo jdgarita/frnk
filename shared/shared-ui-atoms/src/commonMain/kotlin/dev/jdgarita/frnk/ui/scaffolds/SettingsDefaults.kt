@@ -46,6 +46,24 @@ import dev.jdgarita.frnk.ui.theme.stringUpgradeToPro
 import dev.jdgarita.frnk.ui.theme.strings
 
 /**
+ * Where [rememberDefaultSettingsState]'s `extraSections` slot into the default catalogue order
+ * (Appearance → Preferences → Subscription → Support → Legal).
+ */
+enum class SettingsExtraSectionsPlacement {
+    /** Directly after the Appearance section (above Preferences). */
+    AfterAppearance,
+
+    /** Between Preferences and the Subscription section. */
+    BeforeSubscription,
+
+    /** Between Support and the Legal section — app-specific rows above the legal boilerplate. */
+    BeforeLegal,
+
+    /** After every default section (below Legal, above the footer). */
+    End,
+}
+
+/**
  * Builds a batteries-included [SettingsScreenState] from the toolkit's default catalogue: a theme
  * toggle, an optional notifications switch, a subscription section driven by [isPro] (see below), a
  * support section (Send Feedback, Rate, Show Onboarding), a legal section (Privacy, Terms), and the
@@ -68,6 +86,12 @@ import dev.jdgarita.frnk.ui.theme.strings
  * @param showHaptics when false, the haptic-feedback toggle is omitted entirely. When shown, its
  *   initial checked state is read from the ambient [LocalFrnkHaptics] so the row reflects (and the
  *   handler can drive) the real toggle — no host wiring required.
+ * @param extraSections host-specific sections injected into the default catalogue at
+ *   [extraSectionsPlacement] — the middle ground between the stock catalogue and hand-building the
+ *   whole [SettingsScreenState]. Custom rows flow through the existing contract:
+ *   `SettingsAction.Custom(id)` on a clickable row surfaces as `SettingsEffect.ActionInvoked`.
+ * @param extraSectionsPlacement where [extraSections] slot into the default order; defaults to
+ *   [SettingsExtraSectionsPlacement.BeforeLegal] (app-specific rows above the legal boilerplate).
  */
 @Composable
 fun rememberDefaultSettingsState(
@@ -78,6 +102,8 @@ fun rememberDefaultSettingsState(
     showNotifications: Boolean = true,
     showHaptics: Boolean = true,
     title: String = Theme[strings][stringSettings],
+    extraSections: List<SettingsSectionState> = emptyList(),
+    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal,
 ): SettingsScreenState {
     // Resolve every token up front so `remember` can key on the resolved values: if a host swaps a
     // string/icon override, the catalogue rebuilds.
@@ -128,6 +154,8 @@ fun rememberDefaultSettingsState(
         showHaptics,
         hapticsEnabled,
         title,
+        extraSections,
+        extraSectionsPlacement,
         labelAppearance,
         labelSystem,
         labelLight,
@@ -165,6 +193,9 @@ fun rememberDefaultSettingsState(
 
         val sections =
             buildList {
+                fun addExtrasAt(placement: SettingsExtraSectionsPlacement) {
+                    if (extraSectionsPlacement == placement) addAll(extraSections)
+                }
                 add(
                     SettingsSectionState(
                         rows =
@@ -177,6 +208,7 @@ fun rememberDefaultSettingsState(
                             ),
                     ),
                 )
+                addExtrasAt(SettingsExtraSectionsPlacement.AfterAppearance)
                 if (showNotifications || showHaptics) {
                     add(
                         SettingsSectionState(
@@ -208,6 +240,7 @@ fun rememberDefaultSettingsState(
                         ),
                     )
                 }
+                addExtrasAt(SettingsExtraSectionsPlacement.BeforeSubscription)
                 add(
                     SettingsSectionState(
                         title = headerSubscription,
@@ -275,6 +308,7 @@ fun rememberDefaultSettingsState(
                             ),
                     ),
                 )
+                addExtrasAt(SettingsExtraSectionsPlacement.BeforeLegal)
                 add(
                     SettingsSectionState(
                         title = headerLegal,
@@ -295,6 +329,7 @@ fun rememberDefaultSettingsState(
                             ),
                     ),
                 )
+                addExtrasAt(SettingsExtraSectionsPlacement.End)
             }
 
         SettingsScreenState(

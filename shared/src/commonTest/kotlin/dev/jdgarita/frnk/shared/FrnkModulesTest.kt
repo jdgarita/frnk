@@ -6,6 +6,7 @@ import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
 import org.koin.core.module.Module
@@ -42,6 +43,7 @@ class FrnkModulesTest {
                 }
             }
         combinations.forEach { modules ->
+            assertTrue(homeScaffoldModule in modules, "home scaffold VM is always installed")
             assertTrue(settingsScaffoldModule in modules, "settings scaffold VM is always installed")
             assertTrue(onboardingScaffoldModule in modules, "onboarding scaffold VM is always installed")
             assertTrue(bottomNavScaffoldModule in modules, "bottom-nav scaffold VM is always installed")
