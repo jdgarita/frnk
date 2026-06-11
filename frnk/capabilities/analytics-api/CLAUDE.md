@@ -1,6 +1,6 @@
-# :shared:backend:api
+# :analytics-api
 
-Pure-interface backend contract. **No Ktor, no Firebase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:shared:backend:firebase`.
+Pure-interface backend contract. **No Ktor, no Firebase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:analytics-impl`.
 
 ## Contents
 
@@ -21,14 +21,14 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Serialization plugin
 - DTOs that need `@Serializable` go in the impl module, not here. This module keeps `kotlin.serialization` off its classpath on purpose.
 - Adding a new backend capability:
   1. Define the interface + domain models here.
-  2. Implement it in `:shared:backend:firebase`.
+  2. Implement it in `:analytics-impl`.
   3. Register in `FirebaseBackendModule.kt`.
 
 ## Dependencies
 
 - `api(projects.sharedUtils)`, `api(libs.kotlinx.coroutines.core)`, `api(libs.koin.core)` (for `noopObservabilityModule`). That's it.
 - `commonTest`: `kotlin-test` + `kotlinx-coroutines-test` (host tests opted in via
-  `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared:backend:api:testAndroidHostTest`).
+  `kotlin { android { withHostTest {} } }`; run with `./gradlew :analytics-api:testAndroidHostTest`).
 
 ## Testing & the fake pattern
 

@@ -9,13 +9,13 @@ The apex of the ui column (`dev.jdgarita.frnk.ui.app`) — the batteries-include
 
 ## Rules
 
-- **No `*-impl` compile deps — ever.** `EntitlementManager`/`AnalyticsTracker` resolve from Koin at runtime; the compile surface is `:shared-ui-nav` + `:shared-monetization-ui` + `:shared:backend:api` + `:core-di`.
+- **No `*-impl` compile deps — ever.** `EntitlementManager`/`AnalyticsTracker` resolve from Koin at runtime; the compile surface is `:shared-ui-nav` + `:shared-monetization-ui` + `:analytics-api` + `:core-di`.
 - Monetization is optional: resolve it leniently (`koin.getOrNull`), degrade UI when absent. Don't add a hard `get<EntitlementManager>()`.
 - Material3 arrives transitively via `:shared-ui-nav` (the accepted batteries-included trade). Hosts that refuse Material3 hand-wire `FrnkAppShell`'s lower-level pieces instead and skip this module.
 
 ## Dependencies
 
-- `commonMain`: `api(projects.sharedUiNav)`, `api(projects.sharedMonetizationUi)`, `api(projects.shared.backend.api)`, `api(projects.coreDi)`. Compose/lifecycle/nav3/koin-compose arrive via `shared-ui-nav → shared-ui-atoms` `api()` exports.
+- `commonMain`: `api(projects.sharedUiNav)`, `api(projects.sharedMonetizationUi)`, `api(projects.analyticsApi)`, `api(projects.coreDi)`. Compose/lifecycle/nav3/koin-compose arrive via `shared-ui-nav → shared-ui-atoms` `api()` exports.
 - `commonTest`: list-inspection test for `frnkUiModules()` (`FrnkUiModulesTest`); run with `./gradlew :ui-app:testAndroidHostTest`.
 
 ## Demo

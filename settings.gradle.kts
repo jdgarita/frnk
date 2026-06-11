@@ -42,9 +42,8 @@ include(
     ":data-db-impl",
     ":data-prefs-api",
     ":data-prefs-impl",
-    ":shared:backend",
-    ":shared:backend:api",
-    ":shared:backend:firebase",
+    ":analytics-api",
+    ":analytics-impl",
     ":shared-monetization-api",
     ":shared-monetization-revenuecat",
     ":shared-monetization-ui",
@@ -55,10 +54,11 @@ include(
 
 // Restructure Stage 3: modules physically live at their final layered locations under frnk/
 // (core/data/ui/capabilities) + demo/, while every Gradle project NAME stays unchanged until the
-// rename stages (5, 9, 10) — except the data modules, already at their final names since the
-// Stage 4 split (db vs prefs). Composite-build substitution matches group:name, so paths are
-// free to move. Modules that later split (shared-ui-api, shared-ui-atoms) are parked at the
-// directory of their main successor per docs/RESTRUCTURE_PLAN.md §3.
+// rename stages (9, 10) — except the data modules (final names since the Stage 4 split) and the
+// analytics pair (re-flattened from :shared:backend:* at Stage 5, per OQ-6). Composite-build
+// substitution matches group:name, so paths are free to move. Modules that later split
+// (shared-ui-api, shared-ui-atoms) are parked at the directory of their main successor per
+// docs/RESTRUCTURE_PLAN.md §3.
 mapOf(
     "core-di" to "frnk/core/di",
     "shared-utils" to "frnk/core/util",
@@ -70,6 +70,8 @@ mapOf(
     "shared-ui-atoms" to "frnk/ui/components",
     "shared-ui-nav" to "frnk/ui/bottom-nav",
     "ui-app" to "frnk/ui/app",
+    "analytics-api" to "frnk/capabilities/analytics-api",
+    "analytics-impl" to "frnk/capabilities/analytics-impl",
     "shared-monetization-api" to "frnk/capabilities/monetization-api",
     "shared-monetization-revenuecat" to "frnk/capabilities/monetization-impl",
     "shared-monetization-ui" to "frnk/capabilities/monetization-ui",
@@ -78,12 +80,3 @@ mapOf(
 ).forEach { (name, dir) ->
     project(":$name").projectDir = file(dir)
 }
-
-// :shared and :shared:backend are build-file-less hull projects that survive only as the Gradle
-// path parents of :shared:backend:{api,firebase} until Stage 5 re-flattens those to
-// :analytics-api/:analytics-impl. Their default projectDirs (shared/, shared/backend/) no longer
-// exist, so park them on existing, build-file-free directories to keep Gradle happy.
-project(":shared").projectDir = file("frnk")
-project(":shared:backend").projectDir = file("frnk/capabilities")
-project(":shared:backend:api").projectDir = file("frnk/capabilities/analytics-api")
-project(":shared:backend:firebase").projectDir = file("frnk/capabilities/analytics-impl")

@@ -8,9 +8,9 @@
                            └──────┬───────┘
         ┌─────────────────┬───────┴────────┬─────────────────┐
         ▼                 ▼                ▼                 ▼
- shared-ui-api      data-db-api      :shared:backend:api  (interfaces only)
+ shared-ui-api      data-db-api      analytics-api  (interfaces only)
         ▲           data-prefs-api         ▲
-        │                 ▲                └─── :shared:backend:firebase
+        │                 ▲                └─── analytics-impl (Firebase)
         │                 │
  shared-ui-atoms    data-db-impl
  (MVI engine,       data-prefs-impl
@@ -79,14 +79,14 @@ Consumers face the modules directly: Android hosts declare the `dev.jdgarita.frn
 
 ### On-disk layout vs Gradle paths
 
-The diagram above names Gradle projects, not folders. Since restructure Stage 3, modules live at their final layered locations — `frnk/core/*`, `frnk/data/*`, `frnk/ui/*`, `frnk/capabilities/*`, and `demo/{shared,android-app,ios-app}` — while keeping their current flat Gradle paths via `projectDir` remaps in `settings.gradle.kts` (`:shared-ui-atoms` at `frnk/ui/components`, `projects.sharedUiAtoms`; `:ui-app` at `frnk/ui/app`, `projects.uiApp`; see `docs/RESTRUCTURE_PLAN.md` §3 for the full map — project renames land at Stages 5/9/10). Backend modules are still nested Gradle paths: `frnk/capabilities/analytics-api` maps to `:shared:backend:api`, with type-safe accessors such as `projects.shared.backend.api`. (The `:shared`/`:shared:backend` Gradle paths survive only as build-file-less parents of `:shared:backend:*`, parked on harmless projectDirs until Stage 5 re-flattens them.)
+The diagram above names Gradle projects, not folders. Since restructure Stage 3, modules live at their final layered locations — `frnk/core/*`, `frnk/data/*`, `frnk/ui/*`, `frnk/capabilities/*`, and `demo/{shared,android-app,ios-app}` — while keeping their current flat Gradle paths via `projectDir` remaps in `settings.gradle.kts` (`:shared-ui-atoms` at `frnk/ui/components`, `projects.sharedUiAtoms`; `:ui-app` at `frnk/ui/app`, `projects.uiApp`; see `docs/RESTRUCTURE_PLAN.md` §3 for the full map — the remaining project renames land at Stages 9/10). The analytics pair is already at its final flat names since Stage 5 (OQ-6): `:analytics-api` / `:analytics-impl` (accessors `projects.analyticsApi` / `projects.analyticsImpl`); the old nested `:shared:backend:*` paths and their `:shared`/`:shared:backend` hull parents are gone.
 
 ### Why api/impl split
 
 Each domain that pulls in a third-party SDK is split:
 
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
-- **`*-impl`** (e.g. `:shared:backend:firebase`, `:data-db-impl`, `:data-prefs-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
+- **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -112,10 +112,10 @@ fun frnkUiModules(): List<Module>   // the SDK-free scaffold VM modules (Home/Se
 
 Analytics + crash reporting stay a **separate axis from the data backend** (BACKLOG P1-5): a
 local-storage-only app can still install `firebaseObservabilityModule` to ship Firebase
-Analytics + Crashlytics; `noopObservabilityModule` (`:shared:backend:api`) binds the no-op
+Analytics + Crashlytics; `noopObservabilityModule` (`:analytics-api`) binds the no-op
 defaults (`Noop{Analytics,Crash}`). Install exactly one of the two.
 On iOS, `firebaseObservabilityModule` additionally installs the CrashKiOS unhandled-exception hook
-(`:shared:backend:firebase`'s `enableNativeCrashHandler`, iOS-only — no-op on Android) so *uncaught*
+(`:analytics-impl`'s `enableNativeCrashHandler`, iOS-only — no-op on Android) so *uncaught*
 Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller explicitly
 `recordException`s (BACKLOG P1-5b).
 
@@ -124,7 +124,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 ## Module communication flow
 
 1. A composable dispatches a `UiIntent` via `viewModel.send(intent)`.
-2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `RemoteData` from `:shared:backend:api`).
+2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `RemoteData` from `:analytics-api`).
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed in its `initializeFrnk(modules = …)` list.
 4. The impl returns an `AppResult<Data, AppError>`.
 5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.
@@ -132,11 +132,11 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 
 ## Result wrapper
 
-`AppResult<D, E : AppError>` (in `shared-utils`, the neutral root) is sealed: `Success(data)` / `Failure(error)`. Every `*-api` interface returns `AppResult` instead of throwing, so callers handle errors exhaustively at compile time. It lives in `shared-utils` (not `:shared:backend:api`) so any domain — backend, persistence, monetization, and the demo's `NoteStore` — can return it without a sibling `*-api`→`*-api` dependency.
+`AppResult<D, E : AppError>` (in `shared-utils`, the neutral root) is sealed: `Success(data)` / `Failure(error)`. Every `*-api` interface returns `AppResult` instead of throwing, so callers handle errors exhaustively at compile time. It lives in `shared-utils` (not `:analytics-api`) so any domain — backend, persistence, monetization, and the demo's `NoteStore` — can return it without a sibling `*-api`→`*-api` dependency.
 
 ## iOS native dependency contract
 
-`shared-monetization-revenuecat` and `:shared:backend:firebase` cinterop with the native RevenueCat (purchases-ios) and Firebase SDKs. The toolkit does NOT ship those native frameworks — the consumer Xcode project brings them in via CocoaPods or SPM. An umbrella framework that bundles these modules (the demo's `DemoKit`; a host's own XCFramework) uses `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links (see `docs/HOST_INTEGRATION.md` §6). Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
+`shared-monetization-revenuecat` and `:analytics-impl` cinterop with the native RevenueCat (purchases-ios) and Firebase SDKs. The toolkit does NOT ship those native frameworks — the consumer Xcode project brings them in via CocoaPods or SPM. An umbrella framework that bundles these modules (the demo's `DemoKit`; a host's own XCFramework) uses `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links (see `docs/HOST_INTEGRATION.md` §6). Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
 
 ## Consuming via composite build (includeBuild)
 

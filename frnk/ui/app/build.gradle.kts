@@ -15,7 +15,7 @@ kotlin {
             // are resolved from Koin at runtime; hosts install the impl modules they choose.
             api(projects.sharedUiNav)
             api(projects.sharedMonetizationUi)
-            api(projects.shared.backend.api)
+            api(projects.analyticsApi)
             // The bootstrap FrnkAppScaffold's fail-fast assertion points hosts at.
             api(projects.coreDi)
         }

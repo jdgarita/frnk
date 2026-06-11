@@ -32,7 +32,7 @@ dependencies {
     implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
-    // + :shared:backend:firebase for firebaseObservabilityModule / firebaseBackendModule
+    // + :analytics-impl for firebaseObservabilityModule / firebaseBackendModule
 }
 ```
 

@@ -271,7 +271,7 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 - Host tests move with their halves (`:data-db-impl` keeps the JDBC-driver round-trip tests).
 - still impact: none (transitive substitution follows project deps).
 
-### ☐ Stage 5 — backend → analytics capability  — risk: low
+### ☑ Stage 5 — backend → analytics capability  — risk: low — **landed 2026-06-11**
 
 - Move/rename `:shared:backend:api` → `:analytics-api`, `:shared:backend:firebase` →
   `:analytics-impl` (CrashKiOS iosMain cinterop rides along); drop the now-empty `:shared:backend`

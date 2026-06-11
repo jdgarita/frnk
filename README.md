@@ -15,7 +15,7 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (SQLDelight, Firebase, RevenueCat) wired via Koin. Backend modules are grouped under `:shared:backend:*`; other domains currently keep flat Gradle paths. What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent (a local-only app with no backend can still install Firebase telemetry).
+Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (SQLDelight, Firebase, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent (a local-only app with no backend can still install Firebase telemetry).
 
 ### Module map
 
@@ -27,8 +27,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `shared-ui-api` | The **MVI engine**, no Compose deps: `MviContract` (`UiState` / `UiIntent` / `UiEffect`), `MviViewModel<S, I, E>` (StateFlow + intent flow + effect channel; `setState`/`onIntent`/`emit`), plus `ToolkitRoute` and `UiText`. Feature ViewModels subclass `MviViewModel` here without pulling in Compose. |
 | `shared-ui-atoms` | The **design system** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes` / `FrnkIconSize`), the `FrnkTheme` engine, `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`), molecules (compositions of atoms — `FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (self-contained sections composed from molecules/atoms — `FrnkListSection`, `FrnkProfileHeader`), and page scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `FrnkScreenScaffold`). Atoms ship a built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`), automatic **press ripple** (`FrnkTheme` installs `rememberFrnkRipple()` as `LocalIndication`), and automatic **haptics** (`FrnkTheme` installs `LocalFrnkHaptics`; atoms vibrate on press, gated by the Settings "Haptic feedback" toggle — `LocalFrnkHaptics.current.perform(HapticType.Success)` for host code). |
 | `shared-ui-nav` | **Platform-adaptive bottom navigation** — `FrnkAdaptiveBottomNavBar` rendering a native UIKit `UITabBar` on iOS and a Material3 `NavigationBar` on Android (via [Calf](https://github.com/MohamedRejeb/Calf), themed from `FrnkTheme` tokens), plus two scaffolds: `FrnkTabbedNavScaffold` (the nav3 multiple-back-stack tabbed scaffold — one call wires the display + bar + tab switching + back convention + bar inset) and `FrnkAdaptiveBottomNavScaffold` (the simpler index-based variant for single-screen tabs). **The toolkit's sole Material3 dependency**, deliberately isolated here so `shared-ui-atoms` stays `compose-unstyled`-only. |
-| `:shared:backend:api` | Analytics / CrashReporter / RemoteData interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
-| `:shared:backend:firebase` | Firebase impl of `:shared:backend:api`. Exposes `firebaseBackendModule` (remote data) and `firebaseObservabilityModule` (analytics + crash). |
+| `analytics-api` | Analytics / CrashReporter / RemoteData interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
+| `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseBackendModule` (remote data) and `firebaseObservabilityModule` (analytics + crash). |
 | `data-db-api` | The SQL persistence SPI: `SqlDriverFactory` (the toolkit owns no schema — hosts bring their own SQLDelight database; the demo's `DemoDB` is the worked example). |
 | `data-db-impl` | Platform SQLDelight drivers (Android/Native). Exposes `databaseModule`. |
 | `data-prefs-api` | Key-value contracts: `KeyValueStore` + the typed `Preference<T>` accessors. |
@@ -86,7 +86,7 @@ dependencies {
     implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
-    // + any other impl modules you install (e.g. :shared:backend:firebase for firebaseObservabilityModule)
+    // + any other impl modules you install (e.g. dev.jdgarita.frnk:analytics-impl for firebaseObservabilityModule)
 }
 ```
 

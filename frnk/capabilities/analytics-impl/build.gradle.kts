@@ -1,3 +1,28 @@
 plugins {
-    id("frnk.backend.firebase")
+    id("frnk.kmp.library.hosttest")
+    alias(libs.plugins.kotlin.serialization)
+}
+
+kotlin {
+    android {
+        namespace = "${ProjectConfiguration.GROUP_ID}.backend.firebase"
+    }
+    sourceSets {
+        commonMain.dependencies {
+            api(projects.analyticsApi)
+            implementation(libs.koin.core)
+            implementation(libs.firebase.firestore)
+            implementation(libs.firebase.analytics)
+            implementation(libs.firebase.crashlytics)
+        }
+        // gitlive-firebase 2.x delegates Android transitive versions to the Firebase BOM.
+        androidMain.dependencies {
+            implementation(project.dependencies.platform(libs.firebase.bom))
+        }
+        // CrashKiOS is iOS-only: it installs the Kotlin/Native unhandled-exception hook that
+        // forwards uncaught Kotlin crashes to Crashlytics symbolicated.
+        iosMain.dependencies {
+            implementation(libs.crashkios.crashlytics)
+        }
+    }
 }

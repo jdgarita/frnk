@@ -8,7 +8,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.shared.backend.api)
+            api(projects.analyticsApi)
             // KeyValueStore + the typed Preference layer — god-mode persistence in
             // DefaultEntitlementManager only needs key-value, never the SQL driver SPI.
             api(projects.dataPrefsApi)

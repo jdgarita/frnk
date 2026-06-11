@@ -11,8 +11,7 @@ Codex guidance for this repository. Follow this file first, and use `CLAUDE.md` 
 
 ## Repo Shape
 
-- Most shared domain modules keep flat Gradle paths (`:shared-ui-atoms`, `:data-prefs-api`, etc.).
-- Backend modules use nested Gradle paths under `:shared:backend` (`:shared:backend:api`, `:shared:backend:firebase`).
+- All modules use flat Gradle paths (`:shared-ui-atoms`, `:data-prefs-api`, `:analytics-api`, `:analytics-impl`, etc.). The last nested paths (`:shared:backend:*`) were re-flattened to `:analytics-api`/`:analytics-impl` at restructure Stage 5 (OQ-6).
 - Since restructure Stage 3, module files live physically under `frnk/{core,data,ui,capabilities}/` and `demo/{shared,android-app,ios-app}/`, mapped to the flat Gradle names via `projectDir` remaps in `settings.gradle.kts` (see `docs/RESTRUCTURE_PLAN.md` §3).
 - There is no aggregator (restructure Stage 1): consumers depend on individual modules. `:core-di` owns `initializeFrnk(modules)`; `:ui-app` owns `FrnkAppScaffold` + `frnkUiModules()`.
 - Backend/database/monetization modules use an api/impl split. Do not add SDK dependencies to `*-api` modules.

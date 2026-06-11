@@ -1,6 +1,6 @@
-# :shared:backend:firebase
+# :analytics-impl
 
-Firebase implementation of `:shared:backend:api`. Installed at runtime by passing its Koin modules (`firebaseBackendModule` / `firebaseObservabilityModule`) to `initializeFrnk(modules = …)`.
+Firebase implementation of `:analytics-api`. Installed at runtime by passing its Koin modules (`firebaseBackendModule` / `firebaseObservabilityModule`) to `initializeFrnk(modules = …)`.
 
 ## Contents
 
@@ -8,14 +8,14 @@ Firebase implementation of `:shared:backend:api`. Installed at runtime by passin
 - `FirebaseAnalyticsTracker.kt` — analytics via Firebase Analytics (gitlive `firebase-analytics`).
 - `FirebaseCrashReporter.kt` — crash reporting via Firebase Crashlytics (gitlive `firebase-crashlytics`). Every SDK call is wrapped in `runCatching` so an unconfigured Firebase degrades to a logged no-op (BACKLOG P1-5).
 - `FirebaseBackendModule.kt` — exports `val firebaseBackendModule = module { ... }` (**remote data only**). Hosts that want the Firebase backend pass it to `initializeFrnk(...)`.
-- `FirebaseObservabilityModule.kt` — exports `val firebaseObservabilityModule = module { ... }` (analytics + crash). **Separate from the backend module** so observability installs independently of the data backend (BACKLOG P1-5); install it XOR `noopObservabilityModule` (`:shared:backend:api`). The `CrashReporter` binding also calls `enableNativeCrashHandler()` on first resolve (see below).
+- `FirebaseObservabilityModule.kt` — exports `val firebaseObservabilityModule = module { ... }` (analytics + crash). **Separate from the backend module** so observability installs independently of the data backend (BACKLOG P1-5); install it XOR `noopObservabilityModule` (`:analytics-api`). The `CrashReporter` binding also calls `enableNativeCrashHandler()` on first resolve (see below).
 - `NativeCrashHandler.kt` (+ `NativeCrashHandler.ios.kt` / `NativeCrashHandler.android.kt`) — `internal expect fun enableNativeCrashHandler()` (BACKLOG P1-5b). The **iOS** actual installs the CrashKiOS unhandled-exception hook (`enableCrashlytics()` + `setCrashlyticsUnhandledExceptionHook()`, `runCatching`-wrapped + idempotent) so *uncaught* Kotlin exceptions reach Crashlytics symbolicated — gitlive's `recordException` only reports exceptions you explicitly catch. The **Android** actual is a no-op (the Crashlytics Android SDK already hooks uncaught JVM exceptions). This is the module's only `expect/actual` and the only reason it has `iosMain`/`androidMain` Kotlin source sets.
 
 ## Rules
 
 - This module is reachable **only** through Koin (host bootstrap or the demo's device-smoke overrides). No toolkit code should `import dev.jdgarita.frnk.backend.firebase.*` — that would defeat backend swap-ability.
 - The Koin module name is `firebaseBackendModule` (lower-camel `val`); keep the `<provider>BackendModule` naming convention — hosts reference these names directly in their `initializeFrnk(...)` lists.
-- Every binding here must satisfy an interface declared in `:shared:backend:api`. Return `AppResult` from every method — wrap Firebase exceptions in `AppResult.Failure(...)` rather than letting them propagate.
+- Every binding here must satisfy an interface declared in `:analytics-api`. Return `AppResult` from every method — wrap Firebase exceptions in `AppResult.Failure(...)` rather than letting them propagate.
 - Plugin: `kotlin.serialization` is applied (Firestore DTOs use `@Serializable`). Keep DTOs internal to this module — they should not leak into `*-api`.
 
 ## iOS note
@@ -29,7 +29,7 @@ The hook converts an uncaught Kotlin crash into a Crashlytics report, but Crashl
 
 ## Dependencies
 
-- `api(projects.shared.backend.api)` — only api surface re-exported.
+- `api(projects.analyticsApi)` — only api surface re-exported.
 - `implementation`: `koin.core`, `firebase.{firestore,analytics,crashlytics}`. No Ktor, no UI.
 - `iosMain` only: `crashkios.crashlytics` (must stay out of `commonMain` — it has no JVM variant and would break `compileAndroidMain`).
-- `commonTest`: `kotlin.test` + `kotlinx.coroutines.test` (host tests opted in via `kotlin { android { withHostTest {} } }`; run with `./gradlew :shared:backend:firebase:testAndroidHostTest`).
+- `commonTest`: `kotlin.test` + `kotlinx.coroutines.test` (host tests opted in via `kotlin { android { withHostTest {} } }`; run with `./gradlew :analytics-impl:testAndroidHostTest`).
