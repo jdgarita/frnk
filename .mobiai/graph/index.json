@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-11T23:22:35.887815Z",
+  "generatedAt": "2026-06-11T23:39:26.439242Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
@@ -2273,24 +2273,6 @@
       ]
     },
     {
-      "path": "frnk/capabilities/monetization-api/src/androidMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.android.kt",
-      "language": "kotlin",
-      "lines": 6,
-      "imports": [
-        "org.koin.core.module.Module"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.kt",
-      "language": "kotlin",
-      "lines": 19,
-      "imports": [
-        "org.koin.core.module.Module"
-      ],
-      "symbols": []
-    },
-    {
       "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/DefaultEntitlementManager.kt",
       "language": "kotlin",
       "lines": 112,
@@ -2856,15 +2838,6 @@
           ]
         }
       ]
-    },
-    {
-      "path": "frnk/capabilities/monetization-api/src/iosMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.ios.kt",
-      "language": "kotlin",
-      "lines": 5,
-      "imports": [
-        "org.koin.core.module.Module"
-      ],
-      "symbols": []
     },
     {
       "path": "frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatConfig.kt",

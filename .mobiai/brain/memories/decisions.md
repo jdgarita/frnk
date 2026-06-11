@@ -137,3 +137,33 @@ Stages 8 (monetization tidy) and 9 (coordinate flip) NOT started.
 - frnk/capabilities/haptics/build.gradle.kts
 - demo/shared/build.gradle.kts
 - frnk/capabilities/monetization-ui/build.gradle.kts
+
+## Restructure Stage 8: deleted vestigial ToolkitDiModule; :core-di is sole DI-bootstrap home
+
+- id: restructure-stage-8-deleted-vestigial-toolkitdimodule-core-d-20260611-233920
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: restructure/di
+- date: 2026-06-11
+
+Stage 8 (Monetization tidy) landed on main 2026-06-11 (commit 621be26).
+
+Decision: removed the dead `toolkitCoreModules()` expect/actual (`dev.jdgarita.frnk.di.ToolkitDiModule` + .android/.ios actuals) from `:shared-monetization-api`. Both actuals returned `emptyList()`; nothing referenced the symbol outside the 3 deleted files (verified in frnk AND still — still's own host code never called it; the only still hits were inside its stale embedded frnk submodule, which refreshes at Stage 9).
+
+`:core-di` (created Stage 1, OQ-5/OQ-7) is the SOLE host-facing Koin-bootstrap home: `initializeFrnk(modules)` + androidMain `initializeFrnk(context, modules)` (sets `DatabaseContext` + `androidContext`) + fail-fast `requireFrnkKoin()`. No orphan assembly helpers surfaced in Stages 4–7, so nothing was folded in (none invented).
+
+Retained: `api(libs.koin.core)` on `:shared-monetization-api` — still used by `MonetizationModule.kt` (`org.koin.dsl.module`), it was NOT a ToolkitDiModule-only dep.
+
+Re-confirmed: `:shared-monetization-ui` direct deps are exactly `{ui-scaffolds, monetization-api}` (Stage 7 re-point holds).
+
+Note: `dev.jdgarita.frnk.di` is ALSO `:core-di`'s package (`FrnkInitializer`/`DatabaseContext`) — two modules sharing the package is legal; only the monetization-api half was vestigial.
+
+Verified: clean + compileAndroidMain + testAndroidHostTest + compileKotlinIosSimulatorArm64 + DemoKit XCFramework all green; demo installed + launched on Pixel 7a (lynx), MainActivity resumed, no crash.
+
+Next: Stage 9 = the coordinate flip (facade deletes + module renames) — the only still-churn stage, its own session.
+
+### Files
+- frnk/capabilities/monetization-api/CLAUDE.md
+- frnk/core/di/CLAUDE.md
+- docs/RESTRUCTURE_PLAN.md
