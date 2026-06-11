@@ -1,19 +1,32 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-10T17:26:39.223086Z",
+  "generatedAt": "2026-06-11T19:02:01.22789Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
-      "path": "androidDemoApp/src/main/kotlin/dev/jdgarita/frnk/demo/AppScaffoldSmokeActivity.kt",
+      "path": "buildSrc/src/main/kotlin/ProjectConfiguration.kt",
       "language": "kotlin",
-      "lines": 60,
+      "lines": 13,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "ProjectConfiguration",
+          "kind": "object",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "path": "demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/AppScaffoldSmokeActivity.kt",
+      "language": "kotlin",
+      "lines": 59,
       "imports": [
         "android.os.Bundle",
         "android.widget.Toast",
         "androidx.activity.ComponentActivity",
         "androidx.activity.compose.setContent",
         "androidx.activity.enableEdgeToEdge",
-        "dev.jdgarita.frnk.shared.FrnkAppScaffold",
+        "dev.jdgarita.frnk.ui.app.FrnkAppScaffold",
         "dev.jdgarita.frnk.ui.atoms.FrnkText",
         "dev.jdgarita.frnk.ui.atoms.FrnkTextState",
         "dev.jdgarita.frnk.ui.scaffolds.HomeEffect",
@@ -23,12 +36,12 @@
         {
           "name": "AppScaffoldSmokeActivity",
           "kind": "class",
-          "line": 28
+          "line": 27
         },
         {
           "name": "onCreate",
           "kind": "fun",
-          "line": 29,
+          "line": 28,
           "container": "AppScaffoldSmokeActivity",
           "modifiers": [
             "override"
@@ -37,7 +50,7 @@
         {
           "name": "toast",
           "kind": "fun",
-          "line": 57,
+          "line": 56,
           "container": "AppScaffoldSmokeActivity",
           "modifiers": [
             "private"
@@ -46,14 +59,17 @@
       ]
     },
     {
-      "path": "androidDemoApp/src/main/kotlin/dev/jdgarita/frnk/demo/DemoApplication.kt",
+      "path": "demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/DemoApplication.kt",
       "language": "kotlin",
-      "lines": 32,
+      "lines": 41,
       "imports": [
         "android.app.Application",
         "com.revenuecat.purchases.kmp.Purchases",
         "com.revenuecat.purchases.kmp.configure",
         "dev.jdgarita.frnk.backend.firebase.firebaseObservabilityModule",
+        "dev.jdgarita.frnk.database.impl.databaseModule",
+        "dev.jdgarita.frnk.demo.notes.demoNotesModule",
+        "dev.jdgarita.frnk.di.DatabaseContext",
         "dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule",
         "org.koin.core.module.Module"
       ],
@@ -61,12 +77,12 @@
         {
           "name": "DemoApplication",
           "kind": "class",
-          "line": 10
+          "line": 13
         },
         {
           "name": "onCreate",
           "kind": "fun",
-          "line": 11,
+          "line": 14,
           "container": "DemoApplication",
           "modifiers": [
             "override"
@@ -75,7 +91,7 @@
       ]
     },
     {
-      "path": "androidDemoApp/src/main/kotlin/dev/jdgarita/frnk/demo/MainActivity.kt",
+      "path": "demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/MainActivity.kt",
       "language": "kotlin",
       "lines": 52,
       "imports": [
@@ -118,40 +134,7 @@
       ]
     },
     {
-      "path": "buildSrc/src/main/kotlin/ProjectConfiguration.kt",
-      "language": "kotlin",
-      "lines": 14,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "ProjectConfiguration",
-          "kind": "object",
-          "line": 1
-        }
-      ]
-    },
-    {
-      "path": "iosApp/src/iosMain/kotlin/dev/jdgarita/frnk/ios/FrnkKit.kt",
-      "language": "kotlin",
-      "lines": 24,
-      "imports": [
-        "dev.jdgarita.frnk.shared.BackendChoice",
-        "dev.jdgarita.frnk.shared.MonetizationChoice",
-        "dev.jdgarita.frnk.shared.ObservabilityChoice",
-        "dev.jdgarita.frnk.shared.initializeFrnk",
-        "org.koin.core.KoinApplication",
-        "org.koin.core.module.Module"
-      ],
-      "symbols": [
-        {
-          "name": "bootstrapFrnkKit",
-          "kind": "fun",
-          "line": 19
-        }
-      ]
-    },
-    {
-      "path": "iosDemoApp/iosDemoApp/ComposeViewController.swift",
+      "path": "demo/ios-app/iosDemoApp/ComposeViewController.swift",
       "language": "swift",
       "lines": 17,
       "imports": [
@@ -180,7 +163,7 @@
       ]
     },
     {
-      "path": "iosDemoApp/iosDemoApp/ContentView.swift",
+      "path": "demo/ios-app/iosDemoApp/ContentView.swift",
       "language": "swift",
       "lines": 56,
       "imports": [
@@ -222,7 +205,7 @@
       ]
     },
     {
-      "path": "iosDemoApp/iosDemoApp/iosDemoAppApp.swift",
+      "path": "demo/ios-app/iosDemoApp/iosDemoAppApp.swift",
       "language": "swift",
       "lines": 28,
       "imports": [
@@ -239,1193 +222,12 @@
       ]
     },
     {
-      "path": "shared/shared-backend-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/Analytics.kt",
+      "path": "demo/shared/src/androidHostTest/kotlin/dev/jdgarita/frnk/demo/notes/NoteStoreRoundTripTest.kt",
       "language": "kotlin",
-      "lines": 47,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "AnalyticsTracker",
-          "kind": "interface",
-          "line": 8
-        },
-        {
-          "name": "track",
-          "kind": "fun",
-          "line": 9,
-          "container": "AnalyticsTracker"
-        },
-        {
-          "name": "trackCustom",
-          "kind": "fun",
-          "line": 14,
-          "container": "AnalyticsTracker"
-        },
-        {
-          "name": "setUserProperty",
-          "kind": "fun",
-          "line": 19,
-          "container": "AnalyticsTracker"
-        },
-        {
-          "name": "ToolkitEvent",
-          "kind": "class",
-          "line": 25,
-          "modifiers": [
-            "enum"
-          ]
-        },
-        {
-          "name": "CrashReporter",
-          "kind": "interface",
-          "line": 38
-        },
-        {
-          "name": "recordException",
-          "kind": "fun",
-          "line": 39,
-          "container": "CrashReporter"
-        },
-        {
-          "name": "setUserId",
-          "kind": "fun",
-          "line": 44,
-          "container": "CrashReporter"
-        },
-        {
-          "name": "log",
-          "kind": "fun",
-          "line": 46,
-          "container": "CrashReporter"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/Auth.kt",
-      "language": "kotlin",
-      "lines": 27,
-      "imports": [
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.coroutines.flow.Flow"
-      ],
-      "symbols": [
-        {
-          "name": "AuthUser",
-          "kind": "class",
-          "line": 7,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "AuthService",
-          "kind": "interface",
-          "line": 13
-        },
-        {
-          "name": "signIn",
-          "kind": "fun",
-          "line": 16,
-          "container": "AuthService",
-          "modifiers": [
-            "suspend"
-          ]
-        },
-        {
-          "name": "signUp",
-          "kind": "fun",
-          "line": 21,
-          "container": "AuthService",
-          "modifiers": [
-            "suspend"
-          ]
-        },
-        {
-          "name": "signOut",
-          "kind": "fun",
-          "line": 26,
-          "container": "AuthService",
-          "modifiers": [
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/NoopObservability.kt",
-      "language": "kotlin",
-      "lines": 38,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "NoopAnalyticsTracker",
-          "kind": "class",
-          "line": 12
-        },
-        {
-          "name": "track",
-          "kind": "fun",
-          "line": 13,
-          "container": "NoopAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "trackCustom",
-          "kind": "fun",
-          "line": 18,
-          "container": "NoopAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setUserProperty",
-          "kind": "fun",
-          "line": 23,
-          "container": "NoopAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "NoopCrashReporter",
-          "kind": "class",
-          "line": 29
-        },
-        {
-          "name": "recordException",
-          "kind": "fun",
-          "line": 30,
-          "container": "NoopCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setUserId",
-          "kind": "fun",
-          "line": 35,
-          "container": "NoopCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "log",
-          "kind": "fun",
-          "line": 37,
-          "container": "NoopCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/RemoteData.kt",
-      "language": "kotlin",
-      "lines": 20,
-      "imports": [
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError"
-      ],
-      "symbols": [
-        {
-          "name": "RemoteData",
-          "kind": "interface",
-          "line": 7
-        },
-        {
-          "name": "get",
-          "kind": "fun",
-          "line": 8,
-          "container": "RemoteData",
-          "modifiers": [
-            "suspend"
-          ]
-        },
-        {
-          "name": "set",
-          "kind": "fun",
-          "line": 14,
-          "container": "RemoteData",
-          "modifiers": [
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeAnalyticsTracker.kt",
-      "language": "kotlin",
-      "lines": 37,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "FakeAnalyticsTracker",
-          "kind": "class",
-          "line": 8
-        },
-        {
-          "name": "Tracked",
-          "kind": "class",
-          "line": 9,
-          "container": "FakeAnalyticsTracker",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "track",
-          "kind": "fun",
-          "line": 17,
-          "container": "FakeAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "trackCustom",
-          "kind": "fun",
-          "line": 24,
-          "container": "FakeAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setUserProperty",
-          "kind": "fun",
-          "line": 31,
-          "container": "FakeAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeAuthService.kt",
-      "language": "kotlin",
-      "lines": 56,
-      "imports": [
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.coroutines.flow.MutableStateFlow",
-        "kotlinx.coroutines.flow.StateFlow"
-      ],
-      "symbols": [
-        {
-          "name": "FakeAuthService",
-          "kind": "class",
-          "line": 19
-        },
-        {
-          "name": "signIn",
-          "kind": "fun",
-          "line": 35,
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "signUp",
-          "kind": "fun",
-          "line": 43,
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "signOut",
-          "kind": "fun",
-          "line": 51,
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeAuthServiceTest.kt",
-      "language": "kotlin",
-      "lines": 54,
-      "imports": [
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.coroutines.flow.first",
-        "kotlinx.coroutines.test.runTest",
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertNull",
-        "kotlin.test.assertTrue"
-      ],
-      "symbols": [
-        {
-          "name": "FakeAuthServiceTest",
-          "kind": "class",
-          "line": 16
-        },
-        {
-          "name": "signIn_returns_the_seeded_success_and_updates_currentUser",
-          "kind": "fun",
-          "line": 18,
-          "container": "FakeAuthServiceTest"
-        },
-        {
-          "name": "signIn_propagates_a_seeded_failure_without_touching_currentUser",
-          "kind": "fun",
-          "line": 31,
-          "container": "FakeAuthServiceTest"
-        },
-        {
-          "name": "signOut_clears_currentUser",
-          "kind": "fun",
-          "line": 44,
-          "container": "FakeAuthServiceTest"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeCrashReporter.kt",
-      "language": "kotlin",
-      "lines": 33,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "FakeCrashReporter",
-          "kind": "class",
-          "line": 8
-        },
-        {
-          "name": "Recorded",
-          "kind": "class",
-          "line": 9,
-          "container": "FakeCrashReporter",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "recordException",
-          "kind": "fun",
-          "line": 19,
-          "container": "FakeCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setUserId",
-          "kind": "fun",
-          "line": 26,
-          "container": "FakeCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "log",
-          "kind": "fun",
-          "line": 30,
-          "container": "FakeCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/ObservabilityTest.kt",
-      "language": "kotlin",
-      "lines": 59,
-      "imports": [
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertTrue"
-      ],
-      "symbols": [
-        {
-          "name": "ObservabilityTest",
-          "kind": "class",
-          "line": 12
-        },
-        {
-          "name": "noop_observability_is_inert",
-          "kind": "fun",
-          "line": 14,
-          "container": "ObservabilityTest"
-        },
-        {
-          "name": "fake_analytics_records_events_and_properties",
-          "kind": "fun",
-          "line": 29,
-          "container": "ObservabilityTest"
-        },
-        {
-          "name": "fake_crash_records_exceptions_logs_and_user_id",
-          "kind": "fun",
-          "line": 45,
-          "container": "ObservabilityTest"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/androidMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.android.kt",
-      "language": "kotlin",
-      "lines": 7,
-      "imports": [],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseAnalyticsTracker.kt",
-      "language": "kotlin",
-      "lines": 65,
-      "imports": [
-        "dev.gitlive.firebase.Firebase",
-        "dev.gitlive.firebase.analytics.analytics",
-        "dev.jdgarita.frnk.backend.AnalyticsTracker",
-        "dev.jdgarita.frnk.backend.ToolkitEvent",
-        "dev.jdgarita.frnk.utils.PrintLogger"
-      ],
-      "symbols": [
-        {
-          "name": "FirebaseAnalyticsTracker",
-          "kind": "class",
-          "line": 16,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "track",
-          "kind": "fun",
-          "line": 17,
-          "container": "FirebaseAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "trackCustom",
-          "kind": "fun",
-          "line": 22,
-          "container": "FirebaseAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setUserProperty",
-          "kind": "fun",
-          "line": 27,
-          "container": "FirebaseAnalyticsTracker",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "logEvent",
-          "kind": "fun",
-          "line": 35,
-          "container": "FirebaseAnalyticsTracker",
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseAuthService.kt",
-      "language": "kotlin",
-      "lines": 24,
-      "imports": [
-        "dev.jdgarita.frnk.backend.AuthService",
-        "dev.jdgarita.frnk.backend.AuthUser",
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.coroutines.flow.Flow",
-        "kotlinx.coroutines.flow.flowOf"
-      ],
-      "symbols": [
-        {
-          "name": "FirebaseAuthService",
-          "kind": "class",
-          "line": 10,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "signIn",
-          "kind": "fun",
-          "line": 13,
-          "container": "FirebaseAuthService",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "signUp",
-          "kind": "fun",
-          "line": 18,
-          "container": "FirebaseAuthService",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "signOut",
-          "kind": "fun",
-          "line": 23,
-          "container": "FirebaseAuthService",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseBackendModule.kt",
-      "language": "kotlin",
-      "lines": 16,
-      "imports": [
-        "dev.jdgarita.frnk.backend.AuthService",
-        "dev.jdgarita.frnk.backend.RemoteData",
-        "org.koin.dsl.module"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseCrashReporter.kt",
-      "language": "kotlin",
-      "lines": 38,
-      "imports": [
-        "dev.gitlive.firebase.Firebase",
-        "dev.gitlive.firebase.crashlytics.crashlytics",
-        "dev.jdgarita.frnk.backend.CrashReporter",
-        "dev.jdgarita.frnk.utils.PrintLogger"
-      ],
-      "symbols": [
-        {
-          "name": "FirebaseCrashReporter",
-          "kind": "class",
-          "line": 14,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "recordException",
-          "kind": "fun",
-          "line": 15,
-          "container": "FirebaseCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setUserId",
-          "kind": "fun",
-          "line": 25,
-          "container": "FirebaseCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "log",
-          "kind": "fun",
-          "line": 30,
-          "container": "FirebaseCrashReporter",
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseObservabilityModule.kt",
-      "language": "kotlin",
-      "lines": 23,
-      "imports": [
-        "dev.jdgarita.frnk.backend.AnalyticsTracker",
-        "dev.jdgarita.frnk.backend.CrashReporter",
-        "org.koin.dsl.module"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirestoreRemoteData.kt",
-      "language": "kotlin",
-      "lines": 20,
-      "imports": [
-        "dev.jdgarita.frnk.backend.RemoteData",
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError"
-      ],
-      "symbols": [
-        {
-          "name": "FirestoreRemoteData",
-          "kind": "class",
-          "line": 7,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "get",
-          "kind": "fun",
-          "line": 8,
-          "container": "FirestoreRemoteData",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "set",
-          "kind": "fun",
-          "line": 14,
-          "container": "FirestoreRemoteData",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.kt",
-      "language": "kotlin",
-      "lines": 16,
-      "imports": [],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/commonTest/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseObservabilityModuleTest.kt",
-      "language": "kotlin",
-      "lines": 40,
-      "imports": [
-        "dev.jdgarita.frnk.backend.CrashReporter",
-        "org.koin.dsl.koinApplication",
-        "kotlin.test.AfterTest",
-        "kotlin.test.Test",
-        "kotlin.test.assertNotNull"
-      ],
-      "symbols": [
-        {
-          "name": "FirebaseObservabilityModuleTest",
-          "kind": "class",
-          "line": 18
-        },
-        {
-          "name": "enableNativeCrashHandler_isSafeNoOpOnJvm",
-          "kind": "fun",
-          "line": 20,
-          "container": "FirebaseObservabilityModuleTest"
-        },
-        {
-          "name": "crashReporter_resolvesWithoutThrowing",
-          "kind": "fun",
-          "line": 27,
-          "container": "FirebaseObservabilityModuleTest"
-        },
-        {
-          "name": "tearDown",
-          "kind": "fun",
-          "line": 39,
-          "container": "FirebaseObservabilityModuleTest"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-firebase/src/iosMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.ios.kt",
-      "language": "kotlin",
-      "lines": 24,
-      "imports": [
-        "co.touchlab.crashkios.crashlytics.enableCrashlytics",
-        "co.touchlab.crashkios.crashlytics.setCrashlyticsUnhandledExceptionHook",
-        "dev.jdgarita.frnk.utils.PrintLogger"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-backend-supabase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/supabase/SupabaseAuthService.kt",
-      "language": "kotlin",
-      "lines": 24,
-      "imports": [
-        "dev.jdgarita.frnk.backend.AuthService",
-        "dev.jdgarita.frnk.backend.AuthUser",
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.coroutines.flow.Flow",
-        "kotlinx.coroutines.flow.flowOf"
-      ],
-      "symbols": [
-        {
-          "name": "SupabaseAuthService",
-          "kind": "class",
-          "line": 10,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "signIn",
-          "kind": "fun",
-          "line": 13,
-          "container": "SupabaseAuthService",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "signUp",
-          "kind": "fun",
-          "line": 18,
-          "container": "SupabaseAuthService",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "signOut",
-          "kind": "fun",
-          "line": 23,
-          "container": "SupabaseAuthService",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-backend-supabase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/supabase/SupabaseBackendModule.kt",
-      "language": "kotlin",
-      "lines": 15,
-      "imports": [
-        "dev.jdgarita.frnk.backend.AuthService",
-        "dev.jdgarita.frnk.backend.RemoteData",
-        "org.koin.dsl.module"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-backend-supabase/src/commonMain/kotlin/dev/jdgarita/frnk/backend/supabase/SupabaseRemoteData.kt",
-      "language": "kotlin",
-      "lines": 20,
-      "imports": [
-        "dev.jdgarita.frnk.backend.RemoteData",
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError"
-      ],
-      "symbols": [
-        {
-          "name": "SupabaseRemoteData",
-          "kind": "class",
-          "line": 7,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "get",
-          "kind": "fun",
-          "line": 8,
-          "container": "SupabaseRemoteData",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "set",
-          "kind": "fun",
-          "line": 14,
-          "container": "SupabaseRemoteData",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/KeyValueStore.kt",
-      "language": "kotlin",
-      "lines": 26,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "KeyValueStore",
-          "kind": "interface",
-          "line": 4
-        },
-        {
-          "name": "putString",
-          "kind": "fun",
-          "line": 5,
-          "container": "KeyValueStore"
-        },
-        {
-          "name": "getString",
-          "kind": "fun",
-          "line": 10,
-          "container": "KeyValueStore"
-        },
-        {
-          "name": "putBoolean",
-          "kind": "fun",
-          "line": 15,
-          "container": "KeyValueStore"
-        },
-        {
-          "name": "getBoolean",
-          "kind": "fun",
-          "line": 20,
-          "container": "KeyValueStore"
-        },
-        {
-          "name": "remove",
-          "kind": "fun",
-          "line": 25,
-          "container": "KeyValueStore"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/NoteStore.kt",
-      "language": "kotlin",
-      "lines": 32,
-      "imports": [
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.datetime.Instant"
-      ],
-      "symbols": [
-        {
-          "name": "Note",
-          "kind": "class",
-          "line": 12,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "NoteStore",
-          "kind": "interface",
-          "line": 23
-        },
-        {
-          "name": "add",
-          "kind": "fun",
-          "line": 25,
-          "container": "NoteStore",
-          "modifiers": [
-            "suspend"
-          ]
-        },
-        {
-          "name": "all",
-          "kind": "fun",
-          "line": 28,
-          "container": "NoteStore",
-          "modifiers": [
-            "suspend"
-          ]
-        },
-        {
-          "name": "clear",
-          "kind": "fun",
-          "line": 31,
-          "container": "NoteStore",
-          "modifiers": [
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/Preference.kt",
-      "language": "kotlin",
-      "lines": 134,
-      "imports": [
-        "kotlin.properties.ReadWriteProperty",
-        "kotlin.reflect.KProperty"
-      ],
-      "symbols": [
-        {
-          "name": "Preference",
-          "kind": "interface",
-          "line": 27,
-          "modifiers": [
-            "sealed"
-          ]
-        },
-        {
-          "name": "remove",
-          "kind": "fun",
-          "line": 38,
-          "container": "Preference"
-        },
-        {
-          "name": "getValue",
-          "kind": "fun",
-          "line": 41,
-          "container": "Preference",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "setValue",
-          "kind": "fun",
-          "line": 46,
-          "container": "Preference",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "KeyValuePreference",
-          "kind": "class",
-          "line": 56,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "remove",
-          "kind": "fun",
-          "line": 67,
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "stringPreference",
-          "kind": "fun",
-          "line": 71
-        },
-        {
-          "name": "booleanPreference",
-          "kind": "fun",
-          "line": 84
-        },
-        {
-          "name": "intPreference",
-          "kind": "fun",
-          "line": 100
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/SqlDriverFactory.kt",
-      "language": "kotlin",
-      "lines": 16,
-      "imports": [
-        "app.cash.sqldelight.db.QueryResult",
-        "app.cash.sqldelight.db.SqlDriver",
-        "app.cash.sqldelight.db.SqlSchema"
-      ],
-      "symbols": [
-        {
-          "name": "create",
-          "kind": "fun",
-          "line": 12
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-api/src/commonTest/kotlin/dev/jdgarita/frnk/database/InMemoryKeyValueStore.kt",
-      "language": "kotlin",
-      "lines": 41,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "InMemoryKeyValueStore",
-          "kind": "class",
-          "line": 9
-        },
-        {
-          "name": "putString",
-          "kind": "fun",
-          "line": 13,
-          "container": "InMemoryKeyValueStore",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "getString",
-          "kind": "fun",
-          "line": 20,
-          "container": "InMemoryKeyValueStore",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "putBoolean",
-          "kind": "fun",
-          "line": 25,
-          "container": "InMemoryKeyValueStore",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "getBoolean",
-          "kind": "fun",
-          "line": 32,
-          "container": "InMemoryKeyValueStore",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "remove",
-          "kind": "fun",
-          "line": 37,
-          "container": "InMemoryKeyValueStore",
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-api/src/commonTest/kotlin/dev/jdgarita/frnk/database/PreferenceTest.kt",
-      "language": "kotlin",
-      "lines": 126,
-      "imports": [
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertFalse",
-        "kotlin.test.assertNull",
-        "kotlin.test.assertTrue"
-      ],
-      "symbols": [
-        {
-          "name": "TestTheme",
-          "kind": "class",
-          "line": 9,
-          "modifiers": [
-            "private",
-            "enum"
-          ]
-        },
-        {
-          "name": "PreferenceTest",
-          "kind": "class",
-          "line": 11
-        },
-        {
-          "name": "string_preference_round_trips",
-          "kind": "fun",
-          "line": 17,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "string_preference_returns_default_when_unset",
-          "kind": "fun",
-          "line": 25,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "boolean_preference_round_trips",
-          "kind": "fun",
-          "line": 32,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "boolean_preference_returns_default_when_unset",
-          "kind": "fun",
-          "line": 40,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "int_preference_round_trips",
-          "kind": "fun",
-          "line": 47,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "int_preference_returns_default_when_unset",
-          "kind": "fun",
-          "line": 55,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "int_preference_falls_back_to_default_on_corrupt_value",
-          "kind": "fun",
-          "line": 60,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "enum_preference_round_trips",
-          "kind": "fun",
-          "line": 68,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "enum_preference_returns_default_when_unset",
-          "kind": "fun",
-          "line": 76,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "enum_preference_falls_back_to_default_on_unknown_name",
-          "kind": "fun",
-          "line": 81,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "delegation_via_by_reads_and_writes",
-          "kind": "fun",
-          "line": 89,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "value_get_and_set_property",
-          "kind": "fun",
-          "line": 97,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "remove_resets_to_default",
-          "kind": "fun",
-          "line": 107,
-          "container": "PreferenceTest"
-        },
-        {
-          "name": "two_preferences_on_same_store_are_independent",
-          "kind": "fun",
-          "line": 118,
-          "container": "PreferenceTest"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-impl/src/androidHostTest/kotlin/dev/jdgarita/frnk/database/impl/NoteStoreRoundTripTest.kt",
-      "language": "kotlin",
-      "lines": 61,
+      "lines": 62,
       "imports": [
         "app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver",
-        "dev.jdgarita.frnk.database.sql.FrnkDB",
+        "dev.jdgarita.frnk.demo.sql.DemoDB",
         "dev.jdgarita.frnk.utils.AppResult",
         "kotlinx.coroutines.ExperimentalCoroutinesApi",
         "kotlinx.coroutines.test.TestCoroutineScheduler",
@@ -1439,12 +241,12 @@
         {
           "name": "NoteStoreRoundTripTest",
           "kind": "class",
-          "line": 21
+          "line": 22
         },
         {
           "name": "newStore",
           "kind": "fun",
-          "line": 22,
+          "line": 23,
           "container": "NoteStoreRoundTripTest",
           "modifiers": [
             "private"
@@ -1453,205 +255,19 @@
         {
           "name": "insert_then_query_round_trips_newest_first",
           "kind": "fun",
-          "line": 29,
+          "line": 30,
           "container": "NoteStoreRoundTripTest"
         },
         {
           "name": "clear_removes_all_notes",
           "kind": "fun",
-          "line": 49,
+          "line": 50,
           "container": "NoteStoreRoundTripTest"
         }
       ]
     },
     {
-      "path": "shared/shared-database-impl/src/androidMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.android.kt",
-      "language": "kotlin",
-      "lines": 23,
-      "imports": [
-        "android.content.Context",
-        "app.cash.sqldelight.driver.android.AndroidSqliteDriver",
-        "com.russhwolf.settings.SharedPreferencesSettings",
-        "dev.jdgarita.frnk.database.KeyValueStore",
-        "dev.jdgarita.frnk.database.SqlDriverFactory"
-      ],
-      "symbols": [
-        {
-          "name": "DatabaseContext",
-          "kind": "object",
-          "line": 10
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/DatabaseModule.kt",
-      "language": "kotlin",
-      "lines": 22,
-      "imports": [
-        "dev.jdgarita.frnk.database.KeyValueStore",
-        "dev.jdgarita.frnk.database.NoteStore",
-        "dev.jdgarita.frnk.database.SqlDriverFactory",
-        "dev.jdgarita.frnk.database.sql.FrnkDB",
-        "org.koin.dsl.module"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-database-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt",
-      "language": "kotlin",
-      "lines": 9,
-      "imports": [
-        "dev.jdgarita.frnk.database.KeyValueStore",
-        "dev.jdgarita.frnk.database.SqlDriverFactory"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-database-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/SettingsKeyValueStore.kt",
-      "language": "kotlin",
-      "lines": 36,
-      "imports": [
-        "com.russhwolf.settings.Settings",
-        "dev.jdgarita.frnk.database.KeyValueStore"
-      ],
-      "symbols": [
-        {
-          "name": "SettingsKeyValueStore",
-          "kind": "class",
-          "line": 6,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "putString",
-          "kind": "fun",
-          "line": 9,
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "getString",
-          "kind": "fun",
-          "line": 16,
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "putBoolean",
-          "kind": "fun",
-          "line": 21,
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "getBoolean",
-          "kind": "fun",
-          "line": 28,
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "remove",
-          "kind": "fun",
-          "line": 33,
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/SqlDelightNoteStore.kt",
-      "language": "kotlin",
-      "lines": 61,
-      "imports": [
-        "dev.jdgarita.frnk.database.Note",
-        "dev.jdgarita.frnk.database.NoteStore",
-        "dev.jdgarita.frnk.database.sql.FrnkDB",
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError",
-        "kotlinx.coroutines.CoroutineDispatcher",
-        "kotlinx.coroutines.Dispatchers",
-        "kotlinx.coroutines.withContext",
-        "kotlinx.datetime.Instant",
-        "kotlin.time.Clock"
-      ],
-      "symbols": [
-        {
-          "name": "SqlDelightNoteStore",
-          "kind": "class",
-          "line": 21,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "add",
-          "kind": "fun",
-          "line": 27,
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "all",
-          "kind": "fun",
-          "line": 35,
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "clear",
-          "kind": "fun",
-          "line": 40,
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "toNote",
-          "kind": "fun",
-          "line": 45,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "runCatchingDb",
-          "kind": "fun",
-          "line": 51,
-          "modifiers": [
-            "private",
-            "suspend",
-            "inline"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-database-impl/src/iosMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.ios.kt",
-      "language": "kotlin",
-      "lines": 14,
-      "imports": [
-        "app.cash.sqldelight.driver.native.NativeSqliteDriver",
-        "com.russhwolf.settings.NSUserDefaultsSettings",
-        "dev.jdgarita.frnk.database.KeyValueStore",
-        "dev.jdgarita.frnk.database.SqlDriverFactory",
-        "platform.Foundation.NSUserDefaults"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoBootstrap.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoBootstrap.kt",
       "language": "kotlin",
       "lines": 22,
       "imports": [
@@ -1667,7 +283,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoColors.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoColors.kt",
       "language": "kotlin",
       "lines": 28,
       "imports": [
@@ -1685,16 +301,16 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoModule.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoModule.kt",
       "language": "kotlin",
-      "lines": 197,
+      "lines": 199,
       "imports": [
         "dev.jdgarita.frnk.backend.AnalyticsTracker",
         "dev.jdgarita.frnk.backend.CrashReporter",
         "dev.jdgarita.frnk.backend.ToolkitEvent",
         "dev.jdgarita.frnk.database.KeyValueStore",
-        "dev.jdgarita.frnk.database.Note",
-        "dev.jdgarita.frnk.database.NoteStore",
+        "dev.jdgarita.frnk.demo.notes.Note",
+        "dev.jdgarita.frnk.demo.notes.NoteStore",
         "dev.jdgarita.frnk.monetization.EntitlementProvider",
         "dev.jdgarita.frnk.monetization.MonetizationError",
         "dev.jdgarita.frnk.monetization.ProPlan",
@@ -1719,12 +335,12 @@
         {
           "name": "FakeEntitlementProvider",
           "kind": "class",
-          "line": 58
+          "line": 59
         },
         {
           "name": "refresh",
           "kind": "fun",
-          "line": 62,
+          "line": 63,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -1734,7 +350,7 @@
         {
           "name": "offerings",
           "kind": "fun",
-          "line": 64,
+          "line": 65,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -1744,7 +360,7 @@
         {
           "name": "purchase",
           "kind": "fun",
-          "line": 81,
+          "line": 82,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -1754,7 +370,7 @@
         {
           "name": "restore",
           "kind": "fun",
-          "line": 86,
+          "line": 87,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -1764,7 +380,7 @@
         {
           "name": "managementUrl",
           "kind": "fun",
-          "line": 90,
+          "line": 91,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -1774,12 +390,12 @@
         {
           "name": "FakeKeyValueStore",
           "kind": "class",
-          "line": 94
+          "line": 95
         },
         {
           "name": "putString",
           "kind": "fun",
-          "line": 98,
+          "line": 99,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -1788,7 +404,7 @@
         {
           "name": "getString",
           "kind": "fun",
-          "line": 105,
+          "line": 106,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -1797,7 +413,7 @@
         {
           "name": "putBoolean",
           "kind": "fun",
-          "line": 110,
+          "line": 111,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -1806,7 +422,7 @@
         {
           "name": "getBoolean",
           "kind": "fun",
-          "line": 117,
+          "line": 118,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -1815,7 +431,7 @@
         {
           "name": "remove",
           "kind": "fun",
-          "line": 122,
+          "line": 123,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -1824,12 +440,12 @@
         {
           "name": "FakeNoteStore",
           "kind": "class",
-          "line": 133
+          "line": 135
         },
         {
           "name": "add",
           "kind": "fun",
-          "line": 137,
+          "line": 139,
           "container": "FakeNoteStore",
           "modifiers": [
             "override",
@@ -1839,7 +455,7 @@
         {
           "name": "all",
           "kind": "fun",
-          "line": 143,
+          "line": 145,
           "container": "FakeNoteStore",
           "modifiers": [
             "override",
@@ -1849,7 +465,7 @@
         {
           "name": "clear",
           "kind": "fun",
-          "line": 145,
+          "line": 147,
           "container": "FakeNoteStore",
           "modifiers": [
             "override",
@@ -1859,12 +475,12 @@
         {
           "name": "LoggingAnalyticsTracker",
           "kind": "class",
-          "line": 151
+          "line": 153
         },
         {
           "name": "track",
           "kind": "fun",
-          "line": 152,
+          "line": 154,
           "container": "LoggingAnalyticsTracker",
           "modifiers": [
             "override"
@@ -1873,7 +489,7 @@
         {
           "name": "trackCustom",
           "kind": "fun",
-          "line": 159,
+          "line": 161,
           "container": "LoggingAnalyticsTracker",
           "modifiers": [
             "override"
@@ -1882,7 +498,7 @@
         {
           "name": "setUserProperty",
           "kind": "fun",
-          "line": 166,
+          "line": 168,
           "container": "LoggingAnalyticsTracker",
           "modifiers": [
             "override"
@@ -1891,12 +507,12 @@
         {
           "name": "LoggingCrashReporter",
           "kind": "class",
-          "line": 178
+          "line": 180
         },
         {
           "name": "recordException",
           "kind": "fun",
-          "line": 179,
+          "line": 181,
           "container": "LoggingCrashReporter",
           "modifiers": [
             "override"
@@ -1905,7 +521,7 @@
         {
           "name": "setUserId",
           "kind": "fun",
-          "line": 186,
+          "line": 188,
           "container": "LoggingCrashReporter",
           "modifiers": [
             "override"
@@ -1914,7 +530,7 @@
         {
           "name": "log",
           "kind": "fun",
-          "line": 190,
+          "line": 192,
           "container": "LoggingCrashReporter",
           "modifiers": [
             "override"
@@ -1923,7 +539,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoNavigation.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoNavigation.kt",
       "language": "kotlin",
       "lines": 35,
       "imports": [
@@ -1940,7 +556,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoRoutes.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoRoutes.kt",
       "language": "kotlin",
       "lines": 26,
       "imports": [
@@ -1977,9 +593,9 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt",
       "language": "kotlin",
-      "lines": 1330,
+      "lines": 1331,
       "imports": [
         "androidx.compose.foundation.background",
         "androidx.compose.foundation.clickable",
@@ -2135,7 +751,7 @@
         {
           "name": "ComponentsListScreen",
           "kind": "fun",
-          "line": 525,
+          "line": 526,
           "modifiers": [
             "private"
           ]
@@ -2143,7 +759,7 @@
         {
           "name": "ComponentRow",
           "kind": "fun",
-          "line": 587,
+          "line": 588,
           "modifiers": [
             "private"
           ]
@@ -2151,7 +767,7 @@
         {
           "name": "ComponentDetailScreen",
           "kind": "fun",
-          "line": 622,
+          "line": 623,
           "modifiers": [
             "private"
           ]
@@ -2159,7 +775,7 @@
         {
           "name": "ComponentContent",
           "kind": "fun",
-          "line": 678,
+          "line": 679,
           "modifiers": [
             "private"
           ]
@@ -2167,7 +783,7 @@
         {
           "name": "demoSettingsState",
           "kind": "fun",
-          "line": 1177,
+          "line": 1178,
           "modifiers": [
             "private"
           ]
@@ -2175,7 +791,7 @@
         {
           "name": "demoExtraSettingsSections",
           "kind": "fun",
-          "line": 1227,
+          "line": 1228,
           "modifiers": [
             "private"
           ]
@@ -2183,12 +799,12 @@
         {
           "name": "rowIcon",
           "kind": "fun",
-          "line": 1233
+          "line": 1234
         },
         {
           "name": "Section",
           "kind": "fun",
-          "line": 1302,
+          "line": 1303,
           "modifiers": [
             "private"
           ]
@@ -2196,7 +812,7 @@
         {
           "name": "DemoBackHandler",
           "kind": "fun",
-          "line": 1325,
+          "line": 1326,
           "modifiers": [
             "private"
           ]
@@ -2204,7 +820,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoViewModel.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoViewModel.kt",
       "language": "kotlin",
       "lines": 220,
       "imports": [
@@ -2212,7 +828,7 @@
         "dev.jdgarita.frnk.backend.AnalyticsTracker",
         "dev.jdgarita.frnk.backend.CrashReporter",
         "dev.jdgarita.frnk.backend.ToolkitEvent",
-        "dev.jdgarita.frnk.database.NoteStore",
+        "dev.jdgarita.frnk.demo.notes.NoteStore",
         "dev.jdgarita.frnk.monetization.EntitlementManager",
         "dev.jdgarita.frnk.monetization.Feature",
         "dev.jdgarita.frnk.monetization.FeatureGate",
@@ -2488,7 +1104,140 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonTest/kotlin/dev/jdgarita/frnk/demo/DemoNavigationTest.kt",
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/notes/DemoNotesModule.kt",
+      "language": "kotlin",
+      "lines": 22,
+      "imports": [
+        "dev.jdgarita.frnk.database.SqlDriverFactory",
+        "dev.jdgarita.frnk.demo.sql.DemoDB",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/notes/NoteStore.kt",
+      "language": "kotlin",
+      "lines": 34,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError",
+        "kotlinx.datetime.Instant"
+      ],
+      "symbols": [
+        {
+          "name": "Note",
+          "kind": "class",
+          "line": 13,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "NoteStore",
+          "kind": "interface",
+          "line": 25
+        },
+        {
+          "name": "add",
+          "kind": "fun",
+          "line": 27,
+          "container": "NoteStore",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "all",
+          "kind": "fun",
+          "line": 30,
+          "container": "NoteStore",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "clear",
+          "kind": "fun",
+          "line": 33,
+          "container": "NoteStore",
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/notes/SqlDelightNoteStore.kt",
+      "language": "kotlin",
+      "lines": 59,
+      "imports": [
+        "dev.jdgarita.frnk.demo.sql.DemoDB",
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError",
+        "kotlinx.coroutines.CoroutineDispatcher",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.withContext",
+        "kotlinx.datetime.Instant",
+        "kotlin.time.Clock"
+      ],
+      "symbols": [
+        {
+          "name": "SqlDelightNoteStore",
+          "kind": "class",
+          "line": 19,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "add",
+          "kind": "fun",
+          "line": 25,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "all",
+          "kind": "fun",
+          "line": 33,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "clear",
+          "kind": "fun",
+          "line": 38,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "toNote",
+          "kind": "fun",
+          "line": 43,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "runCatchingDb",
+          "kind": "fun",
+          "line": 49,
+          "modifiers": [
+            "private",
+            "suspend",
+            "inline"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "demo/shared/src/commonTest/kotlin/dev/jdgarita/frnk/demo/DemoNavigationTest.kt",
       "language": "kotlin",
       "lines": 53,
       "imports": [
@@ -2526,7 +1275,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/commonTest/kotlin/dev/jdgarita/frnk/demo/DemoViewModelTest.kt",
+      "path": "demo/shared/src/commonTest/kotlin/dev/jdgarita/frnk/demo/DemoViewModelTest.kt",
       "language": "kotlin",
       "lines": 234,
       "imports": [
@@ -2704,7 +1453,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/iosMain/kotlin/dev/jdgarita/frnk/demo/DemoCrashlytics.kt",
+      "path": "demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/DemoCrashlytics.kt",
       "language": "kotlin",
       "lines": 27,
       "imports": [
@@ -2721,7 +1470,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/iosMain/kotlin/dev/jdgarita/frnk/demo/DemoRevenueCat.kt",
+      "path": "demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/DemoRevenueCat.kt",
       "language": "kotlin",
       "lines": 25,
       "imports": [
@@ -2739,7 +1488,7 @@
       ]
     },
     {
-      "path": "shared/shared-demo/src/iosMain/kotlin/dev/jdgarita/frnk/demo/MainViewController.kt",
+      "path": "demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/MainViewController.kt",
       "language": "kotlin",
       "lines": 14,
       "imports": [
@@ -2755,7 +1504,547 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/androidMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.android.kt",
+      "path": "frnk/capabilities/analytics-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/Analytics.kt",
+      "language": "kotlin",
+      "lines": 47,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "AnalyticsTracker",
+          "kind": "interface",
+          "line": 8
+        },
+        {
+          "name": "track",
+          "kind": "fun",
+          "line": 9,
+          "container": "AnalyticsTracker"
+        },
+        {
+          "name": "trackCustom",
+          "kind": "fun",
+          "line": 14,
+          "container": "AnalyticsTracker"
+        },
+        {
+          "name": "setUserProperty",
+          "kind": "fun",
+          "line": 19,
+          "container": "AnalyticsTracker"
+        },
+        {
+          "name": "ToolkitEvent",
+          "kind": "class",
+          "line": 25,
+          "modifiers": [
+            "enum"
+          ]
+        },
+        {
+          "name": "CrashReporter",
+          "kind": "interface",
+          "line": 38
+        },
+        {
+          "name": "recordException",
+          "kind": "fun",
+          "line": 39,
+          "container": "CrashReporter"
+        },
+        {
+          "name": "setUserId",
+          "kind": "fun",
+          "line": 44,
+          "container": "CrashReporter"
+        },
+        {
+          "name": "log",
+          "kind": "fun",
+          "line": 46,
+          "container": "CrashReporter"
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/NoopObservability.kt",
+      "language": "kotlin",
+      "lines": 38,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "NoopAnalyticsTracker",
+          "kind": "class",
+          "line": 12
+        },
+        {
+          "name": "track",
+          "kind": "fun",
+          "line": 13,
+          "container": "NoopAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "trackCustom",
+          "kind": "fun",
+          "line": 18,
+          "container": "NoopAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setUserProperty",
+          "kind": "fun",
+          "line": 23,
+          "container": "NoopAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "NoopCrashReporter",
+          "kind": "class",
+          "line": 29
+        },
+        {
+          "name": "recordException",
+          "kind": "fun",
+          "line": 30,
+          "container": "NoopCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setUserId",
+          "kind": "fun",
+          "line": 35,
+          "container": "NoopCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "log",
+          "kind": "fun",
+          "line": 37,
+          "container": "NoopCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/NoopObservabilityModule.kt",
+      "language": "kotlin",
+      "lines": 15,
+      "imports": [
+        "org.koin.core.module.Module",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/analytics-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/RemoteData.kt",
+      "language": "kotlin",
+      "lines": 20,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError"
+      ],
+      "symbols": [
+        {
+          "name": "RemoteData",
+          "kind": "interface",
+          "line": 7
+        },
+        {
+          "name": "get",
+          "kind": "fun",
+          "line": 8,
+          "container": "RemoteData",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "set",
+          "kind": "fun",
+          "line": 14,
+          "container": "RemoteData",
+          "modifiers": [
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeAnalyticsTracker.kt",
+      "language": "kotlin",
+      "lines": 37,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "FakeAnalyticsTracker",
+          "kind": "class",
+          "line": 8
+        },
+        {
+          "name": "Tracked",
+          "kind": "class",
+          "line": 9,
+          "container": "FakeAnalyticsTracker",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "track",
+          "kind": "fun",
+          "line": 17,
+          "container": "FakeAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "trackCustom",
+          "kind": "fun",
+          "line": 24,
+          "container": "FakeAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setUserProperty",
+          "kind": "fun",
+          "line": 31,
+          "container": "FakeAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeCrashReporter.kt",
+      "language": "kotlin",
+      "lines": 33,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "FakeCrashReporter",
+          "kind": "class",
+          "line": 8
+        },
+        {
+          "name": "Recorded",
+          "kind": "class",
+          "line": 9,
+          "container": "FakeCrashReporter",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "recordException",
+          "kind": "fun",
+          "line": 19,
+          "container": "FakeCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setUserId",
+          "kind": "fun",
+          "line": 26,
+          "container": "FakeCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "log",
+          "kind": "fun",
+          "line": 30,
+          "container": "FakeCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/ObservabilityTest.kt",
+      "language": "kotlin",
+      "lines": 59,
+      "imports": [
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "ObservabilityTest",
+          "kind": "class",
+          "line": 12
+        },
+        {
+          "name": "noop_observability_is_inert",
+          "kind": "fun",
+          "line": 14,
+          "container": "ObservabilityTest"
+        },
+        {
+          "name": "fake_analytics_records_events_and_properties",
+          "kind": "fun",
+          "line": 29,
+          "container": "ObservabilityTest"
+        },
+        {
+          "name": "fake_crash_records_exceptions_logs_and_user_id",
+          "kind": "fun",
+          "line": 45,
+          "container": "ObservabilityTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/androidMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.android.kt",
+      "language": "kotlin",
+      "lines": 7,
+      "imports": [],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseAnalyticsTracker.kt",
+      "language": "kotlin",
+      "lines": 65,
+      "imports": [
+        "dev.gitlive.firebase.Firebase",
+        "dev.gitlive.firebase.analytics.analytics",
+        "dev.jdgarita.frnk.backend.AnalyticsTracker",
+        "dev.jdgarita.frnk.backend.ToolkitEvent",
+        "dev.jdgarita.frnk.utils.PrintLogger"
+      ],
+      "symbols": [
+        {
+          "name": "FirebaseAnalyticsTracker",
+          "kind": "class",
+          "line": 16,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "track",
+          "kind": "fun",
+          "line": 17,
+          "container": "FirebaseAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "trackCustom",
+          "kind": "fun",
+          "line": 22,
+          "container": "FirebaseAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setUserProperty",
+          "kind": "fun",
+          "line": 27,
+          "container": "FirebaseAnalyticsTracker",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "logEvent",
+          "kind": "fun",
+          "line": 35,
+          "container": "FirebaseAnalyticsTracker",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseBackendModule.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "dev.jdgarita.frnk.backend.RemoteData",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseCrashReporter.kt",
+      "language": "kotlin",
+      "lines": 38,
+      "imports": [
+        "dev.gitlive.firebase.Firebase",
+        "dev.gitlive.firebase.crashlytics.crashlytics",
+        "dev.jdgarita.frnk.backend.CrashReporter",
+        "dev.jdgarita.frnk.utils.PrintLogger"
+      ],
+      "symbols": [
+        {
+          "name": "FirebaseCrashReporter",
+          "kind": "class",
+          "line": 14,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "recordException",
+          "kind": "fun",
+          "line": 15,
+          "container": "FirebaseCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setUserId",
+          "kind": "fun",
+          "line": 25,
+          "container": "FirebaseCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "log",
+          "kind": "fun",
+          "line": 30,
+          "container": "FirebaseCrashReporter",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseObservabilityModule.kt",
+      "language": "kotlin",
+      "lines": 23,
+      "imports": [
+        "dev.jdgarita.frnk.backend.AnalyticsTracker",
+        "dev.jdgarita.frnk.backend.CrashReporter",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirestoreRemoteData.kt",
+      "language": "kotlin",
+      "lines": 20,
+      "imports": [
+        "dev.jdgarita.frnk.backend.RemoteData",
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError"
+      ],
+      "symbols": [
+        {
+          "name": "FirestoreRemoteData",
+          "kind": "class",
+          "line": 7,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "get",
+          "kind": "fun",
+          "line": 8,
+          "container": "FirestoreRemoteData",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "set",
+          "kind": "fun",
+          "line": 14,
+          "container": "FirestoreRemoteData",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/commonTest/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseObservabilityModuleTest.kt",
+      "language": "kotlin",
+      "lines": 40,
+      "imports": [
+        "dev.jdgarita.frnk.backend.CrashReporter",
+        "org.koin.dsl.koinApplication",
+        "kotlin.test.AfterTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertNotNull"
+      ],
+      "symbols": [
+        {
+          "name": "FirebaseObservabilityModuleTest",
+          "kind": "class",
+          "line": 18
+        },
+        {
+          "name": "enableNativeCrashHandler_isSafeNoOpOnJvm",
+          "kind": "fun",
+          "line": 20,
+          "container": "FirebaseObservabilityModuleTest"
+        },
+        {
+          "name": "crashReporter_resolvesWithoutThrowing",
+          "kind": "fun",
+          "line": 27,
+          "container": "FirebaseObservabilityModuleTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 39,
+          "container": "FirebaseObservabilityModuleTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/analytics-impl/src/iosMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.ios.kt",
+      "language": "kotlin",
+      "lines": 24,
+      "imports": [
+        "co.touchlab.crashkios.crashlytics.enableCrashlytics",
+        "co.touchlab.crashkios.crashlytics.setCrashlyticsUnhandledExceptionHook",
+        "dev.jdgarita.frnk.utils.PrintLogger"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/monetization-api/src/androidMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.android.kt",
       "language": "kotlin",
       "lines": 6,
       "imports": [
@@ -2764,16 +2053,16 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.kt",
       "language": "kotlin",
-      "lines": 20,
+      "lines": 19,
       "imports": [
         "org.koin.core.module.Module"
       ],
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/DefaultEntitlementManager.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/DefaultEntitlementManager.kt",
       "language": "kotlin",
       "lines": 112,
       "imports": [
@@ -2865,7 +2154,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/EntitlementManager.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/EntitlementManager.kt",
       "language": "kotlin",
       "lines": 53,
       "imports": [
@@ -2940,7 +2229,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/EntitlementProvider.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/EntitlementProvider.kt",
       "language": "kotlin",
       "lines": 35,
       "imports": [
@@ -3001,7 +2290,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/EntitlementStatus.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/EntitlementStatus.kt",
       "language": "kotlin",
       "lines": 14,
       "imports": [],
@@ -3025,7 +2314,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/FeatureGate.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/FeatureGate.kt",
       "language": "kotlin",
       "lines": 42,
       "imports": [
@@ -3059,7 +2348,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/MonetizationError.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/MonetizationError.kt",
       "language": "kotlin",
       "lines": 15,
       "imports": [
@@ -3077,7 +2366,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/MonetizationModule.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/MonetizationModule.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -3086,7 +2375,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ProProduct.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ProProduct.kt",
       "language": "kotlin",
       "lines": 24,
       "imports": [],
@@ -3110,7 +2399,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/DefaultEntitlementManagerTest.kt",
+      "path": "frnk/capabilities/monetization-api/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/DefaultEntitlementManagerTest.kt",
       "language": "kotlin",
       "lines": 197,
       "imports": [
@@ -3340,7 +2629,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-api/src/iosMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.ios.kt",
+      "path": "frnk/capabilities/monetization-api/src/iosMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.ios.kt",
       "language": "kotlin",
       "lines": 5,
       "imports": [
@@ -3349,7 +2638,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-revenuecat/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatConfig.kt",
+      "path": "frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatConfig.kt",
       "language": "kotlin",
       "lines": 19,
       "imports": [],
@@ -3365,7 +2654,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-revenuecat/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProvider.kt",
+      "path": "frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProvider.kt",
       "language": "kotlin",
       "lines": 201,
       "imports": [
@@ -3528,7 +2817,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-revenuecat/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatModule.kt",
+      "path": "frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatModule.kt",
       "language": "kotlin",
       "lines": 15,
       "imports": [
@@ -3538,7 +2827,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-revenuecat/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProviderTest.kt",
+      "path": "frnk/capabilities/monetization-impl/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProviderTest.kt",
       "language": "kotlin",
       "lines": 50,
       "imports": [
@@ -3582,14 +2871,14 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/androidMain/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptions.android.kt",
+      "path": "frnk/capabilities/monetization-ui/src/androidMain/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptions.android.kt",
       "language": "kotlin",
       "lines": 7,
       "imports": [],
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/FrnkSettingsHandler.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/FrnkSettingsHandler.kt",
       "language": "kotlin",
       "lines": 87,
       "imports": [
@@ -3630,14 +2919,14 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptions.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptions.kt",
       "language": "kotlin",
       "lines": 12,
       "imports": [],
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallNav.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallNav.kt",
       "language": "kotlin",
       "lines": 56,
       "imports": [
@@ -3661,7 +2950,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScaffoldModule.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScaffoldModule.kt",
       "language": "kotlin",
       "lines": 14,
       "imports": [
@@ -3671,7 +2960,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreen.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreen.kt",
       "language": "kotlin",
       "lines": 309,
       "imports": [
@@ -3791,7 +3080,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreenState.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreenState.kt",
       "language": "kotlin",
       "lines": 43,
       "imports": [
@@ -3883,7 +3172,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModel.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModel.kt",
       "language": "kotlin",
       "lines": 84,
       "imports": [
@@ -3951,7 +3240,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptionsTest.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptionsTest.kt",
       "language": "kotlin",
       "lines": 18,
       "imports": [
@@ -3973,7 +3262,7 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModelTest.kt",
+      "path": "frnk/capabilities/monetization-ui/src/commonTest/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModelTest.kt",
       "language": "kotlin",
       "lines": 167,
       "imports": [
@@ -4136,14 +3425,110 @@
       ]
     },
     {
-      "path": "shared/shared-monetization-ui/src/iosMain/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptions.ios.kt",
+      "path": "frnk/capabilities/monetization-ui/src/iosMain/kotlin/dev/jdgarita/frnk/monetization/ui/ManageSubscriptions.ios.kt",
       "language": "kotlin",
       "lines": 8,
       "imports": [],
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/UiText.kt",
+      "path": "frnk/core/di/src/androidMain/kotlin/dev/jdgarita/frnk/di/DatabaseContext.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "android.content.Context"
+      ],
+      "symbols": [
+        {
+          "name": "DatabaseContext",
+          "kind": "object",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/di/src/androidMain/kotlin/dev/jdgarita/frnk/di/FrnkInitializer.android.kt",
+      "language": "kotlin",
+      "lines": 36,
+      "imports": [
+        "android.content.Context",
+        "org.koin.android.ext.koin.androidContext",
+        "org.koin.core.KoinApplication",
+        "org.koin.core.module.Module"
+      ],
+      "symbols": [
+        {
+          "name": "initializeFrnk",
+          "kind": "fun",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/di/src/commonMain/kotlin/dev/jdgarita/frnk/di/FrnkInitializer.kt",
+      "language": "kotlin",
+      "lines": 48,
+      "imports": [
+        "org.koin.core.Koin",
+        "org.koin.core.KoinApplication",
+        "org.koin.core.context.startKoin",
+        "org.koin.core.module.Module",
+        "org.koin.mp.KoinPlatformTools"
+      ],
+      "symbols": [
+        {
+          "name": "initializeFrnk",
+          "kind": "fun",
+          "line": 29
+        },
+        {
+          "name": "requireFrnkKoin",
+          "kind": "fun",
+          "line": 43
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/di/src/commonTest/kotlin/dev/jdgarita/frnk/di/FrnkInitializerTest.kt",
+      "language": "kotlin",
+      "lines": 31,
+      "imports": [
+        "org.koin.core.context.stopKoin",
+        "org.koin.dsl.module",
+        "kotlin.test.AfterTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertFailsWith",
+        "kotlin.test.assertSame"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkInitializerTest",
+          "kind": "class",
+          "line": 11
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 13,
+          "container": "FrnkInitializerTest"
+        },
+        {
+          "name": "requireFrnkKoin_fails_fast_with_bootstrap_instruction_when_koin_not_started",
+          "kind": "fun",
+          "line": 18,
+          "container": "FrnkInitializerTest"
+        },
+        {
+          "name": "initializeFrnk_starts_koin_with_the_passed_modules",
+          "kind": "fun",
+          "line": 25,
+          "container": "FrnkInitializerTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/UiText.kt",
       "language": "kotlin",
       "lines": 16,
       "imports": [],
@@ -4177,7 +3562,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedback.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedback.kt",
       "language": "kotlin",
       "lines": 30,
       "imports": [
@@ -4210,7 +3595,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticFeedback.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticFeedback.kt",
       "language": "kotlin",
       "lines": 38,
       "imports": [
@@ -4242,7 +3627,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticType.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticType.kt",
       "language": "kotlin",
       "lines": 27,
       "imports": [],
@@ -4258,7 +3643,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/NoOpHapticFeedback.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/NoOpHapticFeedback.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -4292,7 +3677,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviContract.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviContract.kt",
       "language": "kotlin",
       "lines": 8,
       "imports": [],
@@ -4315,7 +3700,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviViewModel.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviViewModel.kt",
       "language": "kotlin",
       "lines": 59,
       "imports": [
@@ -4384,7 +3769,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkFullScreenRoute.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkFullScreenRoute.kt",
       "language": "kotlin",
       "lines": 16,
       "imports": [
@@ -4399,7 +3784,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavConfig.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavConfig.kt",
       "language": "kotlin",
       "lines": 43,
       "imports": [
@@ -4418,7 +3803,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPendingRouteRequest.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPendingRouteRequest.kt",
       "language": "kotlin",
       "lines": 32,
       "imports": [
@@ -4448,7 +3833,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistry.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistry.kt",
       "language": "kotlin",
       "lines": 57,
       "imports": [
@@ -4494,7 +3879,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExt.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExt.kt",
       "language": "kotlin",
       "lines": 50,
       "imports": [
@@ -4504,7 +3889,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-api/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRoute.kt",
+      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRoute.kt",
       "language": "kotlin",
       "lines": 38,
       "imports": [
@@ -4568,7 +3953,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonTest/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedbackTest.kt",
+      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedbackTest.kt",
       "language": "kotlin",
       "lines": 54,
       "imports": [
@@ -4621,7 +4006,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonTest/kotlin/dev/jdgarita/frnk/ui/mvi/MviViewModelTest.kt",
+      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/mvi/MviViewModelTest.kt",
       "language": "kotlin",
       "lines": 92,
       "imports": [
@@ -4743,7 +4128,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistryTest.kt",
+      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistryTest.kt",
       "language": "kotlin",
       "lines": 86,
       "imports": [
@@ -4802,7 +4187,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExtTest.kt",
+      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExtTest.kt",
       "language": "kotlin",
       "lines": 89,
       "imports": [
@@ -4909,7 +4294,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-api/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRouteTest.kt",
+      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRouteTest.kt",
       "language": "kotlin",
       "lines": 50,
       "imports": [
@@ -4947,7 +4332,1325 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSegmentedControlTest.kt",
+      "path": "frnk/core/util/src/androidMain/kotlin/dev/jdgarita/frnk/utils/NativeAppearance.android.kt",
+      "language": "kotlin",
+      "lines": 7,
+      "imports": [],
+      "symbols": []
+    },
+    {
+      "path": "frnk/core/util/src/androidMain/kotlin/dev/jdgarita/frnk/utils/PlatformInfo.android.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "android.os.Build"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/AppResult.kt",
+      "language": "kotlin",
+      "lines": 38,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "AppResult",
+          "kind": "interface",
+          "line": 4,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "Success",
+          "kind": "class",
+          "line": 5,
+          "container": "AppResult",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "Failure",
+          "kind": "class",
+          "line": 9,
+          "container": "AppResult",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "AppError",
+          "kind": "interface",
+          "line": 14
+        },
+        {
+          "name": "CommonError",
+          "kind": "class",
+          "line": 18,
+          "modifiers": [
+            "enum"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/DateTimeFormat.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "kotlinx.datetime.Instant",
+        "kotlinx.datetime.TimeZone",
+        "kotlinx.datetime.toLocalDateTime"
+      ],
+      "symbols": [
+        {
+          "name": "DateTimeFormat",
+          "kind": "object",
+          "line": 8
+        },
+        {
+          "name": "isoDate",
+          "kind": "fun",
+          "line": 9,
+          "container": "DateTimeFormat"
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/FeedbackEmail.kt",
+      "language": "kotlin",
+      "lines": 77,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "EmailDraft",
+          "kind": "class",
+          "line": 7,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "toMailtoUri",
+          "kind": "fun",
+          "line": 13
+        },
+        {
+          "name": "FeedbackEmail",
+          "kind": "object",
+          "line": 35
+        },
+        {
+          "name": "draft",
+          "kind": "fun",
+          "line": 39,
+          "container": "FeedbackEmail"
+        },
+        {
+          "name": "encodeMailtoComponent",
+          "kind": "fun",
+          "line": 64,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt",
+      "language": "kotlin",
+      "lines": 5,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "Frnk",
+          "kind": "object",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Logger.kt",
+      "language": "kotlin",
+      "lines": 63,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "Logger",
+          "kind": "interface",
+          "line": 4
+        },
+        {
+          "name": "d",
+          "kind": "fun",
+          "line": 5,
+          "container": "Logger"
+        },
+        {
+          "name": "i",
+          "kind": "fun",
+          "line": 11,
+          "container": "Logger"
+        },
+        {
+          "name": "w",
+          "kind": "fun",
+          "line": 17,
+          "container": "Logger"
+        },
+        {
+          "name": "e",
+          "kind": "fun",
+          "line": 23,
+          "container": "Logger"
+        },
+        {
+          "name": "PrintLogger",
+          "kind": "object",
+          "line": 30
+        },
+        {
+          "name": "d",
+          "kind": "fun",
+          "line": 31,
+          "container": "PrintLogger",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "i",
+          "kind": "fun",
+          "line": 37,
+          "container": "PrintLogger",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "w",
+          "kind": "fun",
+          "line": 43,
+          "container": "PrintLogger",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "e",
+          "kind": "fun",
+          "line": 49,
+          "container": "PrintLogger",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "log",
+          "kind": "fun",
+          "line": 55,
+          "container": "PrintLogger",
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/NativeAppearance.kt",
+      "language": "kotlin",
+      "lines": 22,
+      "imports": [],
+      "symbols": []
+    },
+    {
+      "path": "frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/PlatformInfo.kt",
+      "language": "kotlin",
+      "lines": 17,
+      "imports": [],
+      "symbols": []
+    },
+    {
+      "path": "frnk/core/util/src/commonTest/kotlin/dev/jdgarita/frnk/utils/AppResultTest.kt",
+      "language": "kotlin",
+      "lines": 53,
+      "imports": [
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "AppResultTest",
+          "kind": "class",
+          "line": 7
+        },
+        {
+          "name": "fold_runs_the_success_arm_for_Success",
+          "kind": "fun",
+          "line": 9,
+          "container": "AppResultTest"
+        },
+        {
+          "name": "fold_runs_the_failure_arm_for_Failure",
+          "kind": "fun",
+          "line": 22,
+          "container": "AppResultTest"
+        },
+        {
+          "name": "fold_only_invokes_the_matching_arm",
+          "kind": "fun",
+          "line": 35,
+          "container": "AppResultTest"
+        },
+        {
+          "name": "success_and_failure_carry_their_payloads",
+          "kind": "fun",
+          "line": 46,
+          "container": "AppResultTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/util/src/iosMain/kotlin/dev/jdgarita/frnk/utils/NativeAppearance.ios.kt",
+      "language": "kotlin",
+      "lines": 34,
+      "imports": [
+        "platform.UIKit.UIApplication",
+        "platform.UIKit.UISceneActivationStateForegroundActive",
+        "platform.UIKit.UIUserInterfaceStyle.UIUserInterfaceStyleDark",
+        "platform.UIKit.UIUserInterfaceStyle.UIUserInterfaceStyleLight",
+        "platform.UIKit.UIUserInterfaceStyle.UIUserInterfaceStyleUnspecified",
+        "platform.UIKit.UIWindow",
+        "platform.UIKit.UIWindowScene"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/core/util/src/iosMain/kotlin/dev/jdgarita/frnk/utils/PlatformInfo.ios.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "platform.UIKit.UIDevice"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/SqlDriverFactory.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "app.cash.sqldelight.db.QueryResult",
+        "app.cash.sqldelight.db.SqlDriver",
+        "app.cash.sqldelight.db.SqlSchema"
+      ],
+      "symbols": [
+        {
+          "name": "create",
+          "kind": "fun",
+          "line": 12
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/db-impl/src/androidMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.android.kt",
+      "language": "kotlin",
+      "lines": 10,
+      "imports": [
+        "app.cash.sqldelight.driver.android.AndroidSqliteDriver",
+        "dev.jdgarita.frnk.database.SqlDriverFactory",
+        "dev.jdgarita.frnk.di.DatabaseContext"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/DatabaseModule.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "dev.jdgarita.frnk.database.SqlDriverFactory",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt",
+      "language": "kotlin",
+      "lines": 6,
+      "imports": [
+        "dev.jdgarita.frnk.database.SqlDriverFactory"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/db-impl/src/iosMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.ios.kt",
+      "language": "kotlin",
+      "lines": 9,
+      "imports": [
+        "app.cash.sqldelight.driver.native.NativeSqliteDriver",
+        "dev.jdgarita.frnk.database.SqlDriverFactory"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/prefs-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/KeyValueStore.kt",
+      "language": "kotlin",
+      "lines": 26,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "KeyValueStore",
+          "kind": "interface",
+          "line": 4
+        },
+        {
+          "name": "putString",
+          "kind": "fun",
+          "line": 5,
+          "container": "KeyValueStore"
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 10,
+          "container": "KeyValueStore"
+        },
+        {
+          "name": "putBoolean",
+          "kind": "fun",
+          "line": 15,
+          "container": "KeyValueStore"
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 20,
+          "container": "KeyValueStore"
+        },
+        {
+          "name": "remove",
+          "kind": "fun",
+          "line": 25,
+          "container": "KeyValueStore"
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/prefs-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/Preference.kt",
+      "language": "kotlin",
+      "lines": 134,
+      "imports": [
+        "kotlin.properties.ReadWriteProperty",
+        "kotlin.reflect.KProperty"
+      ],
+      "symbols": [
+        {
+          "name": "Preference",
+          "kind": "interface",
+          "line": 27,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "remove",
+          "kind": "fun",
+          "line": 38,
+          "container": "Preference"
+        },
+        {
+          "name": "getValue",
+          "kind": "fun",
+          "line": 41,
+          "container": "Preference",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "setValue",
+          "kind": "fun",
+          "line": 46,
+          "container": "Preference",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "KeyValuePreference",
+          "kind": "class",
+          "line": 56,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "remove",
+          "kind": "fun",
+          "line": 67,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "stringPreference",
+          "kind": "fun",
+          "line": 71
+        },
+        {
+          "name": "booleanPreference",
+          "kind": "fun",
+          "line": 84
+        },
+        {
+          "name": "intPreference",
+          "kind": "fun",
+          "line": 100
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/prefs-api/src/commonTest/kotlin/dev/jdgarita/frnk/database/InMemoryKeyValueStore.kt",
+      "language": "kotlin",
+      "lines": 41,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "InMemoryKeyValueStore",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "putString",
+          "kind": "fun",
+          "line": 13,
+          "container": "InMemoryKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 20,
+          "container": "InMemoryKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "putBoolean",
+          "kind": "fun",
+          "line": 25,
+          "container": "InMemoryKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 32,
+          "container": "InMemoryKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "remove",
+          "kind": "fun",
+          "line": 37,
+          "container": "InMemoryKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/prefs-api/src/commonTest/kotlin/dev/jdgarita/frnk/database/PreferenceTest.kt",
+      "language": "kotlin",
+      "lines": 126,
+      "imports": [
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertFalse",
+        "kotlin.test.assertNull",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "TestTheme",
+          "kind": "class",
+          "line": 9,
+          "modifiers": [
+            "private",
+            "enum"
+          ]
+        },
+        {
+          "name": "PreferenceTest",
+          "kind": "class",
+          "line": 11
+        },
+        {
+          "name": "string_preference_round_trips",
+          "kind": "fun",
+          "line": 17,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "string_preference_returns_default_when_unset",
+          "kind": "fun",
+          "line": 25,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "boolean_preference_round_trips",
+          "kind": "fun",
+          "line": 32,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "boolean_preference_returns_default_when_unset",
+          "kind": "fun",
+          "line": 40,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "int_preference_round_trips",
+          "kind": "fun",
+          "line": 47,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "int_preference_returns_default_when_unset",
+          "kind": "fun",
+          "line": 55,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "int_preference_falls_back_to_default_on_corrupt_value",
+          "kind": "fun",
+          "line": 60,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "enum_preference_round_trips",
+          "kind": "fun",
+          "line": 68,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "enum_preference_returns_default_when_unset",
+          "kind": "fun",
+          "line": 76,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "enum_preference_falls_back_to_default_on_unknown_name",
+          "kind": "fun",
+          "line": 81,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "delegation_via_by_reads_and_writes",
+          "kind": "fun",
+          "line": 89,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "value_get_and_set_property",
+          "kind": "fun",
+          "line": 97,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "remove_resets_to_default",
+          "kind": "fun",
+          "line": 107,
+          "container": "PreferenceTest"
+        },
+        {
+          "name": "two_preferences_on_same_store_are_independent",
+          "kind": "fun",
+          "line": 118,
+          "container": "PreferenceTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/prefs-impl/src/androidMain/kotlin/dev/jdgarita/frnk/database/impl/PrefsDefaults.android.kt",
+      "language": "kotlin",
+      "lines": 12,
+      "imports": [
+        "android.content.Context",
+        "com.russhwolf.settings.SharedPreferencesSettings",
+        "dev.jdgarita.frnk.database.KeyValueStore",
+        "dev.jdgarita.frnk.di.DatabaseContext"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/prefs-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/PrefsDefaults.kt",
+      "language": "kotlin",
+      "lines": 6,
+      "imports": [
+        "dev.jdgarita.frnk.database.KeyValueStore"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/prefs-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/PrefsModule.kt",
+      "language": "kotlin",
+      "lines": 15,
+      "imports": [
+        "dev.jdgarita.frnk.database.KeyValueStore",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/data/prefs-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/SettingsKeyValueStore.kt",
+      "language": "kotlin",
+      "lines": 36,
+      "imports": [
+        "com.russhwolf.settings.Settings",
+        "dev.jdgarita.frnk.database.KeyValueStore"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsKeyValueStore",
+          "kind": "class",
+          "line": 6,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "putString",
+          "kind": "fun",
+          "line": 9,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 16,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "putBoolean",
+          "kind": "fun",
+          "line": 21,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 28,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "remove",
+          "kind": "fun",
+          "line": 33,
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/prefs-impl/src/commonTest/kotlin/dev/jdgarita/frnk/database/impl/SettingsKeyValueStoreTest.kt",
+      "language": "kotlin",
+      "lines": 48,
+      "imports": [
+        "com.russhwolf.settings.MapSettings",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertFalse",
+        "kotlin.test.assertNull",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsKeyValueStoreTest",
+          "kind": "class",
+          "line": 10
+        },
+        {
+          "name": "newStore",
+          "kind": "fun",
+          "line": 11,
+          "container": "SettingsKeyValueStoreTest",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "string_round_trips_and_falls_back_to_default",
+          "kind": "fun",
+          "line": 14,
+          "container": "SettingsKeyValueStoreTest"
+        },
+        {
+          "name": "boolean_round_trips_and_falls_back_to_default",
+          "kind": "fun",
+          "line": 26,
+          "container": "SettingsKeyValueStoreTest"
+        },
+        {
+          "name": "remove_clears_the_value",
+          "kind": "fun",
+          "line": 37,
+          "container": "SettingsKeyValueStoreTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/prefs-impl/src/iosMain/kotlin/dev/jdgarita/frnk/database/impl/PrefsDefaults.ios.kt",
+      "language": "kotlin",
+      "lines": 7,
+      "imports": [
+        "com.russhwolf.settings.NSUserDefaultsSettings",
+        "dev.jdgarita.frnk.database.KeyValueStore",
+        "platform.Foundation.NSUserDefaults"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt",
+      "language": "kotlin",
+      "lines": 202,
+      "imports": [
+        "androidx.compose.foundation.layout.ColumnScope",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.ui.Modifier",
+        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
+        "androidx.navigation3.runtime.EntryProviderScope",
+        "androidx.navigation3.runtime.NavKey",
+        "dev.jdgarita.frnk.backend.AnalyticsTracker",
+        "dev.jdgarita.frnk.di.requireFrnkKoin",
+        "dev.jdgarita.frnk.monetization.EntitlementManager",
+        "dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination",
+        "dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction",
+        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
+        "dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest",
+        "dev.jdgarita.frnk.ui.nav.ToolkitRoute",
+        "dev.jdgarita.frnk.ui.scaffolds.HomeEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsAction",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState",
+        "dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState",
+        "dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher",
+        "dev.jdgarita.frnk.ui.theme.AppearanceController",
+        "dev.jdgarita.frnk.ui.theme.FrnkThemeConfig",
+        "dev.jdgarita.frnk.ui.theme.LocalAppearanceController",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.serialization.modules.EmptySerializersModule",
+        "kotlinx.serialization.modules.SerializersModule",
+        "org.koin.compose.koinInject"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAppScaffold",
+          "kind": "fun",
+          "line": 67
+        },
+        {
+          "name": "rememberFrnkAppSettingsHandler",
+          "kind": "fun",
+          "line": 166,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkUiModules.kt",
+      "language": "kotlin",
+      "lines": 36,
+      "imports": [
+        "dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule",
+        "dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule",
+        "dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule",
+        "dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule",
+        "org.koin.core.module.Module"
+      ],
+      "symbols": [
+        {
+          "name": "frnkUiModules",
+          "kind": "fun",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/app/src/commonTest/kotlin/dev/jdgarita/frnk/ui/app/FrnkUiModulesTest.kt",
+      "language": "kotlin",
+      "lines": 24,
+      "imports": [
+        "dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule",
+        "dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule",
+        "dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule",
+        "dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule",
+        "kotlin.test.Test",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkUiModulesTest",
+          "kind": "class",
+          "line": 15
+        },
+        {
+          "name": "contains_every_scaffold_view_model_module",
+          "kind": "fun",
+          "line": 17,
+          "container": "FrnkUiModulesTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScope.kt",
+      "language": "kotlin",
+      "lines": 38,
+      "imports": [
+        "androidx.compose.runtime.Stable",
+        "androidx.navigation3.runtime.NavKey",
+        "dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry",
+        "dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks",
+        "dev.jdgarita.frnk.ui.nav.back",
+        "dev.jdgarita.frnk.ui.nav.clearAndNavigateTo",
+        "dev.jdgarita.frnk.ui.nav.navigateTo"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAppScope",
+          "kind": "class",
+          "line": 18
+        },
+        {
+          "name": "navigateTo",
+          "kind": "fun",
+          "line": 25
+        },
+        {
+          "name": "back",
+          "kind": "fun",
+          "line": 30
+        },
+        {
+          "name": "clearAndNavigateTo",
+          "kind": "fun",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppShell.kt",
+      "language": "kotlin",
+      "lines": 284,
+      "imports": [
+        "androidx.compose.foundation.layout.ColumnScope",
+        "androidx.compose.foundation.layout.PaddingValues",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.graphics.Color",
+        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
+        "androidx.navigation3.runtime.EntryProviderScope",
+        "androidx.navigation3.runtime.NavKey",
+        "androidx.navigation3.runtime.entryProvider",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold",
+        "dev.jdgarita.frnk.ui.bottomnav.rememberFrnkAdaptiveNavTabs",
+        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
+        "dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest",
+        "dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry",
+        "dev.jdgarita.frnk.ui.nav.FrnkTab",
+        "dev.jdgarita.frnk.ui.nav.ToolkitRoute",
+        "dev.jdgarita.frnk.ui.nav.frnkNavConfiguration",
+        "dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks",
+        "dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold",
+        "dev.jdgarita.frnk.ui.scaffolds.HomeEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.HomeScreen",
+        "dev.jdgarita.frnk.ui.scaffolds.HomeScreenState",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsAction",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsScreen",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState",
+        "dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState",
+        "dev.jdgarita.frnk.ui.theme.AppearanceController",
+        "dev.jdgarita.frnk.ui.theme.FrnkTheme",
+        "dev.jdgarita.frnk.ui.theme.FrnkThemeConfig",
+        "dev.jdgarita.frnk.ui.theme.LocalAppearanceController",
+        "dev.jdgarita.frnk.ui.theme.spacing",
+        "dev.jdgarita.frnk.ui.theme.spacingLg",
+        "dev.jdgarita.frnk.ui.theme.spacingXl",
+        "dev.jdgarita.frnk.ui.theme.stringNavHome",
+        "dev.jdgarita.frnk.ui.theme.stringSettings",
+        "dev.jdgarita.frnk.ui.theme.strings",
+        "kotlinx.serialization.modules.EmptySerializersModule",
+        "kotlinx.serialization.modules.SerializersModule"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAppShell",
+          "kind": "fun",
+          "line": 90
+        },
+        {
+          "name": "FrnkAppSettingsTab",
+          "kind": "fun",
+          "line": 216,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "rememberShellSettingsHandler",
+          "kind": "fun",
+          "line": 265,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveBottomNavBar.kt",
+      "language": "kotlin",
+      "lines": 123,
+      "imports": [
+        "androidx.compose.material3.Icon",
+        "androidx.compose.material3.NavigationBarItem",
+        "androidx.compose.material3.NavigationBarItemDefaults",
+        "androidx.compose.material3.Text",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.unit.Dp",
+        "androidx.compose.ui.unit.dp",
+        "com.composeunstyled.theme.Theme",
+        "com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi",
+        "com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar",
+        "com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration",
+        "com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem",
+        "com.mohamedrejeb.calf.ui.uikit.UIKitImage",
+        "dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem",
+        "dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset",
+        "dev.jdgarita.frnk.ui.theme.colorOnSurface",
+        "dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant",
+        "dev.jdgarita.frnk.ui.theme.colorPrimary",
+        "dev.jdgarita.frnk.ui.theme.colorPrimaryContainer",
+        "dev.jdgarita.frnk.ui.theme.colorSurface",
+        "dev.jdgarita.frnk.ui.theme.colors"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAdaptiveBottomNavBarDefaults",
+          "kind": "object",
+          "line": 27
+        },
+        {
+          "name": "FrnkAdaptiveBottomNavBar",
+          "kind": "fun",
+          "line": 72
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveBottomNavScaffold.kt",
+      "language": "kotlin",
+      "lines": 92,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.PaddingValues",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.ui.Modifier",
+        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem",
+        "dev.jdgarita.frnk.ui.mvi.EffectCollector",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavIntent",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldState",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavTab",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavViewModel",
+        "dev.jdgarita.frnk.ui.theme.colorBackground",
+        "dev.jdgarita.frnk.ui.theme.colors",
+        "org.koin.compose.viewmodel.koinViewModel",
+        "org.koin.core.parameter.parametersOf"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAdaptiveBottomNavScaffold",
+          "kind": "fun",
+          "line": 43
+        },
+        {
+          "name": "FrnkAdaptiveBottomNavScaffoldContent",
+          "kind": "fun",
+          "line": 70
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavBarBottomBar.kt",
+      "language": "kotlin",
+      "lines": 166,
+      "imports": [
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.material3.FloatingActionButton",
+        "androidx.compose.material3.Icon",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.key",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.rememberUpdatedState",
+        "androidx.compose.ui.Modifier",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.theme.colorOnPrimary",
+        "dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant",
+        "dev.jdgarita.frnk.ui.theme.colorPrimary",
+        "dev.jdgarita.frnk.ui.theme.colorPrimaryContainer",
+        "dev.jdgarita.frnk.ui.theme.colorSurface",
+        "dev.jdgarita.frnk.ui.theme.colors",
+        "io.github.narendraanjana09.adaptivenavbar.AdaptiveNavigationBar",
+        "io.github.narendraanjana09.adaptivenavbar.AdaptiveNavigationBarDefaults",
+        "io.github.narendraanjana09.adaptivenavbar.IosFabItem",
+        "io.github.narendraanjana09.adaptivenavbar.NavigationItem",
+        "org.jetbrains.compose.resources.painterResource"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAdaptiveNavBarBottomBar",
+          "kind": "fun",
+          "line": 48
+        },
+        {
+          "name": "FrnkAdaptiveNavBarPrimaryActionFab",
+          "kind": "fun",
+          "line": 150
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavDefaults.kt",
+      "language": "kotlin",
+      "lines": 89,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.remember",
+        "androidx.navigation3.runtime.NavKey",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res",
+        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_home",
+        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_settings",
+        "dev.jdgarita.frnk.ui.theme.iconNavHome",
+        "dev.jdgarita.frnk.ui.theme.iconSettings",
+        "dev.jdgarita.frnk.ui.theme.icons",
+        "dev.jdgarita.frnk.ui.theme.stringNavHome",
+        "dev.jdgarita.frnk.ui.theme.stringSettings",
+        "dev.jdgarita.frnk.ui.theme.strings"
+      ],
+      "symbols": [
+        {
+          "name": "rememberFrnkAdaptiveNavTabs",
+          "kind": "fun",
+          "line": 42
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavEngine.kt",
+      "language": "kotlin",
+      "lines": 18,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "FrnkAdaptiveNavEngine",
+          "kind": "class",
+          "line": 15,
+          "modifiers": [
+            "enum"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavItem.kt",
+      "language": "kotlin",
+      "lines": 21,
+      "imports": [
+        "androidx.compose.runtime.Immutable",
+        "org.jetbrains.compose.resources.DrawableResource"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAdaptiveNavItem",
+          "kind": "class",
+          "line": 14,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavTab.kt",
+      "language": "kotlin",
+      "lines": 31,
+      "imports": [
+        "androidx.compose.runtime.Immutable",
+        "androidx.compose.ui.graphics.vector.ImageVector",
+        "androidx.navigation3.runtime.NavKey",
+        "org.jetbrains.compose.resources.DrawableResource"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkAdaptiveNavTab",
+          "kind": "class",
+          "line": 22,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavDefaults.kt",
+      "language": "kotlin",
+      "lines": 53,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.remember",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldState",
+        "dev.jdgarita.frnk.ui.scaffolds.BottomNavTab",
+        "dev.jdgarita.frnk.ui.theme.iconNavHome",
+        "dev.jdgarita.frnk.ui.theme.iconSettings",
+        "dev.jdgarita.frnk.ui.theme.icons",
+        "dev.jdgarita.frnk.ui.theme.stringNavHome",
+        "dev.jdgarita.frnk.ui.theme.stringSettings",
+        "dev.jdgarita.frnk.ui.theme.strings"
+      ],
+      "symbols": [
+        {
+          "name": "rememberFrnkBottomNavState",
+          "kind": "fun",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNavPrimaryAction.kt",
+      "language": "kotlin",
+      "lines": 49,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.Immutable",
+        "androidx.compose.runtime.remember",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res",
+        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_primary_action",
+        "dev.jdgarita.frnk.ui.theme.stringPrimaryAction",
+        "dev.jdgarita.frnk.ui.theme.strings",
+        "org.jetbrains.compose.resources.DrawableResource"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkNavPrimaryAction",
+          "kind": "class",
+          "line": 30,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "rememberFrnkNavPrimaryAction",
+          "kind": "fun",
+          "line": 42
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt",
+      "language": "kotlin",
+      "lines": 202,
+      "imports": [
+        "androidx.compose.foundation.layout.Box",
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.foundation.layout.fillMaxWidth",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.CompositionLocalProvider",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.ui.Alignment",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.unit.dp",
+        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
+        "androidx.navigation3.runtime.NavEntry",
+        "androidx.navigation3.runtime.NavKey",
+        "dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem",
+        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
+        "dev.jdgarita.frnk.ui.nav.FrnkNavDisplay",
+        "dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry",
+        "dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler",
+        "dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks",
+        "dev.jdgarita.frnk.ui.nav.LocalFrnkPrimaryActionRegistry",
+        "dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset",
+        "io.github.narendraanjana09.adaptivenavbar.Platform",
+        "io.github.narendraanjana09.adaptivenavbar.getPlatform",
+        "org.koin.compose.navigation3.koinEntryProvider",
+        "org.koin.core.annotation.KoinExperimentalAPI"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkTabbedNavScaffold",
+          "kind": "fun",
+          "line": 85
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSegmentedControlTest.kt",
       "language": "kotlin",
       "lines": 109,
       "imports": [
@@ -5005,7 +5708,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSwitchTest.kt",
+      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSwitchTest.kt",
       "language": "kotlin",
       "lines": 75,
       "imports": [
@@ -5059,7 +5762,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkTopAppBarTest.kt",
+      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkTopAppBarTest.kt",
       "language": "kotlin",
       "lines": 178,
       "imports": [
@@ -5131,7 +5834,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/RobolectricComposeTest.kt",
+      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/RobolectricComposeTest.kt",
       "language": "kotlin",
       "lines": 48,
       "imports": [
@@ -5164,7 +5867,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModelTest.kt",
+      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModelTest.kt",
       "language": "kotlin",
       "lines": 88,
       "imports": [
@@ -5238,7 +5941,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaultsTest.kt",
+      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaultsTest.kt",
       "language": "kotlin",
       "lines": 91,
       "imports": [
@@ -5302,7 +6005,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkBottomNavBarPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkBottomNavBarPreviews.kt",
       "language": "kotlin",
       "lines": 55,
       "imports": [
@@ -5339,7 +6042,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkButtonPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkButtonPreviews.kt",
       "language": "kotlin",
       "lines": 72,
       "imports": [
@@ -5381,7 +6084,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkDividerPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkDividerPreviews.kt",
       "language": "kotlin",
       "lines": 35,
       "imports": [
@@ -5412,7 +6115,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkIconPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkIconPreviews.kt",
       "language": "kotlin",
       "lines": 123,
       "imports": [
@@ -5474,7 +6177,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkSegmentedControlPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkSegmentedControlPreviews.kt",
       "language": "kotlin",
       "lines": 57,
       "imports": [
@@ -5514,7 +6217,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkSwitchPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkSwitchPreviews.kt",
       "language": "kotlin",
       "lines": 45,
       "imports": [
@@ -5555,7 +6258,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkTextPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkTextPreviews.kt",
       "language": "kotlin",
       "lines": 65,
       "imports": [
@@ -5608,7 +6311,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkTopAppBarPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/FrnkTopAppBarPreviews.kt",
       "language": "kotlin",
       "lines": 79,
       "imports": [
@@ -5659,7 +6362,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/PreviewSurface.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/atoms/previews/PreviewSurface.kt",
       "language": "kotlin",
       "lines": 40,
       "imports": [
@@ -5690,7 +6393,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkEmptyStatePreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkEmptyStatePreviews.kt",
       "language": "kotlin",
       "lines": 80,
       "imports": [
@@ -5735,7 +6438,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkLabeledValuePreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkLabeledValuePreviews.kt",
       "language": "kotlin",
       "lines": 51,
       "imports": [
@@ -5775,7 +6478,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkListRowPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkListRowPreviews.kt",
       "language": "kotlin",
       "lines": 124,
       "imports": [
@@ -5843,7 +6546,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkSwipeablePreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/molecules/previews/FrnkSwipeablePreviews.kt",
       "language": "kotlin",
       "lines": 110,
       "imports": [
@@ -5926,7 +6629,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/organisms/previews/FrnkListSectionPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/organisms/previews/FrnkListSectionPreviews.kt",
       "language": "kotlin",
       "lines": 88,
       "imports": [
@@ -5982,7 +6685,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/organisms/previews/FrnkProfileHeaderPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/organisms/previews/FrnkProfileHeaderPreviews.kt",
       "language": "kotlin",
       "lines": 70,
       "imports": [
@@ -6036,7 +6739,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/HomeScreenPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/HomeScreenPreviews.kt",
       "language": "kotlin",
       "lines": 63,
       "imports": [
@@ -6082,7 +6785,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/OnboardingScreenPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/OnboardingScreenPreviews.kt",
       "language": "kotlin",
       "lines": 126,
       "imports": [
@@ -6184,7 +6887,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/SettingsScreenPreviews.kt",
+      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/SettingsScreenPreviews.kt",
       "language": "kotlin",
       "lines": 51,
       "imports": [
@@ -6225,7 +6928,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/BottomNavInsets.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/BottomNavInsets.kt",
       "language": "kotlin",
       "lines": 18,
       "imports": [
@@ -6244,7 +6947,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkBottomNavBar.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkBottomNavBar.kt",
       "language": "kotlin",
       "lines": 201,
       "imports": [
@@ -6315,7 +7018,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkButton.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkButton.kt",
       "language": "kotlin",
       "lines": 145,
       "imports": [
@@ -6394,7 +7097,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkDivider.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkDivider.kt",
       "language": "kotlin",
       "lines": 52,
       "imports": [
@@ -6444,7 +7147,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkIcon.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkIcon.kt",
       "language": "kotlin",
       "lines": 67,
       "imports": [
@@ -6499,7 +7202,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkIconButton.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkIconButton.kt",
       "language": "kotlin",
       "lines": 87,
       "imports": [
@@ -6557,7 +7260,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSegmentedControl.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSegmentedControl.kt",
       "language": "kotlin",
       "lines": 123,
       "imports": [
@@ -6628,7 +7331,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSkeleton.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSkeleton.kt",
       "language": "kotlin",
       "lines": 107,
       "imports": [
@@ -6697,7 +7400,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSwitch.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSwitch.kt",
       "language": "kotlin",
       "lines": 109,
       "imports": [
@@ -6762,7 +7465,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkText.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkText.kt",
       "language": "kotlin",
       "lines": 208,
       "imports": [
@@ -6882,7 +7585,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkTopAppBar.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkTopAppBar.kt",
       "language": "kotlin",
       "lines": 251,
       "imports": [
@@ -6967,7 +7670,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/FrnkHaptics.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/FrnkHaptics.kt",
       "language": "kotlin",
       "lines": 91,
       "imports": [
@@ -7003,7 +7706,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/MultiHapticEngine.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/MultiHapticEngine.kt",
       "language": "kotlin",
       "lines": 55,
       "imports": [
@@ -7028,7 +7731,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkEmptyState.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkEmptyState.kt",
       "language": "kotlin",
       "lines": 85,
       "imports": [
@@ -7072,7 +7775,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkLabeledValue.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkLabeledValue.kt",
       "language": "kotlin",
       "lines": 93,
       "imports": [
@@ -7136,7 +7839,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkListRow.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkListRow.kt",
       "language": "kotlin",
       "lines": 138,
       "imports": [
@@ -7215,7 +7918,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkSwipeAction.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkSwipeAction.kt",
       "language": "kotlin",
       "lines": 59,
       "imports": [
@@ -7254,7 +7957,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkSwipeController.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkSwipeController.kt",
       "language": "kotlin",
       "lines": 72,
       "imports": [
@@ -7300,7 +8003,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkSwipeable.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkSwipeable.kt",
       "language": "kotlin",
       "lines": 412,
       "imports": [
@@ -7400,7 +8103,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/EffectCollector.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/EffectCollector.kt",
       "language": "kotlin",
       "lines": 43,
       "imports": [
@@ -7422,7 +8125,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkMviScreen.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkMviScreen.kt",
       "language": "kotlin",
       "lines": 76,
       "imports": [
@@ -7449,7 +8152,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt",
       "language": "kotlin",
       "lines": 71,
       "imports": [
@@ -7483,7 +8186,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavTab.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavTab.kt",
       "language": "kotlin",
       "lines": 23,
       "imports": [
@@ -7503,7 +8206,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavigationAnimations.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavigationAnimations.kt",
       "language": "kotlin",
       "lines": 37,
       "imports": [
@@ -7527,7 +8230,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionHandler.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionHandler.kt",
       "language": "kotlin",
       "lines": 53,
       "imports": [
@@ -7546,7 +8249,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkTabbedBackStacks.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkTabbedBackStacks.kt",
       "language": "kotlin",
       "lines": 153,
       "imports": [
@@ -7611,7 +8314,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkListSection.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkListSection.kt",
       "language": "kotlin",
       "lines": 61,
       "imports": [
@@ -7639,7 +8342,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkProfileHeader.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkProfileHeader.kt",
       "language": "kotlin",
       "lines": 142,
       "imports": [
@@ -7712,7 +8415,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkSectionCard.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkSectionCard.kt",
       "language": "kotlin",
       "lines": 90,
       "imports": [
@@ -7751,7 +8454,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Fade.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Fade.kt",
       "language": "kotlin",
       "lines": 59,
       "imports": [
@@ -7790,7 +8493,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Modifiers.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Modifiers.kt",
       "language": "kotlin",
       "lines": 130,
       "imports": [
@@ -7825,7 +8528,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Placeholder.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Placeholder.kt",
       "language": "kotlin",
       "lines": 221,
       "imports": [
@@ -7956,7 +8659,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/PlaceholderCoordinator.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/PlaceholderCoordinator.kt",
       "language": "kotlin",
       "lines": 94,
       "imports": [
@@ -8005,7 +8708,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/PlaceholderDefaults.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/PlaceholderDefaults.kt",
       "language": "kotlin",
       "lines": 71,
       "imports": [
@@ -8026,7 +8729,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/PlaceholderHighlight.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/PlaceholderHighlight.kt",
       "language": "kotlin",
       "lines": 69,
       "imports": [
@@ -8058,7 +8761,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Shimmer.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/placeholder/Shimmer.kt",
       "language": "kotlin",
       "lines": 85,
       "imports": [
@@ -8111,7 +8814,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavDefaults.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavDefaults.kt",
       "language": "kotlin",
       "lines": 60,
       "imports": [
@@ -8134,7 +8837,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffold.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffold.kt",
       "language": "kotlin",
       "lines": 108,
       "imports": [
@@ -8175,7 +8878,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldModule.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldModule.kt",
       "language": "kotlin",
       "lines": 18,
       "imports": [
@@ -8185,7 +8888,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldState.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldState.kt",
       "language": "kotlin",
       "lines": 55,
       "imports": [
@@ -8249,7 +8952,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavViewModel.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavViewModel.kt",
       "language": "kotlin",
       "lines": 24,
       "imports": [
@@ -8273,7 +8976,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FeedbackEmailLauncher.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FeedbackEmailLauncher.kt",
       "language": "kotlin",
       "lines": 50,
       "imports": [
@@ -8295,7 +8998,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkBottomBarInset.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkBottomBarInset.kt",
       "language": "kotlin",
       "lines": 22,
       "imports": [
@@ -8305,7 +9008,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkScreenScaffold.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkScreenScaffold.kt",
       "language": "kotlin",
       "lines": 90,
       "imports": [
@@ -8341,7 +9044,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScaffoldModule.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScaffoldModule.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -8351,7 +9054,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreen.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreen.kt",
       "language": "kotlin",
       "lines": 105,
       "imports": [
@@ -8390,7 +9093,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreenState.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreenState.kt",
       "language": "kotlin",
       "lines": 55,
       "imports": [
@@ -8483,7 +9186,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModel.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModel.kt",
       "language": "kotlin",
       "lines": 20,
       "imports": [
@@ -8507,7 +9210,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScaffoldModule.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScaffoldModule.kt",
       "language": "kotlin",
       "lines": 18,
       "imports": [
@@ -8517,7 +9220,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreen.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreen.kt",
       "language": "kotlin",
       "lines": 277,
       "imports": [
@@ -8623,7 +9326,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreenState.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreenState.kt",
       "language": "kotlin",
       "lines": 68,
       "imports": [
@@ -8725,7 +9428,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingViewModel.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingViewModel.kt",
       "language": "kotlin",
       "lines": 29,
       "imports": [
@@ -8749,7 +9452,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaults.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaults.kt",
       "language": "kotlin",
       "lines": 341,
       "imports": [
@@ -8825,7 +9528,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScaffoldModule.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScaffoldModule.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -8835,7 +9538,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreen.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreen.kt",
       "language": "kotlin",
       "lines": 288,
       "imports": [
@@ -8941,7 +9644,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreenState.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreenState.kt",
       "language": "kotlin",
       "lines": 174,
       "imports": [
@@ -9188,7 +9891,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt",
       "language": "kotlin",
       "lines": 58,
       "imports": [
@@ -9237,7 +9940,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkIcons.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkIcons.kt",
       "language": "kotlin",
       "lines": 72,
       "imports": [
@@ -9266,7 +9969,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkRipple.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkRipple.kt",
       "language": "kotlin",
       "lines": 42,
       "imports": [
@@ -9285,7 +9988,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkStrings.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkStrings.kt",
       "language": "kotlin",
       "lines": 127,
       "imports": [
@@ -9294,7 +9997,7 @@
       "symbols": []
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkTheme.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkTheme.kt",
       "language": "kotlin",
       "lines": 394,
       "imports": [
@@ -9362,7 +10065,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkThemeConfig.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkThemeConfig.kt",
       "language": "kotlin",
       "lines": 72,
       "imports": [
@@ -9389,7 +10092,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ColorTokens.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ColorTokens.kt",
       "language": "kotlin",
       "lines": 99,
       "imports": [
@@ -9421,7 +10124,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/IconSizeTokens.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/IconSizeTokens.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -9436,7 +10139,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ShapeTokens.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ShapeTokens.kt",
       "language": "kotlin",
       "lines": 22,
       "imports": [
@@ -9455,7 +10158,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/SpacingTokens.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/SpacingTokens.kt",
       "language": "kotlin",
       "lines": 19,
       "imports": [
@@ -9470,7 +10173,7 @@
       ]
     },
     {
-      "path": "shared/shared-ui-atoms/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/TypographyTokens.kt",
+      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/TypographyTokens.kt",
       "language": "kotlin",
       "lines": 118,
       "imports": [
@@ -9484,965 +10187,6 @@
           "name": "FrnkTypography",
           "kind": "object",
           "line": 8
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScope.kt",
-      "language": "kotlin",
-      "lines": 38,
-      "imports": [
-        "androidx.compose.runtime.Stable",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry",
-        "dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks",
-        "dev.jdgarita.frnk.ui.nav.back",
-        "dev.jdgarita.frnk.ui.nav.clearAndNavigateTo",
-        "dev.jdgarita.frnk.ui.nav.navigateTo"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAppScope",
-          "kind": "class",
-          "line": 18
-        },
-        {
-          "name": "navigateTo",
-          "kind": "fun",
-          "line": 25
-        },
-        {
-          "name": "back",
-          "kind": "fun",
-          "line": 30
-        },
-        {
-          "name": "clearAndNavigateTo",
-          "kind": "fun",
-          "line": 35
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppShell.kt",
-      "language": "kotlin",
-      "lines": 283,
-      "imports": [
-        "androidx.compose.foundation.layout.ColumnScope",
-        "androidx.compose.foundation.layout.PaddingValues",
-        "androidx.compose.foundation.layout.fillMaxSize",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.LaunchedEffect",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.graphics.Color",
-        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
-        "androidx.navigation3.runtime.EntryProviderScope",
-        "androidx.navigation3.runtime.NavKey",
-        "androidx.navigation3.runtime.entryProvider",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold",
-        "dev.jdgarita.frnk.ui.bottomnav.rememberFrnkAdaptiveNavTabs",
-        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
-        "dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest",
-        "dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry",
-        "dev.jdgarita.frnk.ui.nav.FrnkTab",
-        "dev.jdgarita.frnk.ui.nav.ToolkitRoute",
-        "dev.jdgarita.frnk.ui.nav.frnkNavConfiguration",
-        "dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks",
-        "dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold",
-        "dev.jdgarita.frnk.ui.scaffolds.HomeEffect",
-        "dev.jdgarita.frnk.ui.scaffolds.HomeScreen",
-        "dev.jdgarita.frnk.ui.scaffolds.HomeScreenState",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsAction",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsEffect",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsScreen",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsScreenState",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState",
-        "dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState",
-        "dev.jdgarita.frnk.ui.theme.AppearanceController",
-        "dev.jdgarita.frnk.ui.theme.FrnkTheme",
-        "dev.jdgarita.frnk.ui.theme.FrnkThemeConfig",
-        "dev.jdgarita.frnk.ui.theme.LocalAppearanceController",
-        "dev.jdgarita.frnk.ui.theme.spacing",
-        "dev.jdgarita.frnk.ui.theme.spacingLg",
-        "dev.jdgarita.frnk.ui.theme.spacingXl",
-        "dev.jdgarita.frnk.ui.theme.stringNavHome",
-        "dev.jdgarita.frnk.ui.theme.stringSettings",
-        "dev.jdgarita.frnk.ui.theme.strings",
-        "kotlinx.serialization.modules.EmptySerializersModule",
-        "kotlinx.serialization.modules.SerializersModule"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAppShell",
-          "kind": "fun",
-          "line": 89
-        },
-        {
-          "name": "FrnkAppSettingsTab",
-          "kind": "fun",
-          "line": 215,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "rememberShellSettingsHandler",
-          "kind": "fun",
-          "line": 264,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveBottomNavBar.kt",
-      "language": "kotlin",
-      "lines": 123,
-      "imports": [
-        "androidx.compose.material3.Icon",
-        "androidx.compose.material3.NavigationBarItem",
-        "androidx.compose.material3.NavigationBarItemDefaults",
-        "androidx.compose.material3.Text",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.unit.Dp",
-        "androidx.compose.ui.unit.dp",
-        "com.composeunstyled.theme.Theme",
-        "com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi",
-        "com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar",
-        "com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration",
-        "com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem",
-        "com.mohamedrejeb.calf.ui.uikit.UIKitImage",
-        "dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem",
-        "dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset",
-        "dev.jdgarita.frnk.ui.theme.colorOnSurface",
-        "dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant",
-        "dev.jdgarita.frnk.ui.theme.colorPrimary",
-        "dev.jdgarita.frnk.ui.theme.colorPrimaryContainer",
-        "dev.jdgarita.frnk.ui.theme.colorSurface",
-        "dev.jdgarita.frnk.ui.theme.colors"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAdaptiveBottomNavBarDefaults",
-          "kind": "object",
-          "line": 27
-        },
-        {
-          "name": "FrnkAdaptiveBottomNavBar",
-          "kind": "fun",
-          "line": 72
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveBottomNavScaffold.kt",
-      "language": "kotlin",
-      "lines": 92,
-      "imports": [
-        "androidx.compose.foundation.background",
-        "androidx.compose.foundation.layout.Box",
-        "androidx.compose.foundation.layout.Column",
-        "androidx.compose.foundation.layout.PaddingValues",
-        "androidx.compose.foundation.layout.fillMaxSize",
-        "androidx.compose.foundation.layout.fillMaxWidth",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.ui.Modifier",
-        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem",
-        "dev.jdgarita.frnk.ui.mvi.EffectCollector",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavEffect",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavIntent",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldState",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavTab",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavViewModel",
-        "dev.jdgarita.frnk.ui.theme.colorBackground",
-        "dev.jdgarita.frnk.ui.theme.colors",
-        "org.koin.compose.viewmodel.koinViewModel",
-        "org.koin.core.parameter.parametersOf"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAdaptiveBottomNavScaffold",
-          "kind": "fun",
-          "line": 43
-        },
-        {
-          "name": "FrnkAdaptiveBottomNavScaffoldContent",
-          "kind": "fun",
-          "line": 70
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavBarBottomBar.kt",
-      "language": "kotlin",
-      "lines": 166,
-      "imports": [
-        "androidx.compose.foundation.layout.Box",
-        "androidx.compose.material3.FloatingActionButton",
-        "androidx.compose.material3.Icon",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.key",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.runtime.rememberUpdatedState",
-        "androidx.compose.ui.Modifier",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.theme.colorOnPrimary",
-        "dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant",
-        "dev.jdgarita.frnk.ui.theme.colorPrimary",
-        "dev.jdgarita.frnk.ui.theme.colorPrimaryContainer",
-        "dev.jdgarita.frnk.ui.theme.colorSurface",
-        "dev.jdgarita.frnk.ui.theme.colors",
-        "io.github.narendraanjana09.adaptivenavbar.AdaptiveNavigationBar",
-        "io.github.narendraanjana09.adaptivenavbar.AdaptiveNavigationBarDefaults",
-        "io.github.narendraanjana09.adaptivenavbar.IosFabItem",
-        "io.github.narendraanjana09.adaptivenavbar.NavigationItem",
-        "org.jetbrains.compose.resources.painterResource"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAdaptiveNavBarBottomBar",
-          "kind": "fun",
-          "line": 48
-        },
-        {
-          "name": "FrnkAdaptiveNavBarPrimaryActionFab",
-          "kind": "fun",
-          "line": 150
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavDefaults.kt",
-      "language": "kotlin",
-      "lines": 89,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.remember",
-        "androidx.navigation3.runtime.NavKey",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res",
-        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_home",
-        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_settings",
-        "dev.jdgarita.frnk.ui.theme.iconNavHome",
-        "dev.jdgarita.frnk.ui.theme.iconSettings",
-        "dev.jdgarita.frnk.ui.theme.icons",
-        "dev.jdgarita.frnk.ui.theme.stringNavHome",
-        "dev.jdgarita.frnk.ui.theme.stringSettings",
-        "dev.jdgarita.frnk.ui.theme.strings"
-      ],
-      "symbols": [
-        {
-          "name": "rememberFrnkAdaptiveNavTabs",
-          "kind": "fun",
-          "line": 42
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavEngine.kt",
-      "language": "kotlin",
-      "lines": 18,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "FrnkAdaptiveNavEngine",
-          "kind": "class",
-          "line": 15,
-          "modifiers": [
-            "enum"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavItem.kt",
-      "language": "kotlin",
-      "lines": 21,
-      "imports": [
-        "androidx.compose.runtime.Immutable",
-        "org.jetbrains.compose.resources.DrawableResource"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAdaptiveNavItem",
-          "kind": "class",
-          "line": 14,
-          "modifiers": [
-            "data"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavTab.kt",
-      "language": "kotlin",
-      "lines": 31,
-      "imports": [
-        "androidx.compose.runtime.Immutable",
-        "androidx.compose.ui.graphics.vector.ImageVector",
-        "androidx.navigation3.runtime.NavKey",
-        "org.jetbrains.compose.resources.DrawableResource"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAdaptiveNavTab",
-          "kind": "class",
-          "line": 22,
-          "modifiers": [
-            "data"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavDefaults.kt",
-      "language": "kotlin",
-      "lines": 53,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.remember",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavScaffoldState",
-        "dev.jdgarita.frnk.ui.scaffolds.BottomNavTab",
-        "dev.jdgarita.frnk.ui.theme.iconNavHome",
-        "dev.jdgarita.frnk.ui.theme.iconSettings",
-        "dev.jdgarita.frnk.ui.theme.icons",
-        "dev.jdgarita.frnk.ui.theme.stringNavHome",
-        "dev.jdgarita.frnk.ui.theme.stringSettings",
-        "dev.jdgarita.frnk.ui.theme.strings"
-      ],
-      "symbols": [
-        {
-          "name": "rememberFrnkBottomNavState",
-          "kind": "fun",
-          "line": 31
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNavPrimaryAction.kt",
-      "language": "kotlin",
-      "lines": 49,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.Immutable",
-        "androidx.compose.runtime.remember",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res",
-        "dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_primary_action",
-        "dev.jdgarita.frnk.ui.theme.stringPrimaryAction",
-        "dev.jdgarita.frnk.ui.theme.strings",
-        "org.jetbrains.compose.resources.DrawableResource"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkNavPrimaryAction",
-          "kind": "class",
-          "line": 30,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "rememberFrnkNavPrimaryAction",
-          "kind": "fun",
-          "line": 42
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-ui-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt",
-      "language": "kotlin",
-      "lines": 202,
-      "imports": [
-        "androidx.compose.foundation.layout.Box",
-        "androidx.compose.foundation.layout.fillMaxSize",
-        "androidx.compose.foundation.layout.fillMaxWidth",
-        "androidx.compose.foundation.layout.padding",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.CompositionLocalProvider",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.ui.Alignment",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.unit.dp",
-        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
-        "androidx.navigation3.runtime.NavEntry",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem",
-        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
-        "dev.jdgarita.frnk.ui.nav.FrnkNavDisplay",
-        "dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry",
-        "dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler",
-        "dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks",
-        "dev.jdgarita.frnk.ui.nav.LocalFrnkPrimaryActionRegistry",
-        "dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset",
-        "io.github.narendraanjana09.adaptivenavbar.Platform",
-        "io.github.narendraanjana09.adaptivenavbar.getPlatform",
-        "org.koin.compose.navigation3.koinEntryProvider",
-        "org.koin.core.annotation.KoinExperimentalAPI"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkTabbedNavScaffold",
-          "kind": "fun",
-          "line": 85
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/androidMain/kotlin/dev/jdgarita/frnk/utils/NativeAppearance.android.kt",
-      "language": "kotlin",
-      "lines": 7,
-      "imports": [],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-utils/src/androidMain/kotlin/dev/jdgarita/frnk/utils/PlatformInfo.android.kt",
-      "language": "kotlin",
-      "lines": 16,
-      "imports": [
-        "android.os.Build"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/AppResult.kt",
-      "language": "kotlin",
-      "lines": 38,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "AppResult",
-          "kind": "interface",
-          "line": 4,
-          "modifiers": [
-            "sealed"
-          ]
-        },
-        {
-          "name": "Success",
-          "kind": "class",
-          "line": 5,
-          "container": "AppResult",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Failure",
-          "kind": "class",
-          "line": 9,
-          "container": "AppResult",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "AppError",
-          "kind": "interface",
-          "line": 14
-        },
-        {
-          "name": "CommonError",
-          "kind": "class",
-          "line": 18,
-          "modifiers": [
-            "enum"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/DateTimeFormat.kt",
-      "language": "kotlin",
-      "lines": 13,
-      "imports": [
-        "kotlinx.datetime.Instant",
-        "kotlinx.datetime.TimeZone",
-        "kotlinx.datetime.toLocalDateTime"
-      ],
-      "symbols": [
-        {
-          "name": "DateTimeFormat",
-          "kind": "object",
-          "line": 8
-        },
-        {
-          "name": "isoDate",
-          "kind": "fun",
-          "line": 9,
-          "container": "DateTimeFormat"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/FeedbackEmail.kt",
-      "language": "kotlin",
-      "lines": 77,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "EmailDraft",
-          "kind": "class",
-          "line": 7,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "toMailtoUri",
-          "kind": "fun",
-          "line": 13
-        },
-        {
-          "name": "FeedbackEmail",
-          "kind": "object",
-          "line": 35
-        },
-        {
-          "name": "draft",
-          "kind": "fun",
-          "line": 39,
-          "container": "FeedbackEmail"
-        },
-        {
-          "name": "encodeMailtoComponent",
-          "kind": "fun",
-          "line": 64,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt",
-      "language": "kotlin",
-      "lines": 5,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "Frnk",
-          "kind": "object",
-          "line": 3
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Logger.kt",
-      "language": "kotlin",
-      "lines": 63,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "Logger",
-          "kind": "interface",
-          "line": 4
-        },
-        {
-          "name": "d",
-          "kind": "fun",
-          "line": 5,
-          "container": "Logger"
-        },
-        {
-          "name": "i",
-          "kind": "fun",
-          "line": 11,
-          "container": "Logger"
-        },
-        {
-          "name": "w",
-          "kind": "fun",
-          "line": 17,
-          "container": "Logger"
-        },
-        {
-          "name": "e",
-          "kind": "fun",
-          "line": 23,
-          "container": "Logger"
-        },
-        {
-          "name": "PrintLogger",
-          "kind": "object",
-          "line": 30
-        },
-        {
-          "name": "d",
-          "kind": "fun",
-          "line": 31,
-          "container": "PrintLogger",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "i",
-          "kind": "fun",
-          "line": 37,
-          "container": "PrintLogger",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "w",
-          "kind": "fun",
-          "line": 43,
-          "container": "PrintLogger",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "e",
-          "kind": "fun",
-          "line": 49,
-          "container": "PrintLogger",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "log",
-          "kind": "fun",
-          "line": 55,
-          "container": "PrintLogger",
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/NativeAppearance.kt",
-      "language": "kotlin",
-      "lines": 22,
-      "imports": [],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/PlatformInfo.kt",
-      "language": "kotlin",
-      "lines": 17,
-      "imports": [],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-utils/src/commonTest/kotlin/dev/jdgarita/frnk/utils/AppResultTest.kt",
-      "language": "kotlin",
-      "lines": 53,
-      "imports": [
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertTrue"
-      ],
-      "symbols": [
-        {
-          "name": "AppResultTest",
-          "kind": "class",
-          "line": 7
-        },
-        {
-          "name": "fold_runs_the_success_arm_for_Success",
-          "kind": "fun",
-          "line": 9,
-          "container": "AppResultTest"
-        },
-        {
-          "name": "fold_runs_the_failure_arm_for_Failure",
-          "kind": "fun",
-          "line": 22,
-          "container": "AppResultTest"
-        },
-        {
-          "name": "fold_only_invokes_the_matching_arm",
-          "kind": "fun",
-          "line": 35,
-          "container": "AppResultTest"
-        },
-        {
-          "name": "success_and_failure_carry_their_payloads",
-          "kind": "fun",
-          "line": 46,
-          "container": "AppResultTest"
-        }
-      ]
-    },
-    {
-      "path": "shared/shared-utils/src/iosMain/kotlin/dev/jdgarita/frnk/utils/NativeAppearance.ios.kt",
-      "language": "kotlin",
-      "lines": 34,
-      "imports": [
-        "platform.UIKit.UIApplication",
-        "platform.UIKit.UISceneActivationStateForegroundActive",
-        "platform.UIKit.UIUserInterfaceStyle.UIUserInterfaceStyleDark",
-        "platform.UIKit.UIUserInterfaceStyle.UIUserInterfaceStyleLight",
-        "platform.UIKit.UIUserInterfaceStyle.UIUserInterfaceStyleUnspecified",
-        "platform.UIKit.UIWindow",
-        "platform.UIKit.UIWindowScene"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/shared-utils/src/iosMain/kotlin/dev/jdgarita/frnk/utils/PlatformInfo.ios.kt",
-      "language": "kotlin",
-      "lines": 13,
-      "imports": [
-        "platform.UIKit.UIDevice"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "shared/src/androidMain/kotlin/dev/jdgarita/frnk/shared/FrnkInitializer.android.kt",
-      "language": "kotlin",
-      "lines": 40,
-      "imports": [
-        "android.content.Context",
-        "dev.jdgarita.frnk.database.impl.DatabaseContext",
-        "org.koin.android.ext.koin.androidContext",
-        "org.koin.core.KoinApplication",
-        "org.koin.core.module.Module"
-      ],
-      "symbols": [
-        {
-          "name": "initializeFrnk",
-          "kind": "fun",
-          "line": 26
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonMain/kotlin/dev/jdgarita/frnk/shared/BackendChoice.kt",
-      "language": "kotlin",
-      "lines": 3,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "BackendChoice",
-          "kind": "class",
-          "line": 3,
-          "modifiers": [
-            "enum"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonMain/kotlin/dev/jdgarita/frnk/shared/FrnkAppScaffold.kt",
-      "language": "kotlin",
-      "lines": 210,
-      "imports": [
-        "androidx.compose.foundation.layout.ColumnScope",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.ui.Modifier",
-        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
-        "androidx.navigation3.runtime.EntryProviderScope",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.backend.AnalyticsTracker",
-        "dev.jdgarita.frnk.monetization.EntitlementManager",
-        "dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination",
-        "dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler",
-        "dev.jdgarita.frnk.ui.app.FrnkAppScope",
-        "dev.jdgarita.frnk.ui.app.FrnkAppShell",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction",
-        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
-        "dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest",
-        "dev.jdgarita.frnk.ui.nav.ToolkitRoute",
-        "dev.jdgarita.frnk.ui.scaffolds.HomeEffect",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsAction",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsEffect",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState",
-        "dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState",
-        "dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher",
-        "dev.jdgarita.frnk.ui.theme.AppearanceController",
-        "dev.jdgarita.frnk.ui.theme.FrnkThemeConfig",
-        "dev.jdgarita.frnk.ui.theme.LocalAppearanceController",
-        "kotlinx.coroutines.flow.MutableStateFlow",
-        "kotlinx.serialization.modules.EmptySerializersModule",
-        "kotlinx.serialization.modules.SerializersModule",
-        "org.koin.compose.koinInject",
-        "org.koin.mp.KoinPlatformTools"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkAppScaffold",
-          "kind": "fun",
-          "line": 68
-        },
-        {
-          "name": "rememberFrnkAppSettingsHandler",
-          "kind": "fun",
-          "line": 174,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonMain/kotlin/dev/jdgarita/frnk/shared/FrnkInitializer.kt",
-      "language": "kotlin",
-      "lines": 27,
-      "imports": [
-        "org.koin.core.KoinApplication",
-        "org.koin.core.context.startKoin",
-        "org.koin.core.module.Module"
-      ],
-      "symbols": [
-        {
-          "name": "initializeFrnk",
-          "kind": "fun",
-          "line": 17
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonMain/kotlin/dev/jdgarita/frnk/shared/FrnkModules.kt",
-      "language": "kotlin",
-      "lines": 64,
-      "imports": [
-        "dev.jdgarita.frnk.backend.firebase.firebaseBackendModule",
-        "dev.jdgarita.frnk.backend.firebase.firebaseObservabilityModule",
-        "dev.jdgarita.frnk.backend.supabase.supabaseBackendModule",
-        "dev.jdgarita.frnk.database.impl.databaseModule",
-        "dev.jdgarita.frnk.monetization.monetizationModule",
-        "dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule",
-        "dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule",
-        "org.koin.core.module.Module"
-      ],
-      "symbols": [
-        {
-          "name": "frnkModules",
-          "kind": "fun",
-          "line": 24
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonMain/kotlin/dev/jdgarita/frnk/shared/MonetizationChoice.kt",
-      "language": "kotlin",
-      "lines": 18,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "MonetizationChoice",
-          "kind": "class",
-          "line": 15,
-          "modifiers": [
-            "enum"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonMain/kotlin/dev/jdgarita/frnk/shared/ObservabilityChoice.kt",
-      "language": "kotlin",
-      "lines": 24,
-      "imports": [
-        "dev.jdgarita.frnk.backend.AnalyticsTracker",
-        "dev.jdgarita.frnk.backend.CrashReporter",
-        "dev.jdgarita.frnk.backend.NoopAnalyticsTracker",
-        "dev.jdgarita.frnk.backend.NoopCrashReporter",
-        "org.koin.core.module.Module",
-        "org.koin.dsl.module"
-      ],
-      "symbols": [
-        {
-          "name": "ObservabilityChoice",
-          "kind": "class",
-          "line": 17,
-          "modifiers": [
-            "enum"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "shared/src/commonTest/kotlin/dev/jdgarita/frnk/shared/FrnkModulesTest.kt",
-      "language": "kotlin",
-      "lines": 75,
-      "imports": [
-        "dev.jdgarita.frnk.backend.firebase.firebaseBackendModule",
-        "dev.jdgarita.frnk.backend.supabase.supabaseBackendModule",
-        "dev.jdgarita.frnk.monetization.monetizationModule",
-        "dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule",
-        "dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule",
-        "dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule",
-        "org.koin.core.module.Module",
-        "org.koin.dsl.module",
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertFalse",
-        "kotlin.test.assertTrue"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkModulesTest",
-          "kind": "class",
-          "line": 24
-        },
-        {
-          "name": "defaults_install_supabase_and_revenuecat_stack",
-          "kind": "fun",
-          "line": 26,
-          "container": "FrnkModulesTest"
-        },
-        {
-          "name": "scaffold_view_models_install_for_every_axis_combination",
-          "kind": "fun",
-          "line": 36,
-          "container": "FrnkModulesTest"
-        },
-        {
-          "name": "firebase_backend_swaps_out_supabase",
-          "kind": "fun",
-          "line": 54,
-          "container": "FrnkModulesTest"
-        },
-        {
-          "name": "monetization_none_omits_all_monetization_modules",
-          "kind": "fun",
-          "line": 61,
-          "container": "FrnkModulesTest"
-        },
-        {
-          "name": "additional_modules_are_appended",
-          "kind": "fun",
-          "line": 69,
-          "container": "FrnkModulesTest"
         }
       ]
     }

@@ -62,12 +62,13 @@ descriptions.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
   - `:shared:backend:api` ↔ `:shared:backend:firebase`
-  - `shared-database-api` ↔ `shared-database-impl`
+  - `:data-db-api` ↔ `:data-db-impl` (SQL driver SPI; split at restructure Stage 4)
+  - `:data-prefs-api` ↔ `:data-prefs-impl` (key-value; split at restructure Stage 4)
   - `shared-monetization-api` ↔ `shared-monetization-revenuecat`
 - **Rule:** Domain code depends only on `*-api`. Toolkit code never imports an
   `*-impl` package — impls enter the graph only through the host's
-  `initializeFrnk(modules = …)` list (demo wiring and `:core-di`'s androidMain
-  `DatabaseContext` bootstrap are the sanctioned exceptions).
+  `initializeFrnk(modules = …)` list (demo wiring is the sanctioned exception;
+  the `DatabaseContext` bootstrap seam lives in `:core-di` itself since Stage 4).
 - `shared-ui-api` owns the MVI engine and carries **no Compose dependency**, so
   ViewModels compile without dragging in `compose.runtime`.
 - `shared-ui-atoms` owns the design system (tokens, theme engine, atoms,
@@ -158,13 +159,15 @@ targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`
 
 ### 3.4 Local data sources
 
-- **SQLDelight** for relational/structured persistence, generating into
-  `dev.jdgarita.frnk.database.sql`, exposed through `shared-database-api`
-  interfaces and bound in `DatabaseModule`. Database class name: `FrnkDB`.
-- **Local preferences** (key-value) via a `KeyValueStore` abstraction backed by
-  `multiplatform-settings`.
-- Both behind `shared-database-api`; drivers (Android/native) live only in
-  `shared-database-impl`.
+- **SQLDelight** for relational/structured persistence. The toolkit owns the
+  `SqlDriverFactory` SPI (`:data-db-api`, drivers bound by `databaseModule` in
+  `:data-db-impl`) — **never a schema** (restructure Stage 4 / OQ-2): each host
+  (and the demo, via its `DemoDB`) defines its own SQLDelight database and
+  builds it through the factory.
+- **Local preferences** (key-value) via the `KeyValueStore` abstraction +
+  typed `Preference<T>` layer (`:data-prefs-api`), backed by
+  `multiplatform-settings` (`:data-prefs-impl`, bound by `prefsModule`).
+- Drivers and the settings impl live only in the `*-impl` modules.
 
 ### 3.5 Remote data sources
 
