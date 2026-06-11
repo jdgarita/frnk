@@ -11,7 +11,7 @@ Codex guidance for this repository. Follow this file first, and use `CLAUDE.md` 
 
 ## Repo Shape
 
-- All modules use flat Gradle paths (`:shared-ui-atoms`, `:data-prefs-api`, `:analytics-api`, `:analytics-impl`, etc.). The last nested paths (`:shared:backend:*`) were re-flattened to `:analytics-api`/`:analytics-impl` at restructure Stage 5 (OQ-6).
+- All modules use flat Gradle paths (`:ui-theme`, `:ui-components`, `:ui-scaffolds`, `:data-prefs-api`, `:analytics-api`, `:analytics-impl`, etc.). The last nested paths (`:shared:backend:*`) were re-flattened to `:analytics-api`/`:analytics-impl` at restructure Stage 5 (OQ-6). `:shared-ui-atoms` (Stage 7) and `:shared-ui-api` (Stage 6) survive as src-less facades over their successors until the Stage 9 coordinate flip.
 - Since restructure Stage 3, module files live physically under `frnk/{core,data,ui,capabilities}/` and `demo/{shared,android-app,ios-app}/`, mapped to the flat Gradle names via `projectDir` remaps in `settings.gradle.kts` (see `docs/RESTRUCTURE_PLAN.md` §3).
 - There is no aggregator (restructure Stage 1): consumers depend on individual modules. `:core-di` owns `initializeFrnk(modules)`; `:ui-app` owns `FrnkAppScaffold` + `frnkUiModules()`.
 - Backend/database/monetization modules use an api/impl split. Do not add SDK dependencies to `*-api` modules.
@@ -47,7 +47,7 @@ Use targeted checks when possible:
 - Preserve module boundaries and existing naming/style.
 - Return `AppResult` from domain APIs; do not throw for expected failures.
 - Keep third-party SDKs out of `*-api` modules.
-- Do not add Material3 outside `shared-ui-nav`; `shared-ui-atoms` stays `compose-unstyled` based.
+- Do not add Material3 outside `shared-ui-nav`; the design-system modules (`:ui-theme`/`:ui-components`/`:ui-scaffolds`) stay `compose-unstyled` based.
 - Prefer `MviViewModel`, `FrnkMviScreen`, `EffectCollector`, and Navigation3 helpers over hand-rolled state/effect/navigation plumbing.
 - UI state should be hoisted into ViewModels. Use local Compose state only for local UI holders such as scroll, focus, animation, and remembered builders.
 - New screens/features should be represented in `shared-demo`, `androidDemoApp`, and `iosDemoApp` unless clearly inapplicable.
@@ -58,7 +58,7 @@ Use targeted checks when possible:
 - KMP host tests run with `testAndroidHostTest`, not `testDebugUnitTest`.
 - `androidDemoApp` is a normal Android app, so its tests use `testDebugUnitTest`.
 - Put platform-agnostic logic tests in `commonTest`; platform runtime tests go in `androidHostTest`.
-- `shared-ui-atoms` Compose UI tests live in `androidHostTest` with Robolectric.
+- `:ui-components` / `:ui-scaffolds` Compose UI tests live in `androidHostTest` with Robolectric (both apply the `frnk.kmp.library.composehosttest` convention plugin).
 
 ## Git Safety
 

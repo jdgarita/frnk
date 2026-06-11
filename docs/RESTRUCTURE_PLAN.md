@@ -295,7 +295,25 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
   its iOS `export(...)` + `api(...)` to the three successors (Kotlin/Native `export` is non-transitive,
   so the src-less facade would carry no Swift symbols).
 
-### ☐ Stage 7 — Split `shared-ui-atoms` (the big one)  — risk: **high**; 2–3 frnk PRs
+### ☑ Stage 7 — Split `shared-ui-atoms` (the big one)  — risk: **high**; 2–3 frnk PRs — **landed 2026-06-11**
+
+The facade pattern keeps every intermediate green; landed as two frnk commits (7a, then 7b).
+
+**Outcome notes (as built):**
+- **FrnkSectionCard landmine → promoted to public** in `:ui-components` (not the wrapper option) —
+  cleanest since organisms (`:ui-components`) and the Settings scaffold (`:ui-scaffolds`) now sit in
+  different modules.
+- **`PreviewSurface` collision:** the per-module preview helper copy in `:ui-scaffolds` had to move to
+  its own `…ui.scaffolds.previews` package — an identical signature in the original `…ui.atoms.previews`
+  collides at the Kotlin/Native link step ("symbol already bound") because `commonDebug` feeds `iosMain`
+  and DemoKit links both klibs. `RobolectricComposeTest`/`setFrnkContent` are `androidHostTest`-only
+  (JVM), so their per-module copy keeps the original package with no collision.
+- **ripple-indication / icons-lucide landed in `:ui-theme`/`:ui-components` per actual usage**, not the
+  plan's tentative split: `:ui-theme` uses both (FrnkRipple + FrnkIcons defaults); `:ui-components` keeps
+  `icons-lucide` only for the FrnkBottomNavBar `@Preview`.
+- **`:shared-monetization-ui` re-pointed to `:ui-scaffolds`** → its direct deps are now exactly
+  `{ui-scaffolds, monetization-api}` (the Stage 8 precondition, verified). `:shared-ui-nav` stays on the
+  `:shared-ui-atoms` facade as the still-invisibility proof.
 
 The facade pattern keeps every intermediate green; land as separate PRs, each pin-bumped in still.
 
