@@ -256,7 +256,7 @@ screen/business state); styling comes from `Theme[colors|textStyles|shapes|spaci
 hardcoded `Color(0xFF…)` / raw `.dp`; the `Skeleton` branch renders no clickable/toggleable node.
 Single-state or terminal components (a pure divider, a terminal empty state, interaction-only chrome) stay
 non-sealed and skip the `Skeleton` object — note why. `FrnkText` additionally keeps a per-subtype `skeleton`
-field for content-sized text skeletons. See `shared/shared-ui-atoms/CLAUDE.md` for the full convention.
+field for content-sized text skeletons. See `frnk/ui/components/CLAUDE.md` for the full convention.
 
 ---
 

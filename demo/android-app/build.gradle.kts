@@ -22,7 +22,7 @@ val revenueCatAndroidApiKey: String =
 // ONLY when it's present — locally that turns on the real SDK; on CI (no json) they're skipped
 // and the demo compiles, with DemoApplication's Firebase path degrading to a logged no-op at
 // runtime (every gitlive call is wrapped in runCatching).
-if (rootProject.file("androidDemoApp/google-services.json").exists()) {
+if (rootProject.file("demo/android-app/google-services.json").exists()) {
     apply(
         plugin =
             libs.plugins.google.services

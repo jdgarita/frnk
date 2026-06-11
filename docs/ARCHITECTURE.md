@@ -75,7 +75,7 @@ Consumers face the modules directly: Android hosts declare the `dev.jdgarita.frn
 
 ### On-disk layout vs Gradle paths
 
-The diagram above names Gradle projects, not folders. Most shared modules (including the new `core-di` and `ui-app`) live inside the `shared/` directory while keeping flat Gradle paths (`:shared-ui-atoms`, `projects.sharedUiAtoms`; `:ui-app`, `projects.uiApp`). Backend modules are nested: `shared/backend/api` maps to `:shared:backend:api`, with type-safe accessors such as `projects.shared.backend.api`. (The `:shared` Gradle path survives only as the implicit, build-file-less parent of `:shared:backend:*`.)
+The diagram above names Gradle projects, not folders. Since restructure Stage 3, modules live at their final layered locations — `frnk/core/*`, `frnk/data/*`, `frnk/ui/*`, `frnk/capabilities/*`, and `demo/{shared,android-app,ios-app}` — while keeping their current flat Gradle paths via `projectDir` remaps in `settings.gradle.kts` (`:shared-ui-atoms` at `frnk/ui/components`, `projects.sharedUiAtoms`; `:ui-app` at `frnk/ui/app`, `projects.uiApp`; see `docs/RESTRUCTURE_PLAN.md` §3 for the full map — project renames land at Stages 5/9/10). Backend modules are still nested Gradle paths: `frnk/capabilities/analytics-api` maps to `:shared:backend:api`, with type-safe accessors such as `projects.shared.backend.api`. (The `:shared`/`:shared:backend` Gradle paths survive only as build-file-less parents of `:shared:backend:*`, parked on harmless projectDirs until Stage 5 re-flattens them.)
 
 ### Why api/impl split
 
@@ -192,7 +192,7 @@ When the toolkit stabilises, you can flip to published artifacts by keeping the 
 
 ## MVI engine
 
-See `shared/shared-ui-api/src/commonMain/kotlin/.../ui/mvi/`:
+See `frnk/core/mvi/src/commonMain/kotlin/.../ui/mvi/`:
 
 - `MviContract.kt` — `UiState`, `UiIntent`, `UiEffect` marker interfaces.
 - `MviViewModel.kt` — abstract base; owns `StateFlow<S>`, an intent `SharedFlow<I>` (replay=0, buffer=16, `DROP_OLDEST`), and a one-shot effect `Channel<E>` (BUFFERED) exposed as `effects`.

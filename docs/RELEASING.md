@@ -29,7 +29,7 @@ You need: a clean `main` with all wanted changes merged and CI green.
 
 1. **Decide the next version.** Look at the `## [Unreleased]` section of `CHANGELOG.md`. If it contains anything under `Changed` or `Removed` that is API-affecting, bump `MINOR` (pre-1.0) or `MAJOR` (post-1.0). Otherwise bump `PATCH`.
 
-2. **Update `Frnk.VERSION`** in `shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt`. The release workflow refuses to publish if this doesn't match the tag.
+2. **Update `Frnk.VERSION`** in `frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt`. The release workflow refuses to publish if this doesn't match the tag.
 
 3. **Update `CHANGELOG.md`:**
    - Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`.
@@ -40,7 +40,7 @@ You need: a clean `main` with all wanted changes merged and CI green.
 4. **Commit and tag:**
 
    ```bash
-   git add CHANGELOG.md shared/shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt
+   git add CHANGELOG.md frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt
    git commit -m "Release vX.Y.Z"
    git tag -a vX.Y.Z -m "vX.Y.Z"
    ```

@@ -162,7 +162,7 @@ import org.koin.compose.viewmodel.koinViewModel
  * **screen-routed** through the shell's registry: the Home tab claims it (`homePrimaryActionEnabled`),
  * so it shows there and hides on the other tabs with no host-level conditional. See
  * `docs/spikes/adaptive-bottom-nav.md`; note the Android resource-packaging workaround in
- * `androidDemoApp/src/main/assets/composeResources/`.
+ * `demo/android-app/src/main/assets/composeResources/`.
  */
 @Composable
 fun DemoScreen(

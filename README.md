@@ -107,7 +107,7 @@ initializeFrnk(
 
 > The toolkit owns the driver factory, not the schema. The host defines `hostDatabaseModule` against the injected `SqlDriverFactory` — see [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) for the full pattern.
 
-For iOS, there is no prebuilt toolkit framework: the host adds a small KMP shared module that `api()`-depends on the frnk modules it uses and bundles them into its own umbrella `XCFramework` — the demo's `DemoKit` (`shared/shared-demo/build.gradle.kts`) is the worked example, and [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) §6 has the recipe.
+For iOS, there is no prebuilt toolkit framework: the host adds a small KMP shared module that `api()`-depends on the frnk modules it uses and bundles them into its own umbrella `XCFramework` — the demo's `DemoKit` (`demo/shared/build.gradle.kts`) is the worked example, and [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) §6 has the recipe.
 
 > ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native SDK (and the relevant Firebase frameworks if installing `firebaseObservabilityModule`) via CocoaPods or SPM. The umbrella framework defers their symbol resolution via `-undefined dynamic_lookup`.
 
@@ -122,8 +122,8 @@ cp local.properties.template local.properties   # then point sdk.dir at your And
 ```
 
 Demo apps (the internal smoke harnesses) additionally need:
-- **Android:** a valid `google-services.json` in `androidDemoApp/`
-- **iOS:** a valid `GoogleService-Info.plist` in `iosDemoApp/`
+- **Android:** a valid `google-services.json` in `demo/android-app/`
+- **iOS:** a valid `GoogleService-Info.plist` in `demo/ios-app/iosDemoApp/`
 
 ## 🔧 Common commands
 
@@ -169,4 +169,4 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 
 Every `*-impl` module ships `commonTest` and platform-specific (`androidUnitTest`, `iosTest`) source sets so concrete implementations are validated before consumers see them.
 
-The **design system** is tested too: `shared-ui-atoms` carries Compose UI tests for its highest-value atoms (`FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar` search mode) that drive a real composition with `runComposeUiTest` and assert the semantics tree. They run as JVM host tests under **Robolectric** (`GraphicsMode.LEGACY`, no device needed) from an `androidHostTest` source set, so they gate in the same `testAndroidHostTest` step — see `shared/shared-ui-atoms/CLAUDE.md`.
+The **design system** is tested too: `shared-ui-atoms` carries Compose UI tests for its highest-value atoms (`FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar` search mode) that drive a real composition with `runComposeUiTest` and assert the semantics tree. They run as JVM host tests under **Robolectric** (`GraphicsMode.LEGACY`, no device needed) from an `androidHostTest` source set, so they gate in the same `testAndroidHostTest` step — see `frnk/ui/components/CLAUDE.md`.

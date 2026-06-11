@@ -39,7 +39,7 @@
 		AA00000000000000000032 /* ComposeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeViewController.swift; sourceTree = "<group>"; };
 		AA00000000000000000034 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA00000000000000000035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		AA00000000000000000036 /* DemoKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DemoKit.xcframework; path = "../shared/shared-demo/build/XCFrameworks/debug/DemoKit.xcframework"; sourceTree = SOURCE_ROOT; };
+		AA00000000000000000036 /* DemoKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DemoKit.xcframework; path = "../shared/build/XCFrameworks/debug/DemoKit.xcframework"; sourceTree = SOURCE_ROOT; };
 		AA00000000000000000037 /* iosDemoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosDemoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -185,7 +185,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\ncd \"$SRCROOT/..\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  ./gradlew :shared-demo:assembleDemoKitReleaseXCFramework\nelse\n  ./gradlew :shared-demo:assembleDemoKitDebugXCFramework\nfi\n";
+			shellScript = "set -e\ncd \"$SRCROOT/../..\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  ./gradlew :shared-demo:assembleDemoKitReleaseXCFramework\nelse\n  ./gradlew :shared-demo:assembleDemoKitDebugXCFramework\nfi\n";
 		};
 		AA00000000000000000025 /* Run Script: Upload Crashlytics dSYMs */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -235,7 +235,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../shared/shared-demo/build/XCFrameworks/debug",
+					"$(SRCROOT)/../shared/build/XCFrameworks/debug",
 				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = iosDemoApp/Info.plist;
@@ -271,7 +271,7 @@
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../shared/shared-demo/build/XCFrameworks/release",
+					"$(SRCROOT)/../shared/build/XCFrameworks/release",
 				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = iosDemoApp/Info.plist;

@@ -15,9 +15,9 @@ As a POC workaround, the **application** module ships the same files at the exac
 `Res` reads from, so the runtime `AssetManager` resolves them:
 
 - `dev.jdgarita.frnk.ui.bottomnav.generated.resources/drawable/` — toolkit nav icons
-  (home/settings/primary-action), copied from `shared/shared-ui-nav/src/commonMain/composeResources/drawable/`.
+  (home/settings/primary-action), copied from `frnk/ui/bottom-nav/src/commonMain/composeResources/drawable/`.
 - `dev.jdgarita.frnk.demo.generated.resources/drawable/` — the demo's Components tab icon, copied from
-  `shared/shared-demo/src/commonMain/composeResources/drawable/`.
+  `demo/shared/src/commonMain/composeResources/drawable/`.
 
 **This is a hack for the POC only.** Keep these in sync with the source drawables if they change. The
 proper fix is an AGP/Compose-resources update that packages library Compose resources for the KMP-Android

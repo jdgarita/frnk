@@ -36,7 +36,7 @@ jobs:
 
       - name: Verify Frnk.VERSION matches tag
         run: |
-          FILE="shared-utils/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt"
+          FILE="frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt"
           EXPECTED="${{ steps.ver.outputs.version }}"
           ACTUAL=$(grep -oE 'VERSION = "[^"]+"' "$FILE" | sed -E 's/VERSION = "(.*)"/\1/')
           if [ "$ACTUAL" != "$EXPECTED" ]; then

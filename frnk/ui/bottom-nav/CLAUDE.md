@@ -54,9 +54,9 @@ at runtime. Since the library hard-requires `DrawableResource` (no `ImageVector`
 this is a genuine adoption blocker for shipping the engine from a toolkit library — not a wiring mistake.
 
 **POC workaround (demo only):** the consuming **application** module
-(`androidDemoApp/src/main/assets/composeResources/<resourcePackage>/drawable/…`) ships the raw XML at the
+(`demo/android-app/src/main/assets/composeResources/<resourcePackage>/drawable/…`) ships the raw XML at the
 exact path the generated `Res` reads, so the runtime `AssetManager` finds it. See
-`androidDemoApp/src/main/assets/composeResources/README.md`. This is a hack — a real host would have to
+`demo/android-app/src/main/assets/composeResources/README.md`. This is a hack — a real host would have to
 copy these assets too, which is why it counts against adopting this library in the toolkit as-is. The Calf
 engine (and `:shared-ui-atoms`' `ImageVector` pill) have no such issue. Proper resolution would need an
 AGP/Compose-resources fix for the KMP-Android-library variant, or generating the icons a non-Compose-resources

@@ -99,7 +99,7 @@ analytics.trackCustom("Recipe_Saved", mapOf("recipe_id" to id))
 frnk publishes **no** prebuilt XCFramework (the old `FrnkKit` died with the `:iosApp` aggregator).
 An iOS host adds a small KMP "shared" module in its own repo that `api()`-depends on the frnk
 modules it uses, `export(...)`s them from an `XCFramework("<YourAppKit>")`, and links that from
-Xcode — exactly what the demo does with `DemoKit` (`shared/shared-demo/build.gradle.kts` is the
+Xcode — exactly what the demo does with `DemoKit` (`demo/shared/build.gradle.kts` is the
 worked example). Two rules carry over from the old packaging:
 
 - `isStatic = true` + `linkerOpts("-undefined", "dynamic_lookup")` on the framework — bundled impls
@@ -154,4 +154,4 @@ frnk's Kotlin frames — no separate Kotlin-framework dSYM step, and no CrashKiO
 Gradle plugin (that's only for *dynamic* frameworks). A crash showing as **"unprocessed — upload
 1 dSYM file"** means no matching dSYM was uploaded — usually a Debug build or a missing
 run-script. Crashes upload on the **next launch**; the first-ever crash can take several minutes
-to surface. Details in `shared/backend/firebase/CLAUDE.md`.
+to surface. Details in `frnk/capabilities/analytics-impl/CLAUDE.md`.

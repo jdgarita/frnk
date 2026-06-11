@@ -235,7 +235,7 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
   Stage 11 (behavioral change, kept out of the structural migration).
 - still impact: none.
 
-### ☐ Stage 3 — Physical re-root, zero renames  — risk: low
+### ☑ Stage 3 — Physical re-root, zero renames  — risk: low — **landed 2026-06-11**
 
 - `git mv` every module directory to its **final** location per the §3 table, **keeping all Gradle
   project names unchanged** (e.g. `:shared-ui-atoms` temporarily points at `frnk/ui/components`;
