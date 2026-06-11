@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-11T19:19:53.128247Z",
+  "generatedAt": "2026-06-11T19:44:56.10865Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
@@ -2044,6 +2044,174 @@
       "symbols": []
     },
     {
+      "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedback.kt",
+      "language": "kotlin",
+      "lines": 30,
+      "imports": [
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "kotlinx.coroutines.flow.asStateFlow"
+      ],
+      "symbols": [
+        {
+          "name": "DefaultHapticFeedback",
+          "kind": "class",
+          "line": 16
+        },
+        {
+          "name": "setEnabled",
+          "kind": "fun",
+          "line": 23,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "perform",
+          "kind": "fun",
+          "line": 27,
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticFeedback.kt",
+      "language": "kotlin",
+      "lines": 38,
+      "imports": [
+        "kotlinx.coroutines.flow.StateFlow"
+      ],
+      "symbols": [
+        {
+          "name": "HapticFeedback",
+          "kind": "interface",
+          "line": 19
+        },
+        {
+          "name": "setEnabled",
+          "kind": "fun",
+          "line": 24,
+          "container": "HapticFeedback"
+        },
+        {
+          "name": "perform",
+          "kind": "fun",
+          "line": 27,
+          "container": "HapticFeedback"
+        },
+        {
+          "name": "emit",
+          "kind": "fun",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticType.kt",
+      "language": "kotlin",
+      "lines": 27,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "HapticType",
+          "kind": "class",
+          "line": 9,
+          "modifiers": [
+            "enum"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/NoOpHapticFeedback.kt",
+      "language": "kotlin",
+      "lines": 17,
+      "imports": [
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow"
+      ],
+      "symbols": [
+        {
+          "name": "NoOpHapticFeedback",
+          "kind": "object",
+          "line": 11
+        },
+        {
+          "name": "setEnabled",
+          "kind": "fun",
+          "line": 14,
+          "container": "NoOpHapticFeedback",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "perform",
+          "kind": "fun",
+          "line": 16,
+          "container": "NoOpHapticFeedback",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/haptics/src/commonTest/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedbackTest.kt",
+      "language": "kotlin",
+      "lines": 54,
+      "imports": [
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertFalse",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "RecordingHapticEngine",
+          "kind": "class",
+          "line": 9,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "emit",
+          "kind": "fun",
+          "line": 12,
+          "container": "RecordingHapticEngine",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "DefaultHapticFeedbackTest",
+          "kind": "class",
+          "line": 17
+        },
+        {
+          "name": "enabled_perform_emitsMappedType",
+          "kind": "fun",
+          "line": 19,
+          "container": "DefaultHapticFeedbackTest"
+        },
+        {
+          "name": "disabled_perform_isNoOp",
+          "kind": "fun",
+          "line": 29,
+          "container": "DefaultHapticFeedbackTest"
+        },
+        {
+          "name": "setEnabled_gatesAndExposesFlag",
+          "kind": "fun",
+          "line": 39,
+          "container": "DefaultHapticFeedbackTest"
+        }
+      ]
+    },
+    {
       "path": "frnk/capabilities/monetization-api/src/androidMain/kotlin/dev/jdgarita/frnk/di/ToolkitDiModule.android.kt",
       "language": "kotlin",
       "lines": 6,
@@ -3562,121 +3730,6 @@
       ]
     },
     {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedback.kt",
-      "language": "kotlin",
-      "lines": 30,
-      "imports": [
-        "kotlinx.coroutines.flow.MutableStateFlow",
-        "kotlinx.coroutines.flow.StateFlow",
-        "kotlinx.coroutines.flow.asStateFlow"
-      ],
-      "symbols": [
-        {
-          "name": "DefaultHapticFeedback",
-          "kind": "class",
-          "line": 16
-        },
-        {
-          "name": "setEnabled",
-          "kind": "fun",
-          "line": 23,
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "perform",
-          "kind": "fun",
-          "line": 27,
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticFeedback.kt",
-      "language": "kotlin",
-      "lines": 38,
-      "imports": [
-        "kotlinx.coroutines.flow.StateFlow"
-      ],
-      "symbols": [
-        {
-          "name": "HapticFeedback",
-          "kind": "interface",
-          "line": 19
-        },
-        {
-          "name": "setEnabled",
-          "kind": "fun",
-          "line": 24,
-          "container": "HapticFeedback"
-        },
-        {
-          "name": "perform",
-          "kind": "fun",
-          "line": 27,
-          "container": "HapticFeedback"
-        },
-        {
-          "name": "emit",
-          "kind": "fun",
-          "line": 37
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticType.kt",
-      "language": "kotlin",
-      "lines": 27,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "HapticType",
-          "kind": "class",
-          "line": 9,
-          "modifiers": [
-            "enum"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/NoOpHapticFeedback.kt",
-      "language": "kotlin",
-      "lines": 17,
-      "imports": [
-        "kotlinx.coroutines.flow.MutableStateFlow",
-        "kotlinx.coroutines.flow.StateFlow"
-      ],
-      "symbols": [
-        {
-          "name": "NoOpHapticFeedback",
-          "kind": "object",
-          "line": 11
-        },
-        {
-          "name": "setEnabled",
-          "kind": "fun",
-          "line": 14,
-          "container": "NoOpHapticFeedback",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "perform",
-          "kind": "fun",
-          "line": 16,
-          "container": "NoOpHapticFeedback",
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
       "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviContract.kt",
       "language": "kotlin",
       "lines": 8,
@@ -3765,243 +3818,6 @@
             "abstract",
             "suspend"
           ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkFullScreenRoute.kt",
-      "language": "kotlin",
-      "lines": 16,
-      "imports": [
-        "androidx.navigation3.runtime.NavKey"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkFullScreenRoute",
-          "kind": "interface",
-          "line": 16
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavConfig.kt",
-      "language": "kotlin",
-      "lines": 43,
-      "imports": [
-        "androidx.navigation3.runtime.NavKey",
-        "androidx.savedstate.serialization.SavedStateConfiguration",
-        "kotlinx.serialization.modules.EmptySerializersModule",
-        "kotlinx.serialization.modules.SerializersModule",
-        "kotlinx.serialization.modules.polymorphic"
-      ],
-      "symbols": [
-        {
-          "name": "frnkNavConfiguration",
-          "kind": "fun",
-          "line": 30
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPendingRouteRequest.kt",
-      "language": "kotlin",
-      "lines": 32,
-      "imports": [
-        "androidx.navigation3.runtime.NavKey",
-        "kotlinx.coroutines.flow.MutableStateFlow",
-        "kotlinx.coroutines.flow.StateFlow",
-        "kotlinx.coroutines.flow.asStateFlow"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkPendingRouteRequest",
-          "kind": "class",
-          "line": 21
-        },
-        {
-          "name": "request",
-          "kind": "fun",
-          "line": 25,
-          "container": "FrnkPendingRouteRequest"
-        },
-        {
-          "name": "consume",
-          "kind": "fun",
-          "line": 29,
-          "container": "FrnkPendingRouteRequest"
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistry.kt",
-      "language": "kotlin",
-      "lines": 57,
-      "imports": [
-        "kotlinx.coroutines.flow.MutableStateFlow",
-        "kotlinx.coroutines.flow.StateFlow",
-        "kotlinx.coroutines.flow.asStateFlow"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkPrimaryActionRegistry",
-          "kind": "class",
-          "line": 27
-        },
-        {
-          "name": "register",
-          "kind": "fun",
-          "line": 35,
-          "container": "FrnkPrimaryActionRegistry"
-        },
-        {
-          "name": "recompute",
-          "kind": "fun",
-          "line": 45,
-          "container": "FrnkPrimaryActionRegistry",
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "Entry",
-          "kind": "class",
-          "line": 49,
-          "container": "FrnkPrimaryActionRegistry",
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "unregister",
-          "kind": "fun",
-          "line": 56
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExt.kt",
-      "language": "kotlin",
-      "lines": 50,
-      "imports": [
-        "androidx.navigation3.runtime.NavBackStack",
-        "androidx.navigation3.runtime.NavKey"
-      ],
-      "symbols": []
-    },
-    {
-      "path": "frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRoute.kt",
-      "language": "kotlin",
-      "lines": 38,
-      "imports": [
-        "androidx.navigation3.runtime.NavKey",
-        "kotlinx.serialization.Serializable"
-      ],
-      "symbols": [
-        {
-          "name": "ToolkitRoute",
-          "kind": "interface",
-          "line": 21,
-          "modifiers": [
-            "sealed"
-          ]
-        },
-        {
-          "name": "Home",
-          "kind": "object",
-          "line": 23,
-          "container": "ToolkitRoute",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Onboarding",
-          "kind": "object",
-          "line": 26,
-          "container": "ToolkitRoute",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Settings",
-          "kind": "object",
-          "line": 29,
-          "container": "ToolkitRoute",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Paywall",
-          "kind": "object",
-          "line": 32,
-          "container": "ToolkitRoute",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Custom",
-          "kind": "class",
-          "line": 35,
-          "container": "ToolkitRoute",
-          "modifiers": [
-            "data"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedbackTest.kt",
-      "language": "kotlin",
-      "lines": 54,
-      "imports": [
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertFalse",
-        "kotlin.test.assertTrue"
-      ],
-      "symbols": [
-        {
-          "name": "RecordingHapticEngine",
-          "kind": "class",
-          "line": 9,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "emit",
-          "kind": "fun",
-          "line": 12,
-          "container": "RecordingHapticEngine",
-          "modifiers": [
-            "override"
-          ]
-        },
-        {
-          "name": "DefaultHapticFeedbackTest",
-          "kind": "class",
-          "line": 17
-        },
-        {
-          "name": "enabled_perform_emitsMappedType",
-          "kind": "fun",
-          "line": 19,
-          "container": "DefaultHapticFeedbackTest"
-        },
-        {
-          "name": "disabled_perform_isNoOp",
-          "kind": "fun",
-          "line": 29,
-          "container": "DefaultHapticFeedbackTest"
-        },
-        {
-          "name": "setEnabled_gatesAndExposesFlag",
-          "kind": "fun",
-          "line": 39,
-          "container": "DefaultHapticFeedbackTest"
         }
       ]
     },
@@ -4128,7 +3944,191 @@
       ]
     },
     {
-      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistryTest.kt",
+      "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkFullScreenRoute.kt",
+      "language": "kotlin",
+      "lines": 16,
+      "imports": [
+        "androidx.navigation3.runtime.NavKey"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkFullScreenRoute",
+          "kind": "interface",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavConfig.kt",
+      "language": "kotlin",
+      "lines": 43,
+      "imports": [
+        "androidx.navigation3.runtime.NavKey",
+        "androidx.savedstate.serialization.SavedStateConfiguration",
+        "kotlinx.serialization.modules.EmptySerializersModule",
+        "kotlinx.serialization.modules.SerializersModule",
+        "kotlinx.serialization.modules.polymorphic"
+      ],
+      "symbols": [
+        {
+          "name": "frnkNavConfiguration",
+          "kind": "fun",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPendingRouteRequest.kt",
+      "language": "kotlin",
+      "lines": 32,
+      "imports": [
+        "androidx.navigation3.runtime.NavKey",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "kotlinx.coroutines.flow.asStateFlow"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkPendingRouteRequest",
+          "kind": "class",
+          "line": 21
+        },
+        {
+          "name": "request",
+          "kind": "fun",
+          "line": 25,
+          "container": "FrnkPendingRouteRequest"
+        },
+        {
+          "name": "consume",
+          "kind": "fun",
+          "line": 29,
+          "container": "FrnkPendingRouteRequest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistry.kt",
+      "language": "kotlin",
+      "lines": 57,
+      "imports": [
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "kotlinx.coroutines.flow.asStateFlow"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkPrimaryActionRegistry",
+          "kind": "class",
+          "line": 27
+        },
+        {
+          "name": "register",
+          "kind": "fun",
+          "line": 35,
+          "container": "FrnkPrimaryActionRegistry"
+        },
+        {
+          "name": "recompute",
+          "kind": "fun",
+          "line": 45,
+          "container": "FrnkPrimaryActionRegistry",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "Entry",
+          "kind": "class",
+          "line": 49,
+          "container": "FrnkPrimaryActionRegistry",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "unregister",
+          "kind": "fun",
+          "line": 56
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExt.kt",
+      "language": "kotlin",
+      "lines": 50,
+      "imports": [
+        "androidx.navigation3.runtime.NavBackStack",
+        "androidx.navigation3.runtime.NavKey"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRoute.kt",
+      "language": "kotlin",
+      "lines": 38,
+      "imports": [
+        "androidx.navigation3.runtime.NavKey",
+        "kotlinx.serialization.Serializable"
+      ],
+      "symbols": [
+        {
+          "name": "ToolkitRoute",
+          "kind": "interface",
+          "line": 21,
+          "modifiers": [
+            "sealed"
+          ]
+        },
+        {
+          "name": "Home",
+          "kind": "object",
+          "line": 23,
+          "container": "ToolkitRoute",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "Onboarding",
+          "kind": "object",
+          "line": 26,
+          "container": "ToolkitRoute",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "Settings",
+          "kind": "object",
+          "line": 29,
+          "container": "ToolkitRoute",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "Paywall",
+          "kind": "object",
+          "line": 32,
+          "container": "ToolkitRoute",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "Custom",
+          "kind": "class",
+          "line": 35,
+          "container": "ToolkitRoute",
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/core/nav/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionRegistryTest.kt",
       "language": "kotlin",
       "lines": 86,
       "imports": [
@@ -4187,7 +4187,7 @@
       ]
     },
     {
-      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExtTest.kt",
+      "path": "frnk/core/nav/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExtTest.kt",
       "language": "kotlin",
       "lines": 89,
       "imports": [
@@ -4294,7 +4294,7 @@
       ]
     },
     {
-      "path": "frnk/core/mvi/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRouteTest.kt",
+      "path": "frnk/core/nav/src/commonTest/kotlin/dev/jdgarita/frnk/ui/nav/ToolkitRouteTest.kt",
       "language": "kotlin",
       "lines": 50,
       "imports": [
