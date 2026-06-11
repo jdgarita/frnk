@@ -37,7 +37,11 @@ kotlin {
             // makes iosDemoApp require the native Firebase Crashlytics SDK (via SPM/CocoaPods) +
             // GoogleService-Info.plist — it no longer launches on a bare simulator with no Firebase.
             export(projects.sharedUtils)
-            export(projects.sharedUiApi)
+            // shared-ui-api was split (restructure Stage 6); Kotlin/Native `export` is non-transitive, so
+            // the src-less facade would carry no Swift symbols — export the three successors directly.
+            export(projects.coreMvi)
+            export(projects.coreNav)
+            export(projects.haptics)
             export(projects.sharedUiAtoms)
             export(projects.sharedUiNav)
             export(projects.analyticsApi)
@@ -54,7 +58,11 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUtils)
-            api(projects.sharedUiApi)
+            // shared-ui-api split (Stage 6) — depend on the successors directly (matches the iOS export
+            // list above; `export` requires the module to be a direct api dependency).
+            api(projects.coreMvi)
+            api(projects.coreNav)
+            api(projects.haptics)
             api(projects.sharedUiAtoms)
             // Platform-adaptive bottom nav (Calf-backed). The demo consumes the toolkit default from here
             // rather than carrying any nav-bar implementation itself.

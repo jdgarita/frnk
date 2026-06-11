@@ -1,23 +1,24 @@
-# shared-ui-api
+# core-mvi
 
-Pure-interface UI module: MVI engine, the type-safe Navigation3 route + back-stack contract, and the `UiText` localization wrapper. **No Compose here** — Compose lives in `:shared-ui-atoms`. That separation is deliberate so a feature ViewModel can compile without dragging in `compose.runtime`. (The nav3 runtime — `NavKey`/`NavBackStack`/`SavedStateConfiguration` — is pure Kotlin/MP, so it lives here without Compose.)
+The toolkit's **MVI engine** — pure-Kotlin contracts + abstract base, plus the `UiText` localization
+wrapper. **No Compose here** — the Compose binding (`FrnkMviScreen`, `EffectCollector`) lives in
+`:shared-ui-atoms`. That separation is deliberate so a feature ViewModel can compile without dragging in
+`compose.runtime`.
+
+Extracted from the old `:shared-ui-api` at restructure Stage 6 (split into `:core-mvi` + `:core-nav` +
+`:haptics`). The `dev.jdgarita.frnk:shared-ui-api` coordinate survives as a src-less facade
+(`frnk/core/ui-api-facade`) that `api()`-re-exports all three until Stage 9. Kotlin packages are
+unchanged (`dev.jdgarita.frnk.ui.mvi`, `dev.jdgarita.frnk.ui`).
 
 ## Contents
 
 - `ui/mvi/MviContract.kt` — empty marker interfaces `UiState`, `UiIntent`, `UiEffect`.
 - `ui/mvi/MviViewModel.kt` — abstract `MviViewModel<S : UiState, I : UiIntent, E : UiEffect>`. Owns `StateFlow<S>`, a `SharedFlow<I>` (replay=0, buffer=16, `DROP_OLDEST`), and a `Channel<E>` (BUFFERED). Features override `suspend fun onIntent(intent: I)`. Use `setState { copy(...) }` to reduce and `emit(effect)` for one-shots.
-- `ui/nav/ToolkitRoute.kt` — the toolkit's default catalogue of type-safe destinations. A **`@Serializable sealed interface ToolkitRoute : NavKey`** (each member `@Serializable`) so it can key a nav3 `NavBackStack` and restore via `SavedStateConfiguration`. Hosts may also declare their own `@Serializable` `NavKey` routes — the nav engine (`FrnkNavDisplay` in `:shared-ui-atoms`) is generic over any `NavKey`. The **host owns the back-stack instance** (`NavBackStack<NavKey>`).
-- `ui/nav/NavBackStackExt.kt` — back-stack helpers: `NavBackStack<NavKey>.navigateTo(screen, popScreen?, singleTop = true)`, `.back()`, `.clearAndNavigateTo(screen)`. In nav3 the back stack is a `MutableList<NavKey>`, so "navigating" is mutating it; these name the common mutations and stay Compose-free so MVI effect handlers can call them. `navigateTo` is **single-top by default** (the nav2 `launchSingleTop` equivalent): a push equal to the current top entry is skipped, so a doubly-fired nav effect can't stack a duplicate destination — distinct instances of the same route type still push; pass `singleTop = false` to force a duplicate.
-- `ui/nav/FrnkFullScreenRoute.kt` — `interface FrnkFullScreenRoute : NavKey`, a pure marker mix-in. A route implementing it (e.g. `data object Onboarding : DemoRoute, FrnkFullScreenRoute`) is shown full-screen — `FrnkTabbedNavScaffold`'s default `hideBarFor` is `{ it is FrnkFullScreenRoute }`, so the bottom bar hides automatically. `ToolkitRoute.Onboarding` / `ToolkitRoute.Paywall` carry it. Declares "no bottom bar" **on the route** (next to its `entryProvider` registration) instead of a separate host predicate that can drift.
-- `ui/nav/FrnkPendingRouteRequest.kt` — cross-process deep-link signal (`StateFlow<NavKey?>` + `request`/`consume`). State-based so a signal set before the observer attaches still delivers. Generic over `NavKey`; register as a DI singleton.
-- `ui/nav/FrnkPrimaryActionRegistry.kt` — routes the bottom bar's **primary-action button** (the Create/Add FAB) to the currently active screen: a handler **stack** (last-registered wins, unregister restores the previous — covers the nav-transition overlap) exposing `active: StateFlow<(() -> Unit)?>`; `register(handler)` returns an idempotent `FrnkPrimaryActionRegistration`. Compose-free (mirrors `FrnkPendingRouteRequest`); the Compose binding (`LocalFrnkPrimaryActionRegistry` + `FrnkPrimaryActionHandler`) lives in `:shared-ui-atoms`, and `FrnkTabbedNavScaffold`/`FrnkAppShell` provide + observe it. Canonical screen usage sends an MVI intent: `FrnkPrimaryActionHandler { onIntent(HomeIntent.PrimaryActionClicked) }`.
-- `ui/nav/FrnkNavConfig.kt` — `frnkNavConfiguration(hostRoutes: SerializersModule = …)` builds the `SavedStateConfiguration` a nav3 `NavBackStack` needs, registering `ToolkitRoute`'s polymorphic serializers and `include`-ing the host's own route module. Pass the result to `rememberFrnkNavBackStack(...)` in `:shared-ui-atoms`.
 - `ui/UiText.kt` — wrapper for raw / resource-resolved strings; ViewModels return these so the UI layer handles locale.
-- `ui/haptics/` — the toolkit's **simplified haptics contract** (Compose- and library-free, so ViewModels can inject it too). `HapticType` (semantic enum: `Click`, `Selection`, `LongPress`, `Success`, `Warning`, `Error`), `HapticFeedback` (`isEnabled: StateFlow<Boolean>` + `setEnabled` + `perform(type)`; `perform` is a no-op while disabled), the `HapticEngine` SPI (`fun emit(type)`) the platform binding supplies, `DefaultHapticFeedback` (frnk-owned: holds the in-memory enabled flag, gates `perform`, delegates to a `HapticEngine` — mirrors `DefaultEntitlementManager` wrapping a provider), and `NoOpHapticFeedback`. The `multihaptic`-backed engine + the `LocalFrnkHaptics` composition local that exposes a `HapticFeedback` to composables live one layer up in `:shared-ui-atoms` (binding needs a Compose `Vibrator`). The "Haptic feedback" Settings toggle drives `setEnabled`; frnk atoms call `perform` on press.
 
 ## Conventions
 
 - **Vocabulary is `UiIntent`, not `UiAction`.** The marker on disk is `UiIntent`, and the repo's docs (root `CLAUDE.md`, `docs/ARCHITECTURE.md`) use `UiIntent` / `onIntent` consistently. If any external skill or agent prose says "Action" generically, follow the on-disk name.
 - Stick to interfaces and small abstract bases — no concrete repository, no Compose, no third-party UI.
-- `api`-deps: `:shared-utils`, `kotlinx-coroutines`, `androidx.lifecycle.viewmodel` (for the MVI base), `kotlinx-serialization-core` (for `@Serializable` routes — **core only**, never `-json`; nav3 encodes routes via savedstate's `SavedStateEncoder`), and `androidx-navigation3-runtime` (the pure-Kotlin/MP nav3 runtime — `NavKey`/`NavBackStack`/`SavedStateConfiguration`; **no Compose**). The `kotlin-serialization` plugin is applied here for the route contract. Don't add Compose, navigation3-**ui**, or any backend SDK here — the Compose nav engine (`FrnkNavDisplay`) lives in `:shared-ui-atoms`.
-- Feature modules that want MVI should depend on **this** module — not on `:shared-ui-atoms` — if they don't need composables.
+- `api`-deps: `:shared-utils`, `kotlinx-coroutines`, `androidx.lifecycle.viewmodel` (for the MVI base). Don't add Compose or any backend SDK here.
+- Feature modules that want MVI should depend on **this** module (or the route contract in `:core-nav`) — not on `:shared-ui-atoms` — if they don't need composables.

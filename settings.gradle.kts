@@ -35,6 +35,9 @@ rootProject.name = "frnk"
 include(
     ":core-di",
     ":shared-utils",
+    ":core-mvi",
+    ":core-nav",
+    ":haptics",
     ":shared-ui-api",
     ":shared-ui-atoms",
     ":shared-ui-nav",
@@ -57,12 +60,16 @@ include(
 // rename stages (9, 10) — except the data modules (final names since the Stage 4 split) and the
 // analytics pair (re-flattened from :shared:backend:* at Stage 5, per OQ-6). Composite-build
 // substitution matches group:name, so paths are free to move. Modules that later split
-// (shared-ui-api, shared-ui-atoms) are parked at the directory of their main successor per
-// docs/RESTRUCTURE_PLAN.md §3.
+// (shared-ui-atoms) are parked at the directory of their main successor per docs/RESTRUCTURE_PLAN.md §3.
+// Stage 6 split shared-ui-api → :core-mvi (kept frnk/core/mvi) + :core-nav + :haptics; shared-ui-api is
+// now a src-less facade parked at frnk/core/ui-api-facade (deleted at Stage 9).
 mapOf(
     "core-di" to "frnk/core/di",
     "shared-utils" to "frnk/core/util",
-    "shared-ui-api" to "frnk/core/mvi",
+    "core-mvi" to "frnk/core/mvi",
+    "core-nav" to "frnk/core/nav",
+    "haptics" to "frnk/capabilities/haptics",
+    "shared-ui-api" to "frnk/core/ui-api-facade",
     "data-db-api" to "frnk/data/db-api",
     "data-db-impl" to "frnk/data/db-impl",
     "data-prefs-api" to "frnk/data/prefs-api",

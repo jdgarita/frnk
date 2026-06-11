@@ -280,14 +280,20 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 - Koin module names (`firebaseObservabilityModule`, `noopObservabilityModule`) unchanged.
 - still impact: none (still never declared these coordinates).
 
-### ☐ Stage 6 — Split `shared-ui-api` → `:core-mvi`, `:core-nav`, `:haptics`  — risk: low
+### ☑ Stage 6 — Split `shared-ui-api` → `:core-mvi`, `:core-nav`, `:haptics`  — risk: low — **landed 2026-06-11**
 
-- New `:core-mvi` (`ui/mvi/*`, `UiText.kt`, MviViewModelTest), `:core-nav` (`ui/nav/*` + tests;
-  keeps `androidx-navigation3-runtime` + `kotlinx-serialization-core` + the serialization plugin),
-  `:haptics` (contract only for now: HapticType, HapticFeedback, Default/NoOp + tests; Compose-free).
+- New `:core-mvi` (`ui/mvi/*`, `UiText.kt`, MviViewModelTest; keeps `frnk/core/mvi`), `:core-nav`
+  (`ui/nav/*` + tests; keeps `androidx-navigation3-runtime` + `kotlinx-serialization-core` + the
+  serialization plugin), `:haptics` (contract only for now: HapticType, HapticFeedback, Default/NoOp +
+  test; Compose-free, `frnk/capabilities/haptics`).
 - `shared-ui-api` becomes an empty facade: no `src/`, just
-  `commonMain.dependencies { api(core-mvi); api(core-nav); api(haptics) }`. still's coordinate keeps
+  `commonMain.dependencies { api(core-mvi); api(core-nav); api(haptics) }` — preserving the exact
+  transitive classpath (incl. the `shared-utils` export via `core-mvi`). Parked at
+  `frnk/core/ui-api-facade` (two projects can't share `frnk/core/mvi`). still's coordinate keeps
   resolving; its imports untouched.
+- `:shared-ui-atoms` keeps depending on the facade (still-invisibility proof); `demo/shared` re-points
+  its iOS `export(...)` + `api(...)` to the three successors (Kotlin/Native `export` is non-transitive,
+  so the src-less facade would carry no Swift symbols).
 
 ### ☐ Stage 7 — Split `shared-ui-atoms` (the big one)  — risk: **high**; 2–3 frnk PRs
 
