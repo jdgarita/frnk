@@ -96,7 +96,7 @@ Benefits:
 
 ### Why no aggregator (restructure Stage 1)
 
-The old `:shared` aggregator bundled every api **and** impl module behind one coordinate and selected capabilities with enums (`BackendChoice`/`ObservabilityChoice`/`MonetizationChoice` + `frnkModules()`). That coupling died at Stage 1 (OQ-7): hosts now depend on exactly the modules they use and pass an **explicit Koin module list** to `initializeFrnk(...)` — what isn't passed is never in the graph, and there's no compile-time bundle of unused SDKs.
+The old `:shared` aggregator bundled every api **and** impl module behind one coordinate and selected capabilities with enums (`BackendChoice`/`ObservabilityChoice`/`MonetizationChoice` + a generated aggregator helper). That coupling died at Stage 1 (OQ-7): hosts now depend on exactly the modules they use and pass an **explicit Koin module list** to `initializeFrnk(...)` — what isn't passed is never in the graph, and there's no compile-time bundle of unused SDKs.
 
 ## Bootstrap surface (`:core-di` + `:ui-app`)
 

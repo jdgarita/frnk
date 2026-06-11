@@ -343,7 +343,7 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
 - still impact: none yet (facade). Budget for iteration — this is the largest module with the most
   interleaved internals.
 
-### ☐ Stage 8 — Monetization tidy  — risk: low
+### ☑ Stage 8 — Monetization tidy  — risk: low — **landed 2026-06-11**
 
 - Delete `di/ToolkitDiModule.kt` + platform actuals from `monetization-api` (vestigial — both
   actuals return `emptyList()`; pre-flight grep `toolkitCoreModules|frnk.di` in frnk **and** still).

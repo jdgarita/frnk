@@ -27,13 +27,15 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/MonetizationModule.kt` — `monetizationModule` binds `EntitlementManager`
   (`DefaultEntitlementManager`) + `FeatureGate` over whatever `EntitlementProvider` the host installs.
   Requires an `EntitlementProvider` + `KeyValueStore` + `AnalyticsTracker` in the graph.
-- `di/ToolkitDiModule.kt` (+ `.android.kt`/`.ios.kt`) — expect/actual platform-DI seam.
 
 ## Rules
 
 - **No SDK dependencies.** RevenueCat artifacts live in `:shared-monetization-revenuecat`. A new provider
   (Adapty, …) implements `EntitlementProvider` in its own `*-impl` module, bound in `:shared`;
   `monetizationModule` is unchanged.
+- **No DI-bootstrap seam here.** Host-facing Koin assembly lives entirely in `:core-di`
+  (`initializeFrnk` + `requireFrnkKoin`); the vestigial `di/ToolkitDiModule.kt` expect/actual
+  (both actuals returned `emptyList()`) was deleted at restructure Stage 8.
 - `api`-exports `:analytics-api` (`AnalyticsTracker`, `AppResult`/error types) **and**
   `:data-prefs-api` (`KeyValueStore` + the typed `Preference` layer, for god-mode persistence in
   `DefaultEntitlementManager` — monetization never touches the SQL driver SPI, so `:data-db-api`
