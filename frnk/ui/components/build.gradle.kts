@@ -1,6 +1,5 @@
 plugins {
     id("frnk.kmp.library.compose")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 // NB: this module does NOT use frnk.kmp.library.hosttest — its tests live in an `androidHostTest`
@@ -25,6 +24,10 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.sharedUiApi)
+            // Design-system foundation — tokens + theme engine (extracted at restructure Stage 7a).
+            // api so theme tokens (FrnkColors, …) + the transitively-exported compose-unstyled theming
+            // surface + the haptics contract (LocalFrnkHaptics) flow to downstream consumers.
+            api(projects.uiTheme)
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
             // Lifecycle-aware Compose collection (collectAsStateWithLifecycle / repeatOnLifecycle)
@@ -44,20 +47,15 @@ kotlin {
             // pulled explicitly; implementation-scoped (it's internal to the helper, not in any signature).
             implementation(libs.compose.ui.backhandler)
 
-            api(libs.compose.unstyled.theming)
+            // compose-unstyled headless primitives the atoms wrap. The `theming` artifact (Theme[...]
+            // token lookups) + the ripple + multihaptic now arrive transitively via :ui-theme's api,
+            // so they're no longer declared here. icons-lucide stays for the @Preview/test call sites
+            // that reference Lucide vectors directly (commonDebug previews + HomeViewModelTest).
             implementation(libs.compose.unstyled.primitives)
-            implementation(libs.compose.unstyled.platformtheme)
             implementation(libs.compose.unstyled.button)
             implementation(libs.compose.unstyled.icon)
             implementation(libs.compose.unstyled.separators)
-            implementation(libs.compose.ripple.indication)
             implementation(libs.icons.lucide)
-            // Cross-platform haptics behind LocalFrnkHaptics (installed by FrnkTheme). Like the
-            // ripple, this is a UI-feedback library, not a swappable backend SDK. multihaptic ships
-            // its own Android/iOS impls (no native cinterop), so umbrella XCFrameworks stay clean
-            // and the Android VIBRATE permission self-merges from multihaptic-core's manifest.
-            implementation(libs.multihaptic.core)
-            implementation(libs.multihaptic.compose)
         }
 
         // commonDebug: cross-platform source set for @Preview composables.
