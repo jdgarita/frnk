@@ -1,6 +1,6 @@
 # shared-monetization-revenuecat
 
-RevenueCat implementation of `:shared-monetization-api`. Bundled inside `:shared` and always registered by `frnkModules(...)` (there is no Firebase-vs-Supabase split for monetization — `BackendChoice` does not affect this module).
+RevenueCat implementation of `:shared-monetization-api`. Installed at runtime by passing `revenueCatModule` (with `monetizationModule` + `paywallScaffoldModule`) to `initializeFrnk(modules = …)`.
 
 ## Contents
 
@@ -36,7 +36,7 @@ demo's fake with `revenueCatModule` via Koin `allowOverride(true)` when a key is
 
 ## iOS native-framework contract (important)
 
-The RevenueCat KMP SDK cinterops with the native `PurchasesHybridCommon.framework`. That framework is **not** vendored inside `FrnkKit.xcframework` — the consumer Xcode project supplies it via CocoaPods or SPM (`pod 'PurchasesHybridCommon'`). `:iosApp` sets `linkerOpts("-undefined", "dynamic_lookup")` precisely to make this module's iOS link succeed without the native dep present locally; the symbols resolve when the consumer app links.
+The RevenueCat KMP SDK cinterops with the native purchases-ios SDK. That framework is **not** vendored inside any toolkit framework — the consumer Xcode project supplies it via SPM/CocoaPods. Umbrella XCFrameworks bundling this module (DemoKit, host frameworks) set `linkerOpts("-undefined", "dynamic_lookup")` precisely to make the iOS link succeed without the native dep present locally; the symbols resolve when the consumer app links.
 
 If you change anything that touches this contract — e.g. adding a new cinterop, depending on a different RC SDK module — document it in `docs/ARCHITECTURE.md` so consumers know what extra pod to add.
 

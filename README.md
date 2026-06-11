@@ -15,27 +15,25 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-A single `:shared` module is the consumer-facing surface. Internally it aggregates an **api / impl** module split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Ktor, SQLDelight, Firebase, Supabase, RevenueCat) wired via Koin. Backend modules are grouped under `:shared:backend:*`; other domains currently keep flat Gradle paths. `:shared` bundles every api **and** every impl, so host apps depend on one module and pick what to install at runtime: the auth/remote backend via `BackendChoice`, and analytics + crash reporting via `ObservabilityChoice` (a **separate axis** — a local-only app with no backend can still ship Firebase telemetry).
+Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (SQLDelight, Firebase, RevenueCat) wired via Koin. Backend modules are grouped under `:shared:backend:*`; other domains currently keep flat Gradle paths. What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent (a local-only app with no backend can still install Firebase telemetry).
 
 ### Module map
 
 | Module | Purpose |
 | --- | --- |
-| `shared` | Consumer-facing aggregator. Re-exports every shared API/impl module via `api(...)`, exposes `frnkModules(BackendChoice, ObservabilityChoice)` and `initializeFrnk()` for one-shot Koin bootstrap. |
+| `core-di` | Host bootstrap: `initializeFrnk(modules)` (+ the Android `initializeFrnk(context, modules)` overload that wires `androidContext` + `DatabaseContext.application`) and the fail-fast `requireFrnkKoin()`. |
+| `ui-app` | The batteries-included app root: `FrnkAppScaffold` (over `shared-ui-nav`'s `FrnkAppShell` — live entitlement-aware Settings, auto-mounted paywall, Koin fail-fast) + `frnkUiModules()` (the SDK-free scaffold VM modules). No `*-impl` compile deps. |
 | `shared-utils` | Root utilities — coroutines, datetime, `Logger`, `PlatformInfo` (the module's only `expect/actual`: OS + device), `FeedbackEmail` (`mailto:` draft builder), and `Frnk.VERSION`. Every other shared module depends on this. |
 | `shared-ui-api` | The **MVI engine**, no Compose deps: `MviContract` (`UiState` / `UiIntent` / `UiEffect`), `MviViewModel<S, I, E>` (StateFlow + intent flow + effect channel; `setState`/`onIntent`/`emit`), plus `ToolkitRoute` and `UiText`. Feature ViewModels subclass `MviViewModel` here without pulling in Compose. |
 | `shared-ui-atoms` | The **design system** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes` / `FrnkIconSize`), the `FrnkTheme` engine, `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`), molecules (compositions of atoms — `FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (self-contained sections composed from molecules/atoms — `FrnkListSection`, `FrnkProfileHeader`), and page scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `FrnkScreenScaffold`). Atoms ship a built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`), automatic **press ripple** (`FrnkTheme` installs `rememberFrnkRipple()` as `LocalIndication`), and automatic **haptics** (`FrnkTheme` installs `LocalFrnkHaptics`; atoms vibrate on press, gated by the Settings "Haptic feedback" toggle — `LocalFrnkHaptics.current.perform(HapticType.Success)` for host code). |
 | `shared-ui-nav` | **Platform-adaptive bottom navigation** — `FrnkAdaptiveBottomNavBar` rendering a native UIKit `UITabBar` on iOS and a Material3 `NavigationBar` on Android (via [Calf](https://github.com/MohamedRejeb/Calf), themed from `FrnkTheme` tokens), plus two scaffolds: `FrnkTabbedNavScaffold` (the nav3 multiple-back-stack tabbed scaffold — one call wires the display + bar + tab switching + back convention + bar inset) and `FrnkAdaptiveBottomNavScaffold` (the simpler index-based variant for single-screen tabs). **The toolkit's sole Material3 dependency**, deliberately isolated here so `shared-ui-atoms` stays `compose-unstyled`-only. |
-| `:shared:backend:api` | Auth / Analytics / CrashReporter / RemoteData interfaces + the no-op observability defaults (`Noop{Analytics,Crash}`). Owns `AppResult<D, E : AppError>`. |
-| `:shared:backend:firebase` | Firebase impl of `:shared:backend:api`. Exposes `firebaseBackendModule` (auth + remote data) and `firebaseObservabilityModule` (analytics + crash). |
-| `:shared:backend:supabase` | Supabase + Ktor impl of `:shared:backend:api`. Exposes `supabaseBackendModule`. |
+| `:shared:backend:api` | Analytics / CrashReporter / RemoteData interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
+| `:shared:backend:firebase` | Firebase impl of `:shared:backend:api`. Exposes `firebaseBackendModule` (remote data) and `firebaseObservabilityModule` (analytics + crash). |
 | `shared-database-api` | Persistence contracts (`SqlDriverFactory`, `KeyValueStore` + typed `Preference` accessors, `NoteStore`). |
 | `shared-database-impl` | SQLDelight (`FrnkDB`) + Multiplatform Settings impl — `SqlDelightNoteStore`, `SettingsKeyValueStore`. Exposes `databaseModule`. |
 | `shared-monetization-api` | Entitlement / feature-gate interfaces. |
 | `shared-monetization-revenuecat` | RevenueCat impl. Exposes `revenueCatModule`. |
 | `shared-monetization-ui` | frnk-owned monetization **UI** (no RevenueCat dep): the `PaywallScreen`/`PaywallViewModel` MVI paywall wired via `frnkPaywallDestination(...)` + `paywallScaffoldModule`, plus the host-facing `rememberFrnkSettingsHandler()` (backed by an internal `platformManageSubscriptionsUrl()` `expect/actual` supplying the native subscription-management URL). |
-| `androidApp` | Public entry point as a KMP-Android library (`com.android.kotlin.multiplatform.library`). `api(projects.shared)` — one dep, no surprises. |
-| `iosApp` | KMP target producing the fat `FrnkKit.xcframework` (consumed via SPM). `export(projects.shared)`. |
 | `shared-demo` | Demo-only KMP module — bundles `DemoScreen` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `shared-ui-atoms`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
 | `androidDemoApp` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |
 
@@ -46,8 +44,8 @@ A single `:shared` module is the consumer-facing surface. Internally it aggregat
 - **DI:** Koin 4.2.1
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
-- **Backend:** Supabase 3.6.0 + Ktor 3.5.0, and GitLive Firebase 2.4.0 — both impls bundled, host picks via `BackendChoice`
-- **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in via `ObservabilityChoice.Firebase`, independent of the backend choice
+- **Backend:** GitLive Firebase 2.4.0 (remote data)
+- **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in by installing `firebaseObservabilityModule`, independent of the backend
 - **Monetization:** RevenueCat 3.0.5
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
 - **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
@@ -77,43 +75,45 @@ rootProject.name = "MyApp"
 include(":app")
 ```
 
-> `includeBuild` belongs at the top level of `settings.gradle.kts`, not inside `pluginManagement` — frnk ships libraries, not Gradle plugins, so the host's normal `implementation(...)` dependency on `dev.jdgarita.frnk:androidApp` is what triggers the composite-build substitution.
+> `includeBuild` belongs at the top level of `settings.gradle.kts`, not inside `pluginManagement` — frnk ships libraries, not Gradle plugins, so the host's normal `implementation(...)` dependencies on `dev.jdgarita.frnk:<module>` coordinates are what trigger the composite-build substitution.
 
-**3. Declare the dependency in the consumer's app module:**
+**3. Declare the modules you use in the consumer's app module:**
 ```kotlin
 dependencies {
-    // One dep — re-exports every shared api + impl transitively
-    implementation("dev.jdgarita.frnk:androidApp")
+    implementation("dev.jdgarita.frnk:ui-app")                          // FrnkAppScaffold + frnkUiModules() (pulls ui/nav/theme + core-di)
+    implementation("dev.jdgarita.frnk:shared-database-impl")            // databaseModule
+    implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
+    // + any other impl modules you install (e.g. :shared:backend:firebase for firebaseObservabilityModule)
 }
 ```
 
 **4. Bootstrap in `Application.onCreate`:**
 ```kotlin
-import dev.jdgarita.frnk.shared.BackendChoice
-import dev.jdgarita.frnk.shared.ObservabilityChoice
-import dev.jdgarita.frnk.shared.initializeFrnk
-import dev.jdgarita.frnk.database.impl.DatabaseContext
-import org.koin.android.ext.koin.androidContext
+import dev.jdgarita.frnk.di.initializeFrnk
+import dev.jdgarita.frnk.ui.app.frnkUiModules
 
-DatabaseContext.application = applicationContext
-
-// `observability` is independent of `backend` — a local-only app can pass
-// BackendChoice.Supabase (or skip backend calls entirely) and still get Firebase telemetry.
-initializeFrnk(backend = BackendChoice.Supabase, observability = ObservabilityChoice.Firebase) {
-    androidContext(this@MyApp)
-    modules(hostDatabaseModule, hostFeatureModules)   // host-defined; see docs/HOST_INTEGRATION.md
-}
+// Explicit module list — what you don't pass is never in the graph. The Android overload
+// also wires androidContext(...) and DatabaseContext.application for you.
+initializeFrnk(
+    context = this,
+    modules = frnkUiModules() +                  // scaffold VMs (Home/Settings/Onboarding/BottomNav)
+        listOf(
+            databaseModule,                      // SQLDelight driver factory + KeyValueStore
+            firebaseObservabilityModule,         // or noopObservabilityModule for no telemetry
+            revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization stack
+        ) + listOf(hostDatabaseModule) + hostFeatureModules, // host-defined; see docs/HOST_INTEGRATION.md
+)
 ```
 
 > The toolkit owns the driver factory, not the schema. The host defines `hostDatabaseModule` against the injected `SqlDriverFactory` — see [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) for the full pattern.
 
-For iOS, the `FrnkKit.xcframework` produced by `:iosApp:assembleFrnkKitReleaseXCFramework` lands at `iosApp/build/XCFrameworks/release/FrnkKit.xcframework` for SPM consumption. From Swift, call `FrnkKitKt.bootstrapFrnkKit(backend:)`.
+For iOS, there is no prebuilt toolkit framework: the host adds a small KMP shared module that `api()`-depends on the frnk modules it uses and bundles them into its own umbrella `XCFramework` — the demo's `DemoKit` (`shared/shared-demo/build.gradle.kts`) is the worked example, and [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) §6 has the recipe.
 
-> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native `PurchasesHybridCommon` framework (and the relevant Firebase frameworks if using `BackendChoice.Firebase` or `ObservabilityChoice.Firebase`) via CocoaPods or SPM. The toolkit defers their symbol resolution via `-undefined dynamic_lookup`.
+> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native SDK (and the relevant Firebase frameworks if installing `firebaseObservabilityModule`) via CocoaPods or SPM. The umbrella framework defers their symbol resolution via `-undefined dynamic_lookup`.
 
 ## ⚙️ Setup
 
-The toolkit itself has no required secrets — backend credentials are supplied by the host app at runtime (the Supabase / Firebase clients are configured in your `Application` / `AppDelegate`, not baked into frnk).
+The toolkit itself has no required secrets — backend credentials are supplied by the host app at runtime (the Firebase / RevenueCat clients are configured in your `Application` / `AppDelegate`, not baked into frnk).
 
 `local.properties` is gitignored and only needs `sdk.dir`, which Android Studio writes automatically on first open. From the CLI, copy the template:
 
@@ -133,15 +133,14 @@ Demo apps (the internal smoke harnesses) additionally need:
 ./gradlew testAndroidHostTest                         # commonTest + androidHostTest across all KMP modules
 ./gradlew :shared-database-impl:testAndroidHostTest   # run a single module's tests
 ./gradlew ktlintFormat                                # auto-fix style (also runs from the pre-commit hook)
-./gradlew assemble                                    # full build of every target (Android library + iOS frameworks)
-./gradlew :iosApp:assembleFrnkKitReleaseXCFramework       # produce FrnkKit.xcframework (consumer-facing)
+./gradlew assemble                                    # full build of every target
 ./gradlew :shared-demo:assembleDemoKitDebugXCFramework    # produce DemoKit.xcframework (iosDemoApp consumes this)
 ./gradlew clean
 ```
 
 > Under the AGP 9 KMP-Android plugin (`com.android.kotlin.multiplatform.library`), the per-module compile task is `compileAndroidMain` — `compileDebugKotlinAndroid` is the AGP 8 name and no longer exists for KMP-Android modules. The host unit-test task is likewise `testAndroidHostTest` (not `testDebugUnitTest`), and a module only gets it after opting in with `kotlin { android { withHostTest {} } }`. The demo app is a plain `com.android.application`, so it keeps `compileDebugKotlin` / `testDebugUnitTest`.
 
-Shared constants (package name, min/compile/target SDK, iOS framework name `FrnkKit`, database class `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt` — read from there rather than hardcoding.
+Shared constants (package name, database class `FrnkDB`) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt`; min/compile/target SDK live in `gradle/libs.versions.toml` — read from there rather than hardcoding.
 
 ## 🎨 Style: pre-commit hook, not CI
 

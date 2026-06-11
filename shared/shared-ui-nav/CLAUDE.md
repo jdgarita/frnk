@@ -68,8 +68,7 @@ It is the **one place in the toolkit that intentionally takes a Material3 depend
 built on [Calf](https://github.com/MohamedRejeb/Calf)'s `AdaptiveNavigationBar`, which renders the native
 `UITabBar` on iOS and a Material3 `NavigationBar` elsewhere — and Calf hard-depends on `compose.material3`.
 Isolating it here keeps that dependency to a single, named module rather than smeared across `shared-ui-atoms`
-(which stays Material-free, `compose-unstyled` only). `:shared` `api`-aggregates this module and `:iosApp`
-exports it, so **Material3 + Calf ship in FrnkKit for every consumer** — a deliberate, host-approved trade
+(which stays Material-free, `compose-unstyled` only). `:ui-app` `api`-depends on this module, so **Material3 + Calf reach every consumer of the nav layer** — a deliberate, host-approved trade
 (the alternative, a hand-rolled UIKit `UITabBar` interop with zero Material3, was considered and declined in
 favour of the maintained component; see `docs/spikes/adaptive-bottom-nav.md`).
 
@@ -89,9 +88,9 @@ consumer's existing `-undefined dynamic_lookup`.
   Host extension points — `effects` (the single `EffectCollector` home), `entries`
   (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; **never** re-register the built-in routes,
   nav3 `require`-throws on duplicates), and the effect handlers — all receive the `FrnkAppScope`.
-  Assumes **Koin is already started** (`frnkModules()` installs all scaffold VM modules). `:shared`'s
+  Assumes **Koin is already started** (`frnkUiModules()` in `:ui-app` carries all scaffold VM modules). `:ui-app`'s
   `FrnkAppScaffold` layers the monetization batteries over this; `:shared-demo` uses the shell
-  directly (it can't see `:shared`) and is the reference integration.
+  directly (it can't see `:ui-app`) and is the reference integration.
 - `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` + `primaryActions` registry +
   `navigateTo`/`back`/`clearAndNavigateTo`) handed to every shell extension point.
 

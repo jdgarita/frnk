@@ -1,0 +1,20 @@
+# :core-di
+
+Host-facing Koin bootstrap helpers (`dev.jdgarita.frnk.di`). Created at restructure Stage 1 (OQ-5/OQ-7) as the replacement for the deleted `:shared` aggregator's `initializeFrnk` + choice enums. Final home: `frnk/core/di` (Stage 3).
+
+## Public surface
+
+- `initializeFrnk(modules: List<Module>, extraConfig: KoinApplication.() -> Unit = {}): KoinApplication` — one-shot `startKoin`. Hosts pass an **explicit module list** (`frnkUiModules() + databaseModule + firebaseObservabilityModule + …`); there is no backend/observability/monetization switch. See `docs/HOST_INTEGRATION.md` §4 for the canonical snippet.
+- **androidMain** `initializeFrnk(context, modules, extraConfig)` — also sets `DatabaseContext.application` (the sanctioned bootstrap-only `*-impl` import) and registers `androidContext(...)`. iOS hosts call the common overload.
+- `requireFrnkKoin(): Koin` — fail-fast accessor used by `:ui-app`'s `FrnkAppScaffold`; turns a missing bootstrap into an immediate, explained crash instead of a deep `NoDefinitionFound`.
+
+## Rules
+
+- Keep this module Compose-free and tiny — it's the bottom of the ui column (`ui-app` depends on it; it depends on nothing but Koin + the androidMain database-impl wiring).
+- Don't reintroduce capability enums or conditional module assembly here; capability selection is the host's module list by design (OQ-7).
+
+## Dependencies
+
+- `commonMain`: `api(libs.koin.core)` (Koin types are in the public signatures).
+- `androidMain`: `api(libs.koin.android)` + `implementation(projects.sharedDatabaseImpl)` (for `DatabaseContext` only).
+- `commonTest`: `kotlin-test` (+ coroutines-test via the `frnk.kmp.library.hosttest` plugin); run with `./gradlew :core-di:testAndroidHostTest`.

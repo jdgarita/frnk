@@ -16,7 +16,7 @@ Concrete persistence bindings for `:shared-database-api`. SQLDelight + `multipla
 - `iosMain`: `sqldelight-native-driver`.
 - `commonMain`: no driver — features go through `SqlDriverFactory` from `:shared-database-api`.
 
-The toolkit owns the `FrnkDB` schema; `databaseModule` builds it through the platform `SqlDriverFactory`. A downstream app can still install its own additional `SqlDriver` schema module via `initializeFrnk { modules(sqlDelightSchemaModule) }`; see `docs/ARCHITECTURE.md`.
+The toolkit owns the `FrnkDB` schema; `databaseModule` builds it through the platform `SqlDriverFactory`. A downstream app can still install its own additional `SqlDriver` schema module in its `initializeFrnk(modules = …)` list; see `docs/ARCHITECTURE.md`.
 
 ## Rules
 

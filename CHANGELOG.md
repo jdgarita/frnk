@@ -36,6 +36,7 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Changed
 
+- **Breaking (restructure Stage 1):** host bootstrap is now an **explicit Koin module list**. `initializeFrnk(modules: List<Module>)` (+ the Android `initializeFrnk(context, modules)` overload) lives in the new **`:core-di`** (`dev.jdgarita.frnk.di`); the choice enums (`BackendChoice` / `ObservabilityChoice` / `MonetizationChoice`) and `frnkModules()` are retired — pass `frnkUiModules() + databaseModule + firebaseObservabilityModule + …` instead (see `docs/HOST_INTEGRATION.md` §4). `FrnkAppScaffold` moved to the new **`:ui-app`** (`dev.jdgarita.frnk.ui.app`, was `dev.jdgarita.frnk.shared`), which also exposes `frnkUiModules()`; `noopObservabilityModule` moved to `:shared:backend:api`. *(Supersedes the `frnkModules`/`ObservabilityChoice` entries below.)*
 - **Breaking:** `frnkModules` and `initializeFrnk` gained an `observability` parameter (defaulted to `ObservabilityChoice.None`, so existing source compiles). `firebaseBackendModule` / `supabaseBackendModule` no longer bind `AnalyticsTracker` / `CrashReporter` — they're on the observability axis now.
 - `bootstrapFrnkKit` (iOS entry point) gained an `observability` parameter (additive, default `ObservabilityChoice.None`) so iOS hosts can select Firebase observability and trigger the CrashKiOS hook.
 - `FrnkTheme` gained a `haptics: HapticFeedback = rememberFrnkHaptics()` parameter (additive, default-provided) and now installs `LocalFrnkHaptics`. The default Settings catalog (`rememberDefaultSettingsState`) groups Notifications + the new "Haptic feedback" toggle under a titled **"Preferences"** section (Notifications was previously an untitled section).
@@ -48,6 +49,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Removed
 
+- **Breaking (restructure Stage 1):** the aggregators **`:shared`, `:androidApp`, `:iosApp`** — and with them the prebuilt **`FrnkKit.xcframework`** and `bootstrapFrnkKit`. Android hosts depend on the individual `dev.jdgarita.frnk:<module>` coordinates; iOS hosts build their own umbrella XCFramework exporting the modules they use (the demo's `DemoKit` is the worked example; `docs/HOST_INTEGRATION.md` §6). `frnk.kmp.library` no longer declares per-module iOS frameworks (bare targets only).
+- **Breaking (restructure Stage 2):** **`AuthService` and the Supabase backend** — `:shared:backend:supabase` is deleted (`BackendChoice.Firebase` was the only remaining value before the enum itself was retired at Stage 1); `Auth.kt`/`FakeAuthService` and `FirebaseAuthService` are gone. Remote data is slated to become Firebase Remote Config (restructure Stage 11).
 - **Breaking:** the collapse-on-scroll bars feature — `CollapsibleBarsState`, `rememberCollapsibleBarsState()`, and `Modifier.collapsibleBarOffset(...)` are deleted, and the `collapsibleBars` parameter is removed from `FrnkScreenScaffold`, `FrnkMviScreen`, and `BottomNavScaffoldContent`. The top app bar and the floating bottom nav bar now stay fixed on the viewport while content scrolls underneath them.
 
 - `NoopAnalyticsTracker` / `NoopCrashReporter` removed from `:shared:backend:supabase` and **relocated** to `:shared:backend:api` (they're backend-independent no-op defaults).

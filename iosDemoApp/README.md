@@ -14,7 +14,7 @@ exercises the MVI engine + `FeatureGate` via fakes.
 | Xcode app | This folder |
 
 `DemoKit.xcframework` exports the toolkit's **`*-api`** modules plus
-`shared-ui-atoms` — it does **not** pull in `:shared`. It links two native SDKs via
+`shared-ui-atoms` — no `*-impl` modules in its common surface. It links two native SDKs via
 `iosMain` cinterops so the demo can exercise the real paths (each supplied by this
 app via SPM under `dynamic_lookup`):
 - **CrashKiOS** (BACKLOG P1-5b) — the "Force crash" panic button → Firebase Crashlytics.
@@ -25,8 +25,9 @@ app via SPM under `dynamic_lookup`):
 So this app links the **native Firebase + RevenueCat SDKs** (added via SPM, below) and
 ships `GoogleService-Info.plist`.
 
-For apps that need real backends, depend on `FrnkKit.xcframework` from `:iosApp`
-instead and follow the integration notes in `docs/ARCHITECTURE.md`.
+For apps that need real backends, build your own umbrella XCFramework over the frnk
+modules you use (this demo's `DemoKit` is the worked example) and follow the
+integration notes in `docs/HOST_INTEGRATION.md` §6.
 
 ## Firebase setup (one-time, for the crash test)
 

@@ -26,8 +26,11 @@ monetization) on every new product.
   (`includeBuild("../frnk")`), not as a published Maven artifact (see §8.7 for
   rationale). Maven coordinates are kept stable so a later flip to published
   artifacts is non-breaking.
-- Downstream **Android** apps depend on `dev.jdgarita.frnk:androidApp`.
-- Downstream **iOS** apps consume the `FrnkKit.xcframework` produced by `:iosApp`.
+- Downstream **Android** apps depend on the individual `dev.jdgarita.frnk:<module>`
+  coordinates they use (no aggregator — restructure Stage 1).
+- Downstream **iOS** apps build their own umbrella XCFramework exporting the frnk
+  modules they use (the demo's `DemoKit` is the worked example; see
+  `docs/HOST_INTEGRATION.md` §6).
 - `androidDemoApp` and `iosDemoApp` are **internal smoke harnesses only** — they
   are not the shipping product and downstream consumers never depend on them.
 
@@ -54,37 +57,38 @@ descriptions.
   `BuildKonfig` config, `PlatformInfo` (the only `expect/actual` there), and
   pure-Kotlin helpers. It depends on nothing else in the graph.
 - Every domain that pulls in a **third-party SDK** is split into:
-  - **`*-api`** — pure-interface module. **No** Ktor / Firebase / Supabase /
-    SQLDelight / RevenueCat dependency may ever appear here.
+  - **`*-api`** — pure-interface module. **No** Firebase / SQLDelight / RevenueCat
+    dependency may ever appear here.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
-  - `:shared:backend:api` ↔ `:shared:backend:firebase`, `:shared:backend:supabase`
+  - `:shared:backend:api` ↔ `:shared:backend:firebase`
   - `shared-database-api` ↔ `shared-database-impl`
   - `shared-monetization-api` ↔ `shared-monetization-revenuecat`
-- **Rule:** Domain code depends only on `*-api`. Nothing imports an `*-impl`
-  package except `:shared`'s Koin wiring.
+- **Rule:** Domain code depends only on `*-api`. Toolkit code never imports an
+  `*-impl` package — impls enter the graph only through the host's
+  `initializeFrnk(modules = …)` list (demo wiring and `:core-di`'s androidMain
+  `DatabaseContext` bootstrap are the sanctioned exceptions).
 - `shared-ui-api` owns the MVI engine and carries **no Compose dependency**, so
   ViewModels compile without dragging in `compose.runtime`.
 - `shared-ui-atoms` owns the design system (tokens, theme engine, atoms,
   scaffolds) and is the lowest module allowed to depend on Compose.
 
-### 2.2 `:shared` is the only consumer-facing module (MANDATORY)
+### 2.2 Explicit-module-list bootstrap (MANDATORY)
 
-- `:shared` `api(...)`-aggregates **every** `shared-*` module (both interfaces
-  and implementations) and is the single surface `androidApp` / `iosApp`
-  re-export.
-- `:shared` exposes the one-shot bootstrap:
+- There is **no aggregator** (restructure Stage 1, OQ-7): hosts depend on the
+  individual modules they use. `:core-di` owns the bootstrap; `:ui-app` owns the
+  batteries-included app root (`FrnkAppScaffold`) + `frnkUiModules()`.
+- The one-shot bootstrap:
   ```kotlin
-  enum class BackendChoice { Supabase, Firebase }
-  fun frnkModules(backend: BackendChoice = BackendChoice.Supabase): List<Module>
-  fun initializeFrnk(
-      backend: BackendChoice = BackendChoice.Supabase,
-      extraConfig: KoinApplication.() -> Unit = {},
-  ): KoinApplication
+  // dev.jdgarita.frnk.di (:core-di)
+  fun initializeFrnk(modules: List<Module>, extraConfig: KoinApplication.() -> Unit = {}): KoinApplication
+  fun initializeFrnk(context: Context, modules: List<Module>, …): KoinApplication // androidMain
+  // dev.jdgarita.frnk.ui.app (:ui-app)
+  fun frnkUiModules(): List<Module>
   ```
-- **Backend choice is runtime, not compile-time.** Both backend impls are
-  bundled; the unchosen backend's Koin module is never installed, so its
-  bindings never enter the graph.
+- **Capability selection is the module list, not an enum.** A capability the
+  host doesn't pass (`firebaseObservabilityModule`, `revenueCatModule`, …) is
+  never installed, so its bindings never enter the graph.
 
 ### 2.3 Error handling contract (MANDATORY)
 
@@ -95,8 +99,9 @@ descriptions.
 
 ### 2.4 `:shared-demo` isolation (MANDATORY)
 
-- `:shared-demo` depends only on the `*-api` modules + `shared-ui-atoms`,
-  **never** on `:shared`. This keeps `DemoKit.xcframework` free of Firebase /
+- `:shared-demo` depends only on the `*-api` modules + `shared-ui-atoms` +
+  `shared-ui-nav` + `shared-monetization-ui` — never on an `*-impl` module in
+  its common surface. This keeps `DemoKit.xcframework` free of Firebase /
   RevenueCat / SQLite native cinterops so `iosDemoApp` boots on a clean
   simulator with no CocoaPods.
 - The demo binds fakes (`FakeEntitlementManager`, logging analytics/crash
@@ -140,8 +145,8 @@ targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`
 ### 3.2 Dependency injection (Koin)
 
 - Koin is the single DI container.
-- Each module exposes its bindings as a named Koin module; `:shared` assembles
-  them via `frnkModules(BackendChoice)`.
+- Each module exposes its bindings as a named Koin module; the host assembles
+  them explicitly via `initializeFrnk(modules = frnkUiModules() + …)`.
 - ViewModels are resolved with `koinViewModel { parametersOf(initialState) }`.
 
 ### 3.3 Navigation (tailored, custom)
@@ -163,14 +168,13 @@ targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`
 
 ### 3.5 Remote data sources
 
-- Pluggable backend behind `:shared:backend:api`: `AuthService`, `RemoteData`,
-  `AnalyticsTracker`, `CrashReporter`.
-- Two interchangeable implementations satisfying the same contract:
-  - **Firebase** (`dev.gitlive:firebase-*`) — auth, firestore, analytics,
-    crashlytics.
-  - **Supabase** (`io.github.jan-tennert.supabase:*`) — auth, postgrest,
-    storage.
-- Selected at runtime via `BackendChoice`.
+- Pluggable backend behind `:shared:backend:api`: `RemoteData`,
+  `AnalyticsTracker`, `CrashReporter`. (`AuthService` + the Supabase impl were
+  dropped in restructure Stage 2 — remote data is being repurposed as Firebase
+  Remote Config at Stage 11.)
+- Implementation: **Firebase** (`dev.gitlive:firebase-*`) — firestore,
+  analytics, crashlytics.
+- Installed at runtime by passing its Koin module to `initializeFrnk(...)`.
 
 ### 3.6 Analytics
 
@@ -233,12 +237,12 @@ review regardless of other merits.
 - **Tests:** ViewModels/reducers (pure) and api-layer logic are covered by
   `commonTest` + `androidHostTest`. KMP-Android modules run host unit tests under
   **`testAndroidHostTest`** (not `testDebugUnitTest`) and must opt in with
-  `kotlin { android { withHostTest {} } }`. The shared `FakeAuthService` test double
-  in `:shared:backend:api`'s `commonTest` is the canonical fake pattern for `*-api`
-  interfaces.
-- **Bootstrap:** `cp local.properties.template local.properties` and fill
-  Supabase/Firebase keys + `BUILD_VARIANT`; `BuildKonfig` fails configuration
-  without them.
+  `kotlin { android { withHostTest {} } }`. The shared `FakeAnalyticsTracker` /
+  `FakeCrashReporter` test doubles in `:shared:backend:api`'s `commonTest` are the
+  canonical fake pattern for `*-api` interfaces.
+- **Bootstrap:** `cp local.properties.template local.properties` (only
+  `sdk.dir` is required; demo extras like `REVENUECAT_ANDROID_API_KEY` are
+  optional).
 
 ---
 
@@ -273,27 +277,30 @@ escapes via `expect/actual`.
 - **Parallel compilation** — api modules build before any impl starts.
 - **Faster incremental builds** — touching an impl doesn't invalidate api
   consumers.
-- **Swap-ability** — Firebase ⇄ Supabase is a runtime choice, not a recompile.
+- **Swap-ability** — backends/providers swap by changing the installed Koin module, not a recompile of domain code.
 - **Test isolation** — fakes live in test sources of api consumers and never
   import a real SDK.
 
-### 6.4 Why a single `:shared` aggregator
+### 6.4 Why no aggregator (revised at restructure Stage 1)
 
-Hosts wire **one** dependency and call **one** bootstrap. The aggregator owns
-the impl assembly so consumers never hand-list six api modules + impls, and the
-iOS export surface is managed in one place.
+The original `:shared` aggregator bundled every api + impl behind one
+coordinate. It was deleted (Stage 1, OQ-7): explicit per-module dependencies
+keep unused SDKs out of host builds, composite-build substitution works
+per-coordinate anyway, and the "one call" ergonomics survive in
+`initializeFrnk(modules)` + `FrnkAppScaffold`.
 
 ### 6.5 Why Koin (not a compile-time DI)
 
 KMP-friendly, no annotation processing across targets, and runtime module
-composition is exactly what `BackendChoice` needs (install one backend module or
-the other).
+composition is exactly what the explicit-module-list bootstrap needs (install
+only what the host passes).
 
-### 6.6 Why runtime backend choice (both bundled)
+### 6.6 Why runtime capability selection
 
-Lets a single toolkit binary serve apps on either backend, and lets a single app
-switch backends without a different build. The cost — both SDKs present in the
-binary — is acceptable because the unchosen module is never registered in Koin.
+Capabilities are installed by passing their Koin modules to
+`initializeFrnk(...)`; domain code resolves only `*-api` interfaces, so
+providers swap without recompiling features — and what a host doesn't install
+never ships in its dependency graph at all.
 
 ### 6.7 Why composite build over published artifacts
 
@@ -312,12 +319,13 @@ is reusable and unit-testable in isolation.
 
 ### 6.9 Why the iOS `dynamic_lookup` linker option
 
-`:shared` bundles `shared-monetization-revenuecat` (cinterops
-`PurchasesHybridCommon`) and Firebase. The toolkit does not ship those native
-frameworks; `linkerOpts("-undefined", "dynamic_lookup")` defers symbol
-resolution so `FrnkKit.xcframework` links locally and the consumer's Xcode
-project resolves the pods at integration time. `:shared-demo` sidesteps this
-entirely by excluding those cinterops, so `iosDemoApp` needs no pods.
+`shared-monetization-revenuecat` cinterops the native RevenueCat SDK and
+`:shared:backend:firebase` references Firebase. The toolkit does not ship those
+native frameworks; an umbrella XCFramework bundling these modules uses
+`linkerOpts("-undefined", "dynamic_lookup")` to defer symbol resolution so it
+links locally and the consumer's Xcode project resolves the native SDKs at
+integration time (the demo's `DemoKit` does exactly this for its iosMain
+CrashKiOS + RevenueCat cinterops).
 
 ---
 

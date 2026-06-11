@@ -158,7 +158,8 @@ interface in `shared-database-api`, binding in `DatabaseModule`, Android + nativ
       (compiles for `iosSimulatorArm64`; `DemoKit.xcframework` assembled — a booted iOS
       simulator was unavailable in this environment, so not launched on-device).
 
-### P1-2 — Firebase backend: real Auth implementation ⏸ DEFERRED (local-storage-only)
+### P1-2 — Firebase backend: real Auth implementation ❌ RETIRED (2026-06-10, restructure Stage 2)
+**Retired:** `AuthService` was dropped entirely (RESTRUCTURE_PLAN D1) — `Auth.kt`, `FirebaseAuthService`, and the Supabase backend are deleted. Kept for the record only.
 **Deferred (2026-05-29):** near-term apps don't use a remote auth backend; revisit when one does.
 **Description:** Replace the `TODO()` bodies in `FirebaseAuthService` with real
 `dev.gitlive:firebase-auth` calls, mapping outcomes to `AppResult`.
@@ -174,7 +175,8 @@ backends).
 - [ ] Contract parity with `SupabaseAuthService` (same interface satisfied).
 - [ ] Unit test with a faked SDK boundary covers success + failure mapping.
 
-### P1-3 — Supabase backend: real Auth implementation ⏸ DEFERRED (local-storage-only)
+### P1-3 — Supabase backend: real Auth implementation ❌ RETIRED (2026-06-10, restructure Stage 2)
+**Retired:** with P1-2 — `:shared:backend:supabase` is deleted (RESTRUCTURE_PLAN D1). Kept for the record only.
 **Deferred (2026-05-29):** same rationale as P1-2 — no remote auth backend in near-term apps.
 **Description:** Same as P1-2 for `SupabaseAuthService` using
 `io.github.jan-tennert.supabase:auth-kt`.
@@ -186,7 +188,8 @@ required so backend swap is real, not theoretical.
 - [ ] Behaviorally interchangeable with the Firebase impl for the same calls.
 - [ ] Unit test covers success + failure mapping.
 
-### P1-4 — RemoteData implementations (Firestore + Supabase Postgrest) ⏸ DEFERRED (local-storage-only)
+### P1-4 — RemoteData implementations (Firestore + Supabase Postgrest) ❌ SUPERSEDED (restructure Stage 11)
+**Superseded:** the Supabase half died with Stage 2; the Firestore `RemoteData` path is being repurposed as **Firebase Remote Config** at restructure Stage 11 (RESTRUCTURE_PLAN OQ-1) — track it there.
 **Deferred (2026-05-29):** no remote reads/writes in near-term apps; revisit alongside P1-2/P1-3.
 **Description:** Implement `FirestoreRemoteData` and `SupabaseRemoteData`
 read/write against their SDKs.
@@ -323,7 +326,8 @@ integrated with the MVI effect channel (navigation as a `UiEffect`).
       `DemoNavigationTest`, and the updated `DemoViewModelTest`; `androidDemoApp` installs + runs; iOS
       compile/link of `DemoKit` is the mandatory local macOS pre-merge gate — CI does not build iOS.)*
 
-### P2-2 — Verify `BackendChoice` swap is observable end-to-end
+### P2-2 — Verify `BackendChoice` swap is observable end-to-end ❌ RETIRED (2026-06-11, restructure Stage 1)
+**Retired:** the choice enums and `frnkModules()` are gone — hosts pass an explicit module list to `initializeFrnk(...)`, so "only the chosen module is installed" holds by construction. Kept for the record only.
 **Description:** Add a demo/test that proves selecting Firebase vs Supabase
 installs the corresponding Koin module and **only** that one.
 **Rationale (priority):** The runtime-swap claim is central (§2.2) and currently
@@ -347,7 +351,7 @@ addition under the backend-agnostic analytics path — decide and record the
 decision; keep the api SDK-free.
 **Acceptance Criteria:**
 - [ ] `AnalyticsTracker` implemented against PostHog; bound via its own Koin
-      module; selectable independently of `BackendChoice`.
+      module; installable independently of the data backend.
 - [ ] No-op fallback remains the safe default.
 - [ ] Demoed (an event fired from `DemoScreen`, visible in logs/fake in demo).
 
@@ -627,8 +631,8 @@ P3-1 (PostHog)   P3-2 ✅ (RevenueCat entitlements) → P3-3 ✅ (paywall/purcha
         │
 P4-1 ✅ (molecules) → P4-2 ✅ (organisms)   P4-3 ✅ (typed prefs)   P4-4 ✅ (DS tests, Robolectric)
         ┊
-        ┊  ⏸ DEFERRED until a networked/auth app is planned (local-storage-only for now):
-        └── P1-2/P1-3 (auth) → P2-2 (verify backend swap)   P1-4 (remote data)
+        ┊  ❌ RETIRED by the restructure (Stage 1 dropped the choice enums, Stage 2 dropped Auth+Supabase):
+        └── P1-2/P1-3 (auth)   P2-2 (verify backend swap)   P1-4 (remote data → Remote Config, Stage 11)
 ```
 
 **Next up:** P1-1 ✅, P1-5 ✅, P1-5b ✅, **P2-1 ✅ (navigation)**, **P3-2 ✅**, **P3-3 ✅ (paywall +
@@ -636,5 +640,5 @@ frnk Pro layer + god mode)**, **P4-5 ✅ (haptics)**, **P4-1 ✅ (molecules)**, 
 **P4-3 ✅ (typed preferences wrapper)**, and **P4-4 ✅ (design-system tests)** are done — the Atomic
 Design hierarchy (Atoms → Molecules → Organisms → Scaffolds) is complete, `KeyValueStore` has a typed
 convenience layer, and the highest-value atoms now have Robolectric-backed Compose UI tests that gate in CI.
-Recommended next is **P3-1 (PostHog)** to round out analytics. P2-2 (verify `BackendChoice` swap) and
-P1-2/P1-3/P1-4 stay deferred while apps are local-storage-only.
+Recommended next is **P3-1 (PostHog)** to round out analytics. P1-2/P1-3/P2-2 are retired by the
+restructure (Auth + the choice enums are gone); P1-4 lives on as the Stage 11 Remote Config reshape.

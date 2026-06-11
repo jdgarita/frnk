@@ -15,8 +15,8 @@ monetization domain (`:shared-monetization-api`).
   badge), a single CTA ("Start free trial" when the selected plan has a trial, else "Continue"), and
   Restore + Terms/Privacy. Product list shows a loading skeleton while offerings load.
 - `PaywallScaffoldModule.kt` — `paywallScaffoldModule` registers `PaywallViewModel` (`source` via
-  `parametersOf`; `EntitlementManager` + `AnalyticsTracker` from the graph). `:shared`'s `frnkModules(...)`
-  includes it.
+  `parametersOf`; `EntitlementManager` + `AnalyticsTracker` from the graph). Hosts install it alongside
+  `revenueCatModule` + `monetizationModule` in their `initializeFrnk(...)` list.
 - `PaywallNav.kt` — the Navigation3 paywall: a route-agnostic `@Composable FrnkPaywallDestination(features,
   source, onMessage, onClose)` destination body **and** `Module.frnkPaywallNavigation(...)` which registers it
   at `ToolkitRoute.Paywall` via Koin's `navigation<Route> { }` DSL (resolved by `FrnkNavDisplay`'s default
@@ -49,7 +49,7 @@ Two always-on paywall entry points the demo wires (and real hosts copy):
 ## Rules
 
 - **No billing SDK here** — this is UI + the frnk `EntitlementManager`/`FeatureGate` only. RevenueCat stays
-  in `:shared-monetization-revenuecat`. Pure Kotlin/Compose, so `DemoKit`/`FrnkKit` XCFrameworks stay clean.
+  in `:shared-monetization-revenuecat`. Pure Kotlin/Compose, so umbrella XCFrameworks stay clean.
 - Reads styling from `Theme[...]` tokens (paywall strings/icons live in `:shared-ui-atoms` `FrnkStrings`/
   `FrnkIcons` — `stringAppName`, `stringPaywall*`, `stringProName`, `iconUpgrade`, `iconCheck`).
 

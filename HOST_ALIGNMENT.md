@@ -26,15 +26,19 @@ pluginManagement {
 ```
 
 ```kotlin
-// Android: host app/build.gradle.kts
+// Android: host app/build.gradle.kts — the individual modules you use (no aggregator)
 dependencies {
-    implementation("dev.jdgarita.frnk:androidApp")   // re-exports :shared (the whole toolkit surface)
+    implementation("dev.jdgarita.frnk:ui-app")                          // FrnkAppScaffold + frnkUiModules() (+ core-di)
+    implementation("dev.jdgarita.frnk:shared-database-impl")            // databaseModule
+    implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
+    // + :shared:backend:firebase for firebaseObservabilityModule / firebaseBackendModule
 }
 ```
 
-iOS: build `FrnkKit.xcframework` (`./gradlew :iosApp:assembleFrnkKitReleaseXCFramework`) and embed it; the
-consumer supplies the native Firebase / RevenueCat SDKs via SPM/CocoaPods under the toolkit's
-`-undefined dynamic_lookup` link (see `iosApp/CLAUDE.md`).
+iOS: build your **own umbrella XCFramework** from a host-owned KMP shared module that exports the
+frnk modules you use (the demo's `DemoKit` is the worked example); the consumer supplies the native
+Firebase / RevenueCat SDKs via SPM/CocoaPods under the framework's `-undefined dynamic_lookup` link
+(see `docs/HOST_INTEGRATION.md` §6).
 
 ---
 
@@ -68,7 +72,7 @@ minSdk     = frnkLibs.versions.android.minSdk.get().toInt()
 ```
 
 **Convention plugin (optional).** frnk's standard KMP modules apply the `frnk.kmp.library` convention
-plugin from its `build-logic` included build (jvmToolchain 17 + Android SDK + iOS framework in one line).
+plugin from its `build-logic` included build (jvmToolchain 17 + Android SDK + bare iOS targets in one line).
 A host that adds its own KMP library modules can apply the same plugin by adding
 `includeBuild("frnk/build-logic")` to its `pluginManagement` and `plugins { id("frnk.kmp.library") }`.
 
@@ -76,22 +80,26 @@ A host that adds its own KMP library modules can apply the same plugin by adding
 
 ## 3. Bootstrap + contribute custom Koin modules
 
-frnk assembles its Koin graph from three independent axes — **backend** (`BackendChoice`), **observability**
-(`ObservabilityChoice`), **monetization** (`MonetizationChoice`) — plus the host's own modules.
+frnk's Koin graph is an **explicit module list** the host assembles — there are no choice enums; a
+capability you don't pass is never installed.
 
-**Android** (`Application.onCreate`) — use the androidMain `initializeFrnk(context, …)` overload, which
-also sets the SQLDelight `DatabaseContext.application` and registers `androidContext(...)` for you:
+**Android** (`Application.onCreate`) — use the androidMain `initializeFrnk(context, modules)` overload
+(`:core-di`, `dev.jdgarita.frnk.di`), which also sets the SQLDelight `DatabaseContext.application` and
+registers `androidContext(...)` for you:
 
 ```kotlin
 class StillApp : Application() {
     override fun onCreate() {
         super.onCreate()
         initializeFrnk(
-            context = this,                               // ← DatabaseContext + androidContext absorbed
-            backend = BackendChoice.Supabase,             // or .Firebase
-            observability = ObservabilityChoice.Firebase, // independent of backend; .None by default
-            monetization = MonetizationChoice.RevenueCat, // or .None to opt out of billing
-            additionalModules = listOf(stillModule),      // ← the host's own Koin modules, first-class
+            context = this,                          // ← DatabaseContext + androidContext absorbed
+            modules = frnkUiModules() +              // scaffold VMs (Home/Settings/Onboarding/BottomNav)
+                listOf(
+                    databaseModule,                  // SQLDelight driver factory + KeyValueStore
+                    firebaseObservabilityModule,     // or noopObservabilityModule — exactly one
+                    revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization
+                    stillModule,                     // ← the host's own Koin modules, same list
+                ),
         ) {
             // extraConfig: Koin DSL escape hatch
             // allowOverride(true)  // if a host module overrides a toolkit binding
@@ -100,23 +108,20 @@ class StillApp : Application() {
 }
 ```
 
-- **`additionalModules`** is the first-class way to register host repositories, feature ViewModels, a custom
-  `SqlDriver` schema, or a custom `EntitlementProvider`. They install **after** the toolkit's, so with
-  `allowOverride(true)` a host can override a toolkit binding.
-- **`extraConfig`** is the lambda for everything else on the `KoinApplication` (`androidContext(...)`, logging).
-- **Monetization opt-out:** `MonetizationChoice.None` installs **no** billing bindings. A host using a
-  different provider passes its own `EntitlementProvider` via `additionalModules` (optionally with the
-  toolkit's `monetizationModule` / `paywallScaffoldModule` over it).
+- **Host modules** (repositories, feature ViewModels, a custom `SqlDriver` schema, a custom
+  `EntitlementProvider`) go in the same list, **after** the toolkit's — so with `allowOverride(true)`
+  a host can override a toolkit binding.
+- **`extraConfig`** is the lambda for everything else on the `KoinApplication` (logging, overrides).
+- **Monetization opt-out:** simply don't pass the three monetization modules. A host using a
+  different provider passes its own `EntitlementProvider` (optionally with the toolkit's
+  `monetizationModule` / `paywallScaffoldModule` over it).
 
-**iOS** (Swift, on launch):
+**iOS** (on launch, via a Kotlin bootstrap function your umbrella shared module exposes to Swift —
+the common `initializeFrnk(modules)` overload, no context param):
 
-```swift
-FrnkKitKt.bootstrapFrnkKit(
-    backend: .supabase,
-    observability: .firebase,
-    monetization: .revenueCat,
-    additionalModules: [/* host Koin modules */]
-)
+```kotlin
+fun bootstrapMyAppKit(): KoinApplication =
+    initializeFrnk(modules = frnkUiModules() + databaseModule + /* … */ myAppModules)
 ```
 
 ---
@@ -157,7 +162,7 @@ setContent {
 - Any screen can claim the bar's primary-action button for its lifetime with
   `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button renders on the
   `AdaptiveNavBar` engine; it hides while no screen holds a claim and no host fallback is wired).
-- A module that can't depend on `:shared` composes **`FrnkAppShell`** (`:shared-ui-nav`) directly —
+- A module that can't depend on `:ui-app` composes **`FrnkAppShell`** (`:shared-ui-nav`) directly —
   the same shell minus the monetization batteries; `:shared-demo`'s `DemoScreen` is the reference.
 
 ---
