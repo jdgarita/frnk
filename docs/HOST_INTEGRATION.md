@@ -6,7 +6,8 @@ the host wires impls. There are three integration points.
 
 ## 1. Inject your SQLDelight schema
 
-The toolkit owns the **driver factory**, not the schema. In your host app's DI graph:
+The toolkit owns the **driver factory** (`SqlDriverFactory`, `:data-db-api`, bound by
+`databaseModule` from `:data-db-impl`), never a schema. In your host app's DI graph:
 
 ```kotlin
 val hostDatabaseModule = module {
@@ -17,7 +18,11 @@ val hostDatabaseModule = module {
 }
 ```
 
-On Android, before `startKoin { ... }`, point the toolkit at your `Application` context:
+(`demo/shared`'s `demoNotesModule` + `DemoDB` is the worked example of exactly this pattern.)
+
+On Android, before `startKoin { ... }`, point the toolkit at your `Application` context
+(`DatabaseContext` lives in `:core-di`, package `dev.jdgarita.frnk.di` — both the SQL driver and
+the SharedPreferences-backed `KeyValueStore` resolve through it):
 
 ```kotlin
 DatabaseContext.application = applicationContext
@@ -65,7 +70,8 @@ initializeFrnk(
     context = this,
     modules = frnkUiModules() +                  // :ui-app — scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
-            databaseModule,                      // :shared-database-impl — SQLDelight driver + KeyValueStore
+            databaseModule,                      // :data-db-impl — platform SqlDriverFactory (bring your own schema, §1)
+            prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
             firebaseBackendModule,               // :shared:backend:firebase — remote data (optional)
             firebaseObservabilityModule,         // or noopObservabilityModule (:shared:backend:api)
             // Monetization stack (optional — omit all three to run without entitlements):

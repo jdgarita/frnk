@@ -8,12 +8,12 @@
                            └──────┬───────┘
         ┌─────────────────┬───────┴────────┬─────────────────┐
         ▼                 ▼                ▼                 ▼
- shared-ui-api    shared-database-api :shared:backend:api  (interfaces only)
-        ▲                 ▲                ▲
-        │                 │                └─── :shared:backend:firebase
+ shared-ui-api      data-db-api      :shared:backend:api  (interfaces only)
+        ▲           data-prefs-api         ▲
+        │                 ▲                └─── :shared:backend:firebase
         │                 │
- shared-ui-atoms  shared-database-impl
- (MVI engine,
+ shared-ui-atoms    data-db-impl
+ (MVI engine,       data-prefs-impl
   headless atoms)
                                   shared-monetization-api
                                           ▲     (EntitlementProvider contract +
@@ -56,8 +56,12 @@ modules in its common surface. This keeps
 `DemoKit.xcframework` free of the Firebase / RevenueCat / SQLite native cinterop
 references that would otherwise force iosDemoApp to ship `PurchasesHybridCommon`
 + Firebase pods just to launch. The demo binds fakes (`FakeEntitlementProvider`,
-`FakeKeyValueStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never
-touches a real SDK, so it boots on a clean simulator with no extra setup.
+`FakeKeyValueStore`, `FakeNoteStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never
+touches a real SDK, so it boots on a clean simulator with no extra setup. Since restructure
+Stage 4 (OQ-2) the demo also owns its SQLDelight schema (`DemoDB` + `Note.sq` + the
+`dev.jdgarita.frnk.demo.notes` NoteStore) — generated code is driver-free, so DemoKit stays
+clean; `androidDemoApp` overrides the fake with the real path (`databaseModule` +
+`demoNotesModule`) to exercise `SqlDriverFactory` on a device exactly like a host would.
 
 **Entitlement layering (P3-3).** Free/Pro is frnk-owned and independent of any
 billing SDK: an `EntitlementProvider` (RevenueCat, or the demo fake) supplies
@@ -82,7 +86,7 @@ The diagram above names Gradle projects, not folders. Since restructure Stage 3,
 Each domain that pulls in a third-party SDK is split:
 
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
-- **`*-impl`** (e.g. `:shared:backend:firebase`, `shared-database-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
+- **`*-impl`** (e.g. `:shared:backend:firebase`, `:data-db-impl`, `:data-prefs-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -115,7 +119,7 @@ On iOS, `firebaseObservabilityModule` additionally installs the CrashKiOS unhand
 Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller explicitly
 `recordException`s (BACKLOG P1-5b).
 
-The Android `initializeFrnk(context, modules)` overload also sets `DatabaseContext.application` and registers `androidContext(...)`. The toolkit owns its own SQLDelight schema (`FrnkDB`, generated into `dev.jdgarita.frnk.database.sql`): `databaseModule` builds it from the platform `SqlDriverFactory` + `FrnkDB.Schema` and binds `NoteStore`. Hosts install their own additional schema module in the same list if they want app-specific tables. The full copy-paste snippet lives in `docs/HOST_INTEGRATION.md` §4.
+The Android `initializeFrnk(context, modules)` overload also sets `DatabaseContext.application` (the shared Context seam, owned by `:core-di` androidMain since Stage 4) and registers `androidContext(...)`. **The toolkit owns no SQLDelight schema** (restructure Stage 4 / OQ-2): `databaseModule` (`:data-db-impl`) binds only the platform `SqlDriverFactory`, and the host's own schema module builds its database through it (`MyDb(factory.create(MyDb.Schema, "my.db"))` — the demo's `DemoDB`/`demoNotesModule` is the worked example). Key-value persistence is the separate `prefsModule` (`:data-prefs-impl`, binds `KeyValueStore`). The full copy-paste snippet lives in `docs/HOST_INTEGRATION.md` §4.
 
 ## Module communication flow
 
@@ -128,7 +132,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 
 ## Result wrapper
 
-`AppResult<D, E : AppError>` (in `shared-utils`, the neutral root) is sealed: `Success(data)` / `Failure(error)`. Every `*-api` interface returns `AppResult` instead of throwing, so callers handle errors exhaustively at compile time. It lives in `shared-utils` (not `:shared:backend:api`) so any domain — backend, database (`NoteStore`), monetization — can return it without a sibling `*-api`→`*-api` dependency.
+`AppResult<D, E : AppError>` (in `shared-utils`, the neutral root) is sealed: `Success(data)` / `Failure(error)`. Every `*-api` interface returns `AppResult` instead of throwing, so callers handle errors exhaustively at compile time. It lives in `shared-utils` (not `:shared:backend:api`) so any domain — backend, persistence, monetization, and the demo's `NoteStore` — can return it without a sibling `*-api`→`*-api` dependency.
 
 ## iOS native dependency contract
 
@@ -163,8 +167,9 @@ Then declare the modules you use:
 ```kotlin
 // In MyApp/app/build.gradle.kts
 dependencies {
-    implementation("dev.jdgarita.frnk:ui-app")                // FrnkAppScaffold + frnkUiModules() (+ core-di transitively)
-    implementation("dev.jdgarita.frnk:shared-database-impl")  // databaseModule
+    implementation("dev.jdgarita.frnk:ui-app")            // FrnkAppScaffold + frnkUiModules() (+ core-di transitively)
+    implementation("dev.jdgarita.frnk:data-db-impl")      // databaseModule (SqlDriverFactory)
+    implementation("dev.jdgarita.frnk:data-prefs-impl")   // prefsModule (KeyValueStore)
     // + the impl modules you install (observability, monetization, backend)
 }
 ```
@@ -177,7 +182,7 @@ import dev.jdgarita.frnk.ui.app.frnkUiModules
 
 initializeFrnk(
     context = this,
-    modules = frnkUiModules() + databaseModule + firebaseObservabilityModule +
+    modules = frnkUiModules() + databaseModule + prefsModule + firebaseObservabilityModule +
         listOf(myAppModule, sqlDelightSchemaModule),
 )
 ```

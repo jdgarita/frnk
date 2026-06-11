@@ -14,10 +14,9 @@ kotlin {
         androidMain.dependencies {
             // androidContext(...) for the initializeFrnk(context, modules) overload — absorbs the
             // DatabaseContext.application requirement so Android hosts bootstrap in one call.
+            // DatabaseContext itself lives HERE (since restructure Stage 4) so both data impls
+            // (:data-db-impl, :data-prefs-impl) can read it without depending on each other.
             api(libs.koin.android)
-            // DatabaseContext lives in the database impl; this is the sanctioned bootstrap-only
-            // *-impl import (same role :shared's androidMain initializeFrnk had before Stage 1).
-            implementation(projects.sharedDatabaseImpl)
         }
     }
 }

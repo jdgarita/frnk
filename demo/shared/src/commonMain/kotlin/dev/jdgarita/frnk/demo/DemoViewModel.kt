@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
-import dev.jdgarita.frnk.database.NoteStore
+import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.Feature
 import dev.jdgarita.frnk.monetization.FeatureGate

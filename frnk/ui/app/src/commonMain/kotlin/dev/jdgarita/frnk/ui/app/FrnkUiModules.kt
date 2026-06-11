@@ -17,7 +17,7 @@ import org.koin.core.module.Module
  *     context = this, // Android; iOS omits it
  *     modules = frnkUiModules() +
  *         listOf(
- *             databaseModule,                      // SQLDelight driver factory + KeyValueStore
+ *             databaseModule, prefsModule,         // SQLDelight driver factory / KeyValueStore
  *             firebaseObservabilityModule,         // or noopObservabilityModule
  *             revenueCatModule, monetizationModule, paywallScaffoldModule, // monetization stack
  *         ) + hostModules,

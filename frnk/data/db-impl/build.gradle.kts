@@ -1,6 +1,5 @@
 plugins {
-    id("frnk.kmp.library.hosttest")
-    alias(libs.plugins.sqldelight)
+    id("frnk.kmp.library")
 }
 
 kotlin {
@@ -9,23 +8,14 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.sharedDatabaseApi)
+            api(projects.dataDbApi)
             implementation(libs.koin.core)
-            implementation(libs.settings.core)
-            implementation(libs.settings.coroutines)
         }
-        androidMain.dependencies { implementation(libs.sqldelight.android.driver) }
+        androidMain.dependencies {
+            implementation(libs.sqldelight.android.driver)
+            // DatabaseContext — the bootstrap-owned Android Context seam.
+            implementation(projects.coreDi)
+        }
         iosMain.dependencies { implementation(libs.sqldelight.native.driver) }
-        // The round-trip test runs on the JVM host, so it uses the JDBC SQLite driver
-        // (JdbcSqliteDriver.IN_MEMORY). The android/native drivers can't run in a host test.
-        getByName("androidHostTest").dependencies { implementation(libs.sqldelight.sqlite.driver) }
-    }
-}
-
-sqldelight {
-    databases {
-        create(ProjectConfiguration.DATABASE_NAME) {
-            packageName.set(ProjectConfiguration.DATABASE_PACKAGE)
-        }
     }
 }

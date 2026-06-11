@@ -86,7 +86,7 @@ kotlin {
         // a real composition (runComposeUiTest) on the JVM host via Robolectric, so they run under
         // `testAndroidHostTest` (what CI gates) with no device/emulator. Android-host-only — the
         // Compose test runtime + Robolectric have no common/iOS variant, so this stays out of
-        // commonTest (matches shared-database-impl's androidHostTest-scoped JDBC driver precedent).
+        // commonTest (matches the demo's androidHostTest-scoped JDBC driver precedent).
         getByName("androidHostTest").dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)

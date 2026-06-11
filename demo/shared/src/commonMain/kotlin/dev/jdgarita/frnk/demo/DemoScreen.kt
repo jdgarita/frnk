@@ -408,14 +408,15 @@ private fun HomeTabContent(
 
     FrnkDivider(state = FrnkDividerState.Horizontal())
 
-    Section(title = "2. Persistence (FrnkDB — ${state.notes.size} saved)") {
+    Section(title = "2. Persistence (DemoDB — ${state.notes.size} saved)") {
         FrnkText(
             state =
                 FrnkTextState.Body(
                     text =
-                        "NoteStore (shared-database-api) over SQLDelight's FrnkDB. The demo binds an " +
-                            "in-memory fake so DemoKit stays cinterop-free; the real driver path is " +
-                            "covered by NoteStoreRoundTripTest.",
+                        "Demo-owned NoteStore over the demo's SQLDelight DemoDB, built through " +
+                            ":data-db-api's SqlDriverFactory like a real host schema. Android runs the " +
+                            "real driver (databaseModule + demoNotesModule); DemoKit/iOS binds an " +
+                            "in-memory fake so the framework stays cinterop-free.",
                     color = colorOnSurfaceVariant,
                 ),
         )

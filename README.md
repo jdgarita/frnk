@@ -29,8 +29,10 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `shared-ui-nav` | **Platform-adaptive bottom navigation** — `FrnkAdaptiveBottomNavBar` rendering a native UIKit `UITabBar` on iOS and a Material3 `NavigationBar` on Android (via [Calf](https://github.com/MohamedRejeb/Calf), themed from `FrnkTheme` tokens), plus two scaffolds: `FrnkTabbedNavScaffold` (the nav3 multiple-back-stack tabbed scaffold — one call wires the display + bar + tab switching + back convention + bar inset) and `FrnkAdaptiveBottomNavScaffold` (the simpler index-based variant for single-screen tabs). **The toolkit's sole Material3 dependency**, deliberately isolated here so `shared-ui-atoms` stays `compose-unstyled`-only. |
 | `:shared:backend:api` | Analytics / CrashReporter / RemoteData interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
 | `:shared:backend:firebase` | Firebase impl of `:shared:backend:api`. Exposes `firebaseBackendModule` (remote data) and `firebaseObservabilityModule` (analytics + crash). |
-| `shared-database-api` | Persistence contracts (`SqlDriverFactory`, `KeyValueStore` + typed `Preference` accessors, `NoteStore`). |
-| `shared-database-impl` | SQLDelight (`FrnkDB`) + Multiplatform Settings impl — `SqlDelightNoteStore`, `SettingsKeyValueStore`. Exposes `databaseModule`. |
+| `data-db-api` | The SQL persistence SPI: `SqlDriverFactory` (the toolkit owns no schema — hosts bring their own SQLDelight database; the demo's `DemoDB` is the worked example). |
+| `data-db-impl` | Platform SQLDelight drivers (Android/Native). Exposes `databaseModule`. |
+| `data-prefs-api` | Key-value contracts: `KeyValueStore` + the typed `Preference<T>` accessors. |
+| `data-prefs-impl` | Multiplatform Settings impl — `SettingsKeyValueStore`. Exposes `prefsModule`. |
 | `shared-monetization-api` | Entitlement / feature-gate interfaces. |
 | `shared-monetization-revenuecat` | RevenueCat impl. Exposes `revenueCatModule`. |
 | `shared-monetization-ui` | frnk-owned monetization **UI** (no RevenueCat dep): the `PaywallScreen`/`PaywallViewModel` MVI paywall wired via `frnkPaywallDestination(...)` + `paywallScaffoldModule`, plus the host-facing `rememberFrnkSettingsHandler()` (backed by an internal `platformManageSubscriptionsUrl()` `expect/actual` supplying the native subscription-management URL). |
@@ -81,7 +83,8 @@ include(":app")
 ```kotlin
 dependencies {
     implementation("dev.jdgarita.frnk:ui-app")                          // FrnkAppScaffold + frnkUiModules() (pulls ui/nav/theme + core-di)
-    implementation("dev.jdgarita.frnk:shared-database-impl")            // databaseModule
+    implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
+    implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
     // + any other impl modules you install (e.g. :shared:backend:firebase for firebaseObservabilityModule)
 }
@@ -98,7 +101,7 @@ initializeFrnk(
     context = this,
     modules = frnkUiModules() +                  // scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
-            databaseModule,                      // SQLDelight driver factory + KeyValueStore
+            databaseModule, prefsModule,         // SQLDelight driver factory / KeyValueStore
             firebaseObservabilityModule,         // or noopObservabilityModule for no telemetry
             revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization stack
         ) + listOf(hostDatabaseModule) + hostFeatureModules, // host-defined; see docs/HOST_INTEGRATION.md
@@ -131,7 +134,7 @@ Demo apps (the internal smoke harnesses) additionally need:
 ./gradlew compileAndroidMain                          # fast compile-only check across every shared module (what CI runs)
 ./gradlew :androidDemoApp:compileDebugKotlin          # compile the demo harness
 ./gradlew testAndroidHostTest                         # commonTest + androidHostTest across all KMP modules
-./gradlew :shared-database-impl:testAndroidHostTest   # run a single module's tests
+./gradlew :data-prefs-api:testAndroidHostTest         # run a single module's tests
 ./gradlew ktlintFormat                                # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                                    # full build of every target
 ./gradlew :shared-demo:assembleDemoKitDebugXCFramework    # produce DemoKit.xcframework (iosDemoApp consumes this)

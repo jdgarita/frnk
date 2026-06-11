@@ -253,7 +253,7 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
   generated-source paths.
 - still impact: none (substitution is by name, not path).
 
-### ☐ Stage 4 — Data split: db vs prefs (+ NoteStore → demo, OQ-2)  — risk: medium
+### ☑ Stage 4 — Data split: db vs prefs (+ NoteStore → demo, OQ-2)  — risk: medium — **landed 2026-06-11**
 
 - `shared-database-api` → `:data-db-api` (SqlDriverFactory SPI) + new `:data-prefs-api`
   (KeyValueStore, Preference). `shared-database-impl` → `:data-db-impl` (platform driver wiring:

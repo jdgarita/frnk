@@ -48,7 +48,7 @@ import org.koin.compose.koinInject
  *
  * ```kotlin
  * // Application.onCreate (Android) — iOS calls the common initializeFrnk(modules = …) before the VC.
- * initializeFrnk(context = this, modules = frnkUiModules() + databaseModule + …)
+ * initializeFrnk(context = this, modules = frnkUiModules() + databaseModule + prefsModule + …)
  *
  * // Activity / ComposeUIViewController:
  * setContent {

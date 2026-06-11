@@ -29,7 +29,8 @@ pluginManagement {
 // Android: host app/build.gradle.kts — the individual modules you use (no aggregator)
 dependencies {
     implementation("dev.jdgarita.frnk:ui-app")                          // FrnkAppScaffold + frnkUiModules() (+ core-di)
-    implementation("dev.jdgarita.frnk:shared-database-impl")            // databaseModule
+    implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
+    implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
     // + :shared:backend:firebase for firebaseObservabilityModule / firebaseBackendModule
 }
@@ -84,8 +85,8 @@ frnk's Koin graph is an **explicit module list** the host assembles — there ar
 capability you don't pass is never installed.
 
 **Android** (`Application.onCreate`) — use the androidMain `initializeFrnk(context, modules)` overload
-(`:core-di`, `dev.jdgarita.frnk.di`), which also sets the SQLDelight `DatabaseContext.application` and
-registers `androidContext(...)` for you:
+(`:core-di`, `dev.jdgarita.frnk.di`), which also sets `DatabaseContext.application` (the shared
+Context seam the SQL driver and the prefs store read) and registers `androidContext(...)` for you:
 
 ```kotlin
 class StillApp : Application() {
@@ -95,7 +96,7 @@ class StillApp : Application() {
             context = this,                          // ← DatabaseContext + androidContext absorbed
             modules = frnkUiModules() +              // scaffold VMs (Home/Settings/Onboarding/BottomNav)
                 listOf(
-                    databaseModule,                  // SQLDelight driver factory + KeyValueStore
+                    databaseModule, prefsModule,     // SQLDelight driver factory / KeyValueStore
                     firebaseObservabilityModule,     // or noopObservabilityModule — exactly one
                     revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization
                     stillModule,                     // ← the host's own Koin modules, same list
@@ -121,7 +122,7 @@ the common `initializeFrnk(modules)` overload, no context param):
 
 ```kotlin
 fun bootstrapMyAppKit(): KoinApplication =
-    initializeFrnk(modules = frnkUiModules() + databaseModule + /* … */ myAppModules)
+    initializeFrnk(modules = frnkUiModules() + databaseModule + prefsModule + /* … */ myAppModules)
 ```
 
 ---

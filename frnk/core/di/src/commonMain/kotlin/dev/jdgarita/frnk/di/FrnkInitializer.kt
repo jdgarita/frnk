@@ -15,7 +15,7 @@ import org.koin.mp.KoinPlatformTools
  * initializeFrnk(
  *     modules = frnkUiModules() +                  // :ui-app — scaffold VM factories (Home/Settings/…)
  *         listOf(
- *             databaseModule,                      // SQLDelight driver factory + KeyValueStore
+ *             databaseModule, prefsModule,         // SQLDelight driver factory / KeyValueStore
  *             firebaseObservabilityModule,         // or noopObservabilityModule
  *             revenueCatModule, monetizationModule, paywallScaffoldModule, // monetization stack
  *         ) + hostModules,

@@ -4,8 +4,8 @@ import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.KeyValueStore
-import dev.jdgarita.frnk.database.Note
-import dev.jdgarita.frnk.database.NoteStore
+import dev.jdgarita.frnk.demo.notes.Note
+import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
@@ -42,14 +42,15 @@ val demoModule =
         includes(monetizationModule)
         includes(paywallScaffoldModule)
         single<EntitlementProvider> { FakeEntitlementProvider() }
-        // In-memory KeyValueStore so god mode persists for the session without the multiplatform-settings
-        // impl; the real one is bound by databaseModule (via frnkModules).
+        // In-memory KeyValueStore so god mode persists for the session without the
+        // multiplatform-settings impl; a real host installs prefsModule (:data-prefs-impl) instead.
         single<KeyValueStore> { FakeKeyValueStore() }
         single<AnalyticsTracker> { LoggingAnalyticsTracker() }
         single<CrashReporter> { LoggingCrashReporter() }
-        // In-memory NoteStore so the demo shows a persisted value (BACKLOG P1-1) without dragging
-        // the SQLite native cinterop into DemoKit. The REAL SqlDelightNoteStore is bound by
-        // databaseModule (via frnkModules) and covered by NoteStoreRoundTripTest.
+        // In-memory NoteStore default so DemoKit/iOS stays free of the SQLite driver.
+        // androidDemoApp overrides it with the REAL path — databaseModule (:data-db-impl) +
+        // demoNotesModule (demo-owned DemoDB over SqlDriverFactory, OQ-2) — and the JVM
+        // round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
         viewModel { DemoViewModel(get(), get(), get(), get(), get()) }
     }
@@ -126,9 +127,10 @@ class FakeKeyValueStore : KeyValueStore {
 }
 
 /**
- * In-memory [NoteStore] for the demo — same role as [FakeEntitlementManager]: it lets the demo
+ * In-memory [NoteStore] for the demo — same role as [FakeEntitlementProvider]: it lets the demo
  * exercise the persistence api surface without the SQLite native driver, keeping DemoKit
- * cinterop-free. The real relational path is [dev.jdgarita.frnk.database.impl.SqlDelightNoteStore].
+ * cinterop-free. The real relational path is `demoNotesModule`'s `SqlDelightNoteStore`
+ * (`dev.jdgarita.frnk.demo.notes`), which androidDemoApp installs over this.
  */
 class FakeNoteStore : NoteStore {
     private val notes = mutableListOf<Note>()

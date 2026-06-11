@@ -1,0 +1,24 @@
+-- The demo-owned DemoDB schema (restructure Stage 4 / OQ-2) — demo scaffolding showing the
+-- SQLDelight path a real host wires through :data-db-api's SqlDriverFactory. The generated row
+-- type stays in dev.jdgarita.frnk.demo.sql; SqlDelightNoteStore maps it to the demo's `Note`
+-- domain model so no generated type leaks out.
+CREATE TABLE note (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+insert:
+INSERT INTO note(content, createdAt)
+VALUES (?, ?);
+
+lastInsertedId:
+SELECT last_insert_rowid();
+
+selectAll:
+SELECT id, content, createdAt
+FROM note
+ORDER BY createdAt DESC, id DESC;
+
+deleteAll:
+DELETE FROM note;

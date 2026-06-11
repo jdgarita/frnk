@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.di
 
 import android.content.Context
-import dev.jdgarita.frnk.database.impl.DatabaseContext
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.KoinApplication
 import org.koin.core.module.Module
@@ -17,7 +16,7 @@ import org.koin.core.module.Module
  * ```kotlin
  * override fun onCreate() {
  *     super.onCreate()
- *     initializeFrnk(context = this, modules = frnkUiModules() + databaseModule + …)
+ *     initializeFrnk(context = this, modules = frnkUiModules() + databaseModule + prefsModule + …)
  * }
  * ```
  *

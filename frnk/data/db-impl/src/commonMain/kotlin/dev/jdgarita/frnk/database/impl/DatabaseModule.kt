@@ -1,22 +1,16 @@
 package dev.jdgarita.frnk.database.impl
 
-import dev.jdgarita.frnk.database.KeyValueStore
-import dev.jdgarita.frnk.database.NoteStore
 import dev.jdgarita.frnk.database.SqlDriverFactory
-import dev.jdgarita.frnk.database.sql.FrnkDB
 import org.koin.dsl.module
 
 /**
- * Default persistence bindings. The toolkit owns the [FrnkDB] schema: the platform
- * [SqlDriverFactory] creates a driver for `FrnkDB.Schema`, and [NoteStore] (BACKLOG P1-1) exposes
- * typed access over it. Host apps can still install their own additional SQLDelight schema module.
+ * Platform SQL driver wiring. The toolkit owns NO schema (restructure Stage 4 / OQ-2): a host
+ * defines its own SQLDelight database and builds it through the bound [SqlDriverFactory]
+ * (`factory.create(MyDb.Schema, "my.db")` — see `docs/HOST_INTEGRATION.md` §1). The demo's
+ * `DemoDB` + `demoNotesModule` (`demo/shared`) is the worked example. Key-value persistence is a
+ * separate axis: install `prefsModule` (`:data-prefs-impl`) for the `KeyValueStore` binding.
  */
 val databaseModule =
     module {
         single<SqlDriverFactory> { defaultSqlDriverFactory() }
-        single<KeyValueStore> { defaultKeyValueStore() }
-        single { FrnkDB(get<SqlDriverFactory>().create(FrnkDB.Schema, DATABASE_FILE_NAME)) }
-        single<NoteStore> { SqlDelightNoteStore(get()) }
     }
-
-private const val DATABASE_FILE_NAME = "frnk.db"

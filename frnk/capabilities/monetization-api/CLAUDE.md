@@ -35,10 +35,12 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   (Adapty, …) implements `EntitlementProvider` in its own `*-impl` module, bound in `:shared`;
   `monetizationModule` is unchanged.
 - `api`-exports `:shared:backend:api` (`AnalyticsTracker`, `AppResult`/error types) **and**
-  `:shared-database-api` (`KeyValueStore`, for god-mode persistence in `DefaultEntitlementManager`).
+  `:data-prefs-api` (`KeyValueStore` + the typed `Preference` layer, for god-mode persistence in
+  `DefaultEntitlementManager` — monetization never touches the SQL driver SPI, so `:data-db-api`
+  is deliberately NOT a dependency since the Stage 4 split).
 - `koin.core` is on the `api` surface — these types are resolved via Koin at call sites.
 
 ## Dependencies
 
-- `api(projects.shared.backend.api)`, `api(projects.sharedDatabaseApi)`, `api(libs.kotlinx.coroutines.core)`,
+- `api(projects.shared.backend.api)`, `api(projects.dataPrefsApi)`, `api(libs.kotlinx.coroutines.core)`,
   `api(libs.koin.core)`. `commonTest`: `kotlin.test` + `kotlinx.coroutines.test`.

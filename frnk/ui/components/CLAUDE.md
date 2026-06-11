@@ -72,7 +72,7 @@ Compose Multiplatform design system: tokens, theme engine, host-configurable the
   with `runComposeUiTest` and querying the semantics tree. These run as JVM **host** tests
   (`testAndroidHostTest` — what CI gates) under **Robolectric**, so the suite needs no device/emulator.
   They live here rather than `commonTest` because the Compose UI-test runtime + Robolectric have no
-  common/iOS variant (mirrors `shared-database-impl`'s androidHostTest JDBC driver). All test classes
+  common/iOS variant (mirrors the demo's androidHostTest JDBC driver). All test classes
   extend `RobolectricComposeTest` (carries `@RunWith(RobolectricTestRunner)` + `@Config(sdk=[34])` +
   `GraphicsMode.NATIVE`). Test-only deps (`org.jetbrains.compose.ui:ui-test` by direct coordinate,
   `androidx.compose.ui:ui-test-manifest`, `org.robolectric:robolectric`) are scoped to this source set

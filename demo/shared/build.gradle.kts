@@ -5,6 +5,9 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    // Demo-owned SQLDelight schema (restructure Stage 4 / OQ-2): the demo carries its own DemoDB,
+    // built through :data-db-api's SqlDriverFactory exactly the way a real host injects a schema.
+    alias(libs.plugins.sqldelight)
 }
 
 // Demo-bundled drawable for the Components tab icon under the adaptive-nav-bar engine (which takes a
@@ -26,9 +29,9 @@ kotlin {
             baseName = "DemoKit"
             xcf.add(this)
             isStatic = true
-            // Only api-only toolkit modules are exported. The demo deliberately does NOT depend on
-            // :shared (which would drag in shared-monetization-revenuecat / shared-database-impl and
-            // their native cinterops), so DemoKit stays free of RevenueCat / SQLite symbols.
+            // Only api-only toolkit modules are exported. The demo's common surface deliberately
+            // avoids the *-impl modules (shared-monetization-revenuecat / :data-db-impl and their
+            // native cinterops), so DemoKit stays free of RevenueCat / SQLite symbols.
             // EXCEPTION (BACKLOG P1-5b): the iosMain set adds the lightweight CrashKiOS cinterop so
             // the demo's "Force crash" panic button can be reported to Firebase Crashlytics. That
             // makes iosDemoApp require the native Firebase Crashlytics SDK (via SPM/CocoaPods) +
@@ -38,7 +41,8 @@ kotlin {
             export(projects.sharedUiAtoms)
             export(projects.sharedUiNav)
             export(projects.shared.backend.api)
-            export(projects.sharedDatabaseApi)
+            export(projects.dataDbApi)
+            export(projects.dataPrefsApi)
             export(projects.sharedMonetizationApi)
             export(projects.sharedMonetizationUi)
             // CrashKiOS resolves the native Crashlytics symbols through the host's Firebase SDK at the
@@ -56,7 +60,8 @@ kotlin {
             // rather than carrying any nav-bar implementation itself.
             api(projects.sharedUiNav)
             api(projects.shared.backend.api)
-            api(projects.sharedDatabaseApi)
+            api(projects.dataDbApi)
+            api(projects.dataPrefsApi)
             api(projects.sharedMonetizationApi)
             api(projects.sharedMonetizationUi)
             api(compose.runtime)
@@ -90,6 +95,17 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+        }
+        // The NoteStore round-trip test runs on the JVM host, so it uses the JDBC SQLite driver
+        // (JdbcSqliteDriver.IN_MEMORY). The android/native drivers can't run in a host test.
+        getByName("androidHostTest").dependencies { implementation(libs.sqldelight.sqlite.driver) }
+    }
+}
+
+sqldelight {
+    databases {
+        create("DemoDB") {
+            packageName.set("${ProjectConfiguration.GROUP_ID}.demo.sql")
         }
     }
 }

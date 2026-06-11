@@ -11,7 +11,7 @@ Codex guidance for this repository. Follow this file first, and use `CLAUDE.md` 
 
 ## Repo Shape
 
-- Most shared domain modules keep flat Gradle paths (`:shared-ui-atoms`, `:shared-database-api`, etc.).
+- Most shared domain modules keep flat Gradle paths (`:shared-ui-atoms`, `:data-prefs-api`, etc.).
 - Backend modules use nested Gradle paths under `:shared:backend` (`:shared:backend:api`, `:shared:backend:firebase`).
 - Most flat shared module files live physically under `shared/<module-name>/`; backend module files live under `shared/backend/<name>/`.
 - There is no aggregator (restructure Stage 1): consumers depend on individual modules. `:core-di` owns `initializeFrnk(modules)`; `:ui-app` owns `FrnkAppScaffold` + `frnkUiModules()`.
@@ -26,7 +26,7 @@ Use targeted checks when possible:
 ./gradlew testAndroidHostTest
 ./gradlew :androidDemoApp:compileDebugKotlin
 ./gradlew :androidDemoApp:testDebugUnitTest
-./gradlew :shared-database-impl:testAndroidHostTest
+./gradlew :data-prefs-api:testAndroidHostTest
 ./gradlew ktlintFormat
 ./gradlew assemble
 ./gradlew :shared-demo:assembleDemoKitDebugXCFramework

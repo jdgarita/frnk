@@ -38,8 +38,10 @@ include(
     ":shared-ui-api",
     ":shared-ui-atoms",
     ":shared-ui-nav",
-    ":shared-database-api",
-    ":shared-database-impl",
+    ":data-db-api",
+    ":data-db-impl",
+    ":data-prefs-api",
+    ":data-prefs-impl",
     ":shared:backend",
     ":shared:backend:api",
     ":shared:backend:firebase",
@@ -53,15 +55,18 @@ include(
 
 // Restructure Stage 3: modules physically live at their final layered locations under frnk/
 // (core/data/ui/capabilities) + demo/, while every Gradle project NAME stays unchanged until the
-// rename stages (5, 9, 10). Composite-build substitution matches group:name, so paths are free
-// to move. Modules that later split (shared-ui-api, shared-ui-atoms, shared-database-*) are
-// parked at the directory of their main successor per docs/RESTRUCTURE_PLAN.md §3.
+// rename stages (5, 9, 10) — except the data modules, already at their final names since the
+// Stage 4 split (db vs prefs). Composite-build substitution matches group:name, so paths are
+// free to move. Modules that later split (shared-ui-api, shared-ui-atoms) are parked at the
+// directory of their main successor per docs/RESTRUCTURE_PLAN.md §3.
 mapOf(
     "core-di" to "frnk/core/di",
     "shared-utils" to "frnk/core/util",
     "shared-ui-api" to "frnk/core/mvi",
-    "shared-database-api" to "frnk/data/db-api",
-    "shared-database-impl" to "frnk/data/db-impl",
+    "data-db-api" to "frnk/data/db-api",
+    "data-db-impl" to "frnk/data/db-impl",
+    "data-prefs-api" to "frnk/data/prefs-api",
+    "data-prefs-impl" to "frnk/data/prefs-impl",
     "shared-ui-atoms" to "frnk/ui/components",
     "shared-ui-nav" to "frnk/ui/bottom-nav",
     "ui-app" to "frnk/ui/app",
