@@ -40,6 +40,8 @@ include(
     ":haptics",
     ":shared-ui-api",
     ":ui-theme",
+    ":ui-components",
+    ":ui-scaffolds",
     ":shared-ui-atoms",
     ":shared-ui-nav",
     ":data-db-api",
@@ -64,6 +66,10 @@ include(
 // (shared-ui-atoms) are parked at the directory of their main successor per docs/RESTRUCTURE_PLAN.md §3.
 // Stage 6 split shared-ui-api → :core-mvi (kept frnk/core/mvi) + :core-nav + :haptics; shared-ui-api is
 // now a src-less facade parked at frnk/core/ui-api-facade (deleted at Stage 9).
+// Stage 7 split shared-ui-atoms → :ui-theme (frnk/ui/theme) + :ui-components (frnk/ui/components — the
+// dir shared-ui-atoms used to occupy) + :ui-scaffolds (frnk/ui/scaffolds); the multihaptic engine moved
+// down into :haptics. shared-ui-atoms is now a src-less facade re-parked at frnk/ui/atoms-facade
+// (two projects can't share frnk/ui/components) and is deleted at Stage 9.
 mapOf(
     "core-di" to "frnk/core/di",
     "shared-utils" to "frnk/core/util",
@@ -72,11 +78,13 @@ mapOf(
     "haptics" to "frnk/capabilities/haptics",
     "shared-ui-api" to "frnk/core/ui-api-facade",
     "ui-theme" to "frnk/ui/theme",
+    "ui-components" to "frnk/ui/components",
+    "ui-scaffolds" to "frnk/ui/scaffolds",
     "data-db-api" to "frnk/data/db-api",
     "data-db-impl" to "frnk/data/db-impl",
     "data-prefs-api" to "frnk/data/prefs-api",
     "data-prefs-impl" to "frnk/data/prefs-impl",
-    "shared-ui-atoms" to "frnk/ui/components",
+    "shared-ui-atoms" to "frnk/ui/atoms-facade",
     "shared-ui-nav" to "frnk/ui/bottom-nav",
     "ui-app" to "frnk/ui/app",
     "analytics-api" to "frnk/capabilities/analytics-api",

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface
 import dev.jdgarita.frnk.ui.scaffolds.SettingsScreenContent
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.Appearance

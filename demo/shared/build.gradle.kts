@@ -42,7 +42,11 @@ kotlin {
             export(projects.coreMvi)
             export(projects.coreNav)
             export(projects.haptics)
-            export(projects.sharedUiAtoms)
+            // shared-ui-atoms was split (restructure Stage 7); the src-less facade carries no Swift
+            // symbols (export is non-transitive) — export the three successors directly.
+            export(projects.uiTheme)
+            export(projects.uiComponents)
+            export(projects.uiScaffolds)
             export(projects.sharedUiNav)
             export(projects.analyticsApi)
             export(projects.dataDbApi)
@@ -63,7 +67,11 @@ kotlin {
             api(projects.coreMvi)
             api(projects.coreNav)
             api(projects.haptics)
-            api(projects.sharedUiAtoms)
+            // shared-ui-atoms split (Stage 7) — depend on the successors directly (matches the iOS export
+            // list above; `export` requires the module to be a direct api dependency).
+            api(projects.uiTheme)
+            api(projects.uiComponents)
+            api(projects.uiScaffolds)
             // Platform-adaptive bottom nav (Calf-backed). The demo consumes the toolkit default from here
             // rather than carrying any nav-bar implementation itself.
             api(projects.sharedUiNav)

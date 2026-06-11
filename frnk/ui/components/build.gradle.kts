@@ -1,98 +1,36 @@
 plugins {
-    id("frnk.kmp.library.compose")
+    id("frnk.kmp.library.composehosttest")
 }
 
-// NB: this module does NOT use frnk.kmp.library.hosttest — its tests live in an `androidHostTest`
-// source set (Compose UI tests under Robolectric), and it needs the `isIncludeAndroidResources = true`
-// withHostTest variant below, not the plain withHostTest + commonTest deps the hosttest plugin adds.
-
+// :ui-components — the design-system component tier: atoms, molecules, organisms, and the vendored
+// placeholder/skeleton machinery, built on compose-unstyled (headless, NOT Material3). Extracted from
+// :shared-ui-atoms at restructure Stage 7b; sits above :ui-theme, below :ui-scaffolds. Kotlin packages
+// unchanged (dev.jdgarita.frnk.ui.{atoms,molecules,organisms,placeholder}).
+//
+// The composehosttest convention plugin supplies: frnk.kmp.library.compose, withHostTest { isInclude…},
+// the commonDebug @Preview source set + its dependsOn edges, and the androidHostTest test bundle
+// (kotlin-test, coroutines-test, compose-ui-test, ui-test-manifest, robolectric) — extracted from this
+// module's former hand-written build so :ui-scaffolds shares it.
 kotlin {
-    // Apply the default source-set hierarchy explicitly. This module adds a custom `commonDebug`
-    // intermediate (cross-platform @Preview code) via manual `dependsOn` edges below; those edges
-    // otherwise make KGP skip auto-applying the default template and emit a "template not applied"
-    // warning. Calling it here applies the template (the standard commonMain → android/ios… graph)
-    // and leaves the commonDebug edges as additive parents on top.
-    applyDefaultHierarchyTemplate()
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.ui.atoms"
-        // P4-4: design-system tests run as JVM host tests (testAndroidHostTest) under Robolectric.
-        // Robolectric needs the merged Android resources/manifest to inflate the Compose test host.
-        withHostTest {
-            isIncludeAndroidResources = true
-        }
+        namespace = "${ProjectConfiguration.GROUP_ID}.ui.components"
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.sharedUiApi)
-            // Design-system foundation — tokens + theme engine (extracted at restructure Stage 7a).
-            // api so theme tokens (FrnkColors, …) + the transitively-exported compose-unstyled theming
-            // surface + the haptics contract (LocalFrnkHaptics) flow to downstream consumers.
+            // Tokens + theme engine; transitively re-exports compose-unstyled `theming` (Theme[...] lookups)
+            // and the :haptics contract (LocalFrnkHaptics / HapticType the interactive atoms call).
             api(projects.uiTheme)
-            api(libs.koin.compose)
-            api(libs.koin.compose.viewmodel)
-            // Lifecycle-aware Compose collection (collectAsStateWithLifecycle / repeatOnLifecycle)
-            // powering FrnkMviScreen + EffectCollector. api so hosts inherit it for their own screens.
-            api(libs.androidx.lifecycle.runtime.compose)
-            // Toolkit Navigation3 engine. `FrnkNavDisplay` wraps nav3's `NavDisplay`; the host owns the
-            // `NavBackStack<NavKey>`. ui = NavDisplay/scene, runtime = NavKey/NavBackStack (also via
-            // :shared-ui-api), viewmodel = the ViewModel-store entry decorator, koin-navigation3 =
-            // koinEntryProvider() + the navigation<Route> { } DSL. api so hosts can build their own
-            // graphs. Pure Kotlin/Compose — no native cinterop, so umbrella XCFrameworks stay clean.
-            api(libs.androidx.navigation3.ui)
-            api(libs.androidx.navigation3.runtime)
-            api(libs.androidx.navigation3.viewmodel)
-            api(libs.koin.navigation3)
-            // Multiplatform BackHandler (androidx.compose.ui.backhandler) — used by FrnkTabbedBackHandler
-            // to route system/predictive back into the tabbed nav. Not on compose.ui's classpath here, so
-            // pulled explicitly; implementation-scoped (it's internal to the helper, not in any signature).
-            implementation(libs.compose.ui.backhandler)
 
-            // compose-unstyled headless primitives the atoms wrap. The `theming` artifact (Theme[...]
-            // token lookups) + the ripple + multihaptic now arrive transitively via :ui-theme's api,
-            // so they're no longer declared here. icons-lucide stays for the @Preview/test call sites
-            // that reference Lucide vectors directly (commonDebug previews + HomeViewModelTest).
+            // compose-unstyled headless primitives the atoms wrap. implementation so the consumer surface
+            // stays slim (`theming` is exported by :ui-theme).
             implementation(libs.compose.unstyled.primitives)
             implementation(libs.compose.unstyled.button)
             implementation(libs.compose.unstyled.icon)
             implementation(libs.compose.unstyled.separators)
+            // Default Lucide vectors referenced directly by the FrnkBottomNavBar @Preview. Hosts override
+            // every icon via FrnkThemeConfig, so consumers don't take a Lucide dependency unless they
+            // reference Lucide vectors at their own call sites.
             implementation(libs.icons.lucide)
-        }
-
-        // commonDebug: cross-platform source set for @Preview composables.
-        // Sits between commonMain and each platform source set so previews compile
-        // for Android + iOS. The AGP-9 KMP-Android library plugin has a single
-        // androidMain compilation (no compileDebug/Release split), so previews
-        // also ship in release AARs today — they're inert @Composable functions
-        // and R8 strips them. Move to a sibling module if true debug-only
-        // exclusion becomes load-bearing.
-        val commonDebug by creating {
-            dependsOn(commonMain.get())
-            dependencies {
-                implementation(libs.compose.ui.tooling.preview)
-            }
-        }
-        val androidMain by getting {
-            dependsOn(commonDebug)
-            dependencies {
-                implementation(libs.compose.ui.tooling)
-            }
-        }
-        val iosArm64Main by getting { dependsOn(commonDebug) }
-        val iosSimulatorArm64Main by getting { dependsOn(commonDebug) }
-
-        // P4-4: Compose UI tests for the highest-value atoms. They drive the headless atoms through
-        // a real composition (runComposeUiTest) on the JVM host via Robolectric, so they run under
-        // `testAndroidHostTest` (what CI gates) with no device/emulator. Android-host-only — the
-        // Compose test runtime + Robolectric have no common/iOS variant, so this stays out of
-        // commonTest (matches the demo's androidHostTest-scoped JDBC driver precedent).
-        getByName("androidHostTest").dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.compose.ui.test)
-            // Registers androidx.activity.ComponentActivity in the test manifest so the Compose test
-            // host (runComposeUiTest) can launch it under Robolectric.
-            implementation(libs.androidx.compose.ui.test.manifest)
-            implementation(libs.robolectric)
         }
     }
 }

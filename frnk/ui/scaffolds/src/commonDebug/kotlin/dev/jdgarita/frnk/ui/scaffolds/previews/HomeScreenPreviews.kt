@@ -9,7 +9,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface
 import dev.jdgarita.frnk.ui.scaffolds.HomeScreenContent
 import dev.jdgarita.frnk.ui.scaffolds.HomeScreenState
 import dev.jdgarita.frnk.ui.theme.Appearance

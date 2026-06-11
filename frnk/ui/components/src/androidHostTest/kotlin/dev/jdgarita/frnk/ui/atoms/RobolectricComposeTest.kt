@@ -25,10 +25,11 @@ import org.robolectric.annotation.GraphicsMode
  * semantics + inject gestures (no pixel/screenshot assertions), so they don't need the heavier NATIVE
  * (Skia) runtime — and LEGACY avoids loading a platform-native graphics lib on the Linux CI runner.
  *
- * **Reuse note (altitude):** if a second module needs Compose host tests, promote this base class +
- * [setFrnkContent] + the `androidHostTest` dependency bundle (see `build.gradle.kts`) into a shared
- * test-fixtures source set rather than copying them — they're package-private here on purpose (single
- * consumer today; the project keeps build logic per-module, so no convention plugin yet).
+ * **Reuse note (altitude):** `:ui-scaffolds` carries a per-module copy of this base class +
+ * [setFrnkContent] (its `androidHostTest` is a separate, non-shared source set — restructure Stage 7b).
+ * The `androidHostTest` dependency bundle itself IS now shared, via the `frnk.kmp.library.composehosttest`
+ * convention plugin both modules apply. If a third consumer appears, promote this base class +
+ * `setFrnkContent` into a shared test-fixtures source set rather than copying further.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.LEGACY)
