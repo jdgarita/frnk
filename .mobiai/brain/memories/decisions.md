@@ -91,3 +91,49 @@ Stage 6 of docs/RESTRUCTURE_PLAN.md landed on main @ 2c90163 (2026-06-11).
 - frnk/capabilities/haptics/build.gradle.kts
 - frnk/core/ui-api-facade/build.gradle.kts
 - demo/shared/build.gradle.kts
+
+## Restructure Stage 7: shared-ui-atoms split into :ui-theme/:ui-components/:ui-scaffolds (facade)
+
+- id: restructure-stage-7-shared-ui-atoms-split-into-ui-theme-ui-c-20260611-232231
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: restructure
+- date: 2026-06-11
+
+Stage 7 of docs/RESTRUCTURE_PLAN.md landed on main @ aa1b592 (2026-06-11), as 3 commits: 7a (3b9a774), 7b (aa90d0f), docs (aa1b592). The largest, highest-risk module split, done via git-mv (packages unchanged per D8) behind the still-invisible facade pattern.
+
+- 7a — extract :ui-theme + move multihaptic engine into :haptics:
+  - :ui-theme (frnk/ui/theme) <- ui/theme/* + ui/tokens/* (FrnkTheme/FrnkThemeConfig/FrnkStrings/FrnkIcons/FrnkRipple + tokens). deps: api(haptics) + implementation(shared-utils for applyNativeInterfaceStyle) + api(compose-unstyled-theming) + impl(platformtheme/ripple-indication/icons-lucide). namespace dev.jdgarita.frnk.ui.theme. Applies frnk.kmp.library.compose.
+  - :haptics gained the engine binding (FrnkHaptics.kt + MultiHapticEngine.kt) moved down from shared-ui-atoms; now applies frnk.kmp.library.compose + frnk.kmp.library.hosttest and adds impl(lifecycle-runtime-compose + multihaptic-core/-compose). Was contract-only after Stage 6.
+  - shared-ui-atoms api()-facaded :ui-theme; dropped theming(now transitive)/platformtheme/ripple/multihaptic + the unused kotlin-serialization plugin.
+
+- 7b — split into :ui-components + :ui-scaffolds:
+  - New build-logic convention plugin frnk.kmp.library.composehosttest = frnk.kmp.library.compose + withHostTest{isIncludeAndroidResources=true} + androidHostTest bundle (kotlin-test/coroutines-test/compose-ui-test/ui-test-manifest/robolectric) + commonDebug @Preview source set (dependsOn androidMain + both iOS) with compose-ui-tooling(-preview). Extracted from shared-ui-atoms' hand-written build; applied by both :ui-components and :ui-scaffolds.
+  - :ui-components (frnk/ui/components — the dir shared-ui-atoms occupied) <- ui/atoms + ui/molecules + ui/organisms + ui/placeholder. deps: api(uiTheme) + impl(compose-unstyled primitives/button/icon/separators + icons-lucide). namespace dev.jdgarita.frnk.ui.components.
+  - :ui-scaffolds (frnk/ui/scaffolds) <- ui/scaffolds + Compose ui/mvi (FrnkMviScreen, EffectCollector) + Compose ui/nav (FrnkNavDisplay, FrnkNavTab, FrnkTabbedBackStacks/-Handler, animations, FrnkPrimaryActionHandler). deps: api(uiComponents + coreMvi + coreNav) + impl(shared-utils) + api(koin-compose/-viewmodel/-navigation3 + lifecycle-runtime-compose + nav3 ui/runtime/viewmodel) + impl(compose-ui-backhandler) + test-only impl(icons-lucide). namespace dev.jdgarita.frnk.ui.scaffolds.
+  - shared-ui-atoms reduced to src-less facade re-parked at frnk/ui/atoms-facade (two projects can't share frnk/ui/components), api()-ing uiTheme+uiComponents+uiScaffolds+haptics. Deleted at Stage 9.
+
+Landmines (as built):
+- FrnkSectionCard (was internal, shared by organisms in :ui-components AND the Settings scaffold now in :ui-scaffolds) -> PROMOTED TO PUBLIC in :ui-components (not the wrapper option; no duplication).
+- PreviewSurface KOTLIN/NATIVE LINK COLLISION: the per-module duplicate preview helper in :ui-scaffolds had to live in its own ...ui.scaffolds.previews package, NOT the original ...ui.atoms.previews — commonDebug feeds iosMain, so an identical signature in two klibs fails the DemoKit link with 'IrSimpleFunctionSymbolImpl is already bound'. The 3 scaffold preview files dropped their now-same-package import. RobolectricComposeTest/setFrnkContent are androidHostTest-only (JVM), so their per-module copy keeps the original ...ui.atoms package with no collision.
+- ripple-indication + icons-lucide landed in :ui-theme/:ui-components per ACTUAL usage (theme uses both; components keeps lucide only for the FrnkBottomNavBar @Preview), not the plan's tentative components-only split.
+
+Re-pointing: demo/shared export(...) + api(...) -> the three successors (Kotlin/Native export is non-transitive). shared-monetization-ui -> :ui-scaffolds, so its DIRECT deps are now exactly {ui-scaffolds, monetization-api} (the Stage 8 precondition, verified via gradle dependencies). :shared-ui-nav STAYS on the shared-ui-atoms facade as the still-invisibility proof.
+
+still (host) impact: none — the frnk-shared-ui-atoms coordinate keeps resolving via the facade (plan §4). still re-points to frnk-ui-theme + frnk-ui-components + frnk-ui-scaffolds at Stage 9.
+
+Verified: clean, compileAndroidMain + demo compileDebugKotlin, testAndroidHostTest + demo testDebugUnitTest, compileKotlinIosSimulatorArm64, DemoKit XCFramework, install + launch on Pixel 7a (MainActivity resumed, no crash, full design system renders).
+
+Stages 8 (monetization tidy) and 9 (coordinate flip) NOT started.
+
+### Files
+- settings.gradle.kts
+- build-logic/src/main/kotlin/frnk.kmp.library.composehosttest.gradle.kts
+- frnk/ui/theme/build.gradle.kts
+- frnk/ui/components/build.gradle.kts
+- frnk/ui/scaffolds/build.gradle.kts
+- frnk/ui/atoms-facade/build.gradle.kts
+- frnk/capabilities/haptics/build.gradle.kts
+- demo/shared/build.gradle.kts
+- frnk/capabilities/monetization-ui/build.gradle.kts

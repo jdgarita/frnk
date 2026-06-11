@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-11T19:44:56.10865Z",
+  "generatedAt": "2026-06-11T23:22:35.887815Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
@@ -2077,6 +2077,42 @@
       ]
     },
     {
+      "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/FrnkHaptics.kt",
+      "language": "kotlin",
+      "lines": 91,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.DisposableEffect",
+        "androidx.compose.runtime.ProvidableCompositionLocal",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.key",
+        "androidx.compose.runtime.mutableIntStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.rememberUpdatedState",
+        "androidx.compose.runtime.setValue",
+        "androidx.compose.runtime.staticCompositionLocalOf",
+        "androidx.lifecycle.Lifecycle",
+        "androidx.lifecycle.LifecycleEventObserver",
+        "androidx.lifecycle.compose.LocalLifecycleOwner",
+        "top.ltfan.multihaptic.compose.rememberVibrator"
+      ],
+      "symbols": [
+        {
+          "name": "rememberFrnkHaptics",
+          "kind": "fun",
+          "line": 56
+        },
+        {
+          "name": "rememberForegroundCount",
+          "kind": "fun",
+          "line": 70,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
       "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/HapticFeedback.kt",
       "language": "kotlin",
       "lines": 38,
@@ -2120,6 +2156,31 @@
           "line": 9,
           "modifiers": [
             "enum"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/MultiHapticEngine.kt",
+      "language": "kotlin",
+      "lines": 55,
+      "imports": [
+        "top.ltfan.multihaptic.DelayType",
+        "top.ltfan.multihaptic.vibrator.Vibrator",
+        "kotlin.time.Duration.Companion.milliseconds"
+      ],
+      "symbols": [
+        {
+          "name": "MultiHapticEngine",
+          "kind": "class",
+          "line": 22
+        },
+        {
+          "name": "emit",
+          "kind": "fun",
+          "line": 28,
+          "modifiers": [
+            "override"
           ]
         }
       ]
@@ -5836,7 +5897,7 @@
     {
       "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/RobolectricComposeTest.kt",
       "language": "kotlin",
-      "lines": 48,
+      "lines": 49,
       "imports": [
         "androidx.compose.runtime.Composable",
         "androidx.compose.ui.test.ComposeUiTest",
@@ -5851,7 +5912,7 @@
         {
           "name": "RobolectricComposeTest",
           "kind": "class",
-          "line": 36,
+          "line": 37,
           "modifiers": [
             "abstract"
           ]
@@ -5859,148 +5920,10 @@
         {
           "name": "setFrnkContent",
           "kind": "fun",
-          "line": 46,
+          "line": 47,
           "modifiers": [
             "internal"
           ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModelTest.kt",
-      "language": "kotlin",
-      "lines": 88,
-      "imports": [
-        "com.composables.icons.lucide.Lucide",
-        "com.composables.icons.lucide.Plus",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
-        "kotlinx.coroutines.Dispatchers",
-        "kotlinx.coroutines.async",
-        "kotlinx.coroutines.flow.first",
-        "kotlinx.coroutines.test.UnconfinedTestDispatcher",
-        "kotlinx.coroutines.test.resetMain",
-        "kotlinx.coroutines.test.runTest",
-        "kotlinx.coroutines.test.setMain",
-        "kotlin.test.AfterTest",
-        "kotlin.test.BeforeTest",
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals"
-      ],
-      "symbols": [
-        {
-          "name": "HomeViewModelTest",
-          "kind": "class",
-          "line": 24
-        },
-        {
-          "name": "setUp",
-          "kind": "fun",
-          "line": 28,
-          "container": "HomeViewModelTest"
-        },
-        {
-          "name": "tearDown",
-          "kind": "fun",
-          "line": 33,
-          "container": "HomeViewModelTest"
-        },
-        {
-          "name": "initialState",
-          "kind": "fun",
-          "line": 37,
-          "container": "HomeViewModelTest",
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "top_bar_action_re_emits_action_invoked_with_the_action_key",
-          "kind": "fun",
-          "line": 40,
-          "container": "HomeViewModelTest"
-        },
-        {
-          "name": "navigation_click_re_emits_navigation_invoked",
-          "kind": "fun",
-          "line": 55,
-          "container": "HomeViewModelTest"
-        },
-        {
-          "name": "primary_action_click_re_emits_primary_action_invoked",
-          "kind": "fun",
-          "line": 66,
-          "container": "HomeViewModelTest"
-        },
-        {
-          "name": "intents_leave_the_chrome_state_untouched",
-          "kind": "fun",
-          "line": 77,
-          "container": "HomeViewModelTest"
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaultsTest.kt",
-      "language": "kotlin",
-      "lines": 91,
-      "imports": [
-        "androidx.compose.ui.test.ExperimentalTestApi",
-        "androidx.compose.ui.test.runComposeUiTest",
-        "com.composables.icons.lucide.Lucide",
-        "com.composables.icons.lucide.Plus",
-        "dev.jdgarita.frnk.ui.atoms.FrnkIconState",
-        "dev.jdgarita.frnk.ui.atoms.RobolectricComposeTest",
-        "dev.jdgarita.frnk.ui.atoms.setFrnkContent",
-        "dev.jdgarita.frnk.ui.theme.Appearance",
-        "kotlin.test.Test",
-        "kotlin.test.assertEquals",
-        "kotlin.test.assertFalse"
-      ],
-      "symbols": [
-        {
-          "name": "SettingsDefaultsTest",
-          "kind": "class",
-          "line": 22
-        },
-        {
-          "name": "buildState",
-          "kind": "fun",
-          "line": 37,
-          "container": "SettingsDefaultsTest",
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "after_appearance_inserts_at_index_1",
-          "kind": "fun",
-          "line": 56,
-          "container": "SettingsDefaultsTest"
-        },
-        {
-          "name": "before_subscription_inserts_after_preferences",
-          "kind": "fun",
-          "line": 63,
-          "container": "SettingsDefaultsTest"
-        },
-        {
-          "name": "before_legal_inserts_second_to_last",
-          "kind": "fun",
-          "line": 69,
-          "container": "SettingsDefaultsTest"
-        },
-        {
-          "name": "end_inserts_last",
-          "kind": "fun",
-          "line": 75,
-          "container": "SettingsDefaultsTest"
-        },
-        {
-          "name": "no_extras_keeps_the_default_catalogue_unchanged",
-          "kind": "fun",
-          "line": 81,
-          "container": "SettingsDefaultsTest"
         }
       ]
     },
@@ -6732,195 +6655,6 @@
           "name": "FrnkProfileHeader_Skeleton_Light",
           "kind": "fun",
           "line": 66,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/HomeScreenPreviews.kt",
-      "language": "kotlin",
-      "lines": 63,
-      "imports": [
-        "androidx.compose.foundation.layout.fillMaxSize",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.tooling.preview.Preview",
-        "dev.jdgarita.frnk.ui.atoms.FrnkButton",
-        "dev.jdgarita.frnk.ui.atoms.FrnkButtonState",
-        "dev.jdgarita.frnk.ui.atoms.FrnkText",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTextState",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
-        "dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface",
-        "dev.jdgarita.frnk.ui.scaffolds.HomeScreenContent",
-        "dev.jdgarita.frnk.ui.scaffolds.HomeScreenState",
-        "dev.jdgarita.frnk.ui.theme.Appearance"
-      ],
-      "symbols": [
-        {
-          "name": "HomeScreen_Light",
-          "kind": "fun",
-          "line": 19,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "HomeScreen_Dark",
-          "kind": "fun",
-          "line": 35,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "HomeScreen_SkeletonContent",
-          "kind": "fun",
-          "line": 50,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/OnboardingScreenPreviews.kt",
-      "language": "kotlin",
-      "lines": 126,
-      "imports": [
-        "androidx.compose.foundation.layout.fillMaxSize",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.tooling.preview.Preview",
-        "androidx.compose.ui.unit.Dp",
-        "androidx.compose.ui.unit.dp",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.atoms.FrnkIconState",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTextState",
-        "dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenContent",
-        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState",
-        "dev.jdgarita.frnk.ui.theme.Appearance",
-        "dev.jdgarita.frnk.ui.theme.colorPrimary",
-        "dev.jdgarita.frnk.ui.theme.iconCheck",
-        "dev.jdgarita.frnk.ui.theme.iconSearch",
-        "dev.jdgarita.frnk.ui.theme.iconSettings",
-        "dev.jdgarita.frnk.ui.theme.icons",
-        "dev.jdgarita.frnk.ui.tokens.FrnkIconSize"
-      ],
-      "symbols": [
-        {
-          "name": "samplePages",
-          "kind": "fun",
-          "line": 26,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "sampleState",
-          "kind": "fun",
-          "line": 58,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_FirstPage_Light",
-          "kind": "fun",
-          "line": 70,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_MiddlePage_Light",
-          "kind": "fun",
-          "line": 78,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_LastPage_Light",
-          "kind": "fun",
-          "line": 86,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_FirstPage_Dark",
-          "kind": "fun",
-          "line": 94,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_MiddlePage_Dark",
-          "kind": "fun",
-          "line": 102,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_LastPage_Dark",
-          "kind": "fun",
-          "line": 110,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "OnboardingScreen_FixedHeight_Light",
-          "kind": "fun",
-          "line": 118,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/SettingsScreenPreviews.kt",
-      "language": "kotlin",
-      "lines": 51,
-      "imports": [
-        "androidx.compose.foundation.layout.fillMaxSize",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.tooling.preview.Preview",
-        "dev.jdgarita.frnk.ui.atoms.previews.PreviewSurface",
-        "dev.jdgarita.frnk.ui.scaffolds.SettingsScreenContent",
-        "dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState",
-        "dev.jdgarita.frnk.ui.theme.Appearance"
-      ],
-      "symbols": [
-        {
-          "name": "SettingsScreen_Light",
-          "kind": "fun",
-          "line": 14,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "SettingsScreen_Dark",
-          "kind": "fun",
-          "line": 26,
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "SettingsScreen_Pro_Light",
-          "kind": "fun",
-          "line": 38,
           "modifiers": [
             "private"
           ]
@@ -7670,67 +7404,6 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/FrnkHaptics.kt",
-      "language": "kotlin",
-      "lines": 91,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.DisposableEffect",
-        "androidx.compose.runtime.ProvidableCompositionLocal",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.key",
-        "androidx.compose.runtime.mutableIntStateOf",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.runtime.rememberUpdatedState",
-        "androidx.compose.runtime.setValue",
-        "androidx.compose.runtime.staticCompositionLocalOf",
-        "androidx.lifecycle.Lifecycle",
-        "androidx.lifecycle.LifecycleEventObserver",
-        "androidx.lifecycle.compose.LocalLifecycleOwner",
-        "top.ltfan.multihaptic.compose.rememberVibrator"
-      ],
-      "symbols": [
-        {
-          "name": "rememberFrnkHaptics",
-          "kind": "fun",
-          "line": 56
-        },
-        {
-          "name": "rememberForegroundCount",
-          "kind": "fun",
-          "line": 70,
-          "modifiers": [
-            "private"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/MultiHapticEngine.kt",
-      "language": "kotlin",
-      "lines": 55,
-      "imports": [
-        "top.ltfan.multihaptic.DelayType",
-        "top.ltfan.multihaptic.vibrator.Vibrator",
-        "kotlin.time.Duration.Companion.milliseconds"
-      ],
-      "symbols": [
-        {
-          "name": "MultiHapticEngine",
-          "kind": "class",
-          "line": 22
-        },
-        {
-          "name": "emit",
-          "kind": "fun",
-          "line": 28,
-          "modifiers": [
-            "override"
-          ]
-        }
-      ]
-    },
-    {
       "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/molecules/FrnkEmptyState.kt",
       "language": "kotlin",
       "lines": 85,
@@ -8103,217 +7776,6 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/EffectCollector.kt",
-      "language": "kotlin",
-      "lines": 43,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.LaunchedEffect",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.rememberUpdatedState",
-        "androidx.lifecycle.Lifecycle",
-        "androidx.lifecycle.compose.LocalLifecycleOwner",
-        "androidx.lifecycle.repeatOnLifecycle",
-        "kotlinx.coroutines.flow.Flow"
-      ],
-      "symbols": [
-        {
-          "name": "EffectCollector",
-          "kind": "fun",
-          "line": 31
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkMviScreen.kt",
-      "language": "kotlin",
-      "lines": 76,
-      "imports": [
-        "androidx.compose.foundation.layout.PaddingValues",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.ui.Modifier",
-        "androidx.compose.ui.unit.Dp",
-        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
-        "com.composeunstyled.theme.Theme",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
-        "dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold",
-        "dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset",
-        "dev.jdgarita.frnk.ui.theme.spacing",
-        "dev.jdgarita.frnk.ui.theme.spacingLg"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkMviScreen",
-          "kind": "fun",
-          "line": 45
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt",
-      "language": "kotlin",
-      "lines": 71,
-      "imports": [
-        "androidx.compose.animation.AnimatedContentTransitionScope",
-        "androidx.compose.animation.ContentTransform",
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.ui.Modifier",
-        "androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator",
-        "androidx.navigation3.runtime.NavBackStack",
-        "androidx.navigation3.runtime.NavEntry",
-        "androidx.navigation3.runtime.NavKey",
-        "androidx.navigation3.runtime.rememberNavBackStack",
-        "androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator",
-        "androidx.navigation3.scene.Scene",
-        "androidx.navigation3.ui.NavDisplay",
-        "androidx.savedstate.serialization.SavedStateConfiguration",
-        "org.koin.compose.navigation3.koinEntryProvider",
-        "org.koin.core.annotation.KoinExperimentalAPI"
-      ],
-      "symbols": [
-        {
-          "name": "rememberFrnkNavBackStack",
-          "kind": "fun",
-          "line": 30
-        },
-        {
-          "name": "FrnkNavDisplay",
-          "kind": "fun",
-          "line": 48
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavTab.kt",
-      "language": "kotlin",
-      "lines": 23,
-      "imports": [
-        "androidx.compose.runtime.Immutable",
-        "androidx.compose.ui.graphics.vector.ImageVector",
-        "androidx.navigation3.runtime.NavKey"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkNavTab",
-          "kind": "class",
-          "line": 18,
-          "modifiers": [
-            "data"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavigationAnimations.kt",
-      "language": "kotlin",
-      "lines": 37,
-      "imports": [
-        "androidx.compose.animation.ContentTransform",
-        "androidx.compose.animation.core.tween",
-        "androidx.compose.animation.slideInHorizontally",
-        "androidx.compose.animation.slideOutHorizontally",
-        "androidx.compose.animation.togetherWith"
-      ],
-      "symbols": [
-        {
-          "name": "frnkEnterTransition",
-          "kind": "fun",
-          "line": 15
-        },
-        {
-          "name": "frnkExitTransition",
-          "kind": "fun",
-          "line": 29
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionHandler.kt",
-      "language": "kotlin",
-      "lines": 53,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.DisposableEffect",
-        "androidx.compose.runtime.getValue",
-        "androidx.compose.runtime.rememberUpdatedState",
-        "androidx.compose.runtime.staticCompositionLocalOf"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkPrimaryActionHandler",
-          "kind": "fun",
-          "line": 39
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkTabbedBackStacks.kt",
-      "language": "kotlin",
-      "lines": 153,
-      "imports": [
-        "androidx.compose.runtime.Composable",
-        "androidx.compose.runtime.MutableState",
-        "androidx.compose.runtime.Stable",
-        "androidx.compose.runtime.key",
-        "androidx.compose.runtime.mutableStateOf",
-        "androidx.compose.runtime.remember",
-        "androidx.compose.runtime.saveable.rememberSaveable",
-        "androidx.compose.ui.ExperimentalComposeUiApi",
-        "androidx.compose.ui.backhandler.BackHandler",
-        "androidx.navigation3.runtime.NavBackStack",
-        "androidx.navigation3.runtime.NavKey",
-        "androidx.savedstate.serialization.SavedStateConfiguration",
-        "kotlin.jvm.JvmName"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkTab",
-          "kind": "class",
-          "line": 18,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "FrnkTabbedBackStacks",
-          "kind": "class",
-          "line": 33
-        },
-        {
-          "name": "switchTo",
-          "kind": "fun",
-          "line": 56
-        },
-        {
-          "name": "switchToHome",
-          "kind": "fun",
-          "line": 64
-        },
-        {
-          "name": "resetCurrentToRoot",
-          "kind": "fun",
-          "line": 67
-        },
-        {
-          "name": "rememberFrnkTabbedBackStacks",
-          "kind": "fun",
-          "line": 80
-        },
-        {
-          "name": "rememberFrnkTabbedBackStacks",
-          "kind": "fun",
-          "line": 114
-        },
-        {
-          "name": "FrnkTabbedBackHandler",
-          "kind": "fun",
-          "line": 146
-        }
-      ]
-    },
-    {
       "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkListSection.kt",
       "language": "kotlin",
       "lines": 61,
@@ -8417,7 +7879,7 @@
     {
       "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkSectionCard.kt",
       "language": "kotlin",
-      "lines": 90,
+      "lines": 94,
       "imports": [
         "androidx.compose.animation.animateContentSize",
         "androidx.compose.foundation.background",
@@ -8446,10 +7908,7 @@
         {
           "name": "FrnkSectionCard",
           "kind": "fun",
-          "line": 43,
-          "modifiers": [
-            "internal"
-          ]
+          "line": 47
         }
       ]
     },
@@ -8814,7 +8273,606 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavDefaults.kt",
+      "path": "frnk/ui/scaffolds/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/atoms/RobolectricComposeTest.kt",
+      "language": "kotlin",
+      "lines": 41,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.test.ComposeUiTest",
+        "androidx.compose.ui.test.ExperimentalTestApi",
+        "dev.jdgarita.frnk.ui.theme.FrnkTheme",
+        "org.junit.runner.RunWith",
+        "org.robolectric.RobolectricTestRunner",
+        "org.robolectric.annotation.Config",
+        "org.robolectric.annotation.GraphicsMode"
+      ],
+      "symbols": [
+        {
+          "name": "RobolectricComposeTest",
+          "kind": "class",
+          "line": 31,
+          "modifiers": [
+            "abstract"
+          ]
+        },
+        {
+          "name": "setFrnkContent",
+          "kind": "fun",
+          "line": 39,
+          "modifiers": [
+            "internal"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModelTest.kt",
+      "language": "kotlin",
+      "lines": 88,
+      "imports": [
+        "com.composables.icons.lucide.Lucide",
+        "com.composables.icons.lucide.Plus",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.flow.first",
+        "kotlinx.coroutines.test.UnconfinedTestDispatcher",
+        "kotlinx.coroutines.test.resetMain",
+        "kotlinx.coroutines.test.runTest",
+        "kotlinx.coroutines.test.setMain",
+        "kotlin.test.AfterTest",
+        "kotlin.test.BeforeTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals"
+      ],
+      "symbols": [
+        {
+          "name": "HomeViewModelTest",
+          "kind": "class",
+          "line": 24
+        },
+        {
+          "name": "setUp",
+          "kind": "fun",
+          "line": 28,
+          "container": "HomeViewModelTest"
+        },
+        {
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 33,
+          "container": "HomeViewModelTest"
+        },
+        {
+          "name": "initialState",
+          "kind": "fun",
+          "line": 37,
+          "container": "HomeViewModelTest",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "top_bar_action_re_emits_action_invoked_with_the_action_key",
+          "kind": "fun",
+          "line": 40,
+          "container": "HomeViewModelTest"
+        },
+        {
+          "name": "navigation_click_re_emits_navigation_invoked",
+          "kind": "fun",
+          "line": 55,
+          "container": "HomeViewModelTest"
+        },
+        {
+          "name": "primary_action_click_re_emits_primary_action_invoked",
+          "kind": "fun",
+          "line": 66,
+          "container": "HomeViewModelTest"
+        },
+        {
+          "name": "intents_leave_the_chrome_state_untouched",
+          "kind": "fun",
+          "line": 77,
+          "container": "HomeViewModelTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaultsTest.kt",
+      "language": "kotlin",
+      "lines": 91,
+      "imports": [
+        "androidx.compose.ui.test.ExperimentalTestApi",
+        "androidx.compose.ui.test.runComposeUiTest",
+        "com.composables.icons.lucide.Lucide",
+        "com.composables.icons.lucide.Plus",
+        "dev.jdgarita.frnk.ui.atoms.FrnkIconState",
+        "dev.jdgarita.frnk.ui.atoms.RobolectricComposeTest",
+        "dev.jdgarita.frnk.ui.atoms.setFrnkContent",
+        "dev.jdgarita.frnk.ui.theme.Appearance",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertFalse"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsDefaultsTest",
+          "kind": "class",
+          "line": 22
+        },
+        {
+          "name": "buildState",
+          "kind": "fun",
+          "line": 37,
+          "container": "SettingsDefaultsTest",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "after_appearance_inserts_at_index_1",
+          "kind": "fun",
+          "line": 56,
+          "container": "SettingsDefaultsTest"
+        },
+        {
+          "name": "before_subscription_inserts_after_preferences",
+          "kind": "fun",
+          "line": 63,
+          "container": "SettingsDefaultsTest"
+        },
+        {
+          "name": "before_legal_inserts_second_to_last",
+          "kind": "fun",
+          "line": 69,
+          "container": "SettingsDefaultsTest"
+        },
+        {
+          "name": "end_inserts_last",
+          "kind": "fun",
+          "line": 75,
+          "container": "SettingsDefaultsTest"
+        },
+        {
+          "name": "no_extras_keeps_the_default_catalogue_unchanged",
+          "kind": "fun",
+          "line": 81,
+          "container": "SettingsDefaultsTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/HomeScreenPreviews.kt",
+      "language": "kotlin",
+      "lines": 62,
+      "imports": [
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "dev.jdgarita.frnk.ui.atoms.FrnkButton",
+        "dev.jdgarita.frnk.ui.atoms.FrnkButtonState",
+        "dev.jdgarita.frnk.ui.atoms.FrnkText",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTextState",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
+        "dev.jdgarita.frnk.ui.scaffolds.HomeScreenContent",
+        "dev.jdgarita.frnk.ui.scaffolds.HomeScreenState",
+        "dev.jdgarita.frnk.ui.theme.Appearance"
+      ],
+      "symbols": [
+        {
+          "name": "HomeScreen_Light",
+          "kind": "fun",
+          "line": 18,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "HomeScreen_Dark",
+          "kind": "fun",
+          "line": 34,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "HomeScreen_SkeletonContent",
+          "kind": "fun",
+          "line": 49,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/OnboardingScreenPreviews.kt",
+      "language": "kotlin",
+      "lines": 125,
+      "imports": [
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "androidx.compose.ui.unit.Dp",
+        "androidx.compose.ui.unit.dp",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.atoms.FrnkIconState",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTextState",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenContent",
+        "dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState",
+        "dev.jdgarita.frnk.ui.theme.Appearance",
+        "dev.jdgarita.frnk.ui.theme.colorPrimary",
+        "dev.jdgarita.frnk.ui.theme.iconCheck",
+        "dev.jdgarita.frnk.ui.theme.iconSearch",
+        "dev.jdgarita.frnk.ui.theme.iconSettings",
+        "dev.jdgarita.frnk.ui.theme.icons",
+        "dev.jdgarita.frnk.ui.tokens.FrnkIconSize"
+      ],
+      "symbols": [
+        {
+          "name": "samplePages",
+          "kind": "fun",
+          "line": 25,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "sampleState",
+          "kind": "fun",
+          "line": 57,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_FirstPage_Light",
+          "kind": "fun",
+          "line": 69,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_MiddlePage_Light",
+          "kind": "fun",
+          "line": 77,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_LastPage_Light",
+          "kind": "fun",
+          "line": 85,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_FirstPage_Dark",
+          "kind": "fun",
+          "line": 93,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_MiddlePage_Dark",
+          "kind": "fun",
+          "line": 101,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_LastPage_Dark",
+          "kind": "fun",
+          "line": 109,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "OnboardingScreen_FixedHeight_Light",
+          "kind": "fun",
+          "line": 117,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/PreviewSurface.kt",
+      "language": "kotlin",
+      "lines": 46,
+      "imports": [
+        "androidx.compose.foundation.background",
+        "androidx.compose.foundation.layout.Arrangement",
+        "androidx.compose.foundation.layout.Column",
+        "androidx.compose.foundation.layout.padding",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.ui.Modifier",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.theme.Appearance",
+        "dev.jdgarita.frnk.ui.theme.AppearanceController",
+        "dev.jdgarita.frnk.ui.theme.FrnkTheme",
+        "dev.jdgarita.frnk.ui.theme.colorBackground",
+        "dev.jdgarita.frnk.ui.theme.colors",
+        "dev.jdgarita.frnk.ui.tokens.FrnkSpacing"
+      ],
+      "symbols": [
+        {
+          "name": "PreviewSurface",
+          "kind": "fun",
+          "line": 33,
+          "modifiers": [
+            "internal"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonDebug/kotlin/dev/jdgarita/frnk/ui/scaffolds/previews/SettingsScreenPreviews.kt",
+      "language": "kotlin",
+      "lines": 50,
+      "imports": [
+        "androidx.compose.foundation.layout.fillMaxSize",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.tooling.preview.Preview",
+        "dev.jdgarita.frnk.ui.scaffolds.SettingsScreenContent",
+        "dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState",
+        "dev.jdgarita.frnk.ui.theme.Appearance"
+      ],
+      "symbols": [
+        {
+          "name": "SettingsScreen_Light",
+          "kind": "fun",
+          "line": 13,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "SettingsScreen_Dark",
+          "kind": "fun",
+          "line": 25,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "SettingsScreen_Pro_Light",
+          "kind": "fun",
+          "line": 37,
+          "modifiers": [
+            "private"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/EffectCollector.kt",
+      "language": "kotlin",
+      "lines": 43,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.rememberUpdatedState",
+        "androidx.lifecycle.Lifecycle",
+        "androidx.lifecycle.compose.LocalLifecycleOwner",
+        "androidx.lifecycle.repeatOnLifecycle",
+        "kotlinx.coroutines.flow.Flow"
+      ],
+      "symbols": [
+        {
+          "name": "EffectCollector",
+          "kind": "fun",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkMviScreen.kt",
+      "language": "kotlin",
+      "lines": 76,
+      "imports": [
+        "androidx.compose.foundation.layout.PaddingValues",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.ui.Modifier",
+        "androidx.compose.ui.unit.Dp",
+        "androidx.lifecycle.compose.collectAsStateWithLifecycle",
+        "com.composeunstyled.theme.Theme",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction",
+        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
+        "dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold",
+        "dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset",
+        "dev.jdgarita.frnk.ui.theme.spacing",
+        "dev.jdgarita.frnk.ui.theme.spacingLg"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkMviScreen",
+          "kind": "fun",
+          "line": 45
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt",
+      "language": "kotlin",
+      "lines": 71,
+      "imports": [
+        "androidx.compose.animation.AnimatedContentTransitionScope",
+        "androidx.compose.animation.ContentTransform",
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.ui.Modifier",
+        "androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator",
+        "androidx.navigation3.runtime.NavBackStack",
+        "androidx.navigation3.runtime.NavEntry",
+        "androidx.navigation3.runtime.NavKey",
+        "androidx.navigation3.runtime.rememberNavBackStack",
+        "androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator",
+        "androidx.navigation3.scene.Scene",
+        "androidx.navigation3.ui.NavDisplay",
+        "androidx.savedstate.serialization.SavedStateConfiguration",
+        "org.koin.compose.navigation3.koinEntryProvider",
+        "org.koin.core.annotation.KoinExperimentalAPI"
+      ],
+      "symbols": [
+        {
+          "name": "rememberFrnkNavBackStack",
+          "kind": "fun",
+          "line": 30
+        },
+        {
+          "name": "FrnkNavDisplay",
+          "kind": "fun",
+          "line": 48
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavTab.kt",
+      "language": "kotlin",
+      "lines": 23,
+      "imports": [
+        "androidx.compose.runtime.Immutable",
+        "androidx.compose.ui.graphics.vector.ImageVector",
+        "androidx.navigation3.runtime.NavKey"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkNavTab",
+          "kind": "class",
+          "line": 18,
+          "modifiers": [
+            "data"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavigationAnimations.kt",
+      "language": "kotlin",
+      "lines": 37,
+      "imports": [
+        "androidx.compose.animation.ContentTransform",
+        "androidx.compose.animation.core.tween",
+        "androidx.compose.animation.slideInHorizontally",
+        "androidx.compose.animation.slideOutHorizontally",
+        "androidx.compose.animation.togetherWith"
+      ],
+      "symbols": [
+        {
+          "name": "frnkEnterTransition",
+          "kind": "fun",
+          "line": 15
+        },
+        {
+          "name": "frnkExitTransition",
+          "kind": "fun",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkPrimaryActionHandler.kt",
+      "language": "kotlin",
+      "lines": 53,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.DisposableEffect",
+        "androidx.compose.runtime.getValue",
+        "androidx.compose.runtime.rememberUpdatedState",
+        "androidx.compose.runtime.staticCompositionLocalOf"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkPrimaryActionHandler",
+          "kind": "fun",
+          "line": 39
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkTabbedBackStacks.kt",
+      "language": "kotlin",
+      "lines": 153,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.MutableState",
+        "androidx.compose.runtime.Stable",
+        "androidx.compose.runtime.key",
+        "androidx.compose.runtime.mutableStateOf",
+        "androidx.compose.runtime.remember",
+        "androidx.compose.runtime.saveable.rememberSaveable",
+        "androidx.compose.ui.ExperimentalComposeUiApi",
+        "androidx.compose.ui.backhandler.BackHandler",
+        "androidx.navigation3.runtime.NavBackStack",
+        "androidx.navigation3.runtime.NavKey",
+        "androidx.savedstate.serialization.SavedStateConfiguration",
+        "kotlin.jvm.JvmName"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkTab",
+          "kind": "class",
+          "line": 18,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "FrnkTabbedBackStacks",
+          "kind": "class",
+          "line": 33
+        },
+        {
+          "name": "switchTo",
+          "kind": "fun",
+          "line": 56
+        },
+        {
+          "name": "switchToHome",
+          "kind": "fun",
+          "line": 64
+        },
+        {
+          "name": "resetCurrentToRoot",
+          "kind": "fun",
+          "line": 67
+        },
+        {
+          "name": "rememberFrnkTabbedBackStacks",
+          "kind": "fun",
+          "line": 80
+        },
+        {
+          "name": "rememberFrnkTabbedBackStacks",
+          "kind": "fun",
+          "line": 114
+        },
+        {
+          "name": "FrnkTabbedBackHandler",
+          "kind": "fun",
+          "line": 146
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavDefaults.kt",
       "language": "kotlin",
       "lines": 60,
       "imports": [
@@ -8837,7 +8895,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffold.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffold.kt",
       "language": "kotlin",
       "lines": 108,
       "imports": [
@@ -8878,7 +8936,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldModule.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldModule.kt",
       "language": "kotlin",
       "lines": 18,
       "imports": [
@@ -8888,7 +8946,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldState.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavScaffoldState.kt",
       "language": "kotlin",
       "lines": 55,
       "imports": [
@@ -8952,7 +9010,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavViewModel.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/BottomNavViewModel.kt",
       "language": "kotlin",
       "lines": 24,
       "imports": [
@@ -8976,7 +9034,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FeedbackEmailLauncher.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FeedbackEmailLauncher.kt",
       "language": "kotlin",
       "lines": 50,
       "imports": [
@@ -8998,7 +9056,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkBottomBarInset.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkBottomBarInset.kt",
       "language": "kotlin",
       "lines": 22,
       "imports": [
@@ -9008,7 +9066,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkScreenScaffold.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkScreenScaffold.kt",
       "language": "kotlin",
       "lines": 90,
       "imports": [
@@ -9044,7 +9102,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScaffoldModule.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScaffoldModule.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -9054,7 +9112,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreen.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreen.kt",
       "language": "kotlin",
       "lines": 105,
       "imports": [
@@ -9093,7 +9151,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreenState.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreenState.kt",
       "language": "kotlin",
       "lines": 55,
       "imports": [
@@ -9186,7 +9244,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModel.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeViewModel.kt",
       "language": "kotlin",
       "lines": 20,
       "imports": [
@@ -9210,7 +9268,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScaffoldModule.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScaffoldModule.kt",
       "language": "kotlin",
       "lines": 18,
       "imports": [
@@ -9220,7 +9278,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreen.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreen.kt",
       "language": "kotlin",
       "lines": 277,
       "imports": [
@@ -9326,7 +9384,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreenState.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingScreenState.kt",
       "language": "kotlin",
       "lines": 68,
       "imports": [
@@ -9428,7 +9486,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingViewModel.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingViewModel.kt",
       "language": "kotlin",
       "lines": 29,
       "imports": [
@@ -9452,7 +9510,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaults.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsDefaults.kt",
       "language": "kotlin",
       "lines": 341,
       "imports": [
@@ -9528,7 +9586,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScaffoldModule.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScaffoldModule.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -9538,7 +9596,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreen.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreen.kt",
       "language": "kotlin",
       "lines": 288,
       "imports": [
@@ -9644,7 +9702,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreenState.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreenState.kt",
       "language": "kotlin",
       "lines": 174,
       "imports": [
@@ -9891,7 +9949,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt",
+      "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt",
       "language": "kotlin",
       "lines": 58,
       "imports": [
@@ -9940,7 +9998,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkIcons.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkIcons.kt",
       "language": "kotlin",
       "lines": 72,
       "imports": [
@@ -9969,7 +10027,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkRipple.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkRipple.kt",
       "language": "kotlin",
       "lines": 42,
       "imports": [
@@ -9988,7 +10046,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkStrings.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkStrings.kt",
       "language": "kotlin",
       "lines": 127,
       "imports": [
@@ -9997,7 +10055,7 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkTheme.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkTheme.kt",
       "language": "kotlin",
       "lines": 394,
       "imports": [
@@ -10065,7 +10123,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkThemeConfig.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkThemeConfig.kt",
       "language": "kotlin",
       "lines": 72,
       "imports": [
@@ -10092,7 +10150,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ColorTokens.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ColorTokens.kt",
       "language": "kotlin",
       "lines": 99,
       "imports": [
@@ -10124,7 +10182,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/IconSizeTokens.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/IconSizeTokens.kt",
       "language": "kotlin",
       "lines": 17,
       "imports": [
@@ -10139,7 +10197,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ShapeTokens.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/ShapeTokens.kt",
       "language": "kotlin",
       "lines": 22,
       "imports": [
@@ -10158,7 +10216,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/SpacingTokens.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/SpacingTokens.kt",
       "language": "kotlin",
       "lines": 19,
       "imports": [
@@ -10173,7 +10231,7 @@
       ]
     },
     {
-      "path": "frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/TypographyTokens.kt",
+      "path": "frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/tokens/TypographyTokens.kt",
       "language": "kotlin",
       "lines": 118,
       "imports": [
