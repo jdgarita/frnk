@@ -12,8 +12,8 @@ import org.koin.core.context.startKoin
  * `allowOverride(true)`): `androidDemoApp` installs `firebaseObservabilityModule` + (when a key is set)
  * `revenueCatModule`; `iosDemoApp` calls [bootstrapDemoKoinWithRevenueCat] for the real RevenueCat Test
  * Store path and configures Firebase + the CrashKiOS hook ([enableDemoCrashlytics]) in Swift
- * (BACKLOG P1-5b/P3-3). Apps that want a real backend wire `frnkModules(BackendChoice)` via `:shared` /
- * `FrnkKit.xcframework` instead.
+ * (BACKLOG P1-5b/P3-3). Apps that want real backends pass an explicit toolkit-module list to
+ * `initializeFrnk(...)` (`:core-di`) instead — see docs/HOST_INTEGRATION.md.
  */
 fun bootstrapDemoKoin(extraConfig: KoinApplication.() -> Unit = {}): KoinApplication =
     startKoin {

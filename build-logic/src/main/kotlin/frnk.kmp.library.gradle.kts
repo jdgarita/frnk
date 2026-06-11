@@ -1,10 +1,14 @@
-// frnk KMP-library convention plugin — the standard `shared-*` library shape.
+// frnk KMP-library convention plugin — the standard shared-library shape.
 //
-// Composes the `frnk.kmp.base` core (KMP + AGP-KMP-library plugins, jvmToolchain, Android SDK) with the
-// iOS framework every shared library exposes. A module applies `plugins { id("frnk.kmp.library") }` and
-// then declares only what is module-specific: its Android `namespace`, `withHostTest {}` opt-in (or the
+// Composes the `frnk.kmp.base` core (KMP + AGP-KMP-library plugins, jvmToolchain, Android SDK) with
+// bare iOS targets. A module applies `plugins { id("frnk.kmp.library") }` and then declares only what
+// is module-specific: its Android `namespace`, `withHostTest {}` opt-in (or the
 // `frnk.kmp.library.hosttest` variant), any extra plugins (compose via `frnk.kmp.library.compose` /
 // serialization / sqldelight), and its source-set dependencies.
+//
+// No per-module iOS framework is declared (restructure OQ-3/OQ-4): iOS consumption is umbrella-only —
+// the demo links DemoKit (an explicit `XCFramework` in the demo shared module), and each host builds
+// its own shared-module framework exporting the frnk modules it uses.
 //
 // What stays out of here on purpose:
 //  - `namespace` — every module differs and it doesn't map 1:1 from the module name
@@ -17,10 +21,6 @@ plugins {
 }
 
 kotlin {
-    // iOS framework baseName mirrors the long-standing convention `shared_<module>` (underscores),
-    // which for every standard module is exactly the Gradle module name with `-` → `_`.
-    val frameworkBaseName = project.name.replace('-', '_')
-    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
-        target.binaries.framework { baseName = frameworkBaseName }
-    }
+    iosArm64()
+    iosSimulatorArm64()
 }

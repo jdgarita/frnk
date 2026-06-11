@@ -71,14 +71,16 @@ android {
 }
 
 dependencies {
-    // Toolkit surface. :androidApp re-exports :shared which aggregates every api + impl module.
-    implementation(projects.androidApp)
+    // Toolkit surface — the individual modules this harness actually uses, like a real host
+    // (the :shared/:androidApp aggregators died at restructure Stage 1). Atoms/theme/scaffolds/utils
+    // arrive transitively via :shared-demo's api() deps.
+    implementation(projects.uiApp) // FrnkAppScaffold (AppScaffoldSmokeActivity)
+    implementation(projects.shared.backend.firebase) // firebaseObservabilityModule override
+    implementation(projects.sharedMonetizationRevenuecat) // revenueCatModule override
     // Shared demo Composable + MVI + Koin module (also consumed by iosDemoApp).
     implementation(projects.sharedDemo)
 
-    // RevenueCat KMP SDK — only for the host's Purchases.configure(...) call (BACKLOG P3-2).
-    // revenueCatModule / RevenueCatConfig arrive transitively via :androidApp → :shared (api),
-    // so no direct :shared-monetization-revenuecat project dep is needed.
+    // RevenueCat KMP SDK — for the host's Purchases.configure(...) call (BACKLOG P3-2).
     implementation(libs.revenuecat.core)
 
     // Compose runtime + UI primitives (multiplatform artifacts).

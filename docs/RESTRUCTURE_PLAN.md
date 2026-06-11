@@ -187,7 +187,7 @@ The still PR is the real gate: a stage isn't done until still is green at the ne
 
 ## 6. Stages
 
-### ☐ Stage 1 — Delete the aggregators (`:shared`, `:androidApp`, `:iosApp`)  — risk: **medium** (was low-med; raised by PR #46)
+### ☑ Stage 1 — Delete the aggregators (`:shared`, `:androidApp`, `:iosApp`)  — risk: **medium** (was low-med; raised by PR #46) — **landed 2026-06-11**
 
 - **OQ-7 resolved (2026-06-10)** — `:shared` is no longer wiring-only (PR #46 added
   `FrnkAppScaffold` + the substantive bootstrap), so this stage relocates before deleting:

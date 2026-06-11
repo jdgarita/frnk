@@ -33,7 +33,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "frnk"
 
 include(
-    ":shared",
+    ":core-di",
     ":shared-utils",
     ":shared-ui-api",
     ":shared-ui-atoms",
@@ -46,16 +46,18 @@ include(
     ":shared-monetization-api",
     ":shared-monetization-revenuecat",
     ":shared-monetization-ui",
+    ":ui-app",
     ":shared-demo",
-    ":androidApp",
-    ":iosApp",
     ":androidDemoApp",
 )
 
-// The shared-* modules physically live under shared/ (the :shared aggregator's
-// directory) for project-tree tidiness, while keeping flat Gradle paths for the
-// top-level domains that have not yet moved to nested module groups.
+// The shared library modules physically live under shared/ for project-tree tidiness, while
+// keeping flat Gradle paths for the top-level domains that have not yet moved to nested module
+// groups. (The :shared aggregator itself was deleted at restructure Stage 1 — the path segment
+// survives only as the implicit, build-file-less parent of :shared:backend:* until Stage 5
+// re-flattens those.)
 listOf(
+    "core-di",
     "shared-utils",
     "shared-ui-api",
     "shared-ui-atoms",
@@ -65,6 +67,7 @@ listOf(
     "shared-monetization-api",
     "shared-monetization-revenuecat",
     "shared-monetization-ui",
+    "ui-app",
     "shared-demo",
 ).forEach { name ->
     project(":$name").projectDir = file("shared/$name")

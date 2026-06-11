@@ -2,7 +2,7 @@ package dev.jdgarita.frnk.backend
 
 /**
  * No-op observability defaults. These are the safe fallback when an app opts out of analytics /
- * crash reporting (`ObservabilityChoice.None` in `:shared`) — every call is a silent `Unit`.
+ * crash reporting (`noopObservabilityModule`) — every call is a silent `Unit`.
  *
  * They live here (SDK-free `*-api`) rather than in a backend impl because observability is a
  * **backend-independent axis** (BACKLOG P1-5): a local-storage-only app with no backend still

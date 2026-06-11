@@ -1,6 +1,5 @@
 object ProjectConfiguration {
     const val GROUP_ID = "dev.jdgarita.frnk"
-    const val IOS_FRAMEWORK_NAME = "FrnkKit"
 
     /** SQLDelight database class name + generated package (see :shared-database-impl). */
     const val DATABASE_NAME = "FrnkDB"

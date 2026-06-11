@@ -64,10 +64,11 @@ import kotlinx.serialization.modules.SerializersModule
  * A host that used to hand-wire ~150 lines of theme + nav + tab plumbing writes one call.
  *
  * Assumes **Koin is already started** (the VM-backed scaffolds resolve through `koinViewModel`) —
- * `frnkModules()` installs every scaffold module the shell needs. `:shared`'s `FrnkAppScaffold` is
- * the batteries-included layer over this shell (Koin assertion, live entitlement-aware Settings,
- * monetization handler, auto-mounted paywall); use the shell directly when your module can't see
- * `:shared` (as `:shared-demo` does) or when you want to supply those pieces yourself.
+ * `frnkUiModules()` (`:ui-app`) carries every scaffold module the shell needs. `:ui-app`'s
+ * `FrnkAppScaffold` is the batteries-included layer over this shell (Koin assertion, live
+ * entitlement-aware Settings, monetization handler, auto-mounted paywall); use the shell directly
+ * when your module can't see `:ui-app` (as `:shared-demo` does) or when you want to supply those
+ * pieces yourself.
  *
  * Host extension points, each handed the [FrnkAppScope] (back stacks + primary-action registry):
  *  - [homeContent] — the Home tab's body; items in a scaffold-owned scrolling column ([HomeScreen]).

@@ -5,7 +5,7 @@ import org.koin.dsl.module
 
 /**
  * Remote data only. Analytics / crash reporting moved to [firebaseObservabilityModule] so
- * they can be selected independently of [dev.jdgarita.frnk.shared.BackendChoice] (BACKLOG P1-5).
+ * they are installed independently of this data-backend module (BACKLOG P1-5).
  */
 val firebaseBackendModule =
     module {

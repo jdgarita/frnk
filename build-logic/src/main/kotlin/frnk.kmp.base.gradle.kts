@@ -6,12 +6,10 @@ import org.gradle.kotlin.dsl.getByType
 // plugins, `jvmToolchain(17)`, and the Android `compileSdk`/`minSdk` (from the catalog single source).
 //
 // It declares NO iOS targets and NO framework, so it serves both:
-//  - the 12 standard `shared-*` modules via `frnk.kmp.library` (which applies this + adds the iOS
-//    framework), and
-//  - the special modules with a different iOS shape that previously hand-wrote this same toolchain/SDK
-//    boilerplate: `:shared` (bare iOS targets, aggregated into FrnkKit by :iosApp — must NOT declare its
-//    own framework), `:shared-demo` (a custom `XCFramework("DemoKit")`), and `:androidApp` (no iOS
-//    targets at all). They apply `id("frnk.kmp.base")` and add only their own iOS/framework shape.
+//  - the standard shared library modules via `frnk.kmp.library` (which applies this + adds bare iOS
+//    targets — no per-module framework; iOS consumption is umbrella-only per OQ-3/OQ-4), and
+//  - the special modules with a different iOS shape: `:shared-demo` (a custom
+//    `XCFramework("DemoKit")`). They apply `id("frnk.kmp.base")` and add their own iOS/framework shape.
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")

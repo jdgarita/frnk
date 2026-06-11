@@ -20,9 +20,9 @@ kotlin {
             api(projects.sharedUiAtoms)
 
             // The platform-adaptive bottom nav. This is the SOLE place the toolkit takes Material3 —
-            // a deliberate, host-approved trade. Material3 is therefore part of FrnkKit's surface for
-            // every consumer of :shared. Both bar engines are pure Kotlin/Compose (no extra native
-            // cinterop), so the XCFramework still links under the consumer's existing dynamic_lookup.
+            // a deliberate, host-approved trade that reaches every consumer of this module (and of
+            // :ui-app above it). Both bar engines are pure Kotlin/Compose (no extra native cinterop),
+            // so umbrella XCFrameworks still link under the consumer's existing dynamic_lookup.
             //
             // Two engines coexist for the POC (FrnkAdaptiveNavEngine, selectable at runtime), so we can
             // A/B their UX/performance directly:

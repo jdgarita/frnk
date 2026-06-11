@@ -9,7 +9,7 @@ package dev.jdgarita.frnk.backend.firebase
  * aborts via `konan` with no usable stack frame. Android is a no-op: the Crashlytics Android SDK
  * already hooks uncaught JVM exceptions.
  *
- * Invoked once, lazily, when `ObservabilityChoice.Firebase` is selected and the `CrashReporter`
+ * Invoked once, lazily, when `firebaseObservabilityModule` is installed and the `CrashReporter`
  * binding is first resolved (see [firebaseObservabilityModule]). Safe to call before the consumer
  * calls `FirebaseApp.configure()`: the hook only needs Crashlytics live at crash time.
  */

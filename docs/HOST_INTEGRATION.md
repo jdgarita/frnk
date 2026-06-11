@@ -53,25 +53,36 @@ val navigator: Navigator = { route ->
 }
 ```
 
-## 4. Pick a backend (Firebase XOR Supabase)
+## 4. Bootstrap Koin with an explicit module list
 
-Include exactly one of the backend impl modules in your host's dependencies and pass
-its Koin module to `startKoin`. Importing both will fail at Koin start with a duplicate
-binding for `AuthService`/`AnalyticsTracker`/`RemoteData` — by design.
+There is no backend/observability/monetization switch — the host passes exactly the toolkit
+modules it wants to `initializeFrnk` (`:core-di`, package `dev.jdgarita.frnk.di`). Unwanted
+capabilities are simply not installed, so their bindings never appear in the graph.
 
 ```kotlin
-startKoin {
-    modules(
-        toolkitCoreModules() +
+// Application.onCreate (Android). iOS calls the common overload (no context param).
+initializeFrnk(
+    context = this,
+    modules = frnkUiModules() +                  // :ui-app — scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
-            firebaseBackendModule,   // OR supabaseBackendModule, never both
-            revenueCatModule,
-            hostDatabaseModule,
-            hostFeatureModules,
-        )
-    )
-}
+            databaseModule,                      // :shared-database-impl — SQLDelight driver + KeyValueStore
+            firebaseBackendModule,               // :shared:backend:firebase — remote data (optional)
+            firebaseObservabilityModule,         // or noopObservabilityModule (:shared:backend:api)
+            // Monetization stack (optional — omit all three to run without entitlements):
+            revenueCatModule,                    // :shared-monetization-revenuecat — EntitlementProvider
+            monetizationModule,                  // :shared-monetization-api — EntitlementManager/FeatureGate
+            paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
+        ) + hostModules,
+)
 ```
+
+The Android overload also sets `DatabaseContext.application` and registers `androidContext(...)`,
+so the section-1 context line is only needed if you bypass `initializeFrnk`. After bootstrap,
+`FrnkAppScaffold(appName, appVersion) { /* home items */ }` (`:ui-app`) is the batteries-included
+app root; it fails fast with an explanation if `initializeFrnk` didn't run.
+
+Install exactly one observability module (`firebaseObservabilityModule` XOR
+`noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`.
 
 ## 5. Custom analytics
 
@@ -82,3 +93,65 @@ through whichever `AnalyticsTracker` is bound. Push your own events through the 
 val analytics: AnalyticsTracker by inject()
 analytics.trackCustom("Recipe_Saved", mapOf("recipe_id" to id))
 ```
+
+## 6. iOS: build your own umbrella framework
+
+frnk publishes **no** prebuilt XCFramework (the old `FrnkKit` died with the `:iosApp` aggregator).
+An iOS host adds a small KMP "shared" module in its own repo that `api()`-depends on the frnk
+modules it uses, `export(...)`s them from an `XCFramework("<YourAppKit>")`, and links that from
+Xcode — exactly what the demo does with `DemoKit` (`shared/shared-demo/build.gradle.kts` is the
+worked example). Two rules carry over from the old packaging:
+
+- `isStatic = true` + `linkerOpts("-undefined", "dynamic_lookup")` on the framework — bundled impls
+  (`shared-monetization-revenuecat`, `:shared:backend:firebase`) reference native iOS SDKs
+  (purchases-ios, Firebase) that **your app** supplies via SPM/CocoaPods; deferred symbol
+  resolution lets the framework link without them.
+- Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native
+  dep list.
+
+### RevenueCat consumer setup
+
+The toolkit never calls `Purchases.configure(...)`; the consumer app must:
+
+1. Add the **`RevenueCat`** Swift package (`github.com/RevenueCat/purchases-ios`, a 5.x compatible
+   with `purchases-kmp` — e.g. `from: 5.58.0`) via SPM. **Add only the `RevenueCat` product** —
+   skip `RevenueCatUI` (frnk ships its own Compose paywall), `ReceiptParser`, and
+   `RevenueCat_CustomEntitlementComputation` (mutually-exclusive alternate build).
+2. Call `Purchases.configure(withAPIKey:)` on launch before using the gate — a RevenueCat
+   **Test Store** `test_…` key for testing (project-level, same key works on iOS and Android), the
+   platform's production key (`appl_…` / `goog_…`) for release.
+3. Ensure the dashboard entitlement identifier matches `RevenueCatConfig.proEntitlementId`
+   (default `"pro"`); override the `RevenueCatConfig` Koin binding if it differs.
+
+Until configured, `EntitlementManager` degrades to a safe no-op (`isPro == false`) — every SDK
+call is `runCatching`-wrapped.
+
+### Crashlytics setup (do this for every new iOS app)
+
+> **Claude: when the user is creating/scaffolding a new iOS app on frnk and wants crash reporting,
+> walk them through this checklist.** The toolkit cannot wire any of this — it's per-app Xcode
+> setup. Skipping step 4 is the #1 reason "crashes don't show up in Crashlytics."
+
+Your umbrella framework is static, so frnk's Kotlin symbols link into the **app binary**.
+Installing `firebaseObservabilityModule` adds the CrashKiOS hook that turns an uncaught Kotlin
+exception into a Crashlytics report — but Crashlytics still needs the matching **dSYM**:
+
+1. **Add Firebase** to the Xcode project — Firebase Apple SDK via SPM (`FirebaseCrashlytics`
+   product) or CocoaPods — and add the app's `GoogleService-Info.plist` to the target.
+2. **Configure + install the hook** early at launch: `FirebaseApp.configure()` in Swift, then the
+   Kotlin bootstrap with `firebaseObservabilityModule` in the module list.
+3. **Confirm Release builds emit dSYMs** — `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym` (Xcode's
+   Release default; Debug defaults to `dwarf` = **no dSYM**).
+4. **Upload dSYMs to Crashlytics** — add the Crashlytics **run-script build phase** so every
+   archive uploads automatically (SPM path):
+   ```
+   "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+   ```
+   (`iosDemoApp` has a working example of this build phase — copy its shape.)
+
+KMP specifics: because the umbrella framework is **static**, your app's own dSYM already contains
+frnk's Kotlin frames — no separate Kotlin-framework dSYM step, and no CrashKiOS `crashlyticslink`
+Gradle plugin (that's only for *dynamic* frameworks). A crash showing as **"unprocessed — upload
+1 dSYM file"** means no matching dSYM was uploaded — usually a Debug build or a missing
+run-script. Crashes upload on the **next launch**; the first-ever crash can take several minutes
+to surface. Details in `shared/backend/firebase/CLAUDE.md`.

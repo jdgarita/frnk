@@ -5,16 +5,15 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import dev.jdgarita.frnk.shared.FrnkAppScaffold
+import dev.jdgarita.frnk.ui.app.FrnkAppScaffold
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.scaffolds.HomeEffect
 import dev.jdgarita.frnk.utils.Frnk
 
 /**
- * Device smoke for **`FrnkAppScaffold`** — the `:shared` batteries-included app root that
- * `:shared-demo` can't exercise (it deliberately doesn't depend on `:shared`). Boots the scaffold
- * over the Koin graph `DemoApplication` already started (which satisfies the scaffold's
+ * Device smoke for **`FrnkAppScaffold`** — the `:ui-app` batteries-included app root. Boots the
+ * scaffold over the Koin graph `DemoApplication` already started (which satisfies the scaffold's
  * Koin-started assertion; the fake `EntitlementManager` drives the live Free↔Pro Settings catalogue
  * and the auto-mounted `ToolkitRoute.Paywall`).
  *

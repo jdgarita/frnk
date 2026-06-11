@@ -487,7 +487,7 @@ private fun HomeTabContent(
                 FrnkTextState.BodySmall(
                     text =
                         "Force crash throws an UNHANDLED Kotlin exception — on iOS the CrashKiOS hook " +
-                            "(installed with ObservabilityChoice.Firebase) reports it symbolicated; on Android " +
+                            "(installed with firebaseObservabilityModule) reports it symbolicated; on Android " +
                             "the Crashlytics SDK catches it. This terminates the app.",
                     color = colorOnSurfaceVariant,
                 ),

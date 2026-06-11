@@ -15,6 +15,8 @@ kotlin {
         commonMain.dependencies {
             api(project(":shared-utils"))
             api(libs.findLibrary("kotlinx-coroutines-core").get())
+            // noopObservabilityModule returns a Koin Module — part of the public surface.
+            api(libs.findLibrary("koin-core").get())
         }
     }
 }
