@@ -1,9 +1,9 @@
 # shared-monetization-ui
 
 Monetization **UI** for the toolkit (BACKLOG P3-3): the basic paywall, its toolkit-owned navigation entry,
-and the Settings monetization wiring. It lives in its own module so the design system (`:shared-ui-atoms`)
+and the Settings monetization wiring. It lives in its own module so the design system (`:ui-theme`/`:ui-components`/`:ui-scaffolds`)
 stays monetization-agnostic — this is the one place that depends on **both** the design system and the
-monetization domain (`:shared-monetization-api`).
+monetization domain (`:monetization-api`).
 
 ## Contents
 
@@ -49,13 +49,13 @@ Two always-on paywall entry points the demo wires (and real hosts copy):
 ## Rules
 
 - **No billing SDK here** — this is UI + the frnk `EntitlementManager`/`FeatureGate` only. RevenueCat stays
-  in `:shared-monetization-revenuecat`. Pure Kotlin/Compose, so umbrella XCFrameworks stay clean.
-- Reads styling from `Theme[...]` tokens (paywall strings/icons live in `:shared-ui-atoms` `FrnkStrings`/
+  in `:monetization-impl`. Pure Kotlin/Compose, so umbrella XCFrameworks stay clean.
+- Reads styling from `Theme[...]` tokens (paywall strings/icons live in `:ui-theme` `FrnkStrings`/
   `FrnkIcons` — `stringAppName`, `stringPaywall*`, `stringProName`, `iconUpgrade`, `iconCheck`).
 
 ## Dependencies
 
-- `api(projects.sharedUiAtoms)`, `api(projects.sharedMonetizationApi)` (transitively `:shared-ui-api` for
-  `ToolkitRoute` + the nav3 back-stack helpers, and the nav3 engine via atoms). `commonTest`: `kotlin.test` +
+- `api(projects.uiScaffolds)`, `api(projects.monetizationApi)` (transitively `:core-nav` for
+  `ToolkitRoute` + the nav3 back-stack helpers, and the nav3 engine via `:ui-scaffolds`). `commonTest`: `kotlin.test` +
   `kotlinx.coroutines.test`.
-- Plugins: compose (+ hosttest). No `kotlin-serialization` — the nav3 route serializers live in `:shared-ui-api`.
+- Plugins: compose (+ hosttest). No `kotlin-serialization` — the nav3 route serializers live in `:core-nav`.

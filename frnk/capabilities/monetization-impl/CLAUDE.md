@@ -1,6 +1,6 @@
-# shared-monetization-revenuecat
+# monetization-impl
 
-RevenueCat implementation of `:shared-monetization-api`. Installed at runtime by passing `revenueCatModule` (with `monetizationModule` + `paywallScaffoldModule`) to `initializeFrnk(modules = …)`.
+RevenueCat implementation of `:monetization-api`. Installed at runtime by passing `revenueCatModule` (with `monetizationModule` + `paywallScaffoldModule`) to `initializeFrnk(modules = …)`.
 
 ## Contents
 
@@ -12,14 +12,14 @@ RevenueCat implementation of `:shared-monetization-api`. Installed at runtime by
   mapping `PurchasesTransactionException.userCancelled` → `MonetizationError.UserCancelled`; `restore()` reads
   `awaitRestoreResult()`. Exports the pure, SDK-free `isProFor(...)` mapper (unit-testable without the static
   `Purchases.sharedInstance`). **It does NOT own the Free/Pro logic or god mode** — that's
-  `DefaultEntitlementManager` (`shared-monetization-api`), which wraps this provider.
+  `DefaultEntitlementManager` (`:monetization-api`), which wraps this provider.
 - `RevenueCatConfig.kt` — `data class RevenueCatConfig(proEntitlementId = "pro")`. The entitlement
   identifier that means "Pro" (`customerInfo.entitlements[proEntitlementId]?.isActive == true`). Hosts whose
   dashboard uses a different id override `single { RevenueCatConfig(...) }` via Koin. Dashboard display name
   should be `"<App> Pro"`.
 - `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`**
   (+ `RevenueCatConfig`) **only**; `EntitlementManager` + `FeatureGate` come from `monetizationModule`.
-  `:shared/FrnkModules.kt` adds both.
+  The host's `initializeFrnk(...)` module list installs both.
 
 ## Configuration is the host's job (not the toolkit's)
 
@@ -42,7 +42,7 @@ If you change anything that touches this contract — e.g. adding a new cinterop
 
 ## Rules
 
-- All RevenueCat imports stay in this module. Feature code (and `:shared-monetization-api`) must not import `com.revenuecat.*`.
+- All RevenueCat imports stay in this module. Feature code (and `:monetization-api`) must not import `com.revenuecat.*`.
 - Return `AppResult` from public methods; wrap RC `Error` results into `AppResult.Failure` with a domain `AppError`.
 
 ## Consumer checklist (iOS)
@@ -55,7 +55,7 @@ If you change anything that touches this contract — e.g. adding a new cinterop
 
 ## Dependencies
 
-- `api(projects.sharedMonetizationApi)`.
+- `api(projects.monetizationApi)`.
 - `implementation`: `koin.core`, `revenuecat.{core,result,datetime}`.
 - `commonTest`: `kotlin.test` (host tests opted in via `kotlin { android { withHostTest {} } }`;
-  run with `./gradlew :shared-monetization-revenuecat:testAndroidHostTest`).
+  run with `./gradlew :monetization-impl:testAndroidHostTest`).

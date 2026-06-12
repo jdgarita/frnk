@@ -2,12 +2,12 @@
 
 The toolkit's **MVI engine** — pure-Kotlin contracts + abstract base, plus the `UiText` localization
 wrapper. **No Compose here** — the Compose binding (`FrnkMviScreen`, `EffectCollector`) lives in
-`:shared-ui-atoms`. That separation is deliberate so a feature ViewModel can compile without dragging in
+`:ui-scaffolds`. That separation is deliberate so a feature ViewModel can compile without dragging in
 `compose.runtime`.
 
 Extracted from the old `:shared-ui-api` at restructure Stage 6 (split into `:core-mvi` + `:core-nav` +
-`:haptics`). The `dev.jdgarita.frnk:shared-ui-api` coordinate survives as a src-less facade
-(`frnk/core/ui-api-facade`) that `api()`-re-exports all three until Stage 9. Kotlin packages are
+`:haptics`). The `dev.jdgarita.frnk:shared-ui-api` facade that `api()`-re-exported all three
+(`frnk/core/ui-api-facade`) was deleted at Stage 9. Kotlin packages are
 unchanged (`dev.jdgarita.frnk.ui.mvi`, `dev.jdgarita.frnk.ui`).
 
 ## Contents
@@ -21,4 +21,4 @@ unchanged (`dev.jdgarita.frnk.ui.mvi`, `dev.jdgarita.frnk.ui`).
 - **Vocabulary is `UiIntent`, not `UiAction`.** The marker on disk is `UiIntent`, and the repo's docs (root `CLAUDE.md`, `docs/ARCHITECTURE.md`) use `UiIntent` / `onIntent` consistently. If any external skill or agent prose says "Action" generically, follow the on-disk name.
 - Stick to interfaces and small abstract bases — no concrete repository, no Compose, no third-party UI.
 - `api`-deps: `:shared-utils`, `kotlinx-coroutines`, `androidx.lifecycle.viewmodel` (for the MVI base). Don't add Compose or any backend SDK here.
-- Feature modules that want MVI should depend on **this** module (or the route contract in `:core-nav`) — not on `:shared-ui-atoms` — if they don't need composables.
+- Feature modules that want MVI should depend on **this** module (or the route contract in `:core-nav`) — not on `:ui-scaffolds` — if they don't need composables.

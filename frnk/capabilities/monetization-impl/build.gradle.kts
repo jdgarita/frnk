@@ -8,7 +8,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.sharedMonetizationApi)
+            api(projects.monetizationApi)
             implementation(libs.koin.core)
             implementation(libs.revenuecat.core)
             implementation(libs.revenuecat.result)

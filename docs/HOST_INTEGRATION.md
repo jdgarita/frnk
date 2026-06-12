@@ -75,8 +75,8 @@ initializeFrnk(
             firebaseBackendModule,               // :analytics-impl — remote data (optional)
             firebaseObservabilityModule,         // or noopObservabilityModule (:analytics-api)
             // Monetization stack (optional — omit all three to run without entitlements):
-            revenueCatModule,                    // :shared-monetization-revenuecat — EntitlementProvider
-            monetizationModule,                  // :shared-monetization-api — EntitlementManager/FeatureGate
+            revenueCatModule,                    // :monetization-impl — EntitlementProvider
+            monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
             paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
         ) + hostModules,
 )
@@ -109,7 +109,7 @@ Xcode — exactly what the demo does with `DemoKit` (`demo/shared/build.gradle.k
 worked example). Two rules carry over from the old packaging:
 
 - `isStatic = true` + `linkerOpts("-undefined", "dynamic_lookup")` on the framework — bundled impls
-  (`shared-monetization-revenuecat`, `:analytics-impl`) reference native iOS SDKs
+  (`:monetization-impl`, `:analytics-impl`) reference native iOS SDKs
   (purchases-ios, Firebase) that **your app** supplies via SPM/CocoaPods; deferred symbol
   resolution lets the framework link without them.
 - Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native

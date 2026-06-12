@@ -352,7 +352,7 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
 - Verify `monetization-ui` deps are exactly `{ui-scaffolds, monetization-api}` after Stage 7.
 - still impact: none.
 
-### ☐ Stage 9 — The coordinate flip (the only still-churn stage)  — risk: medium, mechanical
+### ☑ Stage 9 — The coordinate flip (the only still-churn stage)  — risk: medium, mechanical — **landed 2026-06-11**
 
 - frnk: delete facades `:shared-ui-api`, `:shared-ui-atoms`; rename `:shared-ui-nav` →
   `:ui-bottom-nav`, `:shared-monetization-api` → `:monetization-api`,

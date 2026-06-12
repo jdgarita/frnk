@@ -1,8 +1,8 @@
-# shared-ui-nav
+# ui-bottom-nav
 
 The toolkit's **platform-adaptive bottom navigation** module: a genuine native UIKit `UITabBar` on iOS and
 a Material3 `NavigationBar` on Android, plus the default scaffold + tab builder that wire it up. Depends on
-`shared-ui-atoms` (tokens, theme, `BottomNavScaffoldState`/`BottomNavViewModel`, `FrnkBottomNavItem`).
+`:ui-scaffolds` (tokens, theme, `BottomNavScaffoldState`/`BottomNavViewModel`, `FrnkBottomNavItem`).
 
 ## POC: two bar engines (A/B), selectable at runtime
 
@@ -22,8 +22,8 @@ implementations live (compare UX/performance before committing to one):
   surfaced to hosts via the scaffold's `onPrimaryAction` callback — the host decides what tapping it does,
   **per screen** (re-skin per surface by passing a custom `primaryAction`). It shows only on this engine
   and only when an action is wired. **Screen routing:** pass `primaryActionRegistry`
-  (`FrnkPrimaryActionRegistry`, `shared-ui-api`) and the currently active screen claims the button via
-  `FrnkPrimaryActionHandler { onIntent(...) }` (`shared-ui-atoms`) — the scaffold provides the registry
+  (`FrnkPrimaryActionRegistry`, `:core-nav`) and the currently active screen claims the button via
+  `FrnkPrimaryActionHandler { onIntent(...) }` (`:ui-scaffolds`) — the scaffold provides the registry
   through `LocalFrnkPrimaryActionRegistry`, a screen claim wins over `onPrimaryAction` (the host-level
   fallback), and the button hides when neither is wired. `FrnkAppShell` wires the registry automatically.
 
@@ -58,7 +58,7 @@ this is a genuine adoption blocker for shipping the engine from a toolkit librar
 exact path the generated `Res` reads, so the runtime `AssetManager` finds it. See
 `demo/android-app/src/main/assets/composeResources/README.md`. This is a hack — a real host would have to
 copy these assets too, which is why it counts against adopting this library in the toolkit as-is. The Calf
-engine (and `:shared-ui-atoms`' `ImageVector` pill) have no such issue. Proper resolution would need an
+engine (and `:ui-components`' `ImageVector` pill) have no such issue. Proper resolution would need an
 AGP/Compose-resources fix for the KMP-Android-library variant, or generating the icons a non-Compose-resources
 way.
 
@@ -67,8 +67,8 @@ way.
 It is the **one place in the toolkit that intentionally takes a Material3 dependency.** The adaptive bar is
 built on [Calf](https://github.com/MohamedRejeb/Calf)'s `AdaptiveNavigationBar`, which renders the native
 `UITabBar` on iOS and a Material3 `NavigationBar` elsewhere — and Calf hard-depends on `compose.material3`.
-Isolating it here keeps that dependency to a single, named module rather than smeared across `shared-ui-atoms`
-(which stays Material-free, `compose-unstyled` only). `:ui-app` `api`-depends on this module, so **Material3 + Calf reach every consumer of the nav layer** — a deliberate, host-approved trade
+Isolating it here keeps that dependency to a single, named module rather than smeared across the design-system
+modules `:ui-theme`/`:ui-components`/`:ui-scaffolds` (which stay Material-free, `compose-unstyled` only). `:ui-app` `api`-depends on this module, so **Material3 + Calf reach every consumer of the nav layer** — a deliberate, host-approved trade
 (the alternative, a hand-rolled UIKit `UITabBar` interop with zero Material3, was considered and declined in
 favour of the maintained component; see `docs/spikes/adaptive-bottom-nav.md`).
 
@@ -110,7 +110,7 @@ consumer's existing `-undefined dynamic_lookup`.
   its native translucent material, the desired native look there.) (Caveat: iOS 26 "Liquid Glass" ignores the
   *unselected* tint; the selected brand tint still applies.) Use directly only when wiring your own
   selected-tab state / navigation (as the demo does); most hosts use the scaffold. For the Material-free
-  floating pill, use `FrnkBottomNavBar` in `shared-ui-atoms` instead.
+  floating pill, use `FrnkBottomNavBar` in `:ui-components` instead.
 - `FrnkAdaptiveBottomNavScaffold.kt` — `FrnkAdaptiveBottomNavScaffold` (VM-backed) + `…Content` (stateless).
   The **default** scaffold: owns which tab is selected (reusing `BottomNavViewModel` + `BottomNavScaffoldState`
   from atoms, so `BottomNavEffect.TabSelected` behaves identically to the pill `BottomNavScaffold`) and pins
@@ -124,10 +124,10 @@ consumer's existing `-undefined dynamic_lookup`.
   (back-from-non-home-root→home), full-screen bar hiding (`hideBarFor`), and the bottom-inset bookkeeping
   (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows, so screens on
   `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically — no per-screen `bottomInset` threading).
-  **The host still owns `tabbed`** (`rememberFrnkTabbedBackStacks(navTabs = …)` in atoms) and the same
+  **The host still owns `tabbed`** (`rememberFrnkTabbedBackStacks(navTabs = …)` in `:ui-scaffolds`) and the same
   (remembered) `List<FrnkNavTab>`, so it can drive effect-based navigation from its own `EffectCollector` —
   this scaffold structures/renders, the host owns state. `hideBarFor` **defaults to
-  `{ it is FrnkFullScreenRoute }`** (the marker in `:shared-ui-api`), so full-screen routes declare the
+  `{ it is FrnkFullScreenRoute }`** (the marker in `:core-nav`), so full-screen routes declare the
   intent on themselves rather than the host keeping a predicate in sync with `entryProvider`; override only
   for ad-hoc rules. `entryProvider` defaults to `koinEntryProvider()` (pair with the `navigation<Route>`
   DSL); pass an inline `entryProvider { entry<…> { … } }` when screens share one host-scoped VM (the demo
@@ -155,13 +155,13 @@ consumer's existing `-undefined dynamic_lookup`.
 
 ## Dependencies
 
-- `api(projects.sharedUiAtoms)` — tokens, theme, `BottomNavScaffoldState`/VM, `FrnkBottomNavItem`, `EffectCollector`.
+- `api(projects.uiScaffolds)` — tokens, theme, `BottomNavScaffoldState`/VM, `FrnkBottomNavItem`, `EffectCollector`.
 - `api(compose.runtime / foundation / ui)`.
 - `implementation(libs.calf.ui)` + `implementation(compose.material3)` — the adaptive bar's engine. **The sole
   Material3 dependency in the toolkit.** Don't add Material3 to any other shared module.
 
 ## Rules
 
-- Material3 lives **here only**. Other modules (especially `shared-ui-atoms`) stay `compose-unstyled`.
+- Material3 lives **here only**. Other modules (especially `:ui-theme`/`:ui-components`/`:ui-scaffolds`) stay `compose-unstyled`.
 - New adaptive-nav surface goes in `ui/bottomnav/` with the same conventions as atoms/scaffolds (`@Immutable`
   state where applicable, callbacks before `modifier`, tokens-only styling).

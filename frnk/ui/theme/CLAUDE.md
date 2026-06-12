@@ -6,8 +6,8 @@ Extracted from `:shared-ui-atoms` at restructure **Stage 7a** as the bottom of t
 unopinionated — **not** Material3. Kotlin package is unchanged (`dev.jdgarita.frnk.ui.theme` /
 `dev.jdgarita.frnk.ui.tokens`).
 
-While `:shared-ui-atoms` remains a facade (until Stage 9), downstream consumers reach this module
-transitively through it; new code can depend on `:ui-theme` directly.
+The `:shared-ui-atoms` facade that used to re-export it was deleted at Stage 9; consumers depend on
+`:ui-theme` directly.
 
 ## Contents
 

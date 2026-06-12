@@ -76,7 +76,7 @@ dependencies {
     // arrive transitively via :shared-demo's api() deps.
     implementation(projects.uiApp) // FrnkAppScaffold (AppScaffoldSmokeActivity)
     implementation(projects.analyticsImpl) // firebaseObservabilityModule override
-    implementation(projects.sharedMonetizationRevenuecat) // revenueCatModule override
+    implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real SqlDriverFactory for DemoDB
     implementation(projects.coreDi) // DatabaseContext seam (the demo bypasses initializeFrnk)
     // Shared demo Composable + MVI + Koin module (also consumed by iosDemoApp).

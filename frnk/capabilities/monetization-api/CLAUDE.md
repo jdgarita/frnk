@@ -1,4 +1,4 @@
-# shared-monetization-api
+# monetization-api
 
 Pure-interface monetization contract. No RevenueCat, no Play Billing, no StoreKit.
 
@@ -30,9 +30,9 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 
 ## Rules
 
-- **No SDK dependencies.** RevenueCat artifacts live in `:shared-monetization-revenuecat`. A new provider
-  (Adapty, …) implements `EntitlementProvider` in its own `*-impl` module, bound in `:shared`;
-  `monetizationModule` is unchanged.
+- **No SDK dependencies.** RevenueCat artifacts live in `:monetization-impl`. A new provider
+  (Adapty, …) implements `EntitlementProvider` in its own `*-impl` module, installed by the host's
+  `initializeFrnk(...)` module list; `monetizationModule` is unchanged.
 - **No DI-bootstrap seam here.** Host-facing Koin assembly lives entirely in `:core-di`
   (`initializeFrnk` + `requireFrnkKoin`); the vestigial `di/ToolkitDiModule.kt` expect/actual
   (both actuals returned `emptyList()`) was deleted at restructure Stage 8.

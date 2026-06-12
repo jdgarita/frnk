@@ -14,10 +14,10 @@
         │                 │
  ui-theme           data-db-impl
    ▲ ui-components   data-prefs-impl
-      ▲ ui-scaffolds                 shared-monetization-api
+      ▲ ui-scaffolds                 monetization-api
  (Stage-7 split of                       ▲     (EntitlementProvider contract +
-  shared-ui-atoms;                        │      frnk-owned EntitlementManager/god mode)
-  facade until S9)                        ├─── shared-monetization-revenuecat (EntitlementProvider impl)
+  shared-ui-atoms,                        │      frnk-owned EntitlementManager/god mode)
+  facade deleted S9)                      ├─── monetization-impl (EntitlementProvider impl)
                                           └─── shared-monetization-ui (paywall + nav + settings handler;
                                                 also depends on ui-scaffolds)
 
@@ -26,7 +26,7 @@
                           ┌──────────────┴──────────────┐
                           │           ui-app            │
                           │  FrnkAppScaffold (over      │
-                          │  shared-ui-nav's            │
+                          │  ui-bottom-nav's            │
                           │  FrnkAppShell) +            │
                           │  frnkUiModules()            │
                           │  — no *-impl compile deps   │
@@ -52,7 +52,7 @@ are demo-only — a parity layer for the two smoke harnesses (`androidDemoApp`,
 `:shared-demo` deliberately depends only on the `*-api` modules plus
 `:ui-theme`/`:ui-components`/`:ui-scaffolds` (the `shared-ui-atoms` successors —
 re-pointed at Stage 7 because Kotlin/Native `export` is non-transitive),
-`shared-ui-nav`, and `shared-monetization-ui` — no `*-impl`
+`ui-bottom-nav`, and `shared-monetization-ui` — no `*-impl`
 modules in its common surface. This keeps
 `DemoKit.xcframework` free of the Firebase / RevenueCat / SQLite native cinterop
 references that would otherwise force iosDemoApp to ship `PurchasesHybridCommon`
@@ -67,7 +67,7 @@ clean; `androidDemoApp` overrides the fake with the real path (`databaseModule` 
 **Entitlement layering (P3-3).** Free/Pro is frnk-owned and independent of any
 billing SDK: an `EntitlementProvider` (RevenueCat, or the demo fake) supplies
 purchased state + offerings + purchase/restore, and the pure-Kotlin
-`DefaultEntitlementManager` (`shared-monetization-api`, bound by
+`DefaultEntitlementManager` (`:monetization-api`, bound by
 `monetizationModule`) wraps it and overlays a persisted **god mode** override —
 so a developer can force Pro even in a release build. `FeatureGate` reads the
 manager. The basic paywall + its toolkit-owned route (`frnkPaywallDestination`)
@@ -80,14 +80,14 @@ Consumers face the modules directly: Android hosts declare the `dev.jdgarita.frn
 
 ### On-disk layout vs Gradle paths
 
-The diagram above names Gradle projects, not folders. Since restructure Stage 3, modules live at their final layered locations — `frnk/core/*`, `frnk/data/*`, `frnk/ui/*`, `frnk/capabilities/*`, and `demo/{shared,android-app,ios-app}` — while keeping their current flat Gradle paths via `projectDir` remaps in `settings.gradle.kts` (`:ui-components` at `frnk/ui/components`, `projects.uiComponents`; `:ui-theme` at `frnk/ui/theme`; `:ui-scaffolds` at `frnk/ui/scaffolds`; the `:shared-ui-atoms` facade at `frnk/ui/atoms-facade`; `:ui-app` at `frnk/ui/app`, `projects.uiApp`; see `docs/RESTRUCTURE_PLAN.md` §3 for the full map — the remaining project renames land at Stages 9/10). The analytics pair is already at its final flat names since Stage 5 (OQ-6): `:analytics-api` / `:analytics-impl` (accessors `projects.analyticsApi` / `projects.analyticsImpl`); the old nested `:shared:backend:*` paths and their `:shared`/`:shared:backend` hull parents are gone.
+The diagram above names Gradle projects, not folders. Since restructure Stage 3, modules live at their final layered locations — `frnk/core/*`, `frnk/data/*`, `frnk/ui/*`, `frnk/capabilities/*`, and `demo/{shared,android-app,ios-app}` — while keeping their current flat Gradle paths via `projectDir` remaps in `settings.gradle.kts` (`:ui-components` at `frnk/ui/components`, `projects.uiComponents`; `:ui-theme` at `frnk/ui/theme`; `:ui-scaffolds` at `frnk/ui/scaffolds`; `:ui-app` at `frnk/ui/app`, `projects.uiApp`; `:ui-bottom-nav` at `frnk/ui/bottom-nav`; see `docs/RESTRUCTURE_PLAN.md` §3 for the full map). The Stage 9 coordinate flip renamed `:shared-ui-nav` → `:ui-bottom-nav`, `:shared-monetization-api` → `:monetization-api`, `:shared-monetization-revenuecat` → `:monetization-impl`, and deleted the src-less `:shared-ui-api` + `:shared-ui-atoms` facades; the remaining `:shared-*` renames land at Stage 10. The analytics pair is already at its final flat names since Stage 5 (OQ-6): `:analytics-api` / `:analytics-impl` (accessors `projects.analyticsApi` / `projects.analyticsImpl`); the old nested `:shared:backend:*` paths and their `:shared`/`:shared:backend` hull parents are gone.
 
 ### Why api/impl split
 
 Each domain that pulls in a third-party SDK is split:
 
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
-- **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `shared-monetization-revenuecat`) — concrete bindings exposed as Koin modules.
+- **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`) — concrete bindings exposed as Koin modules.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -137,7 +137,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 
 ## iOS native dependency contract
 
-`shared-monetization-revenuecat` and `:analytics-impl` cinterop with the native RevenueCat (purchases-ios) and Firebase SDKs. The toolkit does NOT ship those native frameworks — the consumer Xcode project brings them in via CocoaPods or SPM. An umbrella framework that bundles these modules (the demo's `DemoKit`; a host's own XCFramework) uses `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links (see `docs/HOST_INTEGRATION.md` §6). Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
+`:monetization-impl` and `:analytics-impl` cinterop with the native RevenueCat (purchases-ios) and Firebase SDKs. The toolkit does NOT ship those native frameworks — the consumer Xcode project brings them in via CocoaPods or SPM. An umbrella framework that bundles these modules (the demo's `DemoKit`; a host's own XCFramework) uses `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links (see `docs/HOST_INTEGRATION.md` §6). Both `androidDemoApp` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
 
 ## Consuming via composite build (includeBuild)
 
@@ -211,8 +211,8 @@ The toolkit-owned navigation layer is built on **AndroidX Navigation3** (type-sa
 
 - **`:core-nav`** (`ui/nav/`, split out of `shared-ui-api` at restructure Stage 6) holds the Compose-free contract (the nav3 *runtime* is pure Kotlin/MP): `ToolkitRoute` — a `@Serializable sealed interface ToolkitRoute : NavKey` of default routes — the back-stack mutation helpers (`NavBackStack<NavKey>.navigateTo(route, popScreen?, singleTop=true)` / `back()` / `clearAndNavigateTo(route)`), `frnkNavConfiguration(hostRoutes)` (builds the `SavedStateConfiguration` that persists/restores the back stack across config change + process death, registering `ToolkitRoute` plus the host's own polymorphic routes), the `FrnkPendingRouteRequest` deep-link signal, and the `FrnkFullScreenRoute` marker (a route implementing it hides the tabbed scaffold's bottom bar — `FrnkTabbedNavScaffold`'s default `hideBarFor`). Routes are `@Serializable` (needs `kotlinx-serialization-core` — **not** `-json`; nav3 encodes routes via savedstate's `SavedStateEncoder`) and depend on `androidx-navigation3-runtime` (`NavKey`/`NavBackStack`). No Compose here, so feature ViewModels and effect handlers compile without `compose.runtime`.
 - **`:ui-scaffolds`** (`ui/nav/`, split out of `shared-ui-atoms` at restructure Stage 7) holds the Compose bindings: `rememberFrnkNavBackStack(config, start)` (a `rememberSaveable` `NavBackStack`), `FrnkNavDisplay(backStack, entryProvider, …)` (over nav3's `NavDisplay`, baking in the saveable-state + ViewModel-store entry decorators and the slide transitions), `rememberFrnkTabbedBackStacks(config, navTabs)` (per-tab back stacks for the **multiple-back-stack** bottom-nav pattern) + `FrnkTabbedBackHandler` (back-from-non-home-root → home), and `FrnkNavTab` (the unified per-tab declaration: key + root + icon + label). `entryProvider` defaults to Koin's `koinEntryProvider()` (pair with the `navigation<Route> { … }` DSL); pass an inline `entryProvider { entry<Route> { … } }` to register destinations directly.
-- **`shared-ui-nav`** (`ui/bottomnav/`) holds the one-call tabbed scaffold: `FrnkTabbedNavScaffold(tabbed, tabs, hideBarFor, entryProvider)` wraps the `FrnkNavDisplay` + the persistent platform-adaptive bottom bar + tab switching / re-tap-to-root + `FrnkTabbedBackHandler` + full-screen bar hiding (`hideBarFor` defaults to `{ it is FrnkFullScreenRoute }`) + the bottom-inset (provided via `LocalFrnkBottomBarInset`, so screens on `FrnkScreenScaffold`/`FrnkMviScreen` reserve the bar automatically). It renders the Material3 adaptive bar by design; for multiple-back-stack nav3 without Material3, hand-wire the primitives with a custom bar. The simpler `FrnkAdaptiveBottomNavScaffold` is the index-based variant (no per-tab back stacks) for single-screen tabs. Its `primaryActionRegistry` param routes the bar's primary-action button to the **currently active screen** (`FrnkPrimaryActionRegistry` in `:core-nav`, claimed via `FrnkPrimaryActionHandler` in `:ui-scaffolds`; the host-level `onPrimaryAction` stays the fallback, the button hides when neither is wired).
-- **`shared-ui-nav`** (`ui/app/`) also holds **`FrnkAppShell`** — the one-call **app shell** over everything above: theme wrap, nav config, Home + middle + Settings tabs with per-tab back stacks, built-in Home (`HomeScreen` content slot) / Settings (default catalogue + `extraSections`) / optional Onboarding destinations, deep-links, and the primary-action registry; each host extension point is handed a `FrnkAppScope` (`navigateTo`/`back` + registry). **`:ui-app`** layers **`FrnkAppScaffold`** on top (Koin fail-fast assertion via `:core-di`'s `requireFrnkKoin()`, live `EntitlementManager`-driven Settings, `rememberFrnkSettingsHandler`, auto-mounted `ToolkitRoute.Paywall`) — the host-facing "whole app in one call" entry point (`HOST_ALIGNMENT.md` §3b); Android hosts bootstrap with the androidMain `initializeFrnk(context, modules)` overload (`:core-di`) first.
+- **`ui-bottom-nav`** (`ui/bottomnav/`) holds the one-call tabbed scaffold: `FrnkTabbedNavScaffold(tabbed, tabs, hideBarFor, entryProvider)` wraps the `FrnkNavDisplay` + the persistent platform-adaptive bottom bar + tab switching / re-tap-to-root + `FrnkTabbedBackHandler` + full-screen bar hiding (`hideBarFor` defaults to `{ it is FrnkFullScreenRoute }`) + the bottom-inset (provided via `LocalFrnkBottomBarInset`, so screens on `FrnkScreenScaffold`/`FrnkMviScreen` reserve the bar automatically). It renders the Material3 adaptive bar by design; for multiple-back-stack nav3 without Material3, hand-wire the primitives with a custom bar. The simpler `FrnkAdaptiveBottomNavScaffold` is the index-based variant (no per-tab back stacks) for single-screen tabs. Its `primaryActionRegistry` param routes the bar's primary-action button to the **currently active screen** (`FrnkPrimaryActionRegistry` in `:core-nav`, claimed via `FrnkPrimaryActionHandler` in `:ui-scaffolds`; the host-level `onPrimaryAction` stays the fallback, the button hides when neither is wired).
+- **`ui-bottom-nav`** (`ui/app/`) also holds **`FrnkAppShell`** — the one-call **app shell** over everything above: theme wrap, nav config, Home + middle + Settings tabs with per-tab back stacks, built-in Home (`HomeScreen` content slot) / Settings (default catalogue + `extraSections`) / optional Onboarding destinations, deep-links, and the primary-action registry; each host extension point is handed a `FrnkAppScope` (`navigateTo`/`back` + registry). **`:ui-app`** layers **`FrnkAppScaffold`** on top (Koin fail-fast assertion via `:core-di`'s `requireFrnkKoin()`, live `EntitlementManager`-driven Settings, `rememberFrnkSettingsHandler`, auto-mounted `ToolkitRoute.Paywall`) — the host-facing "whole app in one call" entry point (`HOST_ALIGNMENT.md` §3b); Android hosts bootstrap with the androidMain `initializeFrnk(context, modules)` overload (`:core-di`) first.
 
 **The toolkit ships the nav display + scaffold machinery; the host owns the back-stack instance** (it creates it via `rememberFrnkNavBackStack` / `rememberFrnkTabbedBackStacks` and passes it in). Navigation is driven by the MVI effect channel: a ViewModel emits a navigation `UiEffect`, and a single `EffectCollector` above the display mutates the host-owned back stack via `navigateTo`/`back`/`clearAndNavigateTo` (collect it in exactly one place — the effect channel is single-consumer). On Android `NavDisplay` consumes the system back button / predictive-back gesture to pop the back stack automatically (the host activity sets `android:enableOnBackInvokedCallback="true"`); on iOS the back-gesture support depends on the Compose Multiplatform runtime, so screens should also carry an on-screen back affordance. `:shared-demo`'s `DemoScreen` is the reference integration — rebuilt over `FrnkAppShell`: the shell supplies the Home/Settings/Onboarding destinations and three bottom-nav tabs (each keeping its own back stack); the demo registers only its middle "Components" tab, the pushed `ComponentDetail(name)`, and the `Paywall` destination.
 

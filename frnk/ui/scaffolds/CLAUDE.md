@@ -4,9 +4,8 @@ The toolkit's **page templates** + the **Compose binding layer** for the MVI and
 Extracted from `:shared-ui-atoms` at restructure **Stage 7b** — the Compose-bearing layer above
 `:ui-components` / below the features and `:ui-bottom-nav`
 (`haptics ← ui-theme ← ui-components ← ui-scaffolds ← ui-bottom-nav ← ui-app`). Kotlin packages
-unchanged (`dev.jdgarita.frnk.ui.{scaffolds,mvi,nav}`). While `:shared-ui-atoms` remains a facade
-(until Stage 9), consumers reach this transitively through it; new code depends on `:ui-scaffolds`
-directly.
+unchanged (`dev.jdgarita.frnk.ui.{scaffolds,mvi,nav}`). The `:shared-ui-atoms` facade that used to
+re-export it was deleted at Stage 9; consumers depend on `:ui-scaffolds` directly.
 
 ## Contents
 

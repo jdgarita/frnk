@@ -7,8 +7,8 @@ restructure **Stage 7a** (it needs a Compose `Vibrator`, so the module now appli
 backend split.
 
 Extracted from the old `:shared-ui-api` at restructure Stage 6 (contract) then completed at Stage 7a
-(engine). The `dev.jdgarita.frnk:shared-ui-api` coordinate survives as a src-less facade re-exporting
-this module until Stage 9. Kotlin package is unchanged (`dev.jdgarita.frnk.ui.haptics`).
+(engine). The `dev.jdgarita.frnk:shared-ui-api` facade that re-exported this module was deleted at
+Stage 9. Kotlin package is unchanged (`dev.jdgarita.frnk.ui.haptics`).
 
 ## Contents
 

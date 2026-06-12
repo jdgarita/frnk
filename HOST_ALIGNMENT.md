@@ -31,7 +31,7 @@ dependencies {
     implementation("dev.jdgarita.frnk:ui-app")                          // FrnkAppScaffold + frnkUiModules() (+ core-di)
     implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
-    implementation("dev.jdgarita.frnk:shared-monetization-revenuecat")  // revenueCatModule (optional)
+    implementation("dev.jdgarita.frnk:monetization-impl")  // revenueCatModule (optional)
     // + :analytics-impl for firebaseObservabilityModule / firebaseBackendModule
 }
 ```
@@ -163,7 +163,7 @@ setContent {
 - Any screen can claim the bar's primary-action button for its lifetime with
   `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button renders on the
   `AdaptiveNavBar` engine; it hides while no screen holds a claim and no host fallback is wired).
-- A module that can't depend on `:ui-app` composes **`FrnkAppShell`** (`:shared-ui-nav`) directly —
+- A module that can't depend on `:ui-app` composes **`FrnkAppShell`** (`:ui-bottom-nav`) directly —
   the same shell minus the monetization batteries; `:shared-demo`'s `DemoScreen` is the reference.
 
 ---

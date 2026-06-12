@@ -15,7 +15,7 @@ kotlin {
             // :shared-ui-atoms facade — post-Stage-7 the deps are exactly {ui-scaffolds, monetization-api}
             // (the Stage 8 precondition).
             api(projects.uiScaffolds)
-            api(projects.sharedMonetizationApi)
+            api(projects.monetizationApi)
         }
     }
 }

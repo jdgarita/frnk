@@ -17,7 +17,11 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            api(projects.sharedUiAtoms)
+            // The design system + Compose MVI/Nav bindings (transitively :ui-components → :ui-theme →
+            // :haptics, plus the core-mvi/core-nav contracts). Re-pointed off the deleted :shared-ui-atoms
+            // facade at restructure Stage 9; :ui-scaffolds covers every ui.{atoms,theme,mvi,nav,scaffolds}
+            // import this module uses (incl. LocalFrnkBottomBarInset).
+            api(projects.uiScaffolds)
 
             // The platform-adaptive bottom nav. This is the SOLE place the toolkit takes Material3 —
             // a deliberate, host-approved trade that reaches every consumer of this module (and of

@@ -30,7 +30,7 @@ kotlin {
             xcf.add(this)
             isStatic = true
             // Only api-only toolkit modules are exported. The demo's common surface deliberately
-            // avoids the *-impl modules (shared-monetization-revenuecat / :data-db-impl and their
+            // avoids the *-impl modules (monetization-impl / :data-db-impl and their
             // native cinterops), so DemoKit stays free of RevenueCat / SQLite symbols.
             // EXCEPTION (BACKLOG P1-5b): the iosMain set adds the lightweight CrashKiOS cinterop so
             // the demo's "Force crash" panic button can be reported to Firebase Crashlytics. That
@@ -47,11 +47,11 @@ kotlin {
             export(projects.uiTheme)
             export(projects.uiComponents)
             export(projects.uiScaffolds)
-            export(projects.sharedUiNav)
+            export(projects.uiBottomNav)
             export(projects.analyticsApi)
             export(projects.dataDbApi)
             export(projects.dataPrefsApi)
-            export(projects.sharedMonetizationApi)
+            export(projects.monetizationApi)
             export(projects.sharedMonetizationUi)
             // CrashKiOS resolves the native Crashlytics symbols through the host's Firebase SDK at the
             // app link step; defer them here (same approach as :iosApp / FrnkKit).
@@ -74,11 +74,11 @@ kotlin {
             api(projects.uiScaffolds)
             // Platform-adaptive bottom nav (Calf-backed). The demo consumes the toolkit default from here
             // rather than carrying any nav-bar implementation itself.
-            api(projects.sharedUiNav)
+            api(projects.uiBottomNav)
             api(projects.analyticsApi)
             api(projects.dataDbApi)
             api(projects.dataPrefsApi)
-            api(projects.sharedMonetizationApi)
+            api(projects.monetizationApi)
             api(projects.sharedMonetizationUi)
             api(compose.runtime)
             api(compose.foundation)
@@ -105,7 +105,7 @@ kotlin {
         //    purchases-ios SDK is supplied by the consumer (iosDemoApp) via SPM under dynamic_lookup.
         iosMain.dependencies {
             implementation(libs.crashkios.crashlytics)
-            implementation(projects.sharedMonetizationRevenuecat)
+            implementation(projects.monetizationImpl)
             implementation(libs.revenuecat.core)
         }
         commonTest.dependencies {
