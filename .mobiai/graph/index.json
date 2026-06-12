@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-12T01:27:00.872Z",
+  "generatedAt": "2026-06-12T02:25:04.642651Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
@@ -61,7 +61,7 @@
     {
       "path": "demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/DemoApplication.kt",
       "language": "kotlin",
-      "lines": 41,
+      "lines": 47,
       "imports": [
         "android.app.Application",
         "com.revenuecat.purchases.kmp.Purchases",
@@ -71,18 +71,19 @@
         "dev.jdgarita.frnk.demo.notes.demoNotesModule",
         "dev.jdgarita.frnk.di.DatabaseContext",
         "dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule",
+        "dev.jdgarita.frnk.remoteconfig.firebase.remoteConfigModule",
         "org.koin.core.module.Module"
       ],
       "symbols": [
         {
           "name": "DemoApplication",
           "kind": "class",
-          "line": 13
+          "line": 14
         },
         {
           "name": "onCreate",
           "kind": "fun",
-          "line": 14,
+          "line": 15,
           "container": "DemoApplication",
           "modifiers": [
             "override"
@@ -303,11 +304,12 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoModule.kt",
       "language": "kotlin",
-      "lines": 199,
+      "lines": 208,
       "imports": [
         "dev.jdgarita.frnk.backend.AnalyticsTracker",
         "dev.jdgarita.frnk.backend.CrashReporter",
         "dev.jdgarita.frnk.backend.ToolkitEvent",
+        "dev.jdgarita.frnk.camera.cameraModule",
         "dev.jdgarita.frnk.database.KeyValueStore",
         "dev.jdgarita.frnk.demo.notes.Note",
         "dev.jdgarita.frnk.demo.notes.NoteStore",
@@ -317,6 +319,8 @@
         "dev.jdgarita.frnk.monetization.ProProduct",
         "dev.jdgarita.frnk.monetization.monetizationModule",
         "dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule",
+        "dev.jdgarita.frnk.permissions.permissionsModule",
+        "dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule",
         "dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule",
         "dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule",
         "dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule",
@@ -335,12 +339,12 @@
         {
           "name": "FakeEntitlementProvider",
           "kind": "class",
-          "line": 59
+          "line": 68
         },
         {
           "name": "refresh",
           "kind": "fun",
-          "line": 63,
+          "line": 72,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -350,7 +354,7 @@
         {
           "name": "offerings",
           "kind": "fun",
-          "line": 65,
+          "line": 74,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -360,7 +364,7 @@
         {
           "name": "purchase",
           "kind": "fun",
-          "line": 82,
+          "line": 91,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -370,7 +374,7 @@
         {
           "name": "restore",
           "kind": "fun",
-          "line": 87,
+          "line": 96,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -380,7 +384,7 @@
         {
           "name": "managementUrl",
           "kind": "fun",
-          "line": 91,
+          "line": 100,
           "container": "FakeEntitlementProvider",
           "modifiers": [
             "override",
@@ -390,12 +394,12 @@
         {
           "name": "FakeKeyValueStore",
           "kind": "class",
-          "line": 95
+          "line": 104
         },
         {
           "name": "putString",
           "kind": "fun",
-          "line": 99,
+          "line": 108,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -404,7 +408,7 @@
         {
           "name": "getString",
           "kind": "fun",
-          "line": 106,
+          "line": 115,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -413,7 +417,7 @@
         {
           "name": "putBoolean",
           "kind": "fun",
-          "line": 111,
+          "line": 120,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -422,7 +426,7 @@
         {
           "name": "getBoolean",
           "kind": "fun",
-          "line": 118,
+          "line": 127,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -431,7 +435,7 @@
         {
           "name": "remove",
           "kind": "fun",
-          "line": 123,
+          "line": 132,
           "container": "FakeKeyValueStore",
           "modifiers": [
             "override"
@@ -440,12 +444,12 @@
         {
           "name": "FakeNoteStore",
           "kind": "class",
-          "line": 135
+          "line": 144
         },
         {
           "name": "add",
           "kind": "fun",
-          "line": 139,
+          "line": 148,
           "container": "FakeNoteStore",
           "modifiers": [
             "override",
@@ -455,7 +459,7 @@
         {
           "name": "all",
           "kind": "fun",
-          "line": 145,
+          "line": 154,
           "container": "FakeNoteStore",
           "modifiers": [
             "override",
@@ -465,7 +469,7 @@
         {
           "name": "clear",
           "kind": "fun",
-          "line": 147,
+          "line": 156,
           "container": "FakeNoteStore",
           "modifiers": [
             "override",
@@ -475,12 +479,12 @@
         {
           "name": "LoggingAnalyticsTracker",
           "kind": "class",
-          "line": 153
+          "line": 162
         },
         {
           "name": "track",
           "kind": "fun",
-          "line": 154,
+          "line": 163,
           "container": "LoggingAnalyticsTracker",
           "modifiers": [
             "override"
@@ -489,7 +493,7 @@
         {
           "name": "trackCustom",
           "kind": "fun",
-          "line": 161,
+          "line": 170,
           "container": "LoggingAnalyticsTracker",
           "modifiers": [
             "override"
@@ -498,7 +502,7 @@
         {
           "name": "setUserProperty",
           "kind": "fun",
-          "line": 168,
+          "line": 177,
           "container": "LoggingAnalyticsTracker",
           "modifiers": [
             "override"
@@ -507,12 +511,12 @@
         {
           "name": "LoggingCrashReporter",
           "kind": "class",
-          "line": 180
+          "line": 189
         },
         {
           "name": "recordException",
           "kind": "fun",
-          "line": 181,
+          "line": 190,
           "container": "LoggingCrashReporter",
           "modifiers": [
             "override"
@@ -521,7 +525,7 @@
         {
           "name": "setUserId",
           "kind": "fun",
-          "line": 188,
+          "line": 197,
           "container": "LoggingCrashReporter",
           "modifiers": [
             "override"
@@ -530,7 +534,7 @@
         {
           "name": "log",
           "kind": "fun",
-          "line": 192,
+          "line": 201,
           "container": "LoggingCrashReporter",
           "modifiers": [
             "override"
@@ -595,7 +599,7 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt",
       "language": "kotlin",
-      "lines": 1331,
+      "lines": 1374,
       "imports": [
         "androidx.compose.foundation.background",
         "androidx.compose.foundation.clickable",
@@ -751,7 +755,7 @@
         {
           "name": "ComponentsListScreen",
           "kind": "fun",
-          "line": 526,
+          "line": 569,
           "modifiers": [
             "private"
           ]
@@ -759,7 +763,7 @@
         {
           "name": "ComponentRow",
           "kind": "fun",
-          "line": 588,
+          "line": 631,
           "modifiers": [
             "private"
           ]
@@ -767,7 +771,7 @@
         {
           "name": "ComponentDetailScreen",
           "kind": "fun",
-          "line": 623,
+          "line": 666,
           "modifiers": [
             "private"
           ]
@@ -775,7 +779,7 @@
         {
           "name": "ComponentContent",
           "kind": "fun",
-          "line": 679,
+          "line": 722,
           "modifiers": [
             "private"
           ]
@@ -783,7 +787,7 @@
         {
           "name": "demoSettingsState",
           "kind": "fun",
-          "line": 1178,
+          "line": 1221,
           "modifiers": [
             "private"
           ]
@@ -791,7 +795,7 @@
         {
           "name": "demoExtraSettingsSections",
           "kind": "fun",
-          "line": 1228,
+          "line": 1271,
           "modifiers": [
             "private"
           ]
@@ -799,12 +803,12 @@
         {
           "name": "rowIcon",
           "kind": "fun",
-          "line": 1234
+          "line": 1277
         },
         {
           "name": "Section",
           "kind": "fun",
-          "line": 1303,
+          "line": 1346,
           "modifiers": [
             "private"
           ]
@@ -812,7 +816,7 @@
         {
           "name": "DemoBackHandler",
           "kind": "fun",
-          "line": 1326,
+          "line": 1369,
           "modifiers": [
             "private"
           ]
@@ -822,17 +826,21 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoViewModel.kt",
       "language": "kotlin",
-      "lines": 220,
+      "lines": 267,
       "imports": [
         "androidx.lifecycle.viewModelScope",
         "dev.jdgarita.frnk.backend.AnalyticsTracker",
         "dev.jdgarita.frnk.backend.CrashReporter",
         "dev.jdgarita.frnk.backend.ToolkitEvent",
+        "dev.jdgarita.frnk.camera.CameraController",
         "dev.jdgarita.frnk.demo.notes.NoteStore",
         "dev.jdgarita.frnk.monetization.EntitlementManager",
         "dev.jdgarita.frnk.monetization.Feature",
         "dev.jdgarita.frnk.monetization.FeatureGate",
         "dev.jdgarita.frnk.monetization.ProSource",
+        "dev.jdgarita.frnk.permissions.Permission",
+        "dev.jdgarita.frnk.permissions.PermissionController",
+        "dev.jdgarita.frnk.remoteconfig.RemoteConfigService",
         "dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine",
         "dev.jdgarita.frnk.ui.mvi.MviViewModel",
         "dev.jdgarita.frnk.ui.mvi.UiEffect",
@@ -850,7 +858,7 @@
         {
           "name": "DemoState",
           "kind": "class",
-          "line": 25,
+          "line": 29,
           "modifiers": [
             "data"
           ]
@@ -858,40 +866,13 @@
         {
           "name": "DemoIntent",
           "kind": "interface",
-          "line": 44,
+          "line": 52,
           "modifiers": [
             "sealed"
           ]
         },
         {
           "name": "Increment",
-          "kind": "object",
-          "line": 45,
-          "container": "DemoIntent",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Decrement",
-          "kind": "object",
-          "line": 47,
-          "container": "DemoIntent",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "EmailChanged",
-          "kind": "class",
-          "line": 49,
-          "container": "DemoIntent",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "ToggleGodMode",
           "kind": "object",
           "line": 53,
           "container": "DemoIntent",
@@ -900,7 +881,7 @@
           ]
         },
         {
-          "name": "RefreshEntitlements",
+          "name": "Decrement",
           "kind": "object",
           "line": 55,
           "container": "DemoIntent",
@@ -909,8 +890,8 @@
           ]
         },
         {
-          "name": "RestorePurchases",
-          "kind": "object",
+          "name": "EmailChanged",
+          "kind": "class",
           "line": 57,
           "container": "DemoIntent",
           "modifiers": [
@@ -918,16 +899,7 @@
           ]
         },
         {
-          "name": "RequestUpgrade",
-          "kind": "object",
-          "line": 59,
-          "container": "DemoIntent",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "AddNote",
+          "name": "ToggleGodMode",
           "kind": "object",
           "line": 61,
           "container": "DemoIntent",
@@ -936,7 +908,7 @@
           ]
         },
         {
-          "name": "ClearNotes",
+          "name": "RefreshEntitlements",
           "kind": "object",
           "line": 63,
           "container": "DemoIntent",
@@ -945,7 +917,7 @@
           ]
         },
         {
-          "name": "TrackEvent",
+          "name": "RestorePurchases",
           "kind": "object",
           "line": 65,
           "container": "DemoIntent",
@@ -954,7 +926,7 @@
           ]
         },
         {
-          "name": "SetUserProperty",
+          "name": "RequestUpgrade",
           "kind": "object",
           "line": 67,
           "container": "DemoIntent",
@@ -963,7 +935,7 @@
           ]
         },
         {
-          "name": "LogBreadcrumb",
+          "name": "AddNote",
           "kind": "object",
           "line": 69,
           "container": "DemoIntent",
@@ -972,7 +944,7 @@
           ]
         },
         {
-          "name": "RecordTestCrash",
+          "name": "ClearNotes",
           "kind": "object",
           "line": 71,
           "container": "DemoIntent",
@@ -981,7 +953,7 @@
           ]
         },
         {
-          "name": "ForceUnhandledCrash",
+          "name": "TrackEvent",
           "kind": "object",
           "line": 73,
           "container": "DemoIntent",
@@ -990,9 +962,45 @@
           ]
         },
         {
+          "name": "SetUserProperty",
+          "kind": "object",
+          "line": 75,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "LogBreadcrumb",
+          "kind": "object",
+          "line": 77,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "RecordTestCrash",
+          "kind": "object",
+          "line": 79,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "ForceUnhandledCrash",
+          "kind": "object",
+          "line": 81,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
           "name": "SearchOpened",
           "kind": "object",
-          "line": 76,
+          "line": 84,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1001,7 +1009,7 @@
         {
           "name": "SearchClosed",
           "kind": "object",
-          "line": 78,
+          "line": 86,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1010,7 +1018,7 @@
         {
           "name": "SearchQueryChanged",
           "kind": "class",
-          "line": 80,
+          "line": 88,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1019,7 +1027,7 @@
         {
           "name": "GallerySwitchChanged",
           "kind": "class",
-          "line": 85,
+          "line": 93,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1028,7 +1036,7 @@
         {
           "name": "GallerySegmentChanged",
           "kind": "class",
-          "line": 89,
+          "line": 97,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1037,7 +1045,7 @@
         {
           "name": "GalleryNavChanged",
           "kind": "class",
-          "line": 93,
+          "line": 101,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1046,7 +1054,34 @@
         {
           "name": "NavEngineChanged",
           "kind": "class",
-          "line": 98,
+          "line": 106,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "FetchRemoteConfig",
+          "kind": "object",
+          "line": 111,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "CapturePhoto",
+          "kind": "object",
+          "line": 113,
+          "container": "DemoIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "RequestCameraPermission",
+          "kind": "object",
+          "line": 115,
           "container": "DemoIntent",
           "modifiers": [
             "data"
@@ -1055,7 +1090,7 @@
         {
           "name": "DemoEffect",
           "kind": "interface",
-          "line": 103,
+          "line": 118,
           "modifiers": [
             "sealed"
           ]
@@ -1063,7 +1098,7 @@
         {
           "name": "Navigate",
           "kind": "class",
-          "line": 104,
+          "line": 119,
           "container": "DemoEffect",
           "modifiers": [
             "data"
@@ -1072,7 +1107,7 @@
         {
           "name": "Toast",
           "kind": "class",
-          "line": 108,
+          "line": 123,
           "container": "DemoEffect",
           "modifiers": [
             "data"
@@ -1081,12 +1116,12 @@
         {
           "name": "DemoViewModel",
           "kind": "class",
-          "line": 113
+          "line": 128
         },
         {
           "name": "onIntent",
           "kind": "fun",
-          "line": 131,
+          "line": 157,
           "modifiers": [
             "override",
             "suspend"
@@ -1095,7 +1130,7 @@
         {
           "name": "loadNotes",
           "kind": "fun",
-          "line": 214,
+          "line": 261,
           "modifiers": [
             "private",
             "suspend"
@@ -1277,13 +1312,16 @@
     {
       "path": "demo/shared/src/commonTest/kotlin/dev/jdgarita/frnk/demo/DemoViewModelTest.kt",
       "language": "kotlin",
-      "lines": 234,
+      "lines": 246,
       "imports": [
         "dev.jdgarita.frnk.backend.AnalyticsTracker",
         "dev.jdgarita.frnk.backend.CrashReporter",
         "dev.jdgarita.frnk.backend.ToolkitEvent",
+        "dev.jdgarita.frnk.camera.NoopCameraController",
         "dev.jdgarita.frnk.monetization.DefaultEntitlementManager",
         "dev.jdgarita.frnk.monetization.FeatureGate",
+        "dev.jdgarita.frnk.permissions.NoopPermissionController",
+        "dev.jdgarita.frnk.remoteconfig.NoopRemoteConfig",
         "kotlinx.coroutines.CoroutineScope",
         "kotlinx.coroutines.Dispatchers",
         "kotlinx.coroutines.flow.toList",
@@ -1303,24 +1341,24 @@
         {
           "name": "DemoViewModelTest",
           "kind": "class",
-          "line": 30
+          "line": 33
         },
         {
           "name": "setUp",
           "kind": "fun",
-          "line": 34,
+          "line": 37,
           "container": "DemoViewModelTest"
         },
         {
           "name": "tearDown",
           "kind": "fun",
-          "line": 39,
+          "line": 42,
           "container": "DemoViewModelTest"
         },
         {
           "name": "viewModel",
           "kind": "fun",
-          "line": 43,
+          "line": 46,
           "container": "DemoViewModelTest",
           "modifiers": [
             "private"
@@ -1329,61 +1367,61 @@
         {
           "name": "init_tracks_app_opened",
           "kind": "fun",
-          "line": 54,
+          "line": 66,
           "container": "DemoViewModelTest"
         },
         {
           "name": "track_event_intent_records_custom_event",
           "kind": "fun",
-          "line": 63,
+          "line": 75,
           "container": "DemoViewModelTest"
         },
         {
           "name": "set_user_property_intent_sets_tier",
           "kind": "fun",
-          "line": 76,
+          "line": 88,
           "container": "DemoViewModelTest"
         },
         {
           "name": "crash_intents_log_and_record",
           "kind": "fun",
-          "line": 89,
+          "line": 101,
           "container": "DemoViewModelTest"
         },
         {
           "name": "request_upgrade_when_not_pro_emits_navigate_effect",
           "kind": "fun",
-          "line": 106,
+          "line": 118,
           "container": "DemoViewModelTest"
         },
         {
           "name": "god_mode_forces_pro_with_godmode_source",
           "kind": "fun",
-          "line": 124,
+          "line": 136,
           "container": "DemoViewModelTest"
         },
         {
           "name": "restore_with_no_purchase_emits_toast",
           "kind": "fun",
-          "line": 140,
+          "line": 152,
           "container": "DemoViewModelTest"
         },
         {
           "name": "search_open_query_then_close_clears_query",
           "kind": "fun",
-          "line": 158,
+          "line": 170,
           "container": "DemoViewModelTest"
         },
         {
           "name": "gallery_toggles_reduce_their_values",
           "kind": "fun",
-          "line": 176,
+          "line": 188,
           "container": "DemoViewModelTest"
         },
         {
           "name": "RecordingAnalytics",
           "kind": "class",
-          "line": 192,
+          "line": 204,
           "modifiers": [
             "private"
           ]
@@ -1391,7 +1429,7 @@
         {
           "name": "track",
           "kind": "fun",
-          "line": 196,
+          "line": 208,
           "container": "RecordingAnalytics",
           "modifiers": [
             "override"
@@ -1400,7 +1438,7 @@
         {
           "name": "trackCustom",
           "kind": "fun",
-          "line": 203,
+          "line": 215,
           "container": "RecordingAnalytics",
           "modifiers": [
             "override"
@@ -1409,7 +1447,7 @@
         {
           "name": "setUserProperty",
           "kind": "fun",
-          "line": 210,
+          "line": 222,
           "container": "RecordingAnalytics",
           "modifiers": [
             "override"
@@ -1418,7 +1456,7 @@
         {
           "name": "RecordingCrash",
           "kind": "class",
-          "line": 218,
+          "line": 230,
           "modifiers": [
             "private"
           ]
@@ -1426,7 +1464,7 @@
         {
           "name": "recordException",
           "kind": "fun",
-          "line": 222,
+          "line": 234,
           "container": "RecordingCrash",
           "modifiers": [
             "override"
@@ -1435,7 +1473,7 @@
         {
           "name": "setUserId",
           "kind": "fun",
-          "line": 229,
+          "line": 241,
           "container": "RecordingCrash",
           "modifiers": [
             "override"
@@ -1444,7 +1482,7 @@
         {
           "name": "log",
           "kind": "fun",
-          "line": 231,
+          "line": 243,
           "container": "RecordingCrash",
           "modifiers": [
             "override"
@@ -1648,40 +1686,6 @@
       "symbols": []
     },
     {
-      "path": "frnk/capabilities/analytics-api/src/commonMain/kotlin/dev/jdgarita/frnk/backend/RemoteData.kt",
-      "language": "kotlin",
-      "lines": 20,
-      "imports": [
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError"
-      ],
-      "symbols": [
-        {
-          "name": "RemoteData",
-          "kind": "interface",
-          "line": 7
-        },
-        {
-          "name": "get",
-          "kind": "fun",
-          "line": 8,
-          "container": "RemoteData",
-          "modifiers": [
-            "suspend"
-          ]
-        },
-        {
-          "name": "set",
-          "kind": "fun",
-          "line": 14,
-          "container": "RemoteData",
-          "modifiers": [
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
       "path": "frnk/capabilities/analytics-api/src/commonTest/kotlin/dev/jdgarita/frnk/backend/FakeAnalyticsTracker.kt",
       "language": "kotlin",
       "lines": 37,
@@ -1880,16 +1884,6 @@
       ]
     },
     {
-      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseBackendModule.kt",
-      "language": "kotlin",
-      "lines": 13,
-      "imports": [
-        "dev.jdgarita.frnk.backend.RemoteData",
-        "org.koin.dsl.module"
-      ],
-      "symbols": []
-    },
-    {
       "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirebaseCrashReporter.kt",
       "language": "kotlin",
       "lines": 38,
@@ -1949,46 +1943,6 @@
       "symbols": []
     },
     {
-      "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/FirestoreRemoteData.kt",
-      "language": "kotlin",
-      "lines": 20,
-      "imports": [
-        "dev.jdgarita.frnk.backend.RemoteData",
-        "dev.jdgarita.frnk.utils.AppResult",
-        "dev.jdgarita.frnk.utils.CommonError"
-      ],
-      "symbols": [
-        {
-          "name": "FirestoreRemoteData",
-          "kind": "class",
-          "line": 7,
-          "modifiers": [
-            "internal"
-          ]
-        },
-        {
-          "name": "get",
-          "kind": "fun",
-          "line": 8,
-          "container": "FirestoreRemoteData",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        },
-        {
-          "name": "set",
-          "kind": "fun",
-          "line": 14,
-          "container": "FirestoreRemoteData",
-          "modifiers": [
-            "override",
-            "suspend"
-          ]
-        }
-      ]
-    },
-    {
       "path": "frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/NativeCrashHandler.kt",
       "language": "kotlin",
       "lines": 16,
@@ -2042,6 +1996,115 @@
         "dev.jdgarita.frnk.utils.PrintLogger"
       ],
       "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/camera/src/commonMain/kotlin/dev/jdgarita/frnk/camera/CameraController.kt",
+      "language": "kotlin",
+      "lines": 31,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError"
+      ],
+      "symbols": [
+        {
+          "name": "CameraController",
+          "kind": "interface",
+          "line": 11
+        },
+        {
+          "name": "capturePhoto",
+          "kind": "fun",
+          "line": 13,
+          "container": "CameraController",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "CameraImage",
+          "kind": "class",
+          "line": 20,
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "equals",
+          "kind": "fun",
+          "line": 24,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "hashCode",
+          "kind": "fun",
+          "line": 30,
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/camera/src/commonMain/kotlin/dev/jdgarita/frnk/camera/CameraModule.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "org.koin.core.module.Module",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/camera/src/commonMain/kotlin/dev/jdgarita/frnk/camera/NoopCameraController.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError"
+      ],
+      "symbols": [
+        {
+          "name": "NoopCameraController",
+          "kind": "class",
+          "line": 11
+        },
+        {
+          "name": "capturePhoto",
+          "kind": "fun",
+          "line": 12,
+          "container": "NoopCameraController",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/camera/src/commonTest/kotlin/dev/jdgarita/frnk/camera/NoopCameraControllerTest.kt",
+      "language": "kotlin",
+      "lines": 14,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "kotlinx.coroutines.test.runTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "NoopCameraControllerTest",
+          "kind": "class",
+          "line": 8
+        },
+        {
+          "name": "capturePhoto_fails_without_a_real_camera",
+          "kind": "fun",
+          "line": 10,
+          "container": "NoopCameraControllerTest"
+        }
+      ]
     },
     {
       "path": "frnk/capabilities/haptics/src/commonMain/kotlin/dev/jdgarita/frnk/ui/haptics/DefaultHapticFeedback.kt",
@@ -3631,6 +3694,348 @@
       "language": "kotlin",
       "lines": 8,
       "imports": [],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/permissions/src/commonMain/kotlin/dev/jdgarita/frnk/permissions/NoopPermissionController.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "NoopPermissionController",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "status",
+          "kind": "fun",
+          "line": 10,
+          "container": "NoopPermissionController",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "request",
+          "kind": "fun",
+          "line": 12,
+          "container": "NoopPermissionController",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/permissions/src/commonMain/kotlin/dev/jdgarita/frnk/permissions/PermissionController.kt",
+      "language": "kotlin",
+      "lines": 29,
+      "imports": [],
+      "symbols": [
+        {
+          "name": "PermissionController",
+          "kind": "interface",
+          "line": 8
+        },
+        {
+          "name": "status",
+          "kind": "fun",
+          "line": 10,
+          "container": "PermissionController"
+        },
+        {
+          "name": "request",
+          "kind": "fun",
+          "line": 13,
+          "container": "PermissionController",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "Permission",
+          "kind": "class",
+          "line": 17,
+          "modifiers": [
+            "enum"
+          ]
+        },
+        {
+          "name": "PermissionStatus",
+          "kind": "class",
+          "line": 25,
+          "modifiers": [
+            "enum"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/permissions/src/commonMain/kotlin/dev/jdgarita/frnk/permissions/PermissionModule.kt",
+      "language": "kotlin",
+      "lines": 13,
+      "imports": [
+        "org.koin.core.module.Module",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/permissions/src/commonTest/kotlin/dev/jdgarita/frnk/permissions/NoopPermissionControllerTest.kt",
+      "language": "kotlin",
+      "lines": 20,
+      "imports": [
+        "kotlinx.coroutines.test.runTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals"
+      ],
+      "symbols": [
+        {
+          "name": "NoopPermissionControllerTest",
+          "kind": "class",
+          "line": 7
+        },
+        {
+          "name": "status_is_not_determined",
+          "kind": "fun",
+          "line": 11,
+          "container": "NoopPermissionControllerTest"
+        },
+        {
+          "name": "request_is_denied",
+          "kind": "fun",
+          "line": 16,
+          "container": "NoopPermissionControllerTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/remote-config-api/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/NoopRemoteConfig.kt",
+      "language": "kotlin",
+      "lines": 34,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError"
+      ],
+      "symbols": [
+        {
+          "name": "NoopRemoteConfig",
+          "kind": "class",
+          "line": 12
+        },
+        {
+          "name": "fetchAndActivate",
+          "kind": "fun",
+          "line": 13,
+          "container": "NoopRemoteConfig",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 15,
+          "container": "NoopRemoteConfig",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 20,
+          "container": "NoopRemoteConfig",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getLong",
+          "kind": "fun",
+          "line": 25,
+          "container": "NoopRemoteConfig",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getDouble",
+          "kind": "fun",
+          "line": 30,
+          "container": "NoopRemoteConfig",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/remote-config-api/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/RemoteConfigModule.kt",
+      "language": "kotlin",
+      "lines": 14,
+      "imports": [
+        "org.koin.core.module.Module",
+        "org.koin.dsl.module"
+      ],
+      "symbols": []
+    },
+    {
+      "path": "frnk/capabilities/remote-config-api/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/RemoteConfigService.kt",
+      "language": "kotlin",
+      "lines": 43,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError"
+      ],
+      "symbols": [
+        {
+          "name": "RemoteConfigService",
+          "kind": "interface",
+          "line": 20
+        },
+        {
+          "name": "fetchAndActivate",
+          "kind": "fun",
+          "line": 22,
+          "container": "RemoteConfigService",
+          "modifiers": [
+            "suspend"
+          ]
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 24,
+          "container": "RemoteConfigService"
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 29,
+          "container": "RemoteConfigService"
+        },
+        {
+          "name": "getLong",
+          "kind": "fun",
+          "line": 34,
+          "container": "RemoteConfigService"
+        },
+        {
+          "name": "getDouble",
+          "kind": "fun",
+          "line": 39,
+          "container": "RemoteConfigService"
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/remote-config-api/src/commonTest/kotlin/dev/jdgarita/frnk/remoteconfig/NoopRemoteConfigTest.kt",
+      "language": "kotlin",
+      "lines": 25,
+      "imports": [
+        "dev.jdgarita.frnk.utils.AppResult",
+        "kotlinx.coroutines.test.runTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "NoopRemoteConfigTest",
+          "kind": "class",
+          "line": 9
+        },
+        {
+          "name": "fetchAndActivate_succeeds",
+          "kind": "fun",
+          "line": 13,
+          "container": "NoopRemoteConfigTest"
+        },
+        {
+          "name": "getters_return_the_supplied_default",
+          "kind": "fun",
+          "line": 19,
+          "container": "NoopRemoteConfigTest"
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/remote-config-impl/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/firebase/FirebaseRemoteConfigService.kt",
+      "language": "kotlin",
+      "lines": 66,
+      "imports": [
+        "dev.gitlive.firebase.Firebase",
+        "dev.gitlive.firebase.remoteconfig.ValueSource",
+        "dev.gitlive.firebase.remoteconfig.remoteConfig",
+        "dev.jdgarita.frnk.remoteconfig.RemoteConfigService",
+        "dev.jdgarita.frnk.utils.AppResult",
+        "dev.jdgarita.frnk.utils.CommonError",
+        "kotlin.coroutines.cancellation.CancellationException"
+      ],
+      "symbols": [
+        {
+          "name": "FirebaseRemoteConfigService",
+          "kind": "class",
+          "line": 22,
+          "modifiers": [
+            "internal"
+          ]
+        },
+        {
+          "name": "fetchAndActivate",
+          "kind": "fun",
+          "line": 25,
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 35,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 43,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getLong",
+          "kind": "fun",
+          "line": 51,
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getDouble",
+          "kind": "fun",
+          "line": 59,
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/capabilities/remote-config-impl/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/firebase/RemoteConfigModule.kt",
+      "language": "kotlin",
+      "lines": 14,
+      "imports": [
+        "dev.jdgarita.frnk.remoteconfig.RemoteConfigService",
+        "org.koin.dsl.module"
+      ],
       "symbols": []
     },
     {

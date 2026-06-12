@@ -219,3 +219,86 @@ Remaining: Stage 11 (additive :camera/:permissions + Remote Config pair) and Sta
 - demo/android-app/build.gradle.kts
 - demo/ios-app/iosDemoApp.xcodeproj/project.pbxproj
 - .github/workflows/main.yml
+
+## CI paused on private repo — only release tag job + on-demand @claude
+
+- id: ci-paused-on-private-repo-only-release-tag-job-on-demand-cla-20260612-014745
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ci_cd
+- date: 2026-06-12
+
+### Decision
+While frnk is private (foundation phase), build/test CI is **off** to stop burning free-tier GitHub Actions minutes (the per-push `compile & test` job was hitting the spending limit on the private repo).
+
+Removed: `.github/workflows/main.yml` (compile & test on every push/PR) and `.github/workflows/claude-code-review.yml` (auto PR review).
+
+Kept (cheap, rare triggers):
+- `release.yml` — fires only on a `v*` tag push; verifies `Frnk.VERSION` matches the tag, extracts the CHANGELOG section, creates the GitHub Release. This is the one intentionally-kept CI job for tagging releases (0.1.0, 1.0.0, ...).
+- `claude.yml` — on-demand `@claude` assistant; only consumes minutes when explicitly mentioned.
+
+### Reason
+Free GitHub accounts have limited Actions minutes on private repos. frnk stays private during foundation work, so the heavy per-push pipeline is not worth the spend. Validation is done locally instead (pre-push gradle gate + pre-commit ktlint hook).
+
+### Reverting (when foundation is done + repo goes public)
+Public repos get unlimited Actions minutes. At that point:
+1. Make the repo public.
+2. Re-add branch protection on `main`.
+3. Enable PRs.
+4. Restore the `compile & test` job (old `main.yml`) and optionally `claude-code-review.yml`.
+
+### Local validation (replaces the dropped CI gate)
+- `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache`
+- `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache`
+
+### Files
+- .github/workflows/release.yml
+- .github/workflows/claude.yml
+- CLAUDE.md
+- README.md
+- docs/ARCHITECTURE.md
+- docs/RELEASING.md
+
+## Stage 11 — Remote Config capability pair + :camera/:permissions scaffolds
+
+- id: stage-11-remote-config-capability-pair-camera-permissions-sc-20260612-022500
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: capabilities
+- date: 2026-06-12
+
+Stage 11 of the frnk restructure (additive, low risk — landed 2026-06-11). still impact: NONE (still is a *future* candidate consumer of Remote Config, not wired here).
+
+### What
+Four new capability modules under frnk/capabilities/, all on the frnk.kmp.library.hosttest convention plugin:
+- :remote-config-api — RemoteConfigService: read-only typed key→value (getString/Boolean/Long/Double(key, default)) + suspend fetchAndActivate(): AppResult<Unit, CommonError>. NoopRemoteConfig default + noopRemoteConfigModule. Sibling of :analytics-*, kept SEPARATE from it (OQ-1).
+- :remote-config-impl — FirebaseRemoteConfigService over gitlive dev.gitlive:firebase-config (Firebase.remoteConfig). Honours the per-call default when a key resolves to ValueSource.Static; blank strings fall back too. fetchAndActivate maps failures to AppResult.Failure(CommonError.Unknown), rethrows CancellationException. Exposed as remoteConfigModule. Catalog: added firebase-config (gitlive 2.4.0 ref), removed now-dead firebase-firestore.
+- :camera — api-only SCAFFOLD: CameraController.capturePhoto(): AppResult<CameraImage, CommonError> + NoopCameraController (returns Failure) + cameraModule. No impl, no native cinterop (future feature work).
+- :permissions — api-only SCAFFOLD: PermissionController.status/request(Permission): PermissionStatus + Noop (NotDetermined/Denied) + permissionsModule.
+
+### Reshape / deletions (no real consumers — confirmed)
+Deleted the three Firestore-shaped stubs: RemoteData.kt (:analytics-api), FirestoreRemoteData.kt + firebaseBackendModule (:analytics-impl). Removed the orphaned firestore dep + kotlin-serialization plugin from :analytics-impl. The only repo-wide mention was a DemoModule.kt doc comment (fixed).
+
+### api/impl discipline (the one risk on an additive stage)
+:remote-config-impl pulls a native Firebase SDK → installed by the HOST via initializeFrnk(modules=…), resolved through Koin; kept OUT of :demo-shared common (DemoKit exports only the *-api). RemoteConfigService returns AppResult from :shared-utils, so no sibling *-api→*-api dep.
+
+### Demo (all three layers)
+:demo-shared installs the three no-op modules + a "Capabilities (Stage 11)" Home section (Remote welcome value + camera/permission rows + Fetch/Capture/Request buttons), DemoViewModel injects the three; :demo-android overrides remoteConfigModule with the REAL Firebase impl (verified on Pixel 7a — logcat shows FirebaseRemoteConfig queried; falls back to bundled default since no demo_welcome_message param is set in the frnk-demo console).
+
+### Shape decision
+Confirmed against still's live Android Remote Config usage (RemoteConfig.getString(RemoteConfigKey), key→string, fetch-and-activate). The recommended typed shape is a clean superset — still can adapt its RemoteConfigKey enum onto getString(key.key, key.default).
+
+### Verified
+frnk standalone from clean: compileAndroidMain + :demo-android:compileDebugKotlin; full testAndroidHostTest + the three new-module tests; compileKotlinIosSimulatorArm64; :demo-shared:assembleDemoKitDebugXCFramework (proves no firebase-config cinterop leak into DemoKit common). Android device: MainActivity + AppScaffoldSmokeActivity, no Koin/FATAL errors. iOS simulator not run (no pbxproj change; XCFramework build is the substitute gate).
+
+Remaining: Stage 12 (docs/CI consistency sweep — full ARCHITECTURE module-graph rewrite + remaining stale-name scrub).
+
+### Files
+- frnk/capabilities/remote-config-api
+- frnk/capabilities/remote-config-impl
+- frnk/capabilities/camera
+- frnk/capabilities/permissions
+- settings.gradle.kts
+- gradle/libs.versions.toml
