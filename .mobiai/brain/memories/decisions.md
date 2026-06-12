@@ -188,3 +188,34 @@ Next: Stage 9 = the coordinate flip (facade deletes + module renames) — the on
 - demo/shared/build.gradle.kts
 - demo/android-app/build.gradle.kts
 - docs/RESTRUCTURE_PLAN.md
+
+## Stage 10 — demo project renames (:shared-demo→:demo-shared, :androidDemoApp→:demo-android)
+
+- id: stage-10-demo-project-renames-shared-demo-demo-shared-androi-20260612-012657
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: restructure
+- date: 2026-06-12
+
+Final rename stage of the restructure. Pure Gradle project-name / typesafe-accessor / task-prefix churn — zero Kotlin logic changes (dirs already moved at Stage 3).
+
+Renamed the two demo Gradle projects to their final flat names:
+- :shared-demo → :demo-shared (dir demo/shared, unchanged); accessor projects.sharedDemo → projects.demoShared (one consumer: demo/android-app).
+- :androidDemoApp → :demo-android (dir demo/android-app, unchanged); no accessor consumers.
+
+Touch points: settings.gradle.kts include + projectDir remap; the Xcode Run Script build phase (demo/ios-app, :shared-demo:assembleDemoKit{Debug,Release}XCFramework → :demo-shared:...); CI task prefixes (:androidDemoApp: → :demo-android:, task names compileDebugKotlin/testDebugUnitTest unchanged since it stays a com.android.application). DemoKit baseName unchanged → framework stays DemoKit.xcframework at demo/shared/build/XCFrameworks/...; Xcode fileRefs + FRAMEWORK_SEARCH_PATHS are dir-based on demo/shared (unmoved) so untouched.
+
+NOT touched: Android applicationId (dev.jdgarita.frnk.demo), module namespaces (…demo.shared), iOS bundle id. Device launch stays adb … dev.jdgarita.frnk.demo/.MainActivity.
+
+still impact: NONE — the demo projects are internal smoke harnesses, not consumed coordinates; no still change, no submodule bump.
+
+Verified: frnk standalone (clean + compileAndroidMain :demo-android: + testAndroidHostTest :demo-android: + compileKotlinIosSimulatorArm64 + :demo-shared:assembleDemoKitDebugXCFramework, all green); Android device Pixel 7a (MainActivity DemoScreen + AppScaffoldSmokeActivity :ui-app chain render clean, no FATAL/Koin); iOS simulator build runs the renamed Run Script + embeds DemoKit.framework (user verified manually). Landed on main as c3cc2b9 on 2026-06-11.
+
+Remaining: Stage 11 (additive :camera/:permissions + Remote Config pair) and Stage 12 (docs consistency sweep — finishes the broad prose rename Stage 10 deferred).
+
+### Files
+- settings.gradle.kts
+- demo/android-app/build.gradle.kts
+- demo/ios-app/iosDemoApp.xcodeproj/project.pbxproj
+- .github/workflows/main.yml
