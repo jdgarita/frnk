@@ -302,3 +302,22 @@ Remaining: Stage 12 (docs/CI consistency sweep — full ARCHITECTURE module-grap
 - frnk/capabilities/permissions
 - settings.gradle.kts
 - gradle/libs.versions.toml
+
+## Restructure Stage 12 — CI + docs consistency sweep (FINAL stage; restructure complete)
+
+- id: restructure-stage-12-ci-docs-consistency-sweep-final-stage-r-20260612-025115
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: docs/restructure
+- date: 2026-06-12
+
+-
+
+### Files
+- docs/ARCHITECTURE.md
+- docs/HOST_INTEGRATION.md
+- docs/RESTRUCTURE_PLAN.md
+- CLAUDE.md
+- README.md
+- REQUIREMENTS.md
