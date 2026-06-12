@@ -368,7 +368,7 @@ Keeps the presentation contract (`UiState`/`UiIntent`/`UiEffect`, `MviViewModel`
 
 - id: adaptive-bottom-nav-calf-material3-accepted-toolkit-wide-iso-20260612-030713
 - type: architecture_decision
-- status: active
+- status: deprecated
 - platform: kmp
 - area: ui_navigation
 - date: 2026-06-12
@@ -415,3 +415,50 @@ Likely a small new impl module (e.g. `:analytics-posthog`) or an addition under 
 
 ### Convention reminders
 Respect REQUIREMENTS §2 invariants + the strict UI rules §4; must pass `compileAndroidMain` + `testAndroidHostTest` (KMP) / the demo app's `testDebugUnitTest`; pre-commit `ktlintFormat` leaves the tree clean. A feature isn't done until exercised in `:demo-shared`, `demo-android`, and `iosDemoApp` (or a written justification).
+
+## Adaptive bottom nav: adaptive-nav-bar is the default; Calf removed entirely
+
+- id: adaptive-bottom-nav-adaptive-nav-bar-is-the-default-calf-rem-20260612-033949
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-bottom-nav
+- date: 2026-06-12
+
+**Decision.** The platform-adaptive bottom bar is now `narendraanjana09/adaptive-nav-bar`
+(`io.github.narendraanjana09:adaptive-nav-bar` 1.0.1) as the **sole** engine. **Calf
+(`com.mohamedrejeb.calf:calf-ui` 0.12.0) was removed entirely** — the `FrnkAdaptiveNavEngine`
+runtime A/B enum, the Calf bar (`FrnkAdaptiveBottomNavBar`), and the Calf-only index scaffold
+(`FrnkAdaptiveBottomNavScaffold` + `rememberFrnkBottomNavState`) were deleted. `engine` params
+dropped from `FrnkTabbedNavScaffold`/`FrnkAppShell`/`FrnkAppScaffold`; `FrnkAdaptiveNavTab` lost
+its Calf-only `icon: ImageVector`. Material3 stays — adaptive-nav-bar needs it too — so the
+"sole Material3 module = :ui-bottom-nav" rule is unchanged.
+
+**Why.** User directive (acting as Principal KMP). adaptive-nav-bar gives a native glassy
+iOS-26 `UITabBar` + a built-in primary-action FAB, which the toolkit had already wired
+(screen-routed via `FrnkPrimaryActionRegistry`). Keeping two engines + Calf was dead weight
+once adaptive-nav-bar won.
+
+**⚠️ Accepted trade — Android icon packaging (still live, verified 2026-06-11).** adaptive-nav-bar
+takes `DrawableResource` icons; under AGP 9.2.1 `com.android.kotlin.multiplatform.library` + CMP
+1.11.1 those **do NOT package into the Android APK from a KMP library module**
+(`prepareComposeResourcesTaskForAndroidMain` is NO-SOURCE; copy task fails). Empirically confirmed:
+removed the demo's asset workaround, built `:demo-android` (success), unzipped APK → zero
+`frnk_nav_*` drawables → runtime `MissingResourceException`. This is exactly why Calf (ImageVector,
+no compose-resources) had been the default. **Chosen resolution (user picked "ship host-asset
+requirement"):** every Android host must copy the 3 nav drawables into its *application* module at
+`src/main/assets/composeResources/dev.jdgarita.frnk.ui.bottomnav.generated.resources/drawable/frnk_nav_{home,settings,primary_action}.xml`.
+Documented as a required step in `docs/HOST_INTEGRATION.md §8.1`; demo keeps the workaround in
+`demo/android-app/src/main/assets/composeResources/`. Escape hatch: the Material-free
+`FrnkBottomNavBar` pill (`:ui-components`, ImageVector) has no such requirement.
+
+**Validated:** `compileAndroidMain` + `:demo-android:compileDebugKotlin` + `testAndroidHostTest`
++ `:demo-android:testDebugUnitTest` + `ktlintCheck` all green.
+
+Supersedes [[adaptive-bottom-nav-calf-material3-accepted-toolkit-wide-iso-20260612-030713]].
+
+### Files
+- frnk/ui/bottom-nav/build.gradle.kts
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavBarBottomBar.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt
+- docs/HOST_INTEGRATION.md

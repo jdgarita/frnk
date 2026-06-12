@@ -330,6 +330,32 @@ setContent {
   (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkAppShell` directly — the
   same shell minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the reference.
 
+### 8.1 ⚠️ Required Android step — bundle the bottom-nav drawables as assets
+
+The adaptive bottom bar (`:ui-bottom-nav`, over `adaptive-nav-bar`) uses `DrawableResource` nav icons.
+Under the current toolchain (AGP 9.2.1 `com.android.kotlin.multiplatform.library` + Compose Multiplatform
+1.11.1), **Compose drawable resources do not package into the Android APK from a KMP *library* module** —
+so the toolkit's bundled nav icons are absent from your APK and the app crashes at first render with
+`MissingResourceException: …/drawable/frnk_nav_home.xml`. (iOS is unaffected.)
+
+**Every Android host must copy the three nav drawables into its *application* module's assets**, at the
+exact path the generated `Res` reads:
+
+```
+<app>/src/main/assets/composeResources/dev.jdgarita.frnk.ui.bottomnav.generated.resources/drawable/
+    frnk_nav_home.xml
+    frnk_nav_settings.xml
+    frnk_nav_primary_action.xml
+```
+
+Copy them verbatim from the toolkit
+(`frnk/ui/bottom-nav/src/commonMain/composeResources/drawable/`); the demo's
+`demo/android-app/src/main/assets/composeResources/` (+ its `README.md`) is the worked example. If you
+also bundle your own middle-tab `DrawableResource` icons, ship those the same way under your module's own
+`<resourcePackage>.generated.resources` path. To avoid this entirely, use the Material-free
+`FrnkBottomNavBar` pill (`:ui-components`, `ImageVector` icons) and hand-wire the nav primitives instead of
+the adaptive bar.
+
 ## 9. Component style guide — sealed state + `Skeleton` object
 
 **Every frnk UI component with multiple visual states models its state as a `sealed interface` with a

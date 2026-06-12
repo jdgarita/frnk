@@ -276,8 +276,9 @@ mobiai brain search "foundational technical decisions"
 mobiai brain context --section decisions
 ```
 
-The adaptive-bottom-nav choice (Calf + Material3 accepted toolkit-wide, isolated to
-`:ui-bottom-nav`) and every restructure-stage decision are recorded there too. Keep
+The adaptive-bottom-nav choice (adaptive-nav-bar + Material3 accepted toolkit-wide,
+isolated to `:ui-bottom-nav`; Calf removed when it became the default) and every
+restructure-stage decision are recorded there too. Keep
 new architecture rationale in the brain, not inline here — this spec states the
 *invariants* (§2, §4); the brain records *why* they were chosen.
 

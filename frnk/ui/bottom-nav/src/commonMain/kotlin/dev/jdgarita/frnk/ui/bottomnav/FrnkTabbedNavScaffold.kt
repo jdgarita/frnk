@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
-import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
 import dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry
@@ -44,15 +43,12 @@ import org.koin.core.annotation.KoinExperimentalAPI
  * from the same list via `rememberFrnkTabbedBackStacks(tabs = navTabs.map { FrnkTab(it.key, it.root) })`,
  * or use [rememberFrnkAdaptiveNavTabs] which returns a remembered Home + middle + Settings list.
  *
- * **A/B engine (POC).** [engine] selects the bar implementation so a host can compare them at runtime:
- *  - [FrnkAdaptiveNavEngine.Calf] (**default**) — the native-`UITabBar`-on-iOS Calf bar; no primary-action
- *    button.
- *  - [FrnkAdaptiveNavEngine.AdaptiveNavBar] — the `adaptive-nav-bar` engine **with the built-in
- *    primary-action button**: pass [onPrimaryAction] to wire it (the host decides what tapping it does)
- *    and optionally a custom [primaryAction] to re-skin it per screen. On iOS the button renders inline
- *    beside the items; on Android this scaffold docks a Material3 FAB above the bar. The button shows only
- *    on this engine and only when an action is wired. Tabs render through their
- *    `androidIcon`/`iosSystemIcon` here, through their `icon` `ImageVector` on Calf.
+ * **Bar.** Renders [FrnkAdaptiveNavBarBottomBar] — a Material3 `NavigationBar` on Android and a native
+ * glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS — **with a built-in primary-action button**:
+ * pass [onPrimaryAction] to wire it (the host decides what tapping it does) and optionally a custom
+ * [primaryAction] to re-skin it per screen. On iOS the button renders inline beside the items; on Android
+ * this scaffold docks a Material3 FAB above the bar. The button shows only when an action is wired. Tabs
+ * render through their `androidIcon`/`iosSystemIcon`.
  *
  * **Primary-action routing.** Two complementary ways to wire the button:
  *  - [primaryActionRegistry] — pass a remembered [FrnkPrimaryActionRegistry] and the **currently active
@@ -72,13 +68,11 @@ import org.koin.core.annotation.KoinExperimentalAPI
  * [entryProvider] defaults to Koin's [koinEntryProvider] (pair with the `navigation<Route> { … }` DSL);
  * pass a local `entryProvider { entry<Route> { … } }` to register destinations inline.
  *
- * This is the **Material3 adaptive-bar** tabbed scaffold by design (both engines render through
- * `:shared-ui-nav`'s Material3 surface). A host that wants nav3 multiple-back-stack navigation **without**
- * Material3 wires the lower-level primitives directly — `rememberFrnkTabbedBackStacks` +
- * `FrnkNavDisplay(backStack = tabbed.current)` + `FrnkTabbedBackHandler` + a bar of its choosing.
- *
- * Contrast with [FrnkAdaptiveBottomNavScaffold], the simpler **index-based** scaffold (no per-tab back
- * stacks) — use that when each tab is a single screen; use this when tabs need their own back stacks.
+ * This is the **Material3 adaptive-bar** tabbed scaffold by design (the bar renders through this module's
+ * Material3 surface). A host that wants nav3 multiple-back-stack navigation **without** Material3 wires the
+ * lower-level primitives directly — `rememberFrnkTabbedBackStacks` +
+ * `FrnkNavDisplay(backStack = tabbed.current)` + `FrnkTabbedBackHandler` + a bar of its choosing (e.g. the
+ * Material-free `FrnkBottomNavBar` pill in `:ui-components`).
  */
 @OptIn(KoinExperimentalAPI::class)
 @Composable
@@ -86,7 +80,6 @@ fun FrnkTabbedNavScaffold(
     tabbed: FrnkTabbedBackStacks,
     tabs: List<FrnkAdaptiveNavTab>,
     modifier: Modifier = Modifier,
-    engine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
     primaryAction: FrnkNavPrimaryAction? = null,
     onPrimaryAction: (() -> Unit)? = null,
     primaryActionRegistry: FrnkPrimaryActionRegistry? = null,
@@ -143,59 +136,43 @@ fun FrnkTabbedNavScaffold(
         }
 
         if (barVisible) {
-            when (engine) {
-                FrnkAdaptiveNavEngine.Calf -> {
-                    val calfItems = remember(tabs) { tabs.map { FrnkBottomNavItem(key = it.key, icon = it.icon, label = it.label) } }
-                    FrnkAdaptiveBottomNavBar(
-                        items = calfItems,
-                        selectedIndex = selectedIndex,
-                        onItemSelected = onItemSelected,
-                        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                    )
-                }
-
-                FrnkAdaptiveNavEngine.AdaptiveNavBar -> {
-                    val navBarItems =
-                        remember(tabs) {
-                            tabs.map {
-                                FrnkAdaptiveNavItem(
-                                    key = it.key,
-                                    label = it.label,
-                                    androidIcon = it.androidIcon,
-                                    iosSystemIcon = it.iosSystemIcon,
-                                    selectedAndroidIcon = it.selectedAndroidIcon,
-                                    selectedIosSystemIcon = it.selectedIosSystemIcon,
-                                )
-                            }
-                        }
-                    // Resolve the primary-action descriptor only when the action is actually wired, and
-                    // only on this engine — so the default Calf path never pays for the Theme lookup +
-                    // remember (the host-supplied [primaryAction] wins; otherwise fall back to the toolkit
-                    // default).
-                    val action = effectivePrimaryAction
-                    val resolvedPrimaryAction =
-                        if (action != null) primaryAction ?: rememberFrnkNavPrimaryAction() else null
-                    FrnkAdaptiveNavBarBottomBar(
-                        items = navBarItems,
-                        selectedIndex = selectedIndex,
-                        onItemSelected = onItemSelected,
-                        modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                        primaryAction = resolvedPrimaryAction,
-                        onPrimaryAction = action,
-                    )
-                    // The library renders the primary-action FAB inline on iOS only; dock the Android FAB
-                    // ourselves above the bar (guarded to Android via the library's getPlatform()).
-                    if (action != null && resolvedPrimaryAction != null && getPlatform() == Platform.Android) {
-                        FrnkAdaptiveNavBarPrimaryActionFab(
-                            primaryAction = resolvedPrimaryAction,
-                            onPrimaryAction = action,
-                            modifier =
-                                Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(end = 16.dp, bottom = reservedHeight + 16.dp),
+            val navBarItems =
+                remember(tabs) {
+                    tabs.map {
+                        FrnkAdaptiveNavItem(
+                            key = it.key,
+                            label = it.label,
+                            androidIcon = it.androidIcon,
+                            iosSystemIcon = it.iosSystemIcon,
+                            selectedAndroidIcon = it.selectedAndroidIcon,
+                            selectedIosSystemIcon = it.selectedIosSystemIcon,
                         )
                     }
                 }
+            // Resolve the primary-action descriptor only when the action is actually wired (the
+            // host-supplied [primaryAction] wins; otherwise fall back to the toolkit default).
+            val action = effectivePrimaryAction
+            val resolvedPrimaryAction =
+                if (action != null) primaryAction ?: rememberFrnkNavPrimaryAction() else null
+            FrnkAdaptiveNavBarBottomBar(
+                items = navBarItems,
+                selectedIndex = selectedIndex,
+                onItemSelected = onItemSelected,
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+                primaryAction = resolvedPrimaryAction,
+                onPrimaryAction = action,
+            )
+            // The library renders the primary-action FAB inline on iOS only; dock the Android FAB
+            // ourselves above the bar (guarded to Android via the library's getPlatform()).
+            if (action != null && resolvedPrimaryAction != null && getPlatform() == Platform.Android) {
+                FrnkAdaptiveNavBarPrimaryActionFab(
+                    primaryAction = resolvedPrimaryAction,
+                    onPrimaryAction = action,
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = reservedHeight + 16.dp),
+                )
             }
         }
     }

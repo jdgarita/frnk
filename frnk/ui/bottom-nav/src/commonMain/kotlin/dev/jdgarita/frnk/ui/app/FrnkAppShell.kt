@@ -15,7 +15,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
@@ -81,9 +80,9 @@ import kotlinx.serialization.modules.SerializersModule
  *    handler applies appearance changes and opens onboarding; everything else is a no-op until the
  *    host (or `FrnkAppScaffold`) supplies a handler.
  *
- * The bar's primary-action button (the "Create/Add" FAB; [FrnkAdaptiveNavEngine.AdaptiveNavBar]
- * engine only) is screen-routed: set [homePrimaryActionEnabled] so the Home tab claims it (taps
- * arrive as [HomeEffect.PrimaryActionInvoked]), and any other destination can claim it with
+ * The bar's primary-action button (the "Create/Add" FAB) is screen-routed: set
+ * [homePrimaryActionEnabled] so the Home tab claims it (taps arrive as [HomeEffect.PrimaryActionInvoked]),
+ * and any other destination can claim it with
  * `FrnkPrimaryActionHandler { … }`. [onPrimaryAction] remains the host-level fallback.
  */
 @Composable
@@ -97,7 +96,6 @@ fun FrnkAppShell(
     settingsRoot: NavKey = ToolkitRoute.Settings,
     middleTabs: List<FrnkAdaptiveNavTab> = emptyList(),
     hostRoutes: SerializersModule = EmptySerializersModule(),
-    engine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
     primaryAction: FrnkNavPrimaryAction? = null,
     onPrimaryAction: (() -> Unit)? = null,
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
@@ -152,7 +150,6 @@ fun FrnkAppShell(
             tabbed = tabbed,
             tabs = navTabs,
             modifier = modifier.fillMaxSize(),
-            engine = engine,
             primaryAction = primaryAction,
             onPrimaryAction = onPrimaryAction,
             primaryActionRegistry = primaryActions,

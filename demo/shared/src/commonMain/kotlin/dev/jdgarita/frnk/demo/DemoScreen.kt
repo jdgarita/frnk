@@ -28,7 +28,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import com.composables.icons.lucide.Check
-import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Search
@@ -64,7 +63,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
@@ -156,12 +154,10 @@ import org.koin.compose.viewmodel.koinViewModel
  * *can* depend on `:shared` uses `FrnkAppScaffold` instead, which layers the Koin assertion + live
  * entitlement-driven Settings + auto-mounted paywall over this same shell.
  *
- * **Bottom-bar A/B (POC).** A segmented control on the Home tab flips `state.navEngine` between
- * `FrnkAdaptiveNavEngine.Calf` (native iOS `UITabBar`, no primary-action button) and `.AdaptiveNavBar`
- * (with the built-in primary-action button — FAB on Android / inline on iOS). The button is
- * **screen-routed** through the shell's registry: the Home tab claims it (`homePrimaryActionEnabled`),
- * so it shows there and hides on the other tabs with no host-level conditional. The adaptive-nav
- * spike evaluation + the Android resource-packaging workaround are recorded in the MobiAI brain
+ * **Bottom bar.** The adaptive bar renders its built-in primary-action button (FAB on Android / inline on
+ * iOS), **screen-routed** through the shell's registry: the Home tab claims it (`homePrimaryActionEnabled`),
+ * so it shows there and hides on the other tabs with no host-level conditional. The adaptive-nav spike
+ * evaluation + the Android resource-packaging workaround are recorded in the MobiAI brain
  * (`mobiai brain search "adaptive bottom nav"`); the workaround assets live in
  * `demo/android-app/src/main/assets/composeResources/`.
  */
@@ -184,11 +180,9 @@ fun DemoScreen(
                 }
             }
         }
-    // One declaration per tab, carrying BOTH icon forms so the same list feeds either bar engine in the
-    // A/B (the ImageVector for Calf, plus a DrawableResource + SF-Symbol for adaptive-nav-bar). The
-    // shell supplies the Home/Settings bookends (icons/labels from theme tokens + the toolkit's bundled
-    // resources); the host only adds its middle "Components" tab, bundling its own resource icon
-    // (frnk_demo_components) the way a real host would.
+    // One declaration per tab. The shell supplies the Home/Settings bookends (labels from theme tokens +
+    // the toolkit's bundled resource icons); the host only adds its middle "Components" tab, bundling its
+    // own resource icon (frnk_demo_components) + SF-Symbol the way a real host would.
     val middleTabs =
         remember {
             listOf(
@@ -196,7 +190,6 @@ fun DemoScreen(
                     key = "components",
                     root = DemoRoute.Components,
                     label = "Components",
-                    icon = Lucide.Component,
                     androidIcon = Res.drawable.frnk_demo_components,
                     iosSystemIcon = "square.grid.2x2",
                 ),
@@ -225,8 +218,6 @@ fun DemoScreen(
         appearanceController = appearanceController,
         middleTabs = middleTabs,
         hostRoutes = hostRoutes,
-        // POC A/B: the engine is host-state, flipped live from the segmented control on the Home tab.
-        engine = state.navEngine,
         homeTopBar = homeTopBar,
         // The Home VM is seeded once via parametersOf; re-key it when isPro flips so the Upgrade
         // action appears/disappears (same trick as the Settings VM below).
@@ -355,27 +346,6 @@ private fun HomeTabContent(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
 ) {
-    Section(title = "0. Bottom nav engine (A/B POC)") {
-        FrnkText(
-            state =
-                FrnkTextState.BodySmall(
-                    text =
-                        "Flip the bottom bar live. Calf = native iOS UITabBar (no add button). " +
-                            "AdaptiveNavBar = the new lib with a built-in add button (FAB on Android, " +
-                            "inline on iOS) — tap it for a toast.",
-                    color = colorOnSurfaceVariant,
-                ),
-        )
-        FrnkSegmentedControl(
-            state =
-                FrnkSegmentedControlState.Content(
-                    options = listOf("Calf", "AdaptiveNavBar"),
-                    selectedIndex = if (state.navEngine == FrnkAdaptiveNavEngine.Calf) 0 else 1,
-                ),
-            onOptionSelected = { onIntent(DemoIntent.NavEngineChanged(it)) },
-        )
-    }
-
     Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
         Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {

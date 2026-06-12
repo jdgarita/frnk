@@ -10,8 +10,8 @@ plugins {
     alias(libs.plugins.sqldelight)
 }
 
-// Demo-bundled drawable for the Components tab icon under the adaptive-nav-bar engine (which takes a
-// DrawableResource, unlike Calf's ImageVector). Pin the generated accessor package for deterministic imports.
+// Demo-bundled drawable for the Components tab icon: the adaptive bottom bar takes resource-based icons
+// (DrawableResource). Pin the generated accessor package for deterministic imports.
 compose.resources {
     publicResClass = true
     packageOfResClass = "${ProjectConfiguration.GROUP_ID}.demo.generated.resources"
@@ -77,8 +77,8 @@ kotlin {
             api(projects.uiTheme)
             api(projects.uiComponents)
             api(projects.uiScaffolds)
-            // Platform-adaptive bottom nav (Calf-backed). The demo consumes the toolkit default from here
-            // rather than carrying any nav-bar implementation itself.
+            // Platform-adaptive bottom nav. The demo consumes the toolkit default from here rather than
+            // carrying any nav-bar implementation itself.
             api(projects.uiBottomNav)
             api(projects.analyticsApi)
             // Stage 11 capability scaffolds (matches the iOS export list above). Only the *-api

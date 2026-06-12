@@ -23,19 +23,19 @@ kotlin {
             // import this module uses (incl. LocalFrnkBottomBarInset).
             api(projects.uiScaffolds)
 
-            // The platform-adaptive bottom nav. This is the SOLE place the toolkit takes Material3 —
-            // a deliberate, host-approved trade that reaches every consumer of this module (and of
-            // :ui-app above it). Both bar engines are pure Kotlin/Compose (no extra native cinterop),
-            // so umbrella XCFrameworks still link under the consumer's existing dynamic_lookup.
+            // The platform-adaptive bottom bar (narendraanjana09's adaptive-nav-bar): a Material3
+            // NavigationBar on Android, a native glassy UITabBar (iOS 26+) / Material3 bar (older) on iOS,
+            // plus a built-in "add" button (FAB on Android, inline on iOS). This is the SOLE place the
+            // toolkit takes Material3 — a deliberate, host-approved trade that reaches every consumer of
+            // this module (and of :ui-app above it). The library is pure Kotlin/Compose (no extra native
+            // cinterop), so umbrella XCFrameworks still link under the consumer's existing dynamic_lookup.
             //
-            // Two engines coexist for the POC (FrnkAdaptiveNavEngine, selectable at runtime), so we can
-            // A/B their UX/performance directly:
-            //  - Calf — native UIKit UITabBar on iOS, Material3 NavigationBar on Android (the default).
-            //  - adaptive-nav-bar — Material3 NavigationBar on Android, a native glassy UITabBar (iOS 26+)
-            //    / Material3 bar (older) on iOS, plus a built-in "add" button (FAB on Android, inline on
-            //    iOS). Its icons are resource-based (DrawableResource + SF-Symbol string), so this module
-            //    also pulls in compose.components.resources and bundles the toolkit's default nav icons.
-            implementation(libs.calf.ui)
+            // Its icons are resource-based (DrawableResource + SF-Symbol string), so this module also
+            // pulls in compose.components.resources and bundles the toolkit's default nav icons. NOTE:
+            // under AGP 9.2.1's com.android.kotlin.multiplatform.library + Compose MP 1.11.1, those
+            // DrawableResources do NOT package into the Android APK from this KMP library module — every
+            // Android host must ship them as raw assets (see docs/HOST_INTEGRATION.md and the demo's
+            // demo/android-app/src/main/assets/composeResources/).
             implementation(libs.adaptive.nav.bar)
             implementation(compose.material3)
             implementation(compose.components.resources)

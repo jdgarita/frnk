@@ -9,7 +9,10 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset
 import dev.jdgarita.frnk.ui.theme.colorOnPrimary
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -22,8 +25,36 @@ import io.github.narendraanjana09.adaptivenavbar.IosFabItem
 import io.github.narendraanjana09.adaptivenavbar.NavigationItem
 import org.jetbrains.compose.resources.painterResource
 
+/** Shared layout metrics for the toolkit's adaptive bottom bar ([FrnkAdaptiveNavBarBottomBar]). */
+object FrnkAdaptiveBottomNavBarDefaults {
+    /**
+     * Body height of the bar — the Android Material3 `NavigationBar`'s fixed 80.dp. Internal because
+     * hosts should reserve [reservedHeight] (which adds the bottom system-bar inset) when padding
+     * scrollable content; the bare body clips the last item on edge-to-edge devices.
+     *
+     * **iOS is an approximation.** The native `UITabBar` is ~49pt tall (plus the bottom safe-area
+     * inset) — close to but not exactly 80.dp, and Compose's `WindowInsets.navigationBars` is the
+     * Compose-reported inset, not UIKit's `safeAreaInsets.bottom`. So on iOS [reservedHeight] is a
+     * generous estimate of the native bar's footprint, not a pixel-exact match. It is read by
+     * [FrnkTabbedNavScaffold] to inset content scrolling **behind** the overlaid bar.
+     */
+    internal val BarHeight: Dp = 80.dp
+
+    /**
+     * The bar's **full** reserved height = [BarHeight] + the bottom navigation-bar inset the bar sits
+     * above (the Material3 `NavigationBar` consumes `WindowInsets.navigationBars`, so its real height
+     * grows by that inset on devices with a non-zero bottom inset). Hosts that **overlay** the bar over
+     * scrollable content (as [FrnkTabbedNavScaffold] does) reserve this much as the content's bottom
+     * inset so the last item clears the bar — reserving only [BarHeight] clips it. See [BarHeight] for
+     * the iOS approximation caveat.
+     */
+    val reservedHeight: Dp
+        @Composable
+        get() = BarHeight + frnkBottomSystemBarInset()
+}
+
 /**
- * The [FrnkAdaptiveNavEngine.AdaptiveNavBar] bottom bar, wrapping
+ * The toolkit's **platform-adaptive** bottom bar, wrapping
  * [narendraanjana09/adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)'s
  * `AdaptiveNavigationBar` — a Material3 `NavigationBar` on Android and a native glassy `UITabBar`
  * (iOS 26+) / Material3 bar (older) on iOS. Generic over [FrnkAdaptiveNavItem] (resource icons, since
@@ -41,8 +72,9 @@ import org.jetbrains.compose.resources.painterResource
  * `MaterialTheme`, so we pass the brand palette explicitly (selected = `colorPrimary`, unselected =
  * `colorOnSurfaceVariant`, indicator = `colorPrimaryContainer`, surface = `colorSurface`).
  *
- * This is the POC sibling of the Calf-backed `FrnkAdaptiveBottomNavBar`; both live here so a host can
- * A/B them via [FrnkAdaptiveNavEngine].
+ * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkTabbedNavScaffold]
+ * (or `FrnkAppShell` above it) rather than calling it directly. For the Material-free floating pill,
+ * use `FrnkBottomNavBar` in `:ui-components` instead.
  */
 @Composable
 fun FrnkAdaptiveNavBarBottomBar(
@@ -142,7 +174,7 @@ fun FrnkAdaptiveNavBarBottomBar(
 }
 
 /**
- * The Android FAB for the [FrnkAdaptiveNavEngine.AdaptiveNavBar] primary-action button — a Material3
+ * The Android FAB for the bar's primary-action button — a Material3
  * `FloatingActionButton` tinted from `FrnkTheme` tokens. The library doesn't render the Android FAB
  * itself, so [FrnkTabbedNavScaffold] docks this above the bar (guarded to Android via the library's
  * `getPlatform()`); on iOS the FAB comes from the [IosFabItem] inside [FrnkAdaptiveNavBarBottomBar].

@@ -39,12 +39,9 @@ robolectric = "4.16.1"
 # and update this to match, or ui-test-manifest can lag the rest of the compose-ui graph (obscure
 # ComponentActivity/test-host failures rather than a clear version conflict).
 androidx-compose-ui = "1.11.2"  # re-resolved for CMP 1.11.1
-# Calf adaptive nav bar: native UITabBar on iOS / Material3 NavigationBar on Android. Lives in the
-# :shared-ui-nav module (the toolkit's sole, deliberate Material3 dependency).
-calf = "0.12.0"
-# POC (side-by-side A/B with Calf): narendraanjana09's adaptive-nav-bar — Material3 NavigationBar on
+# The toolkit's adaptive bottom bar (narendraanjana09's adaptive-nav-bar): Material3 NavigationBar on
 # Android, a native glassy UITabBar (iOS 26+) / Material3 bar (older) on iOS, plus a built-in add FAB.
-# Also in :shared-ui-nav; selectable at runtime via FrnkAdaptiveNavEngine. Evaluated vs Calf.
+# Lives in :ui-bottom-nav — the toolkit's sole, deliberate Material3 dependency.
 adaptive-nav-bar = "1.0.1"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
@@ -109,10 +106,8 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 multihaptic-core = { module = "top.ltfan.multihaptic:multihaptic-core", version.ref = "multihaptic" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihaptic" }
 
-# Calf adaptive nav bar (native UITabBar on iOS / Material3 NavigationBar on Android). Hosted in
-# :shared-ui-nav — the toolkit's single, deliberate Material3 dependency, shipped via :shared/FrnkKit.
-calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
-# POC alternative bar (A/B vs Calf), also in :shared-ui-nav. Same Material3 footprint.
+# The toolkit's adaptive bottom bar, hosted in :ui-bottom-nav — the single, deliberate Material3
+# dependency. Native UITabBar (iOS 26+) / Material3 bar on iOS, Material3 NavigationBar on Android.
 adaptive-nav-bar = { module = "io.github.narendraanjana09:adaptive-nav-bar", version.ref = "adaptive-nav-bar" }
 
 # Compose Unstyled

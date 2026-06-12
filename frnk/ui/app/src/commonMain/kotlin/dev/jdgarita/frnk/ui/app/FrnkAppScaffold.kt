@@ -14,7 +14,6 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
@@ -72,7 +71,6 @@ fun FrnkAppScaffold(
     appearanceController: AppearanceController? = null,
     middleTabs: List<FrnkAdaptiveNavTab> = emptyList(),
     hostRoutes: SerializersModule = EmptySerializersModule(),
-    engine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
     primaryAction: FrnkNavPrimaryAction? = null,
     onPrimaryAction: (() -> Unit)? = null,
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
@@ -102,7 +100,6 @@ fun FrnkAppScaffold(
         appearanceController = appearanceController,
         middleTabs = middleTabs,
         hostRoutes = hostRoutes,
-        engine = engine,
         primaryAction = primaryAction,
         onPrimaryAction = onPrimaryAction,
         hideBarFor = hideBarFor,

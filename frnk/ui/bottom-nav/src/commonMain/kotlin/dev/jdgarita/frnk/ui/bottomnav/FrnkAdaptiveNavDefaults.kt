@@ -7,30 +7,24 @@ import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res
 import dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_home
 import dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_settings
-import dev.jdgarita.frnk.ui.theme.iconNavHome
-import dev.jdgarita.frnk.ui.theme.iconSettings
-import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.stringNavHome
 import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.theme.strings
 
 /**
- * Builds the default [FrnkAdaptiveNavTab] list for [FrnkTabbedNavScaffold], enforcing the same product
- * contract as [rememberFrnkBottomNavState] — **every app has at least Home and Settings** — but for the
- * nav3 multiple-back-stack path: a fixed **Home** tab, the host's optional [middleTabs], then a fixed
- * **Settings** tab. This is what gives the bookends "the same treatment" across both bar engines: Home
- * and Settings resolve their `ImageVector` (Calf) from `iconNavHome`/`iconSettings` tokens **and** carry
- * the toolkit's bundled resource icons (`adaptive-nav-bar` engine) + SF-Symbol names, with labels from
- * `stringNavHome`/`stringSettings`. Hosts re-skin them through `FrnkThemeConfig`.
+ * Builds the default [FrnkAdaptiveNavTab] list for [FrnkTabbedNavScaffold], enforcing the toolkit's
+ * product contract — **every app has at least Home and Settings** — for the nav3 multiple-back-stack
+ * path: a fixed **Home** tab, the host's optional [middleTabs], then a fixed
+ * **Settings** tab. Home and Settings carry the toolkit's bundled resource icons + SF-Symbol names, with
+ * labels from `stringNavHome`/`stringSettings`. Hosts re-skin the labels through `FrnkThemeConfig`.
  *
  * The host supplies each bookend's back-stack [homeRoot]/[settingsRoot] (the `NavKey` its tab starts
  * from) since routes are host-defined; middle tabs (with their own icons/roots) slot between them.
  *
  * **Pass a stable [middleTabs] list** — `remember` each `FrnkAdaptiveNavTab` (or the whole list) rather
- * than constructing them inline every recomposition. This builder keys its `remember` on [middleTabs], and
- * `FrnkAdaptiveNavTab` carries an `ImageVector` (referential equality), so a freshly-built tab each frame
- * busts this cache → a new tab list every frame → `FrnkTabbedNavScaffold` (and the derived back stacks)
- * become non-skippable.
+ * than constructing them inline every recomposition. This builder keys its `remember` on [middleTabs], so
+ * a freshly-built tab each frame busts this cache → a new tab list every frame → `FrnkTabbedNavScaffold`
+ * (and the derived back stacks) become non-skippable.
  *
  * @param homeRoot the Home tab's back-stack root destination.
  * @param settingsRoot the Settings tab's back-stack root destination.
@@ -46,8 +40,6 @@ fun rememberFrnkAdaptiveNavTabs(
     homeKey: String = "home",
     settingsKey: String = "settings",
 ): List<FrnkAdaptiveNavTab> {
-    val homeIcon = Theme[icons][iconNavHome]
-    val settingsIcon = Theme[icons][iconSettings]
     val homeLabel = Theme[strings][stringNavHome]
     val settingsLabel = Theme[strings][stringSettings]
 
@@ -57,8 +49,6 @@ fun rememberFrnkAdaptiveNavTabs(
         middleTabs,
         homeKey,
         settingsKey,
-        homeIcon,
-        settingsIcon,
         homeLabel,
         settingsLabel,
     ) {
@@ -68,7 +58,6 @@ fun rememberFrnkAdaptiveNavTabs(
                     key = homeKey,
                     root = homeRoot,
                     label = homeLabel,
-                    icon = homeIcon,
                     androidIcon = Res.drawable.frnk_nav_home,
                     iosSystemIcon = "house",
                 ),
@@ -79,7 +68,6 @@ fun rememberFrnkAdaptiveNavTabs(
                     key = settingsKey,
                     root = settingsRoot,
                     label = settingsLabel,
-                    icon = settingsIcon,
                     androidIcon = Res.drawable.frnk_nav_settings,
                     iosSystemIcon = "gearshape",
                 ),

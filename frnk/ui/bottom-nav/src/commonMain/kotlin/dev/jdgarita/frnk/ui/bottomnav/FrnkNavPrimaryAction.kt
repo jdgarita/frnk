@@ -15,8 +15,7 @@ import org.jetbrains.compose.resources.DrawableResource
  * treatment as the Home/Settings bookends: a default [androidIcon] (the bundled plus drawable) +
  * [iosSystemIcon] (`"plus"`) + [label] (the [stringPrimaryAction] token, host-overridable via
  * `FrnkThemeConfig.stringOverrides`). The button renders as a FAB on Android and an inline button beside
- * the items on iOS (see [FrnkAdaptiveNavBarBottomBar]); it shows only on
- * [FrnkAdaptiveNavEngine.AdaptiveNavBar].
+ * the items on iOS (see [FrnkAdaptiveNavBarBottomBar]); it shows only when an action is wired.
  *
  * It is the **primary action** of the current surface, not a fixed "add" — a host wires it per screen
  * (create on one tab, compose on another, scan on a third). Re-skin the icon/label per context by passing
