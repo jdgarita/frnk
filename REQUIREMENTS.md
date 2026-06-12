@@ -17,7 +17,7 @@
 `frnk` is a **Kotlin Multiplatform (KMP) + Compose Multiplatform (CMP) toolkit** —
 not a shippable application. It is a reusable foundation that downstream mobile
 apps (Android + iOS) consume to avoid re-implementing the same cross-cutting
-concerns (design system, DI, navigation, persistence, remote data, analytics,
+concerns (design system, DI, navigation, persistence, remote config, analytics,
 monetization) on every new product.
 
 ### 1.1 Consumption model
@@ -31,7 +31,7 @@ monetization) on every new product.
 - Downstream **iOS** apps build their own umbrella XCFramework exporting the frnk
   modules they use (the demo's `DemoKit` is the worked example; see
   `docs/HOST_INTEGRATION.md` §6).
-- `androidDemoApp` and `iosDemoApp` are **internal smoke harnesses only** — they
+- `demo-android` and `iosDemoApp` are **internal smoke harnesses only** — they
   are not the shipping product and downstream consumers never depend on them.
 
 ### 1.2 Non-goals
@@ -61,18 +61,23 @@ descriptions.
     dependency may ever appear here.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
-  - `:shared:backend:api` ↔ `:shared:backend:firebase`
+  - `:analytics-api` ↔ `:analytics-impl` (analytics + crash; Firebase)
+  - `:remote-config-api` ↔ `:remote-config-impl` (Remote Config; Firebase — a sibling of analytics, Stage 11)
   - `:data-db-api` ↔ `:data-db-impl` (SQL driver SPI; split at restructure Stage 4)
   - `:data-prefs-api` ↔ `:data-prefs-impl` (key-value; split at restructure Stage 4)
-  - `shared-monetization-api` ↔ `shared-monetization-revenuecat`
+  - `:monetization-api` ↔ `:monetization-impl` (RevenueCat)
+  - `:camera` / `:permissions` are api-only **scaffolds** (Stage 11) — interface + no-op default, no impl yet.
 - **Rule:** Domain code depends only on `*-api`. Toolkit code never imports an
   `*-impl` package — impls enter the graph only through the host's
   `initializeFrnk(modules = …)` list (demo wiring is the sanctioned exception;
   the `DatabaseContext` bootstrap seam lives in `:core-di` itself since Stage 4).
-- `shared-ui-api` owns the MVI engine and carries **no Compose dependency**, so
-  ViewModels compile without dragging in `compose.runtime`.
-- `shared-ui-atoms` owns the design system (tokens, theme engine, atoms,
-  scaffolds) and is the lowest module allowed to depend on Compose.
+- `:core-mvi` owns the MVI engine and `:core-nav` the type-safe Navigation3
+  contract — both carry **no Compose dependency**, so ViewModels compile without
+  dragging in `compose.runtime` (split out of the old `shared-ui-api` at Stage 6).
+- The design system (tokens, theme engine, atoms, molecules, organisms,
+  scaffolds) lives across `:ui-theme` → `:ui-components` → `:ui-scaffolds` (split
+  out of the old `shared-ui-atoms` at Stage 7); `:ui-theme` is the lowest module
+  allowed to depend on Compose.
 
 ### 2.2 Explicit-module-list bootstrap (MANDATORY)
 
@@ -98,10 +103,11 @@ descriptions.
   exhaustively with a compile-checked `when`.
 - New interfaces must preserve this contract.
 
-### 2.4 `:shared-demo` isolation (MANDATORY)
+### 2.4 `:demo-shared` isolation (MANDATORY)
 
-- `:shared-demo` depends only on the `*-api` modules + `shared-ui-atoms` +
-  `shared-ui-nav` + `shared-monetization-ui` — never on an `*-impl` module in
+- `:demo-shared` depends only on the `*-api` modules +
+  `:ui-theme`/`:ui-components`/`:ui-scaffolds` + `:ui-bottom-nav` +
+  `:shared-monetization-ui` — never on an `*-impl` module in
   its common surface. This keeps `DemoKit.xcframework` free of Firebase /
   RevenueCat / SQLite native cinterops so `iosDemoApp` boots on a clean
   simulator with no CocoaPods.
@@ -116,7 +122,7 @@ descriptions.
 - KMP-Android modules apply `com.android.kotlin.multiplatform.library` and
   configure Android via `kotlin { android { … } }` — **not** a top-level
   `android {}` block, and **not** `kotlin.android`.
-- `:androidDemoApp` is the only `com.android.application`; it uses AGP 9's
+- `:demo-android` is the only `com.android.application`; it uses AGP 9's
   built-in Kotlin and must not re-add `kotlin.android`.
 - Shared constants live in `buildSrc/.../ProjectConfiguration.kt`. AGP 9 caps
   `compileSdk` at 36.
@@ -169,14 +175,17 @@ targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`
   `multiplatform-settings` (`:data-prefs-impl`, bound by `prefsModule`).
 - Drivers and the settings impl live only in the `*-impl` modules.
 
-### 3.5 Remote data sources
+### 3.5 Remote config
 
-- Pluggable backend behind `:shared:backend:api`: `RemoteData`,
-  `AnalyticsTracker`, `CrashReporter`. (`AuthService` + the Supabase impl were
-  dropped in restructure Stage 2 — remote data is being repurposed as Firebase
-  Remote Config at Stage 11.)
-- Implementation: **Firebase** (`dev.gitlive:firebase-*`) — firestore,
-  analytics, crashlytics.
+- Read-only typed remote configuration behind `:remote-config-api`:
+  `RemoteConfigService` (typed key→value + `fetchAndActivate`). Its own
+  capability pair, a **sibling of analytics** (restructure Stage 11, OQ-1) — it
+  replaced the old generic Firestore-shaped `RemoteData` stub (`AuthService` +
+  the Supabase impl were dropped at Stage 2; the Firestore stub deleted at
+  Stage 11).
+- Implementation: **Firebase Remote Config** (`dev.gitlive:firebase-config`),
+  `:remote-config-impl`. Install `remoteConfigModule` for the real backend, XOR
+  `noopRemoteConfigModule` (`:remote-config-api`) to read bundled defaults only.
 - Installed at runtime by passing its Koin module to `initializeFrnk(...)`.
 
 ### 3.6 Analytics
@@ -191,16 +200,16 @@ targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`
 ### 3.7 Monetization (RevenueCat)
 
 - In-app purchases / entitlements via **RevenueCat** (`purchases-kmp`).
-- `shared-monetization-api` owns `EntitlementManager` + `FeatureGate`;
-  `shared-monetization-revenuecat` provides the concrete `EntitlementManager`.
+- `:monetization-api` owns `EntitlementManager` + `FeatureGate`;
+  `:monetization-impl` provides the concrete RevenueCat `EntitlementProvider`.
 - Capability target: fetch offerings, present a paywall, run a purchase/restore
   flow, and gate features on active entitlements — all reactive to entitlement
   changes.
 
 ### 3.8 Demo coverage (cross-cutting requirement)
 
-- **Every feature is demoed in all three demo layers:** `:shared-demo`
-  (cross-platform), `androidDemoApp` (runs on device/emulator), and `iosDemoApp`
+- **Every feature is demoed in all three demo layers:** `:demo-shared`
+  (cross-platform), `demo-android` (runs on device/emulator), and `iosDemoApp`
   (runs in a simulator). A feature is not "done" until it is exercised in all
   three, or a written justification explains why it cannot be.
 
@@ -230,10 +239,13 @@ review regardless of other merits.
 
 ## 5. Quality & process requirements
 
-- **CI** (`.github/workflows/main.yml`): compile-only gate
-  (`compileAndroidMain` + the demo app's `compileDebugKotlin`) followed by
-  `testAndroidHostTest` + the demo app's `testDebugUnitTest`, both
-  `--parallel --build-cache`. No `assemble`, no `allTests`, no `ktlintCheck` in CI.
+- **CI** is **paused while the repo is private** — the per-push `compile & test`
+  job (`main.yml`) and the auto PR review were removed to stay under the
+  free-tier Actions cap (only `release.yml` + `claude.yml` remain). The same gate
+  runs **locally** before pushing: compile-only (`compileAndroidMain` + the demo
+  app's `compileDebugKotlin`) followed by `testAndroidHostTest` + the demo app's
+  `testDebugUnitTest`, both `--parallel --build-cache`. No `assemble`, no
+  `allTests`, no `ktlintCheck`. The job returns once the repo goes public.
 - **Style** is enforced **locally** by the `.githooks/pre-commit` hook running
   `ktlintFormat` and re-staging — installed automatically via `installGitHooks`.
   Bypass for one commit with `SKIP_KTLINT=1` or `--no-verify`.
@@ -241,7 +253,7 @@ review regardless of other merits.
   `commonTest` + `androidHostTest`. KMP-Android modules run host unit tests under
   **`testAndroidHostTest`** (not `testDebugUnitTest`) and must opt in with
   `kotlin { android { withHostTest {} } }`. The shared `FakeAnalyticsTracker` /
-  `FakeCrashReporter` test doubles in `:shared:backend:api`'s `commonTest` are the
+  `FakeCrashReporter` test doubles in `:analytics-api`'s `commonTest` are the
   canonical fake pattern for `*-api` interfaces.
 - **Bootstrap:** `cp local.properties.template local.properties` (only
   `sdk.dir` is required; demo extras like `REVENUECAT_ANDROID_API_KEY` are
@@ -314,7 +326,7 @@ never ships in its dependency graph at all.
 - Reversible: Maven coordinates are stable, so flipping to published artifacts
   later is non-breaking.
 
-### 6.8 Why MVI with no Compose in `shared-ui-api`
+### 6.8 Why MVI with no Compose in `:core-mvi`
 
 Keeps the presentation contract (`UiState`/`UiIntent`/`UiEffect`,
 `MviViewModel`) compilable and testable without `compose.runtime`, so the engine
@@ -322,8 +334,8 @@ is reusable and unit-testable in isolation.
 
 ### 6.9 Why the iOS `dynamic_lookup` linker option
 
-`shared-monetization-revenuecat` cinterops the native RevenueCat SDK and
-`:shared:backend:firebase` references Firebase. The toolkit does not ship those
+`:monetization-impl` cinterops the native RevenueCat SDK and
+`:analytics-impl` references Firebase. The toolkit does not ship those
 native frameworks; an umbrella XCFramework bundling these modules uses
 `linkerOpts("-undefined", "dynamic_lookup")` to defer symbol resolution so it
 links locally and the consumer's Xcode project resolves the native SDKs at

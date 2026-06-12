@@ -14,7 +14,7 @@ exercises the MVI engine + `FeatureGate` via fakes.
 | Xcode app | This folder |
 
 `DemoKit.xcframework` exports the toolkit's **`*-api`** modules plus
-`shared-ui-atoms` — no `*-impl` modules in its common surface. It links two native SDKs via
+`:ui-theme`/`:ui-components`/`:ui-scaffolds` + `:ui-bottom-nav` — no `*-impl` modules in its common surface. It links two native SDKs via
 `iosMain` cinterops so the demo can exercise the real paths (each supplied by this
 app via SPM under `dynamic_lookup`):
 - **CrashKiOS** (BACKLOG P1-5b) — the "Force crash" panic button → Firebase Crashlytics.
@@ -85,8 +85,8 @@ up a fresh framework — no manual gradle invocation needed.
   `UIViewControllerRepresentable` (`ComposeViewController.swift`).
 - MVI effects (`DemoEffect.Toast`, `DemoEffect.Navigate`) routed from Compose
   back to a SwiftUI toast overlay (`ContentView.swift`).
-- Theming via `ProvideToolkitTheme(colors = demoBlueColors())` — same palette
-  Android uses, defined once in `:demo-shared` commonMain.
+- Theming via `FrnkAppShell`'s `themeConfig` (a `FrnkThemeConfig` demo palette) —
+  the same palette Android uses, defined once in `:demo-shared` commonMain.
 - `FeatureGate` exercised against the **real** RevenueCat Test Store provider (offerings,
   sandbox purchase, restore) — plus the frnk-owned **god mode** override (Settings → tap the
   version 7× → Developer), which forces Pro independent of RevenueCat.

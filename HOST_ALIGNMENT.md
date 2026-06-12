@@ -32,7 +32,7 @@ dependencies {
     implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:monetization-impl")  // revenueCatModule (optional)
-    // + :analytics-impl for firebaseObservabilityModule / firebaseBackendModule
+    // + :analytics-impl for firebaseObservabilityModule, :remote-config-impl for remoteConfigModule
 }
 ```
 
@@ -164,7 +164,7 @@ setContent {
   `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button renders on the
   `AdaptiveNavBar` engine; it hides while no screen holds a claim and no host fallback is wired).
 - A module that can't depend on `:ui-app` composes **`FrnkAppShell`** (`:ui-bottom-nav`) directly —
-  the same shell minus the monetization batteries; `:shared-demo`'s `DemoScreen` is the reference.
+  the same shell minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the reference.
 
 ---
 
@@ -263,9 +263,9 @@ field for content-sized text skeletons. See `frnk/ui/components/CLAUDE.md` for t
 
 ## 7. Demo isolation & the upstream rule
 
-`androidDemoApp` / `iosDemoApp` are **pure host harnesses**: they only initialize frnk, provide config
+`demo-android` / `iosDemoApp` are **pure host harnesses**: they only initialize frnk, provide config
 overrides, and showcase default behavior — they contain **zero** reusable library logic (the shared demo UI
-itself lives in `:shared-demo`, consumed by both). Treat them as disposable references for how a host wires
+itself lives in `:demo-shared`, consumed by both). Treat them as disposable references for how a host wires
 the toolkit.
 
 **The upstream rule:** anything reusable belongs **inside** a `frnk` `shared-*` module, never at the app

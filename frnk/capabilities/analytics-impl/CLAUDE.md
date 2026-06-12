@@ -22,7 +22,7 @@ Firebase iOS frameworks (`FirebaseAnalytics`, `FirebaseCrashlytics`, …) are **
 ### Crash symbolication (CrashKiOS)
 The hook converts an uncaught Kotlin crash into a Crashlytics report, but Crashlytics still needs the **Kotlin framework dSYM** to symbolicate the Kotlin frames. Umbrella frameworks are `isStatic = true`, so Kotlin symbols link into the consumer app binary — the consumer uploads dSYMs at *their* archive step (the standard Firebase `upload-symbols` run-script, and/or the CrashKiOS `crashlyticslink` Gradle plugin). The toolkit cannot do this (it has no access to the consumer's archive). Recommend consumers upload **all** dSYMs (app-archive `dSYMs/` + the XCFramework's bundled `ios-*/dSYMs/`). The hook is installed before the consumer's `FirebaseApp.configure()` runs — that's fine: it only needs Crashlytics live at *crash* time.
 
-> **CI caveat:** all `iosMain` CrashKiOS code is uncompiled by `compileAndroidMain`/`testAndroidHostTest` (Linux CI skips iOS targets). A CrashKiOS API/signature drift ships green — run a local macOS `./gradlew compileKotlinIosSimulatorArm64` (or `:shared-demo:assembleDemoKitDebugXCFramework`) before merging changes here.
+> **CI caveat:** all `iosMain` CrashKiOS code is uncompiled by `compileAndroidMain`/`testAndroidHostTest` (Linux CI skips iOS targets). A CrashKiOS API/signature drift ships green — run a local macOS `./gradlew compileKotlinIosSimulatorArm64` (or `:demo-shared:assembleDemoKitDebugXCFramework`) before merging changes here.
 
 ## Dependencies
 

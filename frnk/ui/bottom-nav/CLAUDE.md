@@ -89,7 +89,7 @@ consumer's existing `-undefined dynamic_lookup`.
   (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; **never** re-register the built-in routes,
   nav3 `require`-throws on duplicates), and the effect handlers — all receive the `FrnkAppScope`.
   Assumes **Koin is already started** (`frnkUiModules()` in `:ui-app` carries all scaffold VM modules). `:ui-app`'s
-  `FrnkAppScaffold` layers the monetization batteries over this; `:shared-demo` uses the shell
+  `FrnkAppScaffold` layers the monetization batteries over this; `:demo-shared` uses the shell
   directly (it can't see `:ui-app`) and is the reference integration.
 - `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` + `primaryActions` registry +
   `navigateTo`/`back`/`clearAndNavigateTo`) handed to every shell extension point.

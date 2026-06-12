@@ -20,4 +20,4 @@ The apex of the ui column (`dev.jdgarita.frnk.ui.app`) — the batteries-include
 
 ## Demo
 
-`androidDemoApp`'s `AppScaffoldSmokeActivity` is the device smoke (`adb shell am start -n dev.jdgarita.frnk.demo/.AppScaffoldSmokeActivity`); `:shared-demo` can't exercise this module (it composes `FrnkAppShell` directly).
+`demo-android`'s `AppScaffoldSmokeActivity` is the device smoke (`adb shell am start -n dev.jdgarita.frnk.demo/.AppScaffoldSmokeActivity`); `:demo-shared` can't exercise this module (it composes `FrnkAppShell` directly).

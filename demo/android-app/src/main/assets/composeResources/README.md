@@ -1,7 +1,7 @@
 # Compose-resources workaround assets (POC)
 
 These XML files duplicate the bundled Compose-resource drawables that the **adaptive-nav-bar** bottom-bar
-engine (POC, see `:shared-ui-nav`) needs on Android.
+engine (POC, see `:ui-bottom-nav`) needs on Android.
 
 **Why they live here.** Under the current toolchain (AGP 9.2.1 `com.android.kotlin.multiplatform.library`
 + Compose Multiplatform 1.11.1), the Compose-resources Gradle plugin does **not** package

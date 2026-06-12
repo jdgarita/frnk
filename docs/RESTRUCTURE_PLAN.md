@@ -1,7 +1,10 @@
 # frnk Restructure Plan — flat `shared-*` → layered `frnk/{core,data,ui,capabilities}` + `demo/`
 
-> Status: **approved, not started**. Each stage below is an independent unit of work (one frnk PR +
-> one still PR). Update the checkbox + "Landed" column as stages ship.
+> Status: **COMPLETE — all 12 stages landed (last: 2026-06-11).** The toolkit is now a flat,
+> layered module tree under `frnk/{core,data,ui,capabilities}/` + `demo/`, with the api/impl split,
+> no aggregators (host-assembled Koin module lists via `:core-di`), umbrella-only iOS consumption,
+> and docs that match. This document is retained as the **history ledger** of the restructure — do
+> not scrub its stage descriptions. Future work returns to normal feature/BACKLOG items.
 
 ## 1. Goal
 
@@ -394,16 +397,23 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
   Firebase Remote Config impl exposed as a Koin module. Note still already does Remote Config
   natively on Android (`:androidApp`, legal-URL resolution) — candidate first consumer.
 
-### ☐ Stage 12 — CI + docs consistency sweep  — risk: low
+### ☑ Stage 12 — CI + docs consistency sweep  — risk: low — **landed 2026-06-11**
 
-- `docs/ARCHITECTURE.md`: full rewrite of the module graph + the §3 dependency rules.
-- `docs/HOST_INTEGRATION.md`: new coordinates table, explicit Koin assembly snippet, updated
-  composite-build instructions.
-- Root + per-module `CLAUDE.md`s, `README.md`, `HOST_ALIGNMENT.md`, `BACKLOG.md`: paths, commands,
-  the retired "implement every backend call in both Firebase and Supabase" convention, retired
-  FrnkKit/`:shared` references.
-- Load-bearing doc edits (commands, paths) still happen incrementally in each stage; this stage is
-  the consistency pass.
+- `docs/ARCHITECTURE.md`: rewrote the module graph to a clean steady state + codified the §3
+  dependency rules; Stage 11 capabilities (`:remote-config-*`, `:camera`, `:permissions`) folded in;
+  stage-history parentheticals removed (pointer to this plan).
+- `docs/HOST_INTEGRATION.md`: added the module **coordinates table** (§0), verified the explicit Koin
+  assembly snippet, refreshed composite-build + iOS umbrella guidance, and corrected the stale
+  `ProvideToolkitTheme`/`Navigator` §2–§3 API names to `FrnkTheme`/`ToolkitRoute`.
+- Repo-wide stale-name + retired-convention scrub across the `.md`s: dropped the deleted
+  `firebaseBackendModule` live-refs (root `CLAUDE.md`, `README.md`, `HOST_ALIGNMENT.md`), the
+  `RemoteData`/Firestore live-refs (→ Remote Config), the Supabase "dual-backend" rule
+  (`analytics-api/CLAUDE.md`), and the last stale coordinates (`:shared-demo`/`:androidDemoApp` live
+  commands → `:demo-shared`/`:demo-android`; `shared-ui-nav` → `:ui-bottom-nav`). History preserved.
+- CI was already clean (`release.yml` + `claude.yml` only; build/test removed at the "CI paused"
+  refresh) — confirmed, not re-done.
+- **still impact: none** (docs-only; no submodule bump). With this stage the 12-stage restructure is
+  **complete.**
 
 ## 7. Granularity
 

@@ -9,7 +9,7 @@ This package (`dev.jdgarita.frnk.ui.placeholder`) is a vendored, material-free s
 ## Why vendored instead of depended-upon
 
 The upstream artifact (`com.revenuecat.purchases:placeholder`) hard-depends on Material3 / Material2 /
-material-icons-extended in `commonMain`. `shared-ui-atoms` is a deliberately Material3-free, headless
+material-icons-extended in `commonMain`. `:ui-components` is a deliberately Material3-free, headless
 design system (see the module's `CLAUDE.md`), so the published artifact could not be added without
 violating that constraint. Only the **material-free core** is vendored here.
 

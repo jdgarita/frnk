@@ -6,6 +6,11 @@
 > cited so each claim is verifiable.
 >
 > Legend: ✅ Done · 🟡 Partial / skeleton · ⛔ Missing · ⚠️ Tech debt / deviation
+>
+> **Superseded snapshot:** this is a dated point-in-time evaluation from **before** the 12-stage
+> module restructure, so it names the pre-restructure layout (`:shared` aggregator, `BackendChoice`,
+> `shared-ui-*`, Firestore `RemoteData`). It is kept as history. For the current module graph see
+> `docs/ARCHITECTURE.md`; for the restructure history see `docs/RESTRUCTURE_PLAN.md`.
 
 This document grades the toolkit against `REQUIREMENTS.md`. The remediation work
 is enumerated, prioritized, and given acceptance criteria in `BACKLOG.md`.

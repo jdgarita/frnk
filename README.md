@@ -31,8 +31,11 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `ui-components` | The **component tier** on `compose-unstyled`: `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`, `FrnkBottomNavBar`), molecules (`FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (`FrnkListSection`, `FrnkProfileHeader`), and the built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`). |
 | `ui-scaffolds` | The **page templates** + the Compose binding layer for the MVI/nav engines: scaffolds (`OnboardingScreen`, `SettingsScreen`, `BottomNavScaffold`, `HomeScreen`, `FrnkScreenScaffold`), `FrnkMviScreen` + `EffectCollector`, and `FrnkNavDisplay` + `rememberFrnkNavBackStack` + `rememberFrnkTabbedBackStacks` + the slide animations. |
 | `ui-bottom-nav` | **Platform-adaptive bottom navigation** — `FrnkAdaptiveBottomNavBar` rendering a native UIKit `UITabBar` on iOS and a Material3 `NavigationBar` on Android (via [Calf](https://github.com/MohamedRejeb/Calf), themed from `FrnkTheme` tokens), plus two scaffolds: `FrnkTabbedNavScaffold` (the nav3 multiple-back-stack tabbed scaffold — one call wires the display + bar + tab switching + back convention + bar inset) and `FrnkAdaptiveBottomNavScaffold` (the simpler index-based variant for single-screen tabs). **The toolkit's sole Material3 dependency**, deliberately isolated here so `ui-theme`/`ui-components`/`ui-scaffolds` stay `compose-unstyled`-only. |
-| `analytics-api` | Analytics / CrashReporter / RemoteData interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
-| `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseBackendModule` (remote data) and `firebaseObservabilityModule` (analytics + crash). |
+| `analytics-api` | Analytics / CrashReporter interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
+| `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseObservabilityModule` (analytics + crash). |
+| `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
+| `remote-config-impl` | Firebase Remote Config impl. Exposes `remoteConfigModule`. |
+| `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
 | `data-db-api` | The SQL persistence SPI: `SqlDriverFactory` (the toolkit owns no schema — hosts bring their own SQLDelight database; the demo's `DemoDB` is the worked example). |
 | `data-db-impl` | Platform SQLDelight drivers (Android/Native). Exposes `databaseModule`. |
 | `data-prefs-api` | Key-value contracts: `KeyValueStore` + the typed `Preference<T>` accessors. |
@@ -50,8 +53,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **DI:** Koin 4.2.1
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
-- **Backend:** GitLive Firebase 2.4.0 (remote data)
-- **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in by installing `firebaseObservabilityModule`, independent of the backend
+- **Remote Config:** GitLive Firebase Remote Config 2.4.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
+- **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in by installing `firebaseObservabilityModule`, independent of every other capability
 - **Monetization:** RevenueCat 3.0.5
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
 - **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)

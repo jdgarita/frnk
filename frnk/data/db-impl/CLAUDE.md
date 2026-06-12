@@ -16,7 +16,7 @@ What moved out at Stage 4:
 ## Rules
 
 - Drivers only. If you're tempted to add a `.sq` file here, it belongs in the consuming host/demo module instead — see `docs/HOST_INTEGRATION.md` §1.
-- No tests today: the module is two one-line driver actuals (the schema round-trip test moved to `demo/shared`'s `androidHostTest`, run via `./gradlew :shared-demo:testAndroidHostTest`).
+- No tests today: the module is two one-line driver actuals (the schema round-trip test moved to `demo/shared`'s `androidHostTest`, run via `./gradlew :demo-shared:testAndroidHostTest`).
 
 ## Dependencies
 

@@ -14,10 +14,10 @@
 > - Respect all invariants in `REQUIREMENTS.md` §2 and the strict UI rules §4.
 > - `*-api` modules stay SDK-free; impls bind via Koin; interfaces return
 >   `AppResult`.
-> - **Demo rule:** a feature is not done until exercised in `:shared-demo`,
->   `androidDemoApp`, and `iosDemoApp` (or a written justification of why not).
+> - **Demo rule:** a feature is not done until exercised in `:demo-shared`,
+>   `demo-android`, and `iosDemoApp` (or a written justification of why not).
 > - Must pass `./gradlew compileAndroidMain` and `./gradlew testAndroidHostTest`
->   (KMP modules; `:androidDemoApp` uses `testDebugUnitTest`); pre-commit
+>   (KMP modules; `:demo-android` uses `testDebugUnitTest`); pre-commit
 >   `ktlintFormat` must leave the tree clean.
 
 Priority tiers: **P0** (protect & unblock) → **P1** (data layer truth) →

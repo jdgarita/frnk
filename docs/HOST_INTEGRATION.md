@@ -4,6 +4,42 @@
 (`includeBuild("../frnk")` in the host's `settings.gradle.kts`). The toolkit ships interfaces;
 the host wires impls. There are three integration points.
 
+## 0. Module coordinates
+
+Hosts depend on the individual modules they use — there is no aggregator. Android hosts use the
+Maven coordinate `dev.jdgarita.frnk:<name>` (composite-build substitution matches by group:name);
+the typesafe accessor column is for builds (frnk's own + a host that `includeBuild`s frnk) that read
+`projects.<accessor>`. `settings.gradle.kts` is the source of truth for names → dirs.
+
+| Module | Coordinate (`dev.jdgarita.frnk:`) | Accessor | Purpose |
+| --- | --- | --- | --- |
+| `:core-di` | `core-di` | `projects.coreDi` | Bootstrap: `initializeFrnk(modules)` + `requireFrnkKoin()`. |
+| `:shared-utils` | `shared-utils` | `projects.sharedUtils` | Root utils: coroutines, datetime, `AppResult`, `PlatformInfo`, `Frnk.VERSION`. |
+| `:core-mvi` | `core-mvi` | `projects.coreMvi` | MVI engine (`MviViewModel`, `UiText`); no Compose. |
+| `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`ToolkitRoute`, back-stack helpers); no Compose. |
+| `:haptics` | `haptics` | `projects.haptics` | `HapticFeedback`/`HapticType` contract + multihaptic engine. |
+| `:ui-theme` | `ui-theme` | `projects.uiTheme` | `FrnkTheme` + tokens (compose-unstyled). |
+| `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
+| `:ui-scaffolds` | `ui-scaffolds` | `projects.uiScaffolds` | Page templates + Compose MVI/nav bindings. |
+| `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkAppShell`. **Sole Material3 module.** |
+| `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkAppScaffold` + `frnkUiModules()`. The batteries-included apex. |
+| `:data-db-api` | `data-db-api` | `projects.dataDbApi` | `SqlDriverFactory` SPI (toolkit owns no schema). |
+| `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform SQLDelight drivers → `databaseModule`. |
+| `:data-prefs-api` | `data-prefs-api` | `projects.dataPrefsApi` | `KeyValueStore` + typed `Preference<T>`. |
+| `:data-prefs-impl` | `data-prefs-impl` | `projects.dataPrefsImpl` | multiplatform-settings → `prefsModule`. |
+| `:analytics-api` | `analytics-api` | `projects.analyticsApi` | `AnalyticsTracker`/`CrashReporter` + `noopObservabilityModule`. |
+| `:analytics-impl` | `analytics-impl` | `projects.analyticsImpl` | Firebase analytics + crash → `firebaseObservabilityModule`. |
+| `:remote-config-api` | `remote-config-api` | `projects.remoteConfigApi` | `RemoteConfigService` + `noopRemoteConfigModule`. |
+| `:remote-config-impl` | `remote-config-impl` | `projects.remoteConfigImpl` | Firebase Remote Config → `remoteConfigModule`. |
+| `:camera` | `camera` | `projects.camera` | api-only no-op scaffold → `cameraModule` (no impl yet). |
+| `:permissions` | `permissions` | `projects.permissions` | api-only no-op scaffold → `permissionsModule` (no impl yet). |
+| `:monetization-api` | `monetization-api` | `projects.monetizationApi` | `EntitlementManager`/`FeatureGate` → `monetizationModule`. |
+| `:monetization-impl` | `monetization-impl` | `projects.monetizationImpl` | RevenueCat `EntitlementProvider` → `revenueCatModule`. |
+| `:shared-monetization-ui` | `shared-monetization-ui` | `projects.sharedMonetizationUi` | Paywall UI + `paywallScaffoldModule` + `rememberFrnkSettingsHandler`. |
+
+(`:demo-shared` / `:demo-android` and the `iosDemoApp` Xcode target are internal smoke harnesses —
+never host-consumable.)
+
 ## 1. Inject your SQLDelight schema
 
 The toolkit owns the **driver factory** (`SqlDriverFactory`, `:data-db-api`, bound by
@@ -28,35 +64,48 @@ the SharedPreferences-backed `KeyValueStore` resolve through it):
 DatabaseContext.application = applicationContext
 ```
 
-## 2. Override UI tokens (colors, typography, strings)
+## 2. Override UI tokens (colors, typography, strings, icons)
 
-Wrap your host's content in `ProvideToolkitTheme` with your palette/strings. Every
-toolkit atom (`ToolkitButton`, `ToolkitTextField`) reads from these locals automatically.
+Wrap your host's content in `FrnkTheme` with a `FrnkThemeConfig` (`:ui-theme`). Every `Frnk*`
+atom reads styling through `Theme[...]`, so per-token overrides take effect everywhere — supply
+only the tokens you want to change (they merge over the bundled defaults):
 
 ```kotlin
-ProvideToolkitTheme(
-    colors = ToolkitColors(primary = MyBrand.Primary, onPrimary = MyBrand.OnPrimary),
-    strings = ToolkitStrings(upgrade = "Go Pro"),
+FrnkTheme(
+    config = FrnkThemeConfig(
+        lightColorOverrides = mapOf(colorPrimary to MyBrand.Primary),
+        textStyleOverrides  = mapOf(titleLarge to MyBrand.Title),
+        stringOverrides     = mapOf(stringUpgrade to "Go Pro"),
+        iconOverrides       = mapOf(iconBack to MyIcons.Back),
+    ),
 ) {
-    HostNavHost()
+    MyAppContent()
 }
 ```
+
+`FrnkAppScaffold` / `FrnkAppShell` take the same `themeConfig` and wrap `FrnkTheme` for you.
+See `HOST_ALIGNMENT.md` §4–§5 for the full token + icon-pack story.
 
 ## 3. Map ToolkitRoute to Compose screens
 
-The toolkit emits `ToolkitRoute` values (e.g. when `FeatureGate.requestUpgrade(...)` fires);
-the host owns the NavHost and decides what each route renders:
+The toolkit's `ToolkitRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
+default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). When using `FrnkAppShell` /
+`FrnkAppScaffold`, those routes are already wired — you don't map them. For a hand-wired nav3
+host, register them on your `FrnkNavDisplay` `entryProvider` and drive navigation through the MVI
+effect channel, mutating the host-owned `NavBackStack`:
 
 ```kotlin
-val navigator: Navigator = { route ->
-    when (route) {
-        ToolkitRoute.Paywall    -> navController.navigate(HostRoutes.Paywall)
-        ToolkitRoute.Onboarding -> navController.navigate(HostRoutes.Onboarding)
-        ToolkitRoute.Home       -> navController.navigate(HostRoutes.Home)
-        else                  -> Unit
+EffectCollector(viewModel.effects) { effect ->
+    when (effect) {
+        is MyEffect.Navigate -> backStack.navigateTo(effect.route)   // route: NavKey
+        MyEffect.Upgrade     -> backStack.navigateTo(ToolkitRoute.Paywall)
+        MyEffect.Back        -> backStack.back()
     }
 }
 ```
+
+See `docs/ARCHITECTURE.md` → Navigation for `frnkNavConfiguration` / `rememberFrnkNavBackStack` /
+`FrnkNavDisplay` and the multiple-back-stack `FrnkTabbedNavScaffold`.
 
 ## 4. Bootstrap Koin with an explicit module list
 

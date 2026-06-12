@@ -1,6 +1,6 @@
 # :analytics-api
 
-Pure-interface backend contract. **No Ktor, no Firebase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:analytics-impl`.
+Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:analytics-impl`. (Remote Config is its own sibling capability pair — `:remote-config-api`/`:remote-config-impl` — since restructure Stage 11, not part of this module.)
 
 ## Contents
 
@@ -17,12 +17,12 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Serialization plugin
 ## Rules
 
 - **Every interface method returns `AppResult<…, AppError>`. Never throw.** Callers exhaustive-`when` on the result, so introducing a thrown exception silently bypasses the error contract.
-- **No SDK dependencies.** If you find yourself reaching for `io.ktor.*`, `com.google.firebase.*`, or `io.github.jan.tennert.supabase.*`, you're in the wrong module — move it to the matching `*-impl` module.
+- **No SDK dependencies.** If you find yourself reaching for `io.ktor.*` or `com.google.firebase.*`, you're in the wrong module — move it to the matching `*-impl` module.
 - DTOs that need `@Serializable` go in the impl module, not here. This module keeps `kotlin.serialization` off its classpath on purpose.
-- Adding a new backend capability:
+- Adding a new analytics/crash capability:
   1. Define the interface + domain models here.
   2. Implement it in `:analytics-impl`.
-  3. Register in `FirebaseBackendModule.kt`.
+  3. Register in `FirebaseObservabilityModule.kt`.
 
 ## Dependencies
 

@@ -1,5 +1,11 @@
 # SCAFFOLD_PLAN — frnk Scaffold System
 
+> **Completed planning artifact (history).** This plan was written and executed **before** the
+> 12-stage module restructure, so it names the pre-restructure modules (`:shared`, `shared-ui-atoms`,
+> `:shared-ui-nav`, `androidDemoApp`). The scaffold system it describes shipped; for the current home
+> of each symbol see `docs/ARCHITECTURE.md` and the per-module `CLAUDE.md`s. Kept for the rationale,
+> not as a live path reference.
+
 Audit + implementation plan for the host-enablement scaffold system: `FrnkAppScaffold` (root
 wrapper), `HomeScaffold`, Settings custom-section injection, and primary-action (FAB) routing to
 the active screen's ViewModel. Goal: a host app spins up a fully functioning app in ~15 lines.

@@ -30,7 +30,7 @@ automatically via RevenueCat's `androidx.startup` initializer, so `Purchases.con
 **unconfigured** `Purchases.sharedInstance` degrades to a safe no-op (`isPro` stays `false`) instead of
 throwing — the same defensive pattern `FirebaseCrashReporter` uses. The manager also won't clobber a
 `PurchasesDelegate` the host already set (such a host should call `refresh()` after entitlement changes).
-`androidDemoApp` is the real-path smoke test: it calls `Purchases.configure(...)` then overrides the
+`demo-android` is the real-path smoke test: it calls `Purchases.configure(...)` then overrides the
 demo's fake with `revenueCatModule` via Koin `allowOverride(true)` when a key is present in
 `local.properties` (`REVENUECAT_ANDROID_API_KEY`).
 
@@ -50,8 +50,8 @@ If you change anything that touches this contract — e.g. adding a new cinterop
 1. Add the native `PurchasesHybridCommon` framework (CocoaPods `pod 'PurchasesHybridCommon'` or SPM).
 2. Call `Purchases.configure(apiKey:)` (RevenueCat's native iOS SDK or the KMP `configure`) on launch,
    before using `FeatureGate`.
-3. Upload dSYMs as usual. `:iosApp`'s `linkerOpts("-undefined", "dynamic_lookup")` is what lets the
-   toolkit's XCFramework link without the pod present locally; the consumer's link step resolves it.
+3. Upload dSYMs as usual. The umbrella XCFramework's `linkerOpts("-undefined", "dynamic_lookup")` is
+   what lets it link without the pod present locally; the consumer's link step resolves it.
 
 ## Dependencies
 
