@@ -8,7 +8,7 @@ import org.gradle.kotlin.dsl.getByType
 // It declares NO iOS targets and NO framework, so it serves both:
 //  - the standard shared library modules via `frnk.kmp.library` (which applies this + adds bare iOS
 //    targets — no per-module framework; iOS consumption is umbrella-only per OQ-3/OQ-4), and
-//  - the special modules with a different iOS shape: `:shared-demo` (a custom
+//  - the special modules with a different iOS shape: `:demo-shared` (a custom
 //    `XCFramework("DemoKit")`). They apply `id("frnk.kmp.base")` and add their own iOS/framework shape.
 
 plugins {

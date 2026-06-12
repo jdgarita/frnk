@@ -101,7 +101,7 @@ kotlin {
         // DemoKit's common surface stay SDK-free):
         //  - CrashKiOS for the Crashlytics panic-button test (BACKLOG P1-5b).
         //  - RevenueCat (P3-3): so DemoKit can install the REAL revenueCatModule over the fake and
-        //    iosDemoApp exercises the same RevenueCat Test Store path androidDemoApp does. The native
+        //    iosDemoApp exercises the same RevenueCat Test Store path demo-android does. The native
         //    purchases-ios SDK is supplied by the consumer (iosDemoApp) via SPM under dynamic_lookup.
         iosMain.dependencies {
             implementation(libs.crashkios.crashlytics)

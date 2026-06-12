@@ -40,8 +40,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `monetization-api` | Entitlement / feature-gate interfaces. |
 | `monetization-impl` | RevenueCat impl. Exposes `revenueCatModule`. |
 | `shared-monetization-ui` | frnk-owned monetization **UI** (no RevenueCat dep): the `PaywallScreen`/`PaywallViewModel` MVI paywall wired via `frnkPaywallDestination(...)` + `paywallScaffoldModule`, plus the host-facing `rememberFrnkSettingsHandler()` (backed by an internal `platformManageSubscriptionsUrl()` `expect/actual` supplying the native subscription-management URL). |
-| `shared-demo` | Demo-only KMP module — bundles `DemoScreen` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `ui-theme`/`ui-components`/`ui-scaffolds`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
-| `androidDemoApp` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |
+| `demo-shared` | Demo-only KMP module — bundles `DemoScreen` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `ui-theme`/`ui-components`/`ui-scaffolds`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
+| `demo-android` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |
 
 ## 🧰 Tech stack
 
@@ -136,12 +136,12 @@ Demo apps (the internal smoke harnesses) additionally need:
 
 ```bash
 ./gradlew compileAndroidMain                          # fast compile-only check across every shared module (what CI runs)
-./gradlew :androidDemoApp:compileDebugKotlin          # compile the demo harness
+./gradlew :demo-android:compileDebugKotlin            # compile the demo harness
 ./gradlew testAndroidHostTest                         # commonTest + androidHostTest across all KMP modules
 ./gradlew :data-prefs-api:testAndroidHostTest         # run a single module's tests
 ./gradlew ktlintFormat                                # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                                    # full build of every target
-./gradlew :shared-demo:assembleDemoKitDebugXCFramework    # produce DemoKit.xcframework (iosDemoApp consumes this)
+./gradlew :demo-shared:assembleDemoKitDebugXCFramework    # produce DemoKit.xcframework (iosDemoApp consumes this)
 ./gradlew clean
 ```
 
@@ -169,8 +169,8 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 
 `.github/workflows/main.yml` is the authoritative pipeline — a single job that runs:
 
-1. `./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain` plus the demo harness
-2. `./gradlew testAndroidHostTest :androidDemoApp:testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidHostTest` (KMP host tests run under `testAndroidHostTest`, not `testDebugUnitTest`) plus the demo app's unit tests
+1. `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain` plus the demo harness
+2. `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidHostTest` (KMP host tests run under `testAndroidHostTest`, not `testDebugUnitTest`) plus the demo app's unit tests
 
 `assemble`, `allTests`, and `ktlintCheck` are intentionally out — they duplicate work the local pre-commit hook (style) and downstream consumer builds (release assembly, iOS link) already cover.
 

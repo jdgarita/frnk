@@ -1,16 +1,16 @@
 # iosDemoApp
 
-Internal smoke harness for the Frnk toolkit on iOS. Mirrors `androidDemoApp` —
-renders the same Compose-Multiplatform `DemoScreen` from `:shared-demo` and
+Internal smoke harness for the Frnk toolkit on iOS. Mirrors `demo-android` —
+renders the same Compose-Multiplatform `DemoScreen` from `:demo-shared` and
 exercises the MVI engine + `FeatureGate` via fakes.
 
 ## Architecture
 
 | Piece | Where |
 |---|---|
-| Compose UI, MVI ViewModel, Koin module, fakes | `:shared-demo` (commonMain) |
-| Swift entry point for Compose | `:shared-demo` (iosMain) `MainViewController()` |
-| Framework | `DemoKit.xcframework` (`./gradlew :shared-demo:assembleDemoKitDebugXCFramework`) |
+| Compose UI, MVI ViewModel, Koin module, fakes | `:demo-shared` (commonMain) |
+| Swift entry point for Compose | `:demo-shared` (iosMain) `MainViewController()` |
+| Framework | `DemoKit.xcframework` (`./gradlew :demo-shared:assembleDemoKitDebugXCFramework`) |
 | Xcode app | This folder |
 
 `DemoKit.xcframework` exports the toolkit's **`*-api`** modules plus
@@ -19,7 +19,7 @@ exercises the MVI engine + `FeatureGate` via fakes.
 app via SPM under `dynamic_lookup`):
 - **CrashKiOS** (BACKLOG P1-5b) — the "Force crash" panic button → Firebase Crashlytics.
 - **RevenueCat** (BACKLOG P3-3) — the paywall runs against the RevenueCat **Test Store**
-  (real `RevenueCatEntitlementProvider`, parity with `androidDemoApp`), via
+  (real `RevenueCatEntitlementProvider`, parity with `demo-android`), via
   `DemoRevenueCatKt.bootstrapDemoKoinWithRevenueCat(apiKey:)` in `iosDemoAppApp.swift`.
 
 So this app links the **native Firebase + RevenueCat SDKs** (added via SPM, below) and
@@ -65,7 +65,7 @@ tester needed. The native RevenueCat Apple SDK must be linked into this Xcode pr
 2. Select an iPhone simulator (or a device) and ⌘R
 
 The target's first build phase is a Run Script that calls
-`./gradlew :shared-demo:assembleDemoKitDebugXCFramework`, so Xcode always picks
+`./gradlew :demo-shared:assembleDemoKitDebugXCFramework`, so Xcode always picks
 up a fresh framework — no manual gradle invocation needed.
 
 ## Testing the iOS crash → Crashlytics
@@ -86,7 +86,7 @@ up a fresh framework — no manual gradle invocation needed.
 - MVI effects (`DemoEffect.Toast`, `DemoEffect.Navigate`) routed from Compose
   back to a SwiftUI toast overlay (`ContentView.swift`).
 - Theming via `ProvideToolkitTheme(colors = demoBlueColors())` — same palette
-  Android uses, defined once in `:shared-demo` commonMain.
+  Android uses, defined once in `:demo-shared` commonMain.
 - `FeatureGate` exercised against the **real** RevenueCat Test Store provider (offerings,
   sandbox purchase, restore) — plus the frnk-owned **god mode** override (Settings → tap the
   version 7× → Developer), which forces Pro independent of RevenueCat.

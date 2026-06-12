@@ -185,7 +185,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\ncd \"$SRCROOT/../..\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  ./gradlew :shared-demo:assembleDemoKitReleaseXCFramework\nelse\n  ./gradlew :shared-demo:assembleDemoKitDebugXCFramework\nfi\n";
+			shellScript = "set -e\ncd \"$SRCROOT/../..\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  ./gradlew :demo-shared:assembleDemoKitReleaseXCFramework\nelse\n  ./gradlew :demo-shared:assembleDemoKitDebugXCFramework\nfi\n";
 		};
 		AA00000000000000000025 /* Run Script: Upload Crashlytics dSYMs */ = {
 			isa = PBXShellScriptBuildPhase;

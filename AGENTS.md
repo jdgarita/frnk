@@ -6,7 +6,7 @@ Codex guidance for this repository. Follow this file first, and use `CLAUDE.md` 
 
 - `frnk` is a Kotlin Multiplatform + Compose Multiplatform toolkit, not a standalone product app.
 - Downstream apps consume it as a Git submodule/composite build via `includeBuild("../frnk")`.
-- `androidDemoApp` and `iosDemoApp` are smoke harnesses only.
+- `demo-android` and `iosDemoApp` are smoke harnesses only.
 - Read `docs/ARCHITECTURE.md` before cross-module architecture changes.
 
 ## Repo Shape
@@ -23,12 +23,12 @@ Use targeted checks when possible:
 ```bash
 ./gradlew compileAndroidMain
 ./gradlew testAndroidHostTest
-./gradlew :androidDemoApp:compileDebugKotlin
-./gradlew :androidDemoApp:testDebugUnitTest
+./gradlew :demo-android:compileDebugKotlin
+./gradlew :demo-android:testDebugUnitTest
 ./gradlew :data-prefs-api:testAndroidHostTest
 ./gradlew ktlintFormat
 ./gradlew assemble
-./gradlew :shared-demo:assembleDemoKitDebugXCFramework
+./gradlew :demo-shared:assembleDemoKitDebugXCFramework
 ```
 
 `local.properties` is gitignored and may be required for local builds. Do not print secrets from it.
@@ -38,7 +38,7 @@ Use targeted checks when possible:
 - JDK 17.
 - Kotlin 2.4.0, AGP 9.2.1, Gradle 9.5.1.
 - AGP 9 KMP modules use `com.android.kotlin.multiplatform.library` and `kotlin { android { ... } }`, not `com.android.library` or a top-level `android {}` block.
-- `androidDemoApp` uses AGP 9 built-in Kotlin. Do not add `kotlin.android`.
+- `demo-android` uses AGP 9 built-in Kotlin. Do not add `kotlin.android`.
 - SDK versions live in `gradle/libs.versions.toml`; non-SDK constants live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt`.
 
 ## Code Rules
@@ -50,13 +50,13 @@ Use targeted checks when possible:
 - Do not add Material3 outside `shared-ui-nav`; the design-system modules (`:ui-theme`/`:ui-components`/`:ui-scaffolds`) stay `compose-unstyled` based.
 - Prefer `MviViewModel`, `FrnkMviScreen`, `EffectCollector`, and Navigation3 helpers over hand-rolled state/effect/navigation plumbing.
 - UI state should be hoisted into ViewModels. Use local Compose state only for local UI holders such as scroll, focus, animation, and remembered builders.
-- New screens/features should be represented in `shared-demo`, `androidDemoApp`, and `iosDemoApp` unless clearly inapplicable.
+- New screens/features should be represented in `demo-shared`, `demo-android`, and `iosDemoApp` unless clearly inapplicable.
 
 ## Testing
 
 - Validate with the narrowest useful Gradle task first.
 - KMP host tests run with `testAndroidHostTest`, not `testDebugUnitTest`.
-- `androidDemoApp` is a normal Android app, so its tests use `testDebugUnitTest`.
+- `demo-android` is a normal Android app, so its tests use `testDebugUnitTest`.
 - Put platform-agnostic logic tests in `commonTest`; platform runtime tests go in `androidHostTest`.
 - `:ui-components` / `:ui-scaffolds` Compose UI tests live in `androidHostTest` with Robolectric (both apply the `frnk.kmp.library.composehosttest` convention plugin).
 

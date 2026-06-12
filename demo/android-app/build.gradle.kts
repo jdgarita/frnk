@@ -73,14 +73,14 @@ android {
 dependencies {
     // Toolkit surface — the individual modules this harness actually uses, like a real host
     // (the :shared/:androidApp aggregators died at restructure Stage 1). Atoms/theme/scaffolds/utils
-    // arrive transitively via :shared-demo's api() deps.
+    // arrive transitively via :demo-shared's api() deps.
     implementation(projects.uiApp) // FrnkAppScaffold (AppScaffoldSmokeActivity)
     implementation(projects.analyticsImpl) // firebaseObservabilityModule override
     implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real SqlDriverFactory for DemoDB
     implementation(projects.coreDi) // DatabaseContext seam (the demo bypasses initializeFrnk)
     // Shared demo Composable + MVI + Koin module (also consumed by iosDemoApp).
-    implementation(projects.sharedDemo)
+    implementation(projects.demoShared)
 
     // RevenueCat KMP SDK — for the host's Purchases.configure(...) call (BACKLOG P3-2).
     implementation(libs.revenuecat.core)

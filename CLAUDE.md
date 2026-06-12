@@ -18,11 +18,11 @@ cp local.properties.template local.properties   # then fill in Firebase keys; Bu
 Day-to-day:
 ```bash
 ./gradlew compileAndroidMain                # fast compile-only check (what CI runs — covers commonMain+androidMain for every KMP module); Gradle parallelises across modules
-./gradlew testAndroidHostTest               # commonTest + androidHostTest across all KMP modules (what CI runs); :androidDemoApp uses testDebugUnitTest
+./gradlew testAndroidHostTest               # commonTest + androidHostTest across all KMP modules (what CI runs); :demo-android uses testDebugUnitTest
 ./gradlew :data-prefs-api:testAndroidHostTest   # run a single module's tests
 ./gradlew ktlintFormat                      # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                          # full build of every target — only when producing release artifacts
-./gradlew :shared-demo:assembleDemoKitDebugXCFramework  # produce demo/shared/build/XCFrameworks/debug/DemoKit.xcframework (demo/ios-app consumes this)
+./gradlew :demo-shared:assembleDemoKitDebugXCFramework  # produce demo/shared/build/XCFrameworks/debug/DemoKit.xcframework (demo/ios-app consumes this)
 ./gradlew clean
 ```
 
@@ -98,7 +98,7 @@ The hook activates automatically: the root build registers an `installGitHooks` 
 
 ## CI
 
-`.github/workflows/main.yml` is a single job that runs `compileAndroidMain :androidDemoApp:compileDebugKotlin` followed by `testAndroidHostTest :androidDemoApp:testDebugUnitTest`, both with `--parallel --build-cache`. Compile covers `commonMain`+`androidMain` for every shared module (iOS targets are skipped on Linux runners) plus the demo app's Kotlin. The `compileAndroidMain` task name comes from the AGP 9 KMP-Android plugin — `compileDebugKotlinAndroid` no longer exists for KMP modules. Tests cover `commonTest`+`androidHostTest`: the AGP 9 KMP-Android plugin names the host unit-test task **`testAndroidHostTest`** (there is no `testDebugUnitTest` for KMP modules), and each tested module must opt in with `kotlin { android { withHostTest {} } }`. `:androidDemoApp` is a `com.android.application`, so its unit tests stay on `testDebugUnitTest`. No `assemble`, no `allTests`, no `ktlintCheck` — those are heavier than what CI needs to gate merges.
+`.github/workflows/main.yml` is a single job that runs `compileAndroidMain :demo-android:compileDebugKotlin` followed by `testAndroidHostTest :demo-android:testDebugUnitTest`, both with `--parallel --build-cache`. Compile covers `commonMain`+`androidMain` for every shared module (iOS targets are skipped on Linux runners) plus the demo app's Kotlin. The `compileAndroidMain` task name comes from the AGP 9 KMP-Android plugin — `compileDebugKotlinAndroid` no longer exists for KMP modules. Tests cover `commonTest`+`androidHostTest`: the AGP 9 KMP-Android plugin names the host unit-test task **`testAndroidHostTest`** (there is no `testDebugUnitTest` for KMP modules), and each tested module must opt in with `kotlin { android { withHostTest {} } }`. `:demo-android` is a `com.android.application`, so its unit tests stay on `testDebugUnitTest`. No `assemble`, no `allTests`, no `ktlintCheck` — those are heavier than what CI needs to gate merges.
 
 ## Conventions to follow when adding code
 

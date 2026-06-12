@@ -52,8 +52,8 @@ include(
     ":monetization-impl",
     ":shared-monetization-ui",
     ":ui-app",
-    ":shared-demo",
-    ":androidDemoApp",
+    ":demo-shared",
+    ":demo-android",
 )
 
 // Restructure Stage 3: modules physically live at their final layered locations under frnk/
@@ -63,8 +63,9 @@ include(
 // frnk/core/ui-api-facade, shared-ui-atoms at frnk/ui/atoms-facade) and renamed the last three
 // still-visible coordinates to their final flat names: :shared-ui-nav → :ui-bottom-nav,
 // :shared-monetization-api → :monetization-api, :shared-monetization-revenuecat → :monetization-impl.
-// Remaining legacy names (:shared-utils, :shared-monetization-ui, :shared-demo, :androidDemoApp) flip
-// in later stages.
+// Stage 10 renamed the two demo projects to their final flat names (:shared-demo → :demo-shared,
+// :androidDemoApp → :demo-android). Remaining legacy names (:shared-utils, :shared-monetization-ui)
+// flip in later stages.
 mapOf(
     "core-di" to "frnk/core/di",
     "shared-utils" to "frnk/core/util",
@@ -85,8 +86,8 @@ mapOf(
     "monetization-api" to "frnk/capabilities/monetization-api",
     "monetization-impl" to "frnk/capabilities/monetization-impl",
     "shared-monetization-ui" to "frnk/capabilities/monetization-ui",
-    "shared-demo" to "demo/shared",
-    "androidDemoApp" to "demo/android-app",
+    "demo-shared" to "demo/shared",
+    "demo-android" to "demo/android-app",
 ).forEach { (name, dir) ->
     project(":$name").projectDir = file(dir)
 }

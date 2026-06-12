@@ -371,11 +371,12 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
   — confirm every frnk artifact substitutes to a project.
 - Failures can only be missing-coordinate compile errors — everything already builds at its new home.
 
-### ☐ Stage 10 — Demo project renames + Xcode  — risk: medium (Xcode not CI-covered)
+### ☑ Stage 10 — Demo project renames + Xcode  — risk: medium (Xcode not CI-covered)  — **landed 2026-06-11**
 
 - Rename projects `:shared-demo` → `:demo-shared`, `:androidDemoApp` → `:demo-android` (dirs moved
-  at Stage 3). Update typesafe accessors; `demo-shared`'s iosMain
-  `implementation(projects.sharedMonetizationRevenuecat)` → `projects.monetizationImpl`.
+  at Stage 3). Update typesafe accessors (`projects.sharedDemo` → `projects.demoShared`, one consumer
+  in `demo/android-app`). `demo-shared`'s iosMain accessor was already
+  `projects.monetizationImpl` (moved at Stage 9), so nothing to flip there.
 - iosDemoApp: re-check framework search paths → `demo/shared/build/XCFrameworks/...`; DemoKit
   baseName unchanged (explicit `XCFramework("DemoKit")`).
 - CI `.github/workflows/main.yml`: `:androidDemoApp:` task prefixes → `:demo-android:`.
