@@ -6,8 +6,10 @@
 >
 > **Companion documents:**
 > - `docs/ARCHITECTURE.md` — canonical module graph and api/impl split.
-> - `BACKLOG.md` — prioritized, acceptance-criteria-driven task list of open work.
+> - `docs/HOST_INTEGRATION.md` — how a host app consumes the toolkit.
 > - `CLAUDE.md` — operational rules for AI agents working in this repo.
+> - **MobiAI brain** (`.mobiai/brain/`) — decision rationale, integration quirks, testing
+>   patterns, bugfixes, and the open-work list (`mobiai brain search "open work"`).
 
 ---
 
@@ -131,7 +133,8 @@ descriptions.
 ## 3. Feature requirements
 
 Each feature below lists its **target capability**. Remaining work to close any
-gaps against these targets is tracked in `BACKLOG.md`.
+gaps against these targets is tracked as open-work entries in the MobiAI brain
+(`mobiai brain search "open work"`).
 
 ### 3.1 Design system (Atomic Design)
 
@@ -262,84 +265,21 @@ review regardless of other merits.
 
 ## 6. Technical decisions (justification & evidence)
 
-This section records **why** each foundational choice was made, so the direction
-is defensible and reversible decisions are distinguished from load-bearing ones.
+The **why** behind each foundational choice — compose-unstyled over Material,
+KMP/CMP, the api/impl split, no aggregator, Koin, runtime capability selection,
+composite build over published artifacts, MVI-with-no-Compose-in-`:core-mvi`, and
+the iOS `dynamic_lookup` linker option — lives in the **MobiAI brain** as a single
+decision entry so the rationale stays current and searchable:
 
-### 6.1 Why `compose-unstyled` over Material
+```bash
+mobiai brain search "foundational technical decisions"
+mobiai brain context --section decisions
+```
 
-| Concern | Material 3 | `compose-unstyled` |
-| --- | --- | --- |
-| Visual identity | Ships an opinionated Google look; overriding it is a fight against defaults | Headless/unstyled primitives — the design system *is* ours from line one |
-| Theming model | `MaterialTheme` color/typography system is the contract; deviating is friction | Token axes we define (`colors`, `textStyles`, `shapes`, `strings`, `icons`) are the contract |
-| Binary weight | Pulls a large component set, much unused | Granular artifacts — we depend only on `primitives/theming/button/icon/separators` |
-| Lock-in | App-wide assumptions about Material components | No framework opinions to unwind later |
-
-**Decision:** Build the design system on `compose-unstyled`. **Evidence the rule
-holds today:** a repo-wide search finds zero Material dependencies in Gradle/TOML
-and zero Material imports in Kotlin; the only `material` matches are comments
-documenting their *absence*.
-
-### 6.2 Why Kotlin Multiplatform + Compose Multiplatform
-
-One shared codebase (logic **and** UI) across Android and iOS. The toolkit's
-value is amortizing cross-cutting concerns once; KMP/CMP is the only stack that
-shares both the architecture and the rendered UI while still allowing per-platform
-escapes via `expect/actual`.
-
-### 6.3 Why the api/impl module split
-
-- **Parallel compilation** — api modules build before any impl starts.
-- **Faster incremental builds** — touching an impl doesn't invalidate api
-  consumers.
-- **Swap-ability** — backends/providers swap by changing the installed Koin module, not a recompile of domain code.
-- **Test isolation** — fakes live in test sources of api consumers and never
-  import a real SDK.
-
-### 6.4 Why no aggregator (revised at restructure Stage 1)
-
-The original `:shared` aggregator bundled every api + impl behind one
-coordinate. It was deleted (Stage 1, OQ-7): explicit per-module dependencies
-keep unused SDKs out of host builds, composite-build substitution works
-per-coordinate anyway, and the "one call" ergonomics survive in
-`initializeFrnk(modules)` + `FrnkAppScaffold`.
-
-### 6.5 Why Koin (not a compile-time DI)
-
-KMP-friendly, no annotation processing across targets, and runtime module
-composition is exactly what the explicit-module-list bootstrap needs (install
-only what the host passes).
-
-### 6.6 Why runtime capability selection
-
-Capabilities are installed by passing their Koin modules to
-`initializeFrnk(...)`; domain code resolves only `*-api` interfaces, so
-providers swap without recompiling features — and what a host doesn't install
-never ships in its dependency graph at all.
-
-### 6.7 Why composite build over published artifacts
-
-- **Live edits** — change toolkit source and rebuild the consumer with no
-  publish cycle.
-- **Atomic refactors** — rename an api signature across both repos in one commit.
-- **No registry overhead** while the toolkit is private.
-- Reversible: Maven coordinates are stable, so flipping to published artifacts
-  later is non-breaking.
-
-### 6.8 Why MVI with no Compose in `:core-mvi`
-
-Keeps the presentation contract (`UiState`/`UiIntent`/`UiEffect`,
-`MviViewModel`) compilable and testable without `compose.runtime`, so the engine
-is reusable and unit-testable in isolation.
-
-### 6.9 Why the iOS `dynamic_lookup` linker option
-
-`:monetization-impl` cinterops the native RevenueCat SDK and
-`:analytics-impl` references Firebase. The toolkit does not ship those
-native frameworks; an umbrella XCFramework bundling these modules uses
-`linkerOpts("-undefined", "dynamic_lookup")` to defer symbol resolution so it
-links locally and the consumer's Xcode project resolves the native SDKs at
-integration time (the demo's `DemoKit` does exactly this for its iosMain
-CrashKiOS + RevenueCat cinterops).
+The adaptive-bottom-nav choice (Calf + Material3 accepted toolkit-wide, isolated to
+`:ui-bottom-nav`) and every restructure-stage decision are recorded there too. Keep
+new architecture rationale in the brain, not inline here — this spec states the
+*invariants* (§2, §4); the brain records *why* they were chosen.
 
 ---
 

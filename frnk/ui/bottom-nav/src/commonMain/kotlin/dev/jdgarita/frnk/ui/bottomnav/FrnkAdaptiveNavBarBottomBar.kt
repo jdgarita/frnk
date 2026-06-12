@@ -110,7 +110,8 @@ fun FrnkAdaptiveNavBarBottomBar(
     // shifts narrow/left ↔ full-width/centered as the FAB appears/disappears) with no transition. The lib
     // exposes no Compose-animatable hook — the frame is factory-set and the view is `placedAsOverlay`, so
     // Crossfade/alpha/animateContentSize can't touch it. A smooth slide would mean owning the iOS-26 bar
-    // natively (iosMain + Core Animation); intentionally deferred. See docs/spikes/adaptive-bottom-nav.md.
+    // natively (iosMain + Core Animation); intentionally deferred. Spike record in the MobiAI brain
+    // (`mobiai brain search "adaptive bottom nav"`).
     //
     // The color tokens are part of the key too: on iOS 26+ the library bakes the brand palette into the
     // native `UITabBarAppearance` in the factory (explicit UIColors, so a trait change doesn't re-resolve

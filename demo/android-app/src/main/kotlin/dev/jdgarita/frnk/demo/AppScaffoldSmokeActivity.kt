@@ -22,7 +22,7 @@ import dev.jdgarita.frnk.utils.Frnk
  *
  * Note `initializeFrnk(context)` itself isn't called here (Koin is process-global and the demo app
  * boots `bootstrapDemoKoin()` with its fakes); a fresh host exercises that overload — see
- * `HOST_ALIGNMENT.md`.
+ * `docs/HOST_INTEGRATION.md` §8.
  */
 class AppScaffoldSmokeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

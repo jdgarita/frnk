@@ -70,7 +70,8 @@ built on [Calf](https://github.com/MohamedRejeb/Calf)'s `AdaptiveNavigationBar`,
 Isolating it here keeps that dependency to a single, named module rather than smeared across the design-system
 modules `:ui-theme`/`:ui-components`/`:ui-scaffolds` (which stay Material-free, `compose-unstyled` only). `:ui-app` `api`-depends on this module, so **Material3 + Calf reach every consumer of the nav layer** — a deliberate, host-approved trade
 (the alternative, a hand-rolled UIKit `UITabBar` interop with zero Material3, was considered and declined in
-favour of the maintained component; see `docs/spikes/adaptive-bottom-nav.md`).
+favour of the maintained component; the full four-way spike evaluation is recorded in the MobiAI brain —
+`mobiai brain search "adaptive bottom nav"`).
 
 Calf is pure Kotlin/Compose (no extra native cinterop / SPM package), so the XCFramework still links under the
 consumer's existing `-undefined dynamic_lookup`.

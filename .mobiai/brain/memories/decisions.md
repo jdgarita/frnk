@@ -321,3 +321,97 @@ Remaining: Stage 12 (docs/CI consistency sweep — full ARCHITECTURE module-grap
 - CLAUDE.md
 - README.md
 - REQUIREMENTS.md
+
+## Foundational technical decisions (the 'why' behind frnk's stack)
+
+- id: foundational-technical-decisions-the-why-behind-frnk-s-stack-20260612-030643
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: architecture
+- date: 2026-06-12
+
+The load-bearing rationale for frnk's foundational choices (migrated out of REQUIREMENTS.md §6 so the spec stays lean; REQUIREMENTS.md now points here). Each is a deliberate, defensible call — reversible ones are flagged.
+
+### compose-unstyled over Material3
+Material3 ships an opinionated Google look that fights customization; its `MaterialTheme` color/type system is the contract you must deviate from. `compose-unstyled` is headless — the design system IS ours from line one, our own token axes (`colors`/`textStyles`/`shapes`/`strings`/`icons`) are the contract, and granular artifacts keep binary weight down. Strict rule: zero Material in any module except `:ui-bottom-nav` (see the adaptive-bottom-nav decision).
+
+### KMP + Compose Multiplatform
+One shared codebase for logic AND UI across Android + iOS. The toolkit's whole value is amortizing cross-cutting concerns once; KMP/CMP is the only stack that shares architecture + rendered UI while still allowing per-platform escapes via expect/actual.
+
+### api/impl module split
+Each SDK-backed domain splits into `*-api` (pure interface, no SDK) + `*-impl` (concrete Koin-bound binding). Benefits: parallel Gradle compilation (api builds before any impl), faster incremental builds (touching an impl doesn't invalidate api consumers), swap-ability (change the installed Koin module, not a recompile), test isolation (fakes live in api consumers' test sources, never import a real SDK).
+
+### No aggregator (restructure Stage 1, OQ-7)
+The old `:shared` aggregator bundled every api+impl behind one coordinate and selected capabilities with enums. Deleted: hosts now depend on exactly the modules they use and pass an explicit Koin module list to `initializeFrnk(...)` — what isn't passed never enters the graph. "One call" ergonomics survive in `initializeFrnk(modules)` + `FrnkAppScaffold`.
+
+### Koin (not compile-time DI)
+KMP-friendly, no annotation processing across targets, and runtime module composition is exactly what the explicit-module-list bootstrap needs (install only what the host passes).
+
+### Runtime capability selection (module list, not enum)
+Capabilities are installed by passing their Koin module to `initializeFrnk(...)`; domain code resolves only `*-api` interfaces, so providers swap without recompiling features, and what a host doesn't install never ships in its graph.
+
+### Composite build over published artifacts
+Live edits (change toolkit source, rebuild consumer, no publish cycle), atomic cross-repo refactors in one commit, no registry overhead while private. Reversible: Maven coordinates are kept stable so flipping to published artifacts later is non-breaking.
+
+### MVI engine with no Compose in :core-mvi
+Keeps the presentation contract (`UiState`/`UiIntent`/`UiEffect`, `MviViewModel`) compilable + unit-testable without `compose.runtime`, so the engine is reusable and testable in isolation. Same reasoning splits `:core-nav` Compose-free.
+
+### iOS dynamic_lookup linker option
+`:monetization-impl` (RevenueCat) and `:analytics-impl` (Firebase) cinterop native iOS SDKs the toolkit does NOT ship. An umbrella XCFramework bundling them uses `linkerOpts("-undefined","dynamic_lookup")` to defer symbol resolution so it links locally; the consumer's Xcode project resolves the native SDKs at integration time (DemoKit does this for its CrashKiOS + RevenueCat cinterops). See [[adaptive-bottom-nav-calf-material3-decision]].
+
+### Files
+- REQUIREMENTS.md
+- docs/ARCHITECTURE.md
+
+## Adaptive bottom nav: Calf + Material3 accepted toolkit-wide, isolated to :ui-bottom-nav
+
+- id: adaptive-bottom-nav-calf-material3-accepted-toolkit-wide-iso-20260612-030713
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui_navigation
+- date: 2026-06-12
+
+Outcome of the spike/adaptive-bottom-nav evaluation (distilled from the now-deleted docs/spikes/adaptive-bottom-nav.md). Decided & shipped 2026-06-02.
+
+### Decision
+After A/B-ing four candidates live in the demo (floating Pill / Haze frosted bar / hand-rolled native UITabBar interop / Calf), the maintainer chose **Calf's AdaptiveNavigationBar for both platforms** — a genuine native UIKit `UITabBar` on iOS and a **Material3 NavigationBar on Android** (themed from `FrnkTheme` tokens, not Material defaults).
+
+**Material3 is accepted as a toolkit-wide dependency for this one feature** (the maintainer's explicit call), traded for a single maintained adaptive component. It is **isolated to `:ui-bottom-nav`** (the SOLE Material3 module); `:ui-app` inherits it transitively as the accepted batteries-included trade. Every other module — `:ui-theme`/`:ui-components`/`:ui-scaffolds` and below — stays `compose-unstyled`-only. For a Material-free bar, use `FrnkBottomNavBar` (the pill) in `:ui-components`.
+
+### Rejected
+- **Haze** (frosted-glass modifier, no Material3): a faithful Compose imitation, not a real UITabBar; alpha dependency at the time; HazeState crosses the atom-scaffold-host boundary. Dropped once Calf-for-both was chosen.
+- **Hand-rolled native UITabBar interop** (the no-Material3 answer to Calf): real UITabBar without Material3, but UIKit-drawn (ignores FrnkTheme/haptics), and collapse/haptics would need bridging. Declined in favour of Calf's maintained component.
+- **adaptive-nav-bar (narendraanjana09)** as a Calf replacement with a built-in primary-action FAB: evaluated in a later POC, rejected — see the bugfix entry on the AGP9 Compose-resources packaging blocker, plus the iOS-26 FAB snap (unanimatable native overlay).
+
+### Reason
+One maintained library covers both platforms with a genuine iOS feel; the cost (Material3 on Android) is bounded to a single named module and does not leak into the design system. Calf is pure Kotlin/Compose (no extra native cinterop), so the XCFramework still links under dynamic_lookup.
+
+### Files
+- frnk/ui/bottom-nav/build.gradle.kts
+
+## Open work: PostHog analytics tracker (planned, not yet implemented)
+
+- id: open-work-posthog-analytics-tracker-planned-not-yet-implemen-20260612-031749
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: analytics
+- date: 2026-06-12
+
+OPEN / PLANNED — not yet built. Folded in from the deleted BACKLOG.md so the toolkit's remaining open work stays in the brain (search "open work"). The only other open item, the OnboardingScreen nav3 button bug, is recorded as a bugfix entry.
+
+### What
+Add a **PostHog** `AnalyticsTracker` implementation as the provider-neutral analytics option named in REQUIREMENTS.md §3.6. Firebase analytics/crash already ship; PostHog rounds out analytics without coupling product analytics to a backend choice.
+
+### Scope (decide + record the decision when built)
+Likely a small new impl module (e.g. `:analytics-posthog`) or an addition under the backend-agnostic analytics path. Keep the `*-api` SDK-free; bind PostHog via its own Koin module, installable independently of the data backend.
+
+### Acceptance criteria
+- [ ] `AnalyticsTracker` implemented against PostHog; bound via its own Koin module; installable independently of the data backend.
+- [ ] `noopObservabilityModule` remains the safe default.
+- [ ] Demoed (an event fired from `DemoScreen`, visible in logs/fake) across the three demo layers.
+
+### Convention reminders
+Respect REQUIREMENTS §2 invariants + the strict UI rules §4; must pass `compileAndroidMain` + `testAndroidHostTest` (KMP) / the demo app's `testDebugUnitTest`; pre-commit `ktlintFormat` leaves the tree clean. A feature isn't done until exercised in `:demo-shared`, `demo-android`, and `iosDemoApp` (or a written justification).

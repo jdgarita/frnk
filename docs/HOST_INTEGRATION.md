@@ -1,8 +1,11 @@
 # Host App Integration
 
 `frnk` is a Kotlin Multiplatform toolkit consumed by host apps as a Gradle composite build
-(`includeBuild("../frnk")` in the host's `settings.gradle.kts`). The toolkit ships interfaces;
-the host wires impls. There are three integration points.
+(`includeBuild("../frnk")` in the host's `settings.gradle.kts`). The toolkit ships interfaces and a
+design system; the host owns the application, wires impls, overrides tokens, and extends the DI graph.
+
+This is the single canonical host-integration guide. `docs/ARCHITECTURE.md` is the module graph; this
+doc is the recipe. (The former `HOST_ALIGNMENT.md` was folded in here — §7–§10 below.)
 
 ## 0. Module coordinates
 
@@ -64,19 +67,27 @@ the SharedPreferences-backed `KeyValueStore` resolve through it):
 DatabaseContext.application = applicationContext
 ```
 
-## 2. Override UI tokens (colors, typography, strings, icons)
+(The Android `initializeFrnk(context, …)` overload in §4 does this for you.)
 
-Wrap your host's content in `FrnkTheme` with a `FrnkThemeConfig` (`:ui-theme`). Every `Frnk*`
-atom reads styling through `Theme[...]`, so per-token overrides take effect everywhere — supply
-only the tokens you want to change (they merge over the bundled defaults):
+## 2. Override UI tokens (colors, typography, spacing, shapes, strings, icons)
+
+Wrap your host's content in `FrnkTheme` with a `FrnkThemeConfig` (`:ui-theme`). Every design axis
+has bundled defaults and is host-overridable through this single entry point. Every `Frnk*` atom
+reads styling through `Theme[...]`, so per-token overrides take effect everywhere — supply only the
+tokens you want to change (they merge over the defaults via `Map.plus`; host values win):
 
 ```kotlin
 FrnkTheme(
     config = FrnkThemeConfig(
-        lightColorOverrides = mapOf(colorPrimary to MyBrand.Primary),
-        textStyleOverrides  = mapOf(titleLarge to MyBrand.Title),
+        lightColorOverrides = mapOf(colorPrimary to Brand.Primary, colorPrimaryContainer to Brand.Tint),
+        darkColorOverrides  = mapOf(colorPrimary to Brand.PrimaryDark),
+        textStyleOverrides  = mapOf(titleLarge to Brand.Title),
+        fontFamily          = Brand.Inter,                 // restyle ALL text styles at once
+        shapeOverrides      = mapOf(shapeButton to RoundedCornerShape(8.dp)),
+        spacingOverrides    = mapOf(spacingMd to 12.dp),   // dimens/padding axis
+        iconSizeOverrides   = mapOf(iconSizeMd to 28.dp),  // icon-size axis
         stringOverrides     = mapOf(stringUpgrade to "Go Pro"),
-        iconOverrides       = mapOf(iconBack to MyIcons.Back),
+        iconOverrides       = mapOf(iconBack to Brand.Icons.Back),
     ),
 ) {
     MyAppContent()
@@ -84,13 +95,28 @@ FrnkTheme(
 ```
 
 `FrnkAppScaffold` / `FrnkAppShell` take the same `themeConfig` and wrap `FrnkTheme` for you.
-See `HOST_ALIGNMENT.md` §4–§5 for the full token + icon-pack story.
+
+**Custom icon pack.** The toolkit ships a default Lucide-backed icon registry (`iconBack`, `iconClose`,
+`iconSearch`, `iconSettings`, …). A host overrides any or all of them — **or adds brand-specific icons** —
+through `iconOverrides`. `Theme[icons][token]` resolves overrides transparently at every call site, so
+atoms don't know or care whether an icon is a Lucide default or a host glyph. Hosts that never reference
+Lucide icons by name don't take the Lucide dependency at all.
+
+```kotlin
+FrnkThemeConfig(
+    iconOverrides = mapOf(
+        iconBack     to MyIcons.ChevronLeft,   // override a generic default with a brand glyph
+        iconUpgrade  to MyIcons.Crown,
+        myBrandToken to MyIcons.Rocket,        // brand-only token the host declares itself
+    ),
+)
+```
 
 ## 3. Map ToolkitRoute to Compose screens
 
 The toolkit's `ToolkitRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
 default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). When using `FrnkAppShell` /
-`FrnkAppScaffold`, those routes are already wired — you don't map them. For a hand-wired nav3
+`FrnkAppScaffold` (§8), those routes are already wired — you don't map them. For a hand-wired nav3
 host, register them on your `FrnkNavDisplay` `entryProvider` and drive navigation through the MVI
 effect channel, mutating the host-owned `NavBackStack`:
 
@@ -127,21 +153,36 @@ initializeFrnk(
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
             monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
             paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
-        ) + hostModules,
-)
+        ) + hostModules,                         // your repositories, feature VMs, schema module — after the toolkit's
+) {
+    // extraConfig: Koin DSL escape hatch (logging, overrides).
+    // allowOverride(true)  // lets a host module override a toolkit binding (e.g. a custom EntitlementProvider)
+}
 ```
 
-The Android overload also sets `DatabaseContext.application` and registers `androidContext(...)`,
-so the section-1 context line is only needed if you bypass `initializeFrnk`. After bootstrap,
-`FrnkAppScaffold(appName, appVersion) { /* home items */ }` (`:ui-app`) is the batteries-included
-app root; it fails fast with an explanation if `initializeFrnk` didn't run.
+- **Host modules** go in the same list, **after** the toolkit's — so with `allowOverride(true)` a
+  host can override a toolkit binding (a custom `SqlDriver` schema, a custom `EntitlementProvider`).
+- The Android overload also sets `DatabaseContext.application` and registers `androidContext(...)`,
+  so the §1 context line is only needed if you bypass `initializeFrnk`.
+- **Monetization opt-out:** don't pass the three monetization modules. A host using a different
+  provider passes its own `EntitlementProvider` (optionally with the toolkit's `monetizationModule` /
+  `paywallScaffoldModule` over it).
+- Install **exactly one** observability module (`firebaseObservabilityModule` XOR
+  `noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`. Remote Config follows the
+  same XOR rule (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
+  api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
+  real impl ships.
 
-Install exactly one observability module (`firebaseObservabilityModule` XOR
-`noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`. Remote Config follows the
-same XOR rule (`remoteConfigModule` from `:remote-config-impl` for the real Firebase backend, XOR
-`noopRemoteConfigModule` from `:remote-config-api` to read bundled defaults only). `:camera` /
-`:permissions` are api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op
-defaults until a real impl ships.
+**iOS** (on launch, via a Kotlin bootstrap function your umbrella shared module exposes to Swift —
+the common `initializeFrnk(modules)` overload, no context param):
+
+```kotlin
+fun bootstrapMyAppKit(): KoinApplication =
+    initializeFrnk(modules = frnkUiModules() + databaseModule + prefsModule + /* … */ myAppModules)
+```
+
+After bootstrap, `FrnkAppScaffold(appName, appVersion) { /* home items */ }` (§8) is the
+batteries-included app root; it fails fast with an explanation if `initializeFrnk` didn't run.
 
 ## 5. Custom analytics
 
@@ -214,3 +255,126 @@ Gradle plugin (that's only for *dynamic* frameworks). A crash showing as **"unpr
 1 dSYM file"** means no matching dSYM was uploaded — usually a Debug build or a missing
 run-script. Crashes upload on the **next launch**; the first-ever crash can take several minutes
 to surface. Details in `frnk/capabilities/analytics-impl/CLAUDE.md`.
+
+## 7. Inherit build configuration (single source of truth)
+
+The host **does not** redeclare SDK targets or library versions — it inherits them from frnk.
+
+**Version catalog.** A composite build does not auto-share `gradle/libs.versions.toml`, so import it
+explicitly under a distinct name:
+
+```kotlin
+// host settings.gradle.kts
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("frnkLibs") { from(files("frnk/gradle/libs.versions.toml")) }
+    }
+}
+```
+
+Now the host references the same pinned versions frnk uses — e.g. `implementation(frnkLibs.koin.core)`,
+`alias(frnkLibs.plugins.kotlin.multiplatform)`.
+
+**SDK targets.** `min/compile/targetSdk` are the **single source of truth** in
+`frnk/gradle/libs.versions.toml` (`android-minSdk` / `android-compileSdk` / `android-targetSdk`) — read
+by frnk's own modules and inherited by hosts via the catalog:
+
+```kotlin
+// host android block
+compileSdk = frnkLibs.versions.android.compileSdk.get().toInt()
+minSdk     = frnkLibs.versions.android.minSdk.get().toInt()
+```
+
+**Convention plugin (optional).** frnk's standard KMP modules apply the `frnk.kmp.library` convention
+plugin from its `build-logic` included build (jvmToolchain 17 + Android SDK + bare iOS targets in one line).
+A host that adds its own KMP library modules can apply the same plugin by adding
+`includeBuild("frnk/build-logic")` to its `pluginManagement` and `plugins { id("frnk.kmp.library") }`.
+
+## 8. Spin up the whole app with `FrnkAppScaffold`
+
+After `initializeFrnk(...)` (§4), the **batteries-included app root** stands up a complete tabbed app —
+theme, type-safe nav3 with per-tab back stacks, the adaptive bottom bar (Home + your middle tabs +
+Settings), a Home template you fill with content, the default Settings catalogue driven by the live
+`EntitlementManager` (Upgrade → paywall, Restore, Manage Subscription, appearance, feedback), an
+optional onboarding flow, and the auto-mounted paywall — in one call:
+
+```kotlin
+setContent {
+    FrnkAppScaffold(
+        appName = "MyApp",
+        appVersion = "v1.0.0",
+        themeConfig = myThemeConfig(),                         // §2 token overrides
+        middleTabs = listOf(sessionsTab),                      // FrnkAdaptiveNavTab, remembered
+        hostRoutes = SerializersModule { /* your @Serializable routes */ },
+        settingsExtraSections = listOf(myPrefsSection),        // injected before Legal by default
+        onboardingPages = myOnboardingPages,                   // omit → no onboarding entry
+        homePrimaryActionEnabled = true,                       // Home claims the bar's Create/Add button
+        onHomeEffect = { effect -> /* HomeEffect.PrimaryActionInvoked / ActionInvoked(key) */ },
+        entries = { scope -> entry<SessionsRoute> { … } },     // your destinations + pushes
+        effects = { scope -> EffectCollector(vm.effects) { scope.navigateTo(it.route) } },
+    ) {
+        // Home tab body — the scaffold owns the scrolling column + bar insets.
+        MyHomeCards()
+    }
+}
+```
+
+- Every extension point receives a **`FrnkAppScope`** (`navigateTo` / `back` / `clearAndNavigateTo` +
+  the primary-action registry) so a single `EffectCollector` drives navigation.
+- Don't re-register the built-in routes (`ToolkitRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
+  `entries` — nav3 throws on duplicate entry registrations.
+- Any screen can claim the bar's primary-action button for its lifetime with
+  `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button hides while no screen
+  holds a claim and no host fallback is wired).
+- `FrnkAppScaffold` (`:ui-app`) layers the monetization batteries over **`FrnkAppShell`**
+  (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkAppShell` directly — the
+  same shell minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the reference.
+
+## 9. Component style guide — sealed state + `Skeleton` object
+
+**Every frnk UI component with multiple visual states models its state as a `sealed interface` with a
+`Content` data class and a `data object Skeleton`** (and an `Error` data class where there's a real error
+visual). The composable `when`-switches; the `Skeleton` branch is a **non-interactive** token-driven
+placeholder. Copy this shape for new components (host or toolkit):
+
+```kotlin
+sealed interface FrnkButtonState {
+    @Immutable
+    data class Content(
+        val text: String,
+        val enabled: Boolean = true,
+        val variant: FrnkButtonVariant = FrnkButtonVariant.Filled,
+    ) : FrnkButtonState
+
+    data object Skeleton : FrnkButtonState
+    // data class Error(val message: String) : FrnkButtonState   // when the component shows errors
+}
+
+@Composable
+fun FrnkButton(state: FrnkButtonState, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    when (state) {
+        is FrnkButtonState.Content -> { /* interactive button, styled from Theme[...] tokens */ }
+        FrnkButtonState.Skeleton  ->
+            Box(modifier.frnkSkeleton(FrnkSkeleton(enabled = true), shape = shapeButton)) // inert placeholder
+    }
+}
+```
+
+Rules: state is hoisted into the feature's `MviViewModel` (never `remember { mutableStateOf }` for
+screen/business state); styling comes from `Theme[colors|textStyles|shapes|spacing|iconSizes][token]`, never
+hardcoded `Color(0xFF…)` / raw `.dp`; the `Skeleton` branch renders no clickable/toggleable node.
+Single-state or terminal components (a pure divider, a terminal empty state, interaction-only chrome) stay
+non-sealed and skip the `Skeleton` object — note why. `FrnkText` additionally keeps a per-subtype `skeleton`
+field for content-sized text skeletons. See `frnk/ui/components/CLAUDE.md` for the full convention.
+
+## 10. Demo isolation & the upstream rule
+
+`demo-android` / `iosDemoApp` are **pure host harnesses**: they only initialize frnk, provide config
+overrides, and showcase default behavior — they contain **zero** reusable library logic (the shared demo UI
+itself lives in `:demo-shared`, consumed by both). Treat them as disposable references for how a host wires
+the toolkit.
+
+**The upstream rule:** anything reusable belongs **inside** a `frnk` module, never at the app layer. When
+building a feature in a host, ask whether it can be abstracted upstream into the toolkit (a new atom, a
+backend interface + impl pair, a scaffold) so every future host inherits it. If something genuinely must live
+at the app level (a host-only screen, brand assets), keep it there — but the default is upstream.

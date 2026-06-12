@@ -21,7 +21,7 @@ import dev.jdgarita.frnk.ui.theme.shapeFull
  * placeholder block. Both [Content.size] and [Skeleton.size] default to `null` = the theme's icon-size
  * axis (`Theme[iconSizes][iconSizeMd]`), so a host's `iconSizeOverrides` apply to default-sized icons;
  * pass an explicit token (e.g. `Theme[iconSizes][iconSizeLg]`) for a specific size. Toolkit-standard
- * sealed-state + `Skeleton` shape — see HOST_ALIGNMENT.md → "Component style guide".
+ * sealed-state + `Skeleton` shape — see docs/HOST_INTEGRATION.md §9 ("Component style guide").
  */
 sealed interface FrnkIconState {
     @Immutable

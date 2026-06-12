@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-12T02:51:15.316381Z",
+  "generatedAt": "2026-06-12T03:14:56.580041Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
@@ -599,7 +599,7 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt",
       "language": "kotlin",
-      "lines": 1374,
+      "lines": 1375,
       "imports": [
         "androidx.compose.foundation.background",
         "androidx.compose.foundation.clickable",
@@ -734,12 +734,12 @@
         {
           "name": "DemoScreen",
           "kind": "fun",
-          "line": 168
+          "line": 169
         },
         {
           "name": "demoSettingsHandler",
           "kind": "fun",
-          "line": 312,
+          "line": 313,
           "modifiers": [
             "private"
           ]
@@ -747,7 +747,7 @@
         {
           "name": "HomeTabContent",
           "kind": "fun",
-          "line": 353,
+          "line": 354,
           "modifiers": [
             "private"
           ]
@@ -755,7 +755,7 @@
         {
           "name": "ComponentsListScreen",
           "kind": "fun",
-          "line": 569,
+          "line": 570,
           "modifiers": [
             "private"
           ]
@@ -763,7 +763,7 @@
         {
           "name": "ComponentRow",
           "kind": "fun",
-          "line": 631,
+          "line": 632,
           "modifiers": [
             "private"
           ]
@@ -771,7 +771,7 @@
         {
           "name": "ComponentDetailScreen",
           "kind": "fun",
-          "line": 666,
+          "line": 667,
           "modifiers": [
             "private"
           ]
@@ -779,7 +779,7 @@
         {
           "name": "ComponentContent",
           "kind": "fun",
-          "line": 722,
+          "line": 723,
           "modifiers": [
             "private"
           ]
@@ -787,7 +787,7 @@
         {
           "name": "demoSettingsState",
           "kind": "fun",
-          "line": 1221,
+          "line": 1222,
           "modifiers": [
             "private"
           ]
@@ -795,7 +795,7 @@
         {
           "name": "demoExtraSettingsSections",
           "kind": "fun",
-          "line": 1271,
+          "line": 1272,
           "modifiers": [
             "private"
           ]
@@ -803,12 +803,12 @@
         {
           "name": "rowIcon",
           "kind": "fun",
-          "line": 1277
+          "line": 1278
         },
         {
           "name": "Section",
           "kind": "fun",
-          "line": 1346,
+          "line": 1347,
           "modifiers": [
             "private"
           ]
@@ -816,7 +816,7 @@
         {
           "name": "DemoBackHandler",
           "kind": "fun",
-          "line": 1369,
+          "line": 1370,
           "modifiers": [
             "private"
           ]
@@ -5872,7 +5872,7 @@
     {
       "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavBarBottomBar.kt",
       "language": "kotlin",
-      "lines": 166,
+      "lines": 167,
       "imports": [
         "androidx.compose.foundation.layout.Box",
         "androidx.compose.material3.FloatingActionButton",
@@ -5905,7 +5905,7 @@
         {
           "name": "FrnkAdaptiveNavBarPrimaryActionFab",
           "kind": "fun",
-          "line": 150
+          "line": 151
         }
       ]
     },

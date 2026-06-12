@@ -160,8 +160,9 @@ import org.koin.compose.viewmodel.koinViewModel
  * `FrnkAdaptiveNavEngine.Calf` (native iOS `UITabBar`, no primary-action button) and `.AdaptiveNavBar`
  * (with the built-in primary-action button — FAB on Android / inline on iOS). The button is
  * **screen-routed** through the shell's registry: the Home tab claims it (`homePrimaryActionEnabled`),
- * so it shows there and hides on the other tabs with no host-level conditional. See
- * `docs/spikes/adaptive-bottom-nav.md`; note the Android resource-packaging workaround in
+ * so it shows there and hides on the other tabs with no host-level conditional. The adaptive-nav
+ * spike evaluation + the Android resource-packaging workaround are recorded in the MobiAI brain
+ * (`mobiai brain search "adaptive bottom nav"`); the workaround assets live in
  * `demo/android-app/src/main/assets/composeResources/`.
  */
 @Composable

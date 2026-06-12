@@ -7,7 +7,7 @@
 
 A Kotlin Multiplatform + Compose Multiplatform **toolkit** — not a standalone app. Consumed by downstream apps as a Git submodule via a Gradle composite build (`includeBuild("../frnk")`), it provides a strict, modular baseline so feature work doesn't start from zero.
 
-> See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the canonical module graph and api/impl rationale. Product scope and roadmap live in [`REQUIREMENTS.md`](REQUIREMENTS.md) and [`BACKLOG.md`](BACKLOG.md).
+> See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the canonical module graph and api/impl rationale. Product scope lives in [`REQUIREMENTS.md`](REQUIREMENTS.md); decision rationale and the open-work roadmap live in the MobiAI brain (`mobiai brain search "open work"`).
 
 ## 🎯 Objective
 
