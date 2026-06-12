@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavKey
 import com.composeunstyled.theme.Theme
-import dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res
-import dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_home
-import dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_settings
+import dev.jdgarita.frnk.ui.theme.iconNavHome
+import dev.jdgarita.frnk.ui.theme.iconSettings
+import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.stringNavHome
 import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.theme.strings
@@ -15,8 +15,9 @@ import dev.jdgarita.frnk.ui.theme.strings
  * Builds the default [FrnkAdaptiveNavTab] list for [FrnkTabbedNavScaffold], enforcing the toolkit's
  * product contract — **every app has at least Home and Settings** — for the nav3 multiple-back-stack
  * path: a fixed **Home** tab, the host's optional [middleTabs], then a fixed
- * **Settings** tab. Home and Settings carry the toolkit's bundled resource icons + SF-Symbol names, with
- * labels from `stringNavHome`/`stringSettings`. Hosts re-skin the labels through `FrnkThemeConfig`.
+ * **Settings** tab. Home and Settings carry the toolkit's theme icons ([iconNavHome]/[iconSettings]
+ * `ImageVector`s for Android) + SF-Symbol names (`"house"`/`"gearshape"` for iOS), with labels from
+ * `stringNavHome`/`stringSettings`. Hosts re-skin the icons/labels through `FrnkThemeConfig`.
  *
  * The host supplies each bookend's back-stack [homeRoot]/[settingsRoot] (the `NavKey` its tab starts
  * from) since routes are host-defined; middle tabs (with their own icons/roots) slot between them.
@@ -42,6 +43,8 @@ fun rememberFrnkAdaptiveNavTabs(
 ): List<FrnkAdaptiveNavTab> {
     val homeLabel = Theme[strings][stringNavHome]
     val settingsLabel = Theme[strings][stringSettings]
+    val homeIcon = Theme[icons][iconNavHome]
+    val settingsIcon = Theme[icons][iconSettings]
 
     return remember(
         homeRoot,
@@ -51,6 +54,8 @@ fun rememberFrnkAdaptiveNavTabs(
         settingsKey,
         homeLabel,
         settingsLabel,
+        homeIcon,
+        settingsIcon,
     ) {
         buildList {
             add(
@@ -58,7 +63,7 @@ fun rememberFrnkAdaptiveNavTabs(
                     key = homeKey,
                     root = homeRoot,
                     label = homeLabel,
-                    androidIcon = Res.drawable.frnk_nav_home,
+                    icon = homeIcon,
                     iosSystemIcon = "house",
                 ),
             )
@@ -68,7 +73,7 @@ fun rememberFrnkAdaptiveNavTabs(
                     key = settingsKey,
                     root = settingsRoot,
                     label = settingsLabel,
-                    androidIcon = Res.drawable.frnk_nav_settings,
+                    icon = settingsIcon,
                     iosSystemIcon = "gearshape",
                 ),
             )

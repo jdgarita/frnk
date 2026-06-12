@@ -44,10 +44,15 @@ robolectric = "4.16.1"
 # and update this to match, or ui-test-manifest can lag the rest of the compose-ui graph (obscure
 # ComponentActivity/test-host failures rather than a clear version conflict).
 androidx-compose-ui = "1.11.2"  # re-resolved for CMP 1.11.1
-# The toolkit's adaptive bottom bar (narendraanjana09's adaptive-nav-bar): Material3 NavigationBar on
-# Android, a native glassy UITabBar (iOS 26+) / Material3 bar (older) on iOS, plus a built-in add FAB.
-# Lives in :ui-bottom-nav — the toolkit's sole, deliberate Material3 dependency.
+# The toolkit's adaptive bottom bar (narendraanjana09's adaptive-nav-bar): a native glassy UITabBar
+# (iOS 26+) / Material3 bar (older) on iOS, plus a built-in inline add button. Lives in :ui-bottom-nav
+# (iosMain only). On Android the bar is a Material3 Expressive HorizontalFloatingToolbar instead.
 adaptive-nav-bar = "1.0.1"
+# Material3 *Expressive* — pinned ABOVE the version compose-multiplatform 1.11.1 resolves (material3
+# 1.9.0, which ships FloatingToolbar tokens only). HorizontalFloatingToolbar first appears in
+# 1.10.0-alpha05 (@ExperimentalMaterial3ExpressiveApi). Used by :ui-bottom-nav's androidMain ONLY — the
+# toolkit's sole, deliberate Material3 dependency. Bump when CMP's bundled material3 catches up.
+compose-material3-expressive = "1.10.0-alpha05"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
 androidx-activity = "1.13.0"
@@ -114,6 +119,9 @@ multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", ve
 # The toolkit's adaptive bottom bar, hosted in :ui-bottom-nav — the single, deliberate Material3
 # dependency. Native UITabBar (iOS 26+) / Material3 bar on iOS, Material3 NavigationBar on Android.
 adaptive-nav-bar = { module = "io.github.narendraanjana09:adaptive-nav-bar", version.ref = "adaptive-nav-bar" }
+# Material3 Expressive (HorizontalFloatingToolbar) — :ui-bottom-nav androidMain only. Overrides the
+# compose.material3 (1.9.0) the CMP plugin would otherwise resolve. See the version comment above.
+compose-material3-expressive = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3-expressive" }
 
 # Compose Unstyled
 icons-lucide = { module = "com.composables:icons-lucide-cmp", version.ref = "iconsLucide" }

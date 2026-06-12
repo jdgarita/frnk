@@ -330,31 +330,19 @@ setContent {
   (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkAppShell` directly — the
   same shell minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the reference.
 
-### 8.1 ⚠️ Required Android step — bundle the bottom-nav drawables as assets
+### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 
-The adaptive bottom bar (`:ui-bottom-nav`, over `adaptive-nav-bar`) uses `DrawableResource` nav icons.
-Under the current toolchain (AGP 9.2.1 `com.android.kotlin.multiplatform.library` + Compose Multiplatform
-1.11.1), **Compose drawable resources do not package into the Android APK from a KMP *library* module** —
-so the toolkit's bundled nav icons are absent from your APK and the app crashes at first render with
-`MissingResourceException: …/drawable/frnk_nav_home.xml`. (iOS is unaffected.)
+The adaptive bottom bar (`FrnkBottomNavBar`, `:ui-bottom-nav`) takes **`ImageVector`** icons in the common
+API (`FrnkNavBarItem.icon` / `FrnkAdaptiveNavTab.icon`), plus an `iosSystemIcon` SF-Symbol string for the
+native iOS bar. On **Android** the bar is a Material3 Expressive `HorizontalFloatingToolbar` that renders the
+`ImageVector` directly — it never touches `DrawableResource`, so **there is no host-side asset-bundling step**
+(the old `MissingResourceException` / `assets/composeResources/…` workaround is gone).
 
-**Every Android host must copy the three nav drawables into its *application* module's assets**, at the
-exact path the generated `Res` reads:
-
-```
-<app>/src/main/assets/composeResources/dev.jdgarita.frnk.ui.bottomnav.generated.resources/drawable/
-    frnk_nav_home.xml
-    frnk_nav_settings.xml
-    frnk_nav_primary_action.xml
-```
-
-Copy them verbatim from the toolkit
-(`frnk/ui/bottom-nav/src/commonMain/composeResources/drawable/`); the demo's
-`demo/android-app/src/main/assets/composeResources/` (+ its `README.md`) is the worked example. If you
-also bundle your own middle-tab `DrawableResource` icons, ship those the same way under your module's own
-`<resourcePackage>.generated.resources` path. To avoid this entirely, use the Material-free
-`FrnkBottomNavBar` pill (`:ui-components`, `ImageVector` icons) and hand-wire the nav primitives instead of
-the adaptive bar.
+Supply middle-tab icons as plain `ImageVector`s (e.g. Lucide vectors, or your own), the same way the demo's
+"Components" tab uses `Lucide.Component`. Defaults for the Home/Settings bookends + the primary-action button
+come from theme icon tokens (`iconNavHome` / `iconSettings` / `iconNavAdd`), overridable via
+`FrnkThemeConfig.iconOverrides`. iOS-only: the library's older-iOS Compose fallback needs a `DrawableResource`,
+which the toolkit supplies internally via a single bundled placeholder — nothing for the host to do.
 
 ## 9. Component style guide — sealed state + `Skeleton` object
 

@@ -28,14 +28,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import com.composables.icons.lucide.Check
+import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Settings
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.backend.AnalyticsTracker
-import dev.jdgarita.frnk.demo.generated.resources.Res
-import dev.jdgarita.frnk.demo.generated.resources.frnk_demo_components
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
@@ -181,8 +180,8 @@ fun DemoScreen(
             }
         }
     // One declaration per tab. The shell supplies the Home/Settings bookends (labels from theme tokens +
-    // the toolkit's bundled resource icons); the host only adds its middle "Components" tab, bundling its
-    // own resource icon (frnk_demo_components) + SF-Symbol the way a real host would.
+    // theme ImageVector icons); the host only adds its middle "Components" tab, supplying a Compose
+    // ImageVector (Android) + SF-Symbol (iOS) the way a real host would.
     val middleTabs =
         remember {
             listOf(
@@ -190,7 +189,7 @@ fun DemoScreen(
                     key = "components",
                     root = DemoRoute.Components,
                     label = "Components",
-                    androidIcon = Res.drawable.frnk_demo_components,
+                    icon = Lucide.Component,
                     iosSystemIcon = "square.grid.2x2",
                 ),
             )

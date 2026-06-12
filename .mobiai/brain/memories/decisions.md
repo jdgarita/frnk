@@ -489,3 +489,33 @@ Supersedes [[adaptive-bottom-nav-calf-material3-accepted-toolkit-wide-iso-202606
 ### Files
 - gradle/libs.versions.toml
 - build-logic/src/main/kotlin/frnk.kmp.base.gradle.kts
+
+## ui-bottom-nav: FrnkBottomNavBar expect/actual — Material3 Expressive on Android, adaptive-nav-bar on iOS, ImageVector API
+
+- id: ui-bottom-nav-frnkbottomnavbar-expect-actual-material3-expre-20260612-171806
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-bottom-nav
+- date: 2026-06-12
+
+Renamed FrnkAdaptiveNavBarBottomBar -> FrnkBottomNavBar and split it into an expect/actual composable so each platform renders with its own engine and Material3 never leaves Android.
+
+WHY / decisions (all confirmed with the user):
+- Android engine swapped from adaptive-nav-bar's Material3 NavigationBar to a Material3 *Expressive* HorizontalFloatingToolbar (floating pill), drawing ImageVector icons directly via IconButton+Icon; the primary action is the toolbar's docked FAB slot (deleted the old separately-docked FrnkAdaptiveNavBarPrimaryActionFab + the getPlatform() branch in FrnkTabbedNavScaffold).
+- iOS keeps narendraanjana09 adaptive-nav-bar (native glassy UITabBar). The native bar renders SF-Symbols and CANNOT consume a Compose ImageVector — that is why the common item keeps an iosSystemIcon: String alongside icon: ImageVector. DrawableResource was removed from the public API.
+- Common item is FrnkNavBarItem (key, icon: ImageVector, iosSystemIcon, label); tab is FrnkAdaptiveNavTab (now icon: ImageVector + iosSystemIcon); FrnkNavPrimaryAction now icon: ImageVector (default = new iconNavAdd theme token = Lucide.Plus). Named FrnkNavBarItem/FrnkNavBarDefaults (not FrnkBottomNavItem) to avoid clashing with the existing Material-free pill atom FrnkBottomNavBar/FrnkBottomNavItem in :ui-components.
+
+VERIFIED GOTCHAS:
+- HorizontalFloatingToolbar is NOT in the material3 that CMP 1.11.1 resolves (1.9.0 ships only FloatingToolbar TOKENS). It first appears in material3 1.10.0-alpha05 (@ExperimentalMaterial3ExpressiveApi). Pinned as catalog 'compose-material3-expressive = 1.10.0-alpha05', applied ONLY in :ui-bottom-nav androidMain (overrides the plugin's 1.9.0). Drop the override when CMP's bundled material3 catches up.
+- adaptive-nav-bar's NavigationItem.icon / IosFabItem.icon are non-null DrawableResource. Since the API no longer carries one, the iOS actual feeds the library a single bundled placeholder commonMain/composeResources/drawable/frnk_nav_placeholder.xml (only shown on the older-iOS Compose fallback). The Compose-resources plugin generates the Res accessor into commonMain regardless of the file's source set, so compose.components.resources MUST be a commonMain dependency (putting it in iosMain breaks the generated commonMain Res.kt -> 'Unresolved reference Res' on iOS).
+
+FREE WIN: Android no longer reads any DrawableResource, so the old AGP-9 host requirement (ship the toolkit nav drawables as raw assets under demo/android-app/.../assets/composeResources) is GONE — that shim + its README were deleted, and HOST_INTEGRATION §8.1 rewritten.
+
+Material3 quarantine preserved: split by source set (material3 expressive in androidMain, adaptive-nav-bar in iosMain) but all in :ui-bottom-nav/build.gradle.kts. Gates: compileAndroidMain + :demo-android:compileDebugKotlin, :demo-shared:assembleDemoKitDebugXCFramework, testAndroidHostTest — all green.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.kt
+- frnk/ui/bottom-nav/src/androidMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.android.kt
+- frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.ios.kt
+- frnk/ui/bottom-nav/build.gradle.kts

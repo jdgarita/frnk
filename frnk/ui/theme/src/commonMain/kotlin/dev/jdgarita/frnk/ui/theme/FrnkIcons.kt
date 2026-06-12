@@ -13,6 +13,7 @@ import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MessageSquare
+import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.RefreshCw
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Settings
@@ -46,7 +47,9 @@ val iconHaptics = ThemeToken<ImageVector>("icon_haptics")
 
 // Bottom-nav scaffold icons. The Home tab uses [iconNavHome]; the Settings tab reuses
 // [iconSettings]; the configurable middle tab supplies its own ImageVector at the call site.
+// [iconNavAdd] is the default glyph for the adaptive bar's primary-action (add) button.
 val iconNavHome = ThemeToken<ImageVector>("icon_nav_home")
+val iconNavAdd = ThemeToken<ImageVector>("icon_nav_add")
 // endregion
 
 internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
@@ -69,4 +72,5 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconOnboarding to Lucide.BookOpen,
         iconHaptics to Lucide.Vibrate,
         iconNavHome to Lucide.House,
+        iconNavAdd to Lucide.Plus,
     )

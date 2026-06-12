@@ -1,5 +1,7 @@
-<!-- Lucide "house" (https://lucide.dev, ISC). Stroke color is a placeholder — Compose `Icon` tints it
-     from FrnkTheme tokens at draw time, so the literal color below never shows. -->
+<!-- iOS-only fallback placeholder for adaptive-nav-bar's non-null `NavigationItem.icon`/`IosFabItem.icon`
+     (`DrawableResource`). The visible iOS 26+ glass icon comes from the SF-Symbol `systemIcon`; this glyph
+     only surfaces on the older-iOS Compose fallback bar. Glyph is Lucide "house" (https://lucide.dev, ISC);
+     stroke color is inert — the bar tints from FrnkTheme tokens at draw time. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

@@ -54,3 +54,26 @@ Temporary external-tooling limitation; re-check on AGP/CMP upgrades.
 
 ### Files
 - demo/android-app/src/main/assets/composeResources/README.md
+
+## HorizontalFloatingToolbar: no-FAB overload defaults to 0dp elevation (no shadow) — pin to WithFab elevation
+
+- id: horizontalfloatingtoolbar-no-fab-overload-defaults-to-0dp-el-20260612-173729
+- type: bug_fix
+- status: active
+- platform: android
+- area: ui-bottom-nav
+- date: 2026-06-12
+
+Symptom: the Android FrnkBottomNavBar floating pill cast a drop shadow on Home (where a primary-action FAB is wired) but NOT on Components/Settings (no FAB).
+
+Root cause: Material3's HorizontalFloatingToolbar has two overloads with DIFFERENT default shadow elevations:
+- WithFab overload (floatingActionButton slot): expandedShadowElevation defaults to FloatingToolbarDefaults.ContainerExpandedElevationWithFab = ElevationTokens.Level1 = 1.dp -> visible shadow.
+- plain overload (no FAB): expandedShadowElevation defaults to FloatingToolbarDefaults.ContainerExpandedElevation = ElevationTokens.Level0 = 0.dp -> NO shadow.
+Since FrnkBottomNavBar.android.kt picks the overload based on whether primaryAction+onPrimaryAction are wired, screens without a primary action got the 0dp plain pill.
+
+Fix: pass expandedShadowElevation = FloatingToolbarDefaults.ContainerExpandedElevationWithFab explicitly to the no-FAB HorizontalFloatingToolbar call, so the pill casts the same Level1 shadow on every screen. (expanded=true always, so collapsedShadowElevation is irrelevant.)
+
+Verified on-device (android run + android screen capture): Settings pill now shows the same drop shadow as Home.
+
+### Files
+- frnk/ui/bottom-nav/src/androidMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.android.kt
