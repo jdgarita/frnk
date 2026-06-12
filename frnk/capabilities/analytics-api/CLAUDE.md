@@ -5,7 +5,7 @@ Pure-interface backend contract. **No Ktor, no Firebase, no Serialization plugin
 ## Contents
 
 - `AppResult.kt` — **moved to `shared-utils`** (BACKLOG P1-1). The toolkit-wide `sealed interface AppResult<out D, out E : AppError>` (`Success(data)` / `Failure(error)`), the `AppError` interface, the `CommonError` enum (`Network`, `Unauthorized`, `NotFound`, `Unknown`), and `fold(...)` now live in `dev.jdgarita.frnk.utils` so non-backend `*-api` modules (and the demo's `NoteStore`) can return `AppResult` without depending on this module. Import from `dev.jdgarita.frnk.utils`.
-- `RemoteData.kt` — generic CRUD-shaped interface for backed records. (`Auth.kt` was deleted in restructure Stage 2.)
+- (`RemoteData.kt` was deleted at restructure Stage 11 — Remote Config became its own capability pair, `:remote-config-api`/`:remote-config-impl`, sibling of analytics. `Auth.kt` was deleted in restructure Stage 2.)
 - `Analytics.kt` — analytics + crash-reporting interfaces (`AnalyticsTracker`, `CrashReporter`, `ToolkitEvent`).
 - `NoopObservability.kt` — `NoopAnalyticsTracker` / `NoopCrashReporter`, the SDK-free no-op defaults
   (BACKLOG P1-5). They live here rather than in a backend impl because observability is a

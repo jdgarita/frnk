@@ -3,8 +3,11 @@ package dev.jdgarita.frnk.demo
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.camera.NoopCameraController
 import dev.jdgarita.frnk.monetization.DefaultEntitlementManager
 import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.permissions.NoopPermissionController
+import dev.jdgarita.frnk.remoteconfig.NoopRemoteConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
@@ -47,7 +50,16 @@ class DemoViewModelTest {
         // The real frnk EntitlementManager over the demo's fake provider — exactly the demo's wiring.
         val entitlements = DefaultEntitlementManager(FakeEntitlementProvider(), FakeKeyValueStore(), analytics, CoroutineScope(dispatcher))
         val gate = FeatureGate(entitlements, analytics)
-        return DemoViewModel(gate, analytics, entitlements, FakeNoteStore(), crash)
+        return DemoViewModel(
+            gate,
+            analytics,
+            entitlements,
+            FakeNoteStore(),
+            crash,
+            NoopRemoteConfig(),
+            NoopCameraController(),
+            NoopPermissionController(),
+        )
     }
 
     @Test

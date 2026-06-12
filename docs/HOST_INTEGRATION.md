@@ -72,8 +72,8 @@ initializeFrnk(
         listOf(
             databaseModule,                      // :data-db-impl — platform SqlDriverFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
-            firebaseBackendModule,               // :analytics-impl — remote data (optional)
             firebaseObservabilityModule,         // or noopObservabilityModule (:analytics-api)
+            remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
             // Monetization stack (optional — omit all three to run without entitlements):
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
             monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
@@ -88,7 +88,11 @@ so the section-1 context line is only needed if you bypass `initializeFrnk`. Aft
 app root; it fails fast with an explanation if `initializeFrnk` didn't run.
 
 Install exactly one observability module (`firebaseObservabilityModule` XOR
-`noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`.
+`noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`. Remote Config follows the
+same XOR rule (`remoteConfigModule` from `:remote-config-impl` for the real Firebase backend, XOR
+`noopRemoteConfigModule` from `:remote-config-api` to read bundled defaults only). `:camera` /
+`:permissions` are api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op
+defaults until a real impl ships.
 
 ## 5. Custom analytics
 

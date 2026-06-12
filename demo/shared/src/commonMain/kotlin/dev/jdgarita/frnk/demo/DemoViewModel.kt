@@ -4,11 +4,15 @@ import androidx.lifecycle.viewModelScope
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.camera.CameraController
 import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.Feature
 import dev.jdgarita.frnk.monetization.FeatureGate
 import dev.jdgarita.frnk.monetization.ProSource
+import dev.jdgarita.frnk.permissions.Permission
+import dev.jdgarita.frnk.permissions.PermissionController
+import dev.jdgarita.frnk.remoteconfig.RemoteConfigService
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavEngine
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.mvi.UiEffect
@@ -39,6 +43,10 @@ data class DemoState(
     val galleryNavIndex: Int = 0,
     // POC: which adaptive bottom-bar engine FrnkTabbedNavScaffold renders (A/B Calf vs adaptive-nav-bar).
     val navEngine: FrnkAdaptiveNavEngine = FrnkAdaptiveNavEngine.Calf,
+    // Stage 11 capability scaffolds — Remote Config value + camera/permission no-op outcomes.
+    val remoteWelcome: String = "",
+    val cameraResult: String = "Not captured",
+    val cameraPermission: String = "",
 ) : UiState
 
 sealed interface DemoIntent : UiIntent {
@@ -98,6 +106,13 @@ sealed interface DemoIntent : UiIntent {
     data class NavEngineChanged(
         val index: Int,
     ) : DemoIntent
+
+    // Stage 11 capability scaffolds.
+    data object FetchRemoteConfig : DemoIntent
+
+    data object CapturePhoto : DemoIntent
+
+    data object RequestCameraPermission : DemoIntent
 }
 
 sealed interface DemoEffect : UiEffect {
@@ -116,6 +131,9 @@ class DemoViewModel(
     private val entitlements: EntitlementManager,
     private val notes: NoteStore,
     private val crash: CrashReporter,
+    private val remoteConfig: RemoteConfigService,
+    private val camera: CameraController,
+    private val permissions: PermissionController,
 ) : MviViewModel<DemoState, DemoIntent, DemoEffect>(DemoState()) {
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
@@ -125,6 +143,14 @@ class DemoViewModel(
         entitlements.isGodMode
             .onEach { god -> setState { copy(isGodMode = god) } }
             .launchIn(viewModelScope)
+        // Stage 11: seed the Remote Config value + current camera permission from their (no-op by
+        // default) providers. androidDemoApp installs the real Firebase remoteConfigModule.
+        setState {
+            copy(
+                remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, "Hello from the no-op default"),
+                cameraPermission = permissions.status(Permission.Camera).name,
+            )
+        }
         viewModelScope.launch { loadNotes() }
     }
 
@@ -208,7 +234,28 @@ class DemoViewModel(
                             if (intent.index == 0) FrnkAdaptiveNavEngine.Calf else FrnkAdaptiveNavEngine.AdaptiveNavBar,
                     )
                 }
+            DemoIntent.FetchRemoteConfig ->
+                remoteConfig.fetchAndActivate().fold(
+                    onSuccess = {
+                        setState { copy(remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, remoteWelcome)) }
+                        emit(DemoEffect.Toast("Remote Config fetched"))
+                    },
+                    onFailure = { emit(DemoEffect.Toast("Fetch failed: ${it.message}")) },
+                )
+            DemoIntent.CapturePhoto ->
+                camera.capturePhoto().fold(
+                    onSuccess = { image -> setState { copy(cameraResult = "Captured ${image.bytes.size} bytes") } },
+                    onFailure = { setState { copy(cameraResult = "No camera (no-op scaffold)") } },
+                )
+            DemoIntent.RequestCameraPermission -> {
+                val status = permissions.request(Permission.Camera)
+                setState { copy(cameraPermission = status.name) }
+            }
         }
+    }
+
+    private companion object {
+        const val REMOTE_WELCOME_KEY = "demo_welcome_message"
     }
 
     private suspend fun loadNotes() {

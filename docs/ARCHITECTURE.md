@@ -11,7 +11,8 @@
  core-mvi/core-nav  data-db-api      analytics-api  (interfaces only)
  haptics (+engine)  data-prefs-api         ▲
         ▲                 ▲                └─── analytics-impl (Firebase)
-        │                 │
+        │                 │           remote-config-api ── remote-config-impl (Firebase Remote Config)
+        │                 │           camera, permissions  (api-only no-op scaffolds, Stage 11)
  ui-theme           data-db-impl
    ▲ ui-components   data-prefs-impl
       ▲ ui-scaffolds                 monetization-api
@@ -87,7 +88,9 @@ The diagram above names Gradle projects, not folders. Since restructure Stage 3,
 Each domain that pulls in a third-party SDK is split:
 
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
-- **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`) — concrete bindings exposed as Koin modules.
+- **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules.
+
+Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`; a sibling of `:analytics-*`, **not** part of it) is backed by **`:remote-config-impl`** (Firebase Remote Config). **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -125,7 +128,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 ## Module communication flow
 
 1. A composable dispatches a `UiIntent` via `viewModel.send(intent)`.
-2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `RemoteData` from `:analytics-api`).
+2. The ViewModel handles it in `onIntent`: it reduces state purely with `setState { copy(...) }` and/or calls a `*-api` interface (e.g. `RemoteConfigService` from `:remote-config-api`).
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed in its `initializeFrnk(modules = …)` list.
 4. The impl returns an `AppResult<Data, AppError>`.
 5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.
@@ -218,13 +221,20 @@ The toolkit-owned navigation layer is built on **AndroidX Navigation3** (type-sa
 
 ## CI
 
-`.github/workflows/main.yml` is a single `compile & test` job on every push and PR to `main` (Markdown, `docs/**`, and `LICENSE` changes are path-ignored). After seeding a dummy `local.properties` so `BuildKonfig` resolves (CI never exercises real backends), it runs, in order:
+**Build/test CI is paused while the repo is private.** Free-tier GitHub Actions minutes are capped on private repos, and the per-push `compile & test` job (`main.yml`) was exhausting the spending limit during foundation work — so it and the auto PR review (`claude-code-review.yml`) were removed. Two workflows remain, both triggered only rarely:
 
-1. `./gradlew compileAndroidMain :androidDemoApp:compileDebugKotlin --parallel --build-cache`
-2. `./gradlew testAndroidHostTest :androidDemoApp:testDebugUnitTest --parallel --build-cache`
+- **`release.yml`** — on a `v*` tag push, publishes the GitHub Release (see `RELEASING.md`). The deliberately-kept tag-release job.
+- **`claude.yml`** — on-demand `@claude` assistant on issues/PRs.
 
-`compileAndroidMain` covers `commonMain` + `androidMain` for every KMP module under the AGP 9 KMP-Android plugin (the old `compileDebugKotlinAndroid` task no longer exists for these modules); `:androidDemoApp:compileDebugKotlin` covers the pure-Android smoke harness. `testAndroidHostTest` runs `commonTest` + `androidHostTest` for every KMP module that opted in via `kotlin { android { withHostTest {} } }` — that is the AGP 9 KMP-Android host unit-test task (there is no `testDebugUnitTest` for KMP modules); `:androidDemoApp` is a `com.android.application`, so its unit tests run under `testDebugUnitTest`. iOS targets are skipped on the Linux runner.
+**Validate locally before pushing** (this is the gate the old CI job enforced). After seeding a dummy `local.properties` so `BuildKonfig` resolves, run in order:
 
-Style is enforced **locally** via a git pre-commit hook (`.githooks/pre-commit`) that runs `ktlintFormat` and re-stages the fixes — so CI doesn't need a separate `ktlintCheck` job. The hook is installed automatically the first time `./gradlew` runs (the root build registers an `installGitHooks` task wired to `prepareKotlinBuildScriptModel`).
+1. `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache`
+2. `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache`
 
-The CI job intentionally skips `assemble` and `allTests`: compile-only is enough to gate merges, and downstream consumer apps (or a manual `./gradlew assemble`) cover full release assembly and the iOS link step.
+`compileAndroidMain` covers `commonMain` + `androidMain` for every KMP module under the AGP 9 KMP-Android plugin (the old `compileDebugKotlinAndroid` task no longer exists for these modules); `:demo-android:compileDebugKotlin` covers the pure-Android smoke harness. `testAndroidHostTest` runs `commonTest` + `androidHostTest` for every KMP module that opted in via `kotlin { android { withHostTest {} } }` — that is the AGP 9 KMP-Android host unit-test task (there is no `testDebugUnitTest` for KMP modules); `:demo-android` is a `com.android.application`, so its unit tests run under `testDebugUnitTest`. iOS targets are skipped on a Linux runner.
+
+Style is enforced **locally** via a git pre-commit hook (`.githooks/pre-commit`) that runs `ktlintFormat` and re-stages the fixes. The hook is installed automatically the first time `./gradlew` runs (the root build registers an `installGitHooks` task wired to `prepareKotlinBuildScriptModel`).
+
+`assemble` and `allTests` stay out of the local gate too: compile-only is enough to catch breakage, and downstream consumer apps (or a manual `./gradlew assemble`) cover full release assembly and the iOS link step.
+
+**When the foundation is in place and the repo goes public** (unlimited Actions minutes): re-add branch protection on `main`, enable PRs, and restore the `compile & test` job — optionally `claude-code-review.yml` too.

@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.demo
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.camera.cameraModule
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.demo.notes.Note
 import dev.jdgarita.frnk.demo.notes.NoteStore
@@ -12,6 +13,8 @@ import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
+import dev.jdgarita.frnk.permissions.permissionsModule
+import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
@@ -28,7 +31,7 @@ import kotlin.time.Clock
 
 /**
  * Demo wiring. The point of having a separate module is that a real host would swap these for
- * `revenueCatModule` / `firebaseBackendModule` — the toolkit doesn't care.
+ * `revenueCatModule` / `firebaseObservabilityModule` — the toolkit doesn't care.
  */
 val demoModule =
     module {
@@ -36,6 +39,12 @@ val demoModule =
         includes(onboardingScaffoldModule)
         includes(settingsScaffoldModule)
         includes(bottomNavScaffoldModule)
+        // Stage 11 capability scaffolds — all no-op api defaults so DemoKit's common surface stays
+        // SDK-free. androidDemoApp overrides remoteConfig with the real Firebase remoteConfigModule;
+        // camera/permissions have no impl yet, so they stay no-op everywhere (demoed as such).
+        includes(noopRemoteConfigModule)
+        includes(cameraModule)
+        includes(permissionsModule)
         // The real frnk monetization layer (DefaultEntitlementManager + FeatureGate) over a FAKE
         // provider — so the demo exercises the actual god-mode / Free-Pro logic cross-platform without
         // a paid SDK. A real host installs `revenueCatModule` instead (androidDemoApp does).
@@ -52,7 +61,7 @@ val demoModule =
         // demoNotesModule (demo-owned DemoDB over SqlDriverFactory, OQ-2) — and the JVM
         // round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
-        viewModel { DemoViewModel(get(), get(), get(), get(), get()) }
+        viewModel { DemoViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
 
 /** In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK. */

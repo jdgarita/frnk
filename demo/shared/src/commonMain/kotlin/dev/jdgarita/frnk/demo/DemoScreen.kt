@@ -514,6 +514,49 @@ private fun HomeTabContent(
                 ),
         )
     }
+
+    FrnkDivider(state = FrnkDividerState.Horizontal())
+
+    Section(title = "5. Capabilities (Stage 11)") {
+        FrnkText(
+            state =
+                FrnkTextState.Body(
+                    text =
+                        "New capability modules, all resolved via Koin. RemoteConfigService " +
+                            "(:remote-config-api) reads a key→value; the demo installs the no-op default " +
+                            "(shows the bundled fallback), androidDemoApp overrides it with the real " +
+                            "Firebase remoteConfigModule. :camera and :permissions are api-only scaffolds " +
+                            "(no impl yet) — their no-op defaults surface the honest 'not wired' outcome.",
+                    color = colorOnSurfaceVariant,
+                ),
+        )
+        FrnkLabeledValue(
+            state =
+                FrnkLabeledValueState.Content(
+                    label = "Remote welcome",
+                    value = state.remoteWelcome,
+                    orientation = FrnkLabeledValueOrientation.Stacked,
+                ),
+        )
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Fetch Remote Config", variant = FrnkButtonVariant.Outlined),
+            onClick = { onIntent(DemoIntent.FetchRemoteConfig) },
+        )
+        FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Camera", value = state.cameraResult))
+        FrnkLabeledValue(
+            state = FrnkLabeledValueState.Content(label = "Camera permission", value = state.cameraPermission),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "Capture photo", variant = FrnkButtonVariant.Outlined),
+                onClick = { onIntent(DemoIntent.CapturePhoto) },
+            )
+            FrnkButton(
+                state = FrnkButtonState.Content(text = "Request camera", variant = FrnkButtonVariant.Outlined),
+                onClick = { onIntent(DemoIntent.RequestCameraPermission) },
+            )
+        }
+    }
 }
 
 /**

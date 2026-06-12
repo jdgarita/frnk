@@ -49,6 +49,11 @@ kotlin {
             export(projects.uiScaffolds)
             export(projects.uiBottomNav)
             export(projects.analyticsApi)
+            // Stage 11 capability scaffolds — api modules only (their impls, if any, stay out of the
+            // common surface so DemoKit links no extra native cinterop).
+            export(projects.remoteConfigApi)
+            export(projects.camera)
+            export(projects.permissions)
             export(projects.dataDbApi)
             export(projects.dataPrefsApi)
             export(projects.monetizationApi)
@@ -76,6 +81,11 @@ kotlin {
             // rather than carrying any nav-bar implementation itself.
             api(projects.uiBottomNav)
             api(projects.analyticsApi)
+            // Stage 11 capability scaffolds (matches the iOS export list above). Only the *-api
+            // modules — :remote-config-impl is installed by androidDemoApp via Koin, never here.
+            api(projects.remoteConfigApi)
+            api(projects.camera)
+            api(projects.permissions)
             api(projects.dataDbApi)
             api(projects.dataPrefsApi)
             api(projects.monetizationApi)

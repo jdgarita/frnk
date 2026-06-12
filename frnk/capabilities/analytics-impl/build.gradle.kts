@@ -1,6 +1,5 @@
 plugins {
     id("frnk.kmp.library.hosttest")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -11,7 +10,6 @@ kotlin {
         commonMain.dependencies {
             api(projects.analyticsApi)
             implementation(libs.koin.core)
-            implementation(libs.firebase.firestore)
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
         }

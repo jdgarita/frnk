@@ -8,6 +8,7 @@ import dev.jdgarita.frnk.database.impl.databaseModule
 import dev.jdgarita.frnk.demo.notes.demoNotesModule
 import dev.jdgarita.frnk.di.DatabaseContext
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
+import dev.jdgarita.frnk.remoteconfig.firebase.remoteConfigModule
 import org.koin.core.module.Module
 
 class DemoApplication : Application() {
@@ -23,11 +24,16 @@ class DemoApplication : Application() {
         //  - databaseModule + demoNotesModule — the real SQLDelight path: the toolkit's
         //    SqlDriverFactory (:data-db-impl) building the demo-owned DemoDB schema, replacing
         //    the in-memory FakeNoteStore (restructure Stage 4 / OQ-2).
+        //  - remoteConfigModule — real Firebase Remote Config (restructure Stage 11), replacing the
+        //    no-op default so the demo's "Capabilities" section shows a live fetched value when a
+        //    `demo_welcome_message` parameter is set in the frnk-demo Firebase project (else the
+        //    bundled default). google-services.json + the google-services plugin already init Firebase.
         //  - revenueCatModule — real RevenueCat EntitlementManager (BACKLOG P3-2), installed only when
         //    a public Android SDK key is present in local.properties. Purchases.configure(...) must run
         //    before the override so the manager reads a configured SDK; the Android context is captured
         //    automatically by RevenueCat's androidx.startup initializer before onCreate.
-        val overrides = mutableListOf<Module>(firebaseObservabilityModule, databaseModule, demoNotesModule)
+        val overrides =
+            mutableListOf<Module>(firebaseObservabilityModule, databaseModule, demoNotesModule, remoteConfigModule)
         val rcKey = BuildConfig.REVENUECAT_ANDROID_API_KEY
         if (rcKey.isNotBlank()) {
             Purchases.configure(apiKey = rcKey)

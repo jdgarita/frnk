@@ -25,7 +25,7 @@ Pre-release tags follow the `vX.Y.Z-rcN` / `-betaN` / `-alphaN` shape (e.g. `v0.
 
 ## How to cut a release
 
-You need: a clean `main` with all wanted changes merged and CI green.
+You need: a clean `main` with all wanted changes landed and **validated locally** — build/test CI is paused while the repo is private (only `release.yml` runs, on tag push), so run `./gradlew compileAndroidMain :demo-android:compileDebugKotlin` and `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest` yourself before tagging.
 
 1. **Decide the next version.** Look at the `## [Unreleased]` section of `CHANGELOG.md`. If it contains anything under `Changed` or `Removed` that is API-affecting, bump `MINOR` (pre-1.0) or `MAJOR` (post-1.0). Otherwise bump `PATCH`.
 

@@ -17,8 +17,8 @@ cp local.properties.template local.properties   # then fill in Firebase keys; Bu
 
 Day-to-day:
 ```bash
-./gradlew compileAndroidMain                # fast compile-only check (what CI runs — covers commonMain+androidMain for every KMP module); Gradle parallelises across modules
-./gradlew testAndroidHostTest               # commonTest + androidHostTest across all KMP modules (what CI runs); :demo-android uses testDebugUnitTest
+./gradlew compileAndroidMain                # fast compile-only check (the standard pre-push gate — covers commonMain+androidMain for every KMP module); Gradle parallelises across modules
+./gradlew testAndroidHostTest               # commonTest + androidHostTest across all KMP modules (the standard pre-push gate); :demo-android uses testDebugUnitTest
 ./gradlew :data-prefs-api:testAndroidHostTest   # run a single module's tests
 ./gradlew ktlintFormat                      # auto-fix style (also runs from the pre-commit hook)
 ./gradlew assemble                          # full build of every target — only when producing release artifacts
@@ -55,8 +55,9 @@ Day-to-day:
 
 **api/impl module split.** Each domain that pulls in a third-party SDK has two modules:
 
-- `:analytics-api`, `:data-db-api` (the `SqlDriverFactory` SPI), `:data-prefs-api` (`KeyValueStore` + `Preference<T>`), `:monetization-api` — pure-interface, no Ktor / no SQLDelight driver / no RevenueCat. Domain code depends on these. (The old `shared-database-api` split into the two data api modules at restructure Stage 4; `NoteStore` moved to the demo, OQ-2.)
-- `:analytics-impl`, `:data-db-impl` (platform SQL drivers), `:data-prefs-impl` (multiplatform-settings), `:monetization-impl` — concrete bindings exposed as Koin modules (`firebaseBackendModule`, `databaseModule`, `prefsModule`, `revenueCatModule`).
+- `:analytics-api`, `:data-db-api` (the `SqlDriverFactory` SPI), `:data-prefs-api` (`KeyValueStore` + `Preference<T>`), `:monetization-api`, `:remote-config-api` (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) — pure-interface, no Ktor / no SQLDelight driver / no RevenueCat / no Firebase. Domain code depends on these. (The old `shared-database-api` split into the two data api modules at restructure Stage 4; `NoteStore` moved to the demo, OQ-2.)
+- `:analytics-impl`, `:data-db-impl` (platform SQL drivers), `:data-prefs-impl` (multiplatform-settings), `:monetization-impl`, `:remote-config-impl` (Firebase Remote Config) — concrete bindings exposed as Koin modules (`firebaseObservabilityModule`, `databaseModule`, `prefsModule`, `revenueCatModule`, `remoteConfigModule`).
+- **Remote Config is its own capability pair (restructure Stage 11 / OQ-1), a sibling of `:analytics-*` kept separate from it** — it replaced the old generic Firestore-shaped `RemoteData` stub (deleted at Stage 11, with `FirestoreRemoteData` + `firebaseBackendModule`). **`:camera` + `:permissions`** (`frnk/capabilities/`) are api-only **scaffolds** from the same stage: interface + no-op default (`NoopCameraController`/`NoopPermissionController`) + Koin module (`cameraModule`/`permissionsModule`), **no impl yet** and no native cinterop — real implementations are future feature work. Their no-op defaults let hosts compile/run against the contract and keep the XCFrameworks clean.
 
 The point is swap-ability and parallel compilation. **Do not** add a third-party SDK dependency to an `*-api` module, and do not import an `*-impl` package from toolkit code — impls are installed by the host's `initializeFrnk(modules = …)` list and resolved via Koin (the demo modules are the sanctioned exception; `DatabaseContext` itself lives in `:core-di`'s androidMain since Stage 4, with the data impls depending on it).
 
@@ -98,7 +99,14 @@ The hook activates automatically: the root build registers an `installGitHooks` 
 
 ## CI
 
-`.github/workflows/main.yml` is a single job that runs `compileAndroidMain :demo-android:compileDebugKotlin` followed by `testAndroidHostTest :demo-android:testDebugUnitTest`, both with `--parallel --build-cache`. Compile covers `commonMain`+`androidMain` for every shared module (iOS targets are skipped on Linux runners) plus the demo app's Kotlin. The `compileAndroidMain` task name comes from the AGP 9 KMP-Android plugin — `compileDebugKotlinAndroid` no longer exists for KMP modules. Tests cover `commonTest`+`androidHostTest`: the AGP 9 KMP-Android plugin names the host unit-test task **`testAndroidHostTest`** (there is no `testDebugUnitTest` for KMP modules), and each tested module must opt in with `kotlin { android { withHostTest {} } }`. `:demo-android` is a `com.android.application`, so its unit tests stay on `testDebugUnitTest`. No `assemble`, no `allTests`, no `ktlintCheck` — those are heavier than what CI needs to gate merges.
+**Build/test CI is paused while the repo is private.** Free-tier GitHub Actions minutes are capped on private repos, and the per-push `compile & test` job was exhausting the spending limit. `main.yml` (build/test) and `claude-code-review.yml` (auto PR review) were **removed** for now. Two workflows remain, both cheap because they only run on rare/explicit triggers:
+
+- **`release.yml`** — fires on a `v*` tag push: verifies `Frnk.VERSION` matches the tag, extracts the matching `CHANGELOG.md` section, and creates the GitHub Release (one `gh release create`). This is the "one CI job for tagging releases" we intentionally keep. See `docs/RELEASING.md`.
+- **`claude.yml`** — on-demand `@claude` assistant on issues/PRs; consumes minutes only when explicitly mentioned.
+
+**Validation is local until CI returns.** Before pushing, run the old gate yourself: `./gradlew compileAndroidMain :demo-android:compileDebugKotlin` then `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest` (both `--parallel --build-cache`). `compileAndroidMain` covers `commonMain`+`androidMain` for every KMP module (the AGP 9 KMP-Android task name — `compileDebugKotlinAndroid` doesn't exist for KMP modules); `testAndroidHostTest` covers `commonTest`+`androidHostTest` for every module that opted in via `kotlin { android { withHostTest {} } }` (KMP modules have no `testDebugUnitTest`; `:demo-android`, a `com.android.application`, does). Style is enforced by the pre-commit hook (above), not CI.
+
+**Foundation-complete plan:** once the toolkit's foundation is in place and the repo goes public (unlimited Actions minutes), re-add branch protection on `main`, enable PRs, and restore the `compile & test` job — and optionally `claude-code-review.yml`.
 
 ## Conventions to follow when adding code
 

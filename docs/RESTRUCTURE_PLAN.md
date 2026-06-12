@@ -384,7 +384,7 @@ The facade pattern keeps every intermediate green; land as separate PRs, each pi
   device/emulator.
 - still impact: none.
 
-### ☐ Stage 11 — Remote Config capability + new capability scaffolds  — risk: low (additive)
+### ☑ Stage 11 — Remote Config capability + new capability scaffolds  — risk: low (additive) — **landed 2026-06-11**
 
 - Scaffold `:camera` + `:permissions`: api-only modules (interfaces + no-op defaults,
   `frnk.kmp.library.hosttest`), no impl (D4).
