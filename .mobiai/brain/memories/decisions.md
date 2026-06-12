@@ -167,3 +167,24 @@ Next: Stage 9 = the coordinate flip (facade deletes + module renames) — the on
 - frnk/capabilities/monetization-api/CLAUDE.md
 - frnk/core/di/CLAUDE.md
 - docs/RESTRUCTURE_PLAN.md
+
+## Stage 9 — the coordinate flip (frnk side)
+
+- id: stage-9-the-coordinate-flip-frnk-side-20260612-001944
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: restructure
+- date: 2026-06-12
+
+-
+
+### Files
+- settings.gradle.kts
+- frnk/ui/bottom-nav/build.gradle.kts
+- frnk/ui/app/build.gradle.kts
+- frnk/capabilities/monetization-ui/build.gradle.kts
+- frnk/capabilities/monetization-impl/build.gradle.kts
+- demo/shared/build.gradle.kts
+- demo/android-app/build.gradle.kts
+- docs/RESTRUCTURE_PLAN.md
