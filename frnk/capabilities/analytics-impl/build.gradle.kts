@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.backend.firebase"
+        namespace = "${libs.versions.frnk.groupId.get()}.backend.firebase"
     }
     sourceSets {
         commonMain.dependencies {

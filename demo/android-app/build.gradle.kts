@@ -42,13 +42,13 @@ kotlin {
 }
 
 android {
-    namespace = "${ProjectConfiguration.GROUP_ID}.demo"
+    namespace = "${libs.versions.frnk.groupId.get()}.demo"
     compileSdk =
         libs.versions.android.compileSdk
             .get()
             .toInt()
     defaultConfig {
-        applicationId = "${ProjectConfiguration.GROUP_ID}.demo"
+        applicationId = "${libs.versions.frnk.groupId.get()}.demo"
         minSdk =
             libs.versions.android.minSdk
                 .get()

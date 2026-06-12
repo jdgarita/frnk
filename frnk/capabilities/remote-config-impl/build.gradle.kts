@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.remoteconfig.firebase"
+        namespace = "${libs.versions.frnk.groupId.get()}.remoteconfig.firebase"
     }
     sourceSets {
         commonMain.dependencies {

@@ -13,7 +13,7 @@ plugins {
 // module's former hand-written build so :ui-scaffolds shares it.
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.ui.components"
+        namespace = "${libs.versions.frnk.groupId.get()}.ui.components"
     }
     sourceSets {
         commonMain.dependencies {

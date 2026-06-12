@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.monetization.revenuecat"
+        namespace = "${libs.versions.frnk.groupId.get()}.monetization.revenuecat"
     }
     sourceSets {
         commonMain.dependencies {

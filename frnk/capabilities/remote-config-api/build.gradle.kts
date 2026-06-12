@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.remoteconfig.api"
+        namespace = "${libs.versions.frnk.groupId.get()}.remoteconfig.api"
     }
     sourceSets {
         commonMain.dependencies {

@@ -1,4 +1,9 @@
 [versions]
+# Maven group id for every frnk module. Single source of truth (like the SDK levels below): read by
+# the `frnk.kmp.base` convention plugin (group=) AND by every module build script for its `namespace`
+# (`libs.versions.frnk.groupId.get()`). Lives here because the catalog is the one thing visible to BOTH
+# the build-logic included build and the module build scripts — buildSrc was visible only to the latter.
+frnk-groupId = "dev.jdgarita.frnk"
 agp = "9.2.1"
 kotlin = "2.4.0"
 compose-multiplatform = "1.11.1"

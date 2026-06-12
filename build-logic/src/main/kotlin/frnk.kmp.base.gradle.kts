@@ -25,10 +25,11 @@ private val catalogMinSdk = versionCatalog.findVersion("android-minSdk").get().r
 // matching included-build project. Without a group, substitution can't match the coordinate and
 // the host fails with "Could not find dev.jdgarita.frnk:<module>".
 //
-// Hard-coded (not ProjectConfiguration.GROUP_ID) because this `build-logic` convention plugin is a
-// standalone included build that cannot see `buildSrc`. Keep in sync with
-// ProjectConfiguration.GROUP_ID.
-group = "dev.jdgarita.frnk"
+// Sourced from the `frnk-groupId` catalog entry — the single source of truth shared with the module
+// build scripts (which read `libs.versions.frnk.groupId.get()` for their namespace). The catalog is
+// the one place visible to BOTH this included build and the module build scripts (buildSrc, now
+// removed, was visible only to the latter).
+group = versionCatalog.findVersion("frnk-groupId").get().requiredVersion
 
 kotlin {
     jvmToolchain(17)

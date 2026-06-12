@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.core.mvi"
+        namespace = "${libs.versions.frnk.groupId.get()}.core.mvi"
     }
     sourceSets {
         commonMain.dependencies {

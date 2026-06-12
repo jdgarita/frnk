@@ -462,3 +462,30 @@ Supersedes [[adaptive-bottom-nav-calf-material3-accepted-toolkit-wide-iso-202606
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavBarBottomBar.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt
 - docs/HOST_INTEGRATION.md
+
+## Deleted buildSrc; group id moved to libs.versions.toml (frnk-groupId)
+
+- id: deleted-buildsrc-group-id-moved-to-libs-versions-toml-frnk-g-20260612-041547
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: build/gradle
+- date: 2026-06-12
+
+**What:** `buildSrc` held a single constant — `ProjectConfiguration.GROUP_ID = "dev.jdgarita.frnk"` — used by ~25 module build scripts for their `namespace`/`applicationId`. The `build-logic` included build (convention plugins) **cannot see buildSrc**, so `frnk.kmp.base.gradle.kts` hard-coded the same group string with a "keep in sync" comment — a real duplication.
+
+**Decision:** Moved the group id into `gradle/libs.versions.toml` as the `[versions]` entry **`frnk-groupId`** and **deleted `buildSrc` entirely**.
+- Module build scripts now read `libs.versions.frnk.groupId.get()`.
+- `frnk.kmp.base` reads `versionCatalog.findVersion("frnk-groupId").get().requiredVersion`.
+
+**Why:** The version catalog is the ONE source visible to **both** the `build-logic` included build and the module build scripts; buildSrc was visible only to the latter — exactly why the group id had to be duplicated. This finishes the migration already done for the SDK levels (`android-min/compile/targetSdk` live only in the catalog for the same reason). `build-logic` is now the single home for shared build logic.
+
+**Direction matters:** We collapsed `buildSrc → catalog/build-logic`, NOT `plugins → buildSrc`. Moving the convention plugins into buildSrc would re-introduce the documented `alias(...) apply false` classpath-leak clash and was explicitly rejected.
+
+**Validation:** `./gradlew compileAndroidMain --parallel --build-cache` → BUILD SUCCESSFUL. The resolved group string is byte-identical to before (pure sourcing change). Docs updated: CLAUDE.md, README.md, REQUIREMENTS.md.
+
+**Gotcha for future edits:** do the build-script swap with `sed`/literal tools or a perl pattern that escapes `$` (`\$\{...\}`) — an unescaped perl `s/${ProjectConfiguration.GROUP_ID}/.../` interpolates the `${...}` as an empty var and corrupts every file.
+
+### Files
+- gradle/libs.versions.toml
+- build-logic/src/main/kotlin/frnk.kmp.base.gradle.kts

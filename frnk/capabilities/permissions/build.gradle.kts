@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.permissions"
+        namespace = "${libs.versions.frnk.groupId.get()}.permissions"
     }
     sourceSets {
         commonMain.dependencies {

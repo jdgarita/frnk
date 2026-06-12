@@ -9,7 +9,7 @@ plugins {
 // below the features/bottom-nav. Kotlin packages unchanged (dev.jdgarita.frnk.ui.{scaffolds,mvi,nav}).
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.ui.scaffolds"
+        namespace = "${libs.versions.frnk.groupId.get()}.ui.scaffolds"
     }
     sourceSets {
         commonMain.dependencies {

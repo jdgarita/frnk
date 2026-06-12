@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.camera"
+        namespace = "${libs.versions.frnk.groupId.get()}.camera"
     }
     sourceSets {
         commonMain.dependencies {

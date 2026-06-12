@@ -1,21 +1,8 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-12T03:51:59.471884Z",
+  "generatedAt": "2026-06-12T04:25:48.311839Z",
   "root": "/Users/jd/code/frnk",
   "files": [
-    {
-      "path": "buildSrc/src/main/kotlin/ProjectConfiguration.kt",
-      "language": "kotlin",
-      "lines": 13,
-      "imports": [],
-      "symbols": [
-        {
-          "name": "ProjectConfiguration",
-          "kind": "object",
-          "line": 1
-        }
-      ]
-    },
     {
       "path": "demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/AppScaffoldSmokeActivity.kt",
       "language": "kotlin",

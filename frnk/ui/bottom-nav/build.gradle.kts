@@ -8,12 +8,12 @@ plugins {
 // `dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res` deterministically.
 compose.resources {
     publicResClass = true
-    packageOfResClass = "${ProjectConfiguration.GROUP_ID}.ui.bottomnav.generated.resources"
+    packageOfResClass = "${libs.versions.frnk.groupId.get()}.ui.bottomnav.generated.resources"
 }
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.ui.bottomnav"
+        namespace = "${libs.versions.frnk.groupId.get()}.ui.bottomnav"
     }
     sourceSets {
         commonMain.dependencies {

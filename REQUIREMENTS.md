@@ -125,8 +125,8 @@ descriptions.
   `android {}` block, and **not** `kotlin.android`.
 - `:demo-android` is the only `com.android.application`; it uses AGP 9's
   built-in Kotlin and must not re-add `kotlin.android`.
-- Shared constants live in `buildSrc/.../ProjectConfiguration.kt`. AGP 9 caps
-  `compileSdk` at 36.
+- Shared constants live in `gradle/libs.versions.toml` (there is no `buildSrc`);
+  the group id is the `frnk-groupId` catalog entry. AGP 9 caps `compileSdk` at 36.
 
 ---
 

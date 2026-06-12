@@ -150,7 +150,7 @@ Demo apps (the internal smoke harnesses) additionally need:
 
 > Under the AGP 9 KMP-Android plugin (`com.android.kotlin.multiplatform.library`), the per-module compile task is `compileAndroidMain` — `compileDebugKotlinAndroid` is the AGP 8 name and no longer exists for KMP-Android modules. The host unit-test task is likewise `testAndroidHostTest` (not `testDebugUnitTest`), and a module only gets it after opting in with `kotlin { android { withHostTest {} } }`. The demo app is a plain `com.android.application`, so it keeps `compileDebugKotlin` / `testDebugUnitTest`.
 
-Shared constants (the `dev.jdgarita.frnk` group id) live in `buildSrc/src/main/kotlin/ProjectConfiguration.kt`; min/compile/target SDK live in `gradle/libs.versions.toml` — read from there rather than hardcoding. (The toolkit owns no SQLDelight schema since restructure Stage 4 — the demo's `DemoDB` is configured inline in `demo/shared/build.gradle.kts`.)
+Shared constants live in `gradle/libs.versions.toml` (there is no `buildSrc`): the `dev.jdgarita.frnk` group id is the `frnk-groupId` catalog entry (read via `libs.versions.frnk.groupId.get()` in build scripts, `findVersion("frnk-groupId")` in the convention plugin), and min/compile/target SDK live there too — read from the catalog rather than hardcoding. (The toolkit owns no SQLDelight schema since restructure Stage 4 — the demo's `DemoDB` is configured inline in `demo/shared/build.gradle.kts`.)
 
 ## 🎨 Style: pre-commit hook, not CI
 

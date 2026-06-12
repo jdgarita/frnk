@@ -10,7 +10,7 @@ plugins {
 // ambient ripple). No upward ui deps.
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.ui.theme"
+        namespace = "${libs.versions.frnk.groupId.get()}.ui.theme"
     }
     sourceSets {
         commonMain.dependencies {

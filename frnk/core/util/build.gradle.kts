@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.utils"
+        namespace = "${libs.versions.frnk.groupId.get()}.utils"
     }
     sourceSets {
         commonMain.dependencies {

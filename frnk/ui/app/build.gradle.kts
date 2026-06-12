@@ -5,7 +5,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.ui.app"
+        namespace = "${libs.versions.frnk.groupId.get()}.ui.app"
     }
     sourceSets {
         commonMain.dependencies {

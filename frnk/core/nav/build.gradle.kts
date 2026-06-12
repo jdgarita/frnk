@@ -5,7 +5,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.core.nav"
+        namespace = "${libs.versions.frnk.groupId.get()}.core.nav"
     }
     sourceSets {
         commonMain.dependencies {

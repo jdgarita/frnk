@@ -10,7 +10,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.haptics"
+        namespace = "${libs.versions.frnk.groupId.get()}.haptics"
     }
     sourceSets {
         commonMain.dependencies {

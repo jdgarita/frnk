@@ -14,12 +14,12 @@ plugins {
 // (DrawableResource). Pin the generated accessor package for deterministic imports.
 compose.resources {
     publicResClass = true
-    packageOfResClass = "${ProjectConfiguration.GROUP_ID}.demo.generated.resources"
+    packageOfResClass = "${libs.versions.frnk.groupId.get()}.demo.generated.resources"
 }
 
 kotlin {
     android {
-        namespace = "${ProjectConfiguration.GROUP_ID}.demo.shared"
+        namespace = "${libs.versions.frnk.groupId.get()}.demo.shared"
         withHostTest {}
     }
 
@@ -131,7 +131,7 @@ kotlin {
 sqldelight {
     databases {
         create("DemoDB") {
-            packageName.set("${ProjectConfiguration.GROUP_ID}.demo.sql")
+            packageName.set("${libs.versions.frnk.groupId.get()}.demo.sql")
         }
     }
 }
