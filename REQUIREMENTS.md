@@ -6,8 +6,7 @@
 >
 > **Companion documents:**
 > - `docs/ARCHITECTURE.md` — canonical module graph and api/impl split.
-> - `EVALUATION.md` — current-state gap analysis against this document.
-> - `BACKLOG.md` — prioritized, acceptance-criteria-driven task list derived from the gaps.
+> - `BACKLOG.md` — prioritized, acceptance-criteria-driven task list of open work.
 > - `CLAUDE.md` — operational rules for AI agents working in this repo.
 
 ---
@@ -131,8 +130,8 @@ descriptions.
 
 ## 3. Feature requirements
 
-Each feature below lists its **target capability**. Maturity against these
-targets is tracked in `EVALUATION.md`; the work to close gaps is in `BACKLOG.md`.
+Each feature below lists its **target capability**. Remaining work to close any
+gaps against these targets is tracked in `BACKLOG.md`.
 
 ### 3.1 Design system (Atomic Design)
 

@@ -4,8 +4,7 @@
 
 The toolkit is a flat, layered module tree under `frnk/{core,data,ui,capabilities}/`
 (physical dirs) with flat Gradle names. The arrows below are the steady-state graph
-that the 12-stage restructure produced — see `docs/RESTRUCTURE_PLAN.md` for how it
-got here.
+that the 12-stage restructure produced.
 
 ```
 core/   (no upward deps; util is the root everything depends on)
@@ -78,15 +77,14 @@ locations — `frnk/core/*`, `frnk/data/*`, `frnk/ui/*`, `frnk/capabilities/*`, 
 `demo/{shared,android-app,ios-app}` — and keep flat Gradle names via `projectDir`
 remaps in `settings.gradle.kts` (e.g. `:ui-components` at `frnk/ui/components`,
 accessor `projects.uiComponents`; `:demo-shared` at `demo/shared`). `settings.gradle.kts`
-is the single source of truth for the name→dir→accessor mapping; `docs/RESTRUCTURE_PLAN.md`
-§3 records how the names evolved. Two Gradle names still carry a legacy `shared-`
+is the single source of truth for the name→dir→accessor mapping. Two Gradle names still carry a legacy `shared-`
 prefix — `:shared-utils` (`frnk/core/util`) and `:shared-monetization-ui`
 (`frnk/capabilities/monetization-ui`) — both current and correct; everything else is at
 its final flat name.
 
 ### Dependency rules
 
-These are enforced in review (they mirror `docs/RESTRUCTURE_PLAN.md` §3):
+These are enforced in review:
 
 ```
 core-util ← everything                       # the root; depends on nothing in the graph

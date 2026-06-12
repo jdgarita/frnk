@@ -12,7 +12,7 @@ Codex guidance for this repository. Follow this file first, and use `CLAUDE.md` 
 ## Repo Shape
 
 - All modules use flat Gradle paths (`:ui-theme`, `:ui-components`, `:ui-scaffolds`, `:data-prefs-api`, `:analytics-api`, `:analytics-impl`, etc.). The last nested paths (`:shared:backend:*`) were re-flattened to `:analytics-api`/`:analytics-impl` at restructure Stage 5 (OQ-6). `:shared-ui-atoms` (split at Stage 7 → `:ui-theme`/`:ui-components`/`:ui-scaffolds`) and `:shared-ui-api` (split at Stage 6 → `:core-mvi`/`:core-nav`/`:haptics`) were transient src-less facades, deleted at the Stage 9 coordinate flip; consumers depend on the successors directly.
-- Since restructure Stage 3, module files live physically under `frnk/{core,data,ui,capabilities}/` and `demo/{shared,android-app,ios-app}/`, mapped to the flat Gradle names via `projectDir` remaps in `settings.gradle.kts` (see `docs/RESTRUCTURE_PLAN.md` §3).
+- Since restructure Stage 3, module files live physically under `frnk/{core,data,ui,capabilities}/` and `demo/{shared,android-app,ios-app}/`, mapped to the flat Gradle names via `projectDir` remaps in `settings.gradle.kts`.
 - There is no aggregator (restructure Stage 1): consumers depend on individual modules. `:core-di` owns `initializeFrnk(modules)`; `:ui-app` owns `FrnkAppScaffold` + `frnkUiModules()`.
 - Backend/database/monetization modules use an api/impl split. Do not add SDK dependencies to `*-api` modules.
 
