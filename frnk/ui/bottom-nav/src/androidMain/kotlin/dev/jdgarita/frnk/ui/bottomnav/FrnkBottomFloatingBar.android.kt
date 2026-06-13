@@ -25,18 +25,23 @@ import dev.jdgarita.frnk.ui.theme.colors
 private val PillBottomMargin = 12.dp
 
 /**
- * **Android** [FrnkBottomNavBar] — a Material3 *Expressive* [HorizontalFloatingToolbar] rendered as a
+ * **Android** [FrnkBottomFloatingBar] — a Material3 *Expressive* [HorizontalFloatingToolbar] rendered as a
  * floating pill, centered at the bottom. Each [FrnkNavBarItem] becomes an [IconButton] over the item's
- * [FrnkNavBarItem.icon] `ImageVector` (icon-only, MVP); the selected item tints to `colorPrimary`, idle
- * items to `colorOnSurfaceVariant`. The primary-action button, when wired, is the toolbar's built-in
- * docked FAB (the `floatingActionButton` slot), so this module needs no separately-docked FAB.
+ * [FrnkNavBarItem.icon] `ImageVector` (icon-only); the selected item tints to `colorPrimary`, idle items to
+ * `colorOnSurfaceVariant`. The pill width animates via [animateContentSize] as items change.
+ *
+ * **No-FAB by default (Mode B).** The toolkit's scaffold injects the primary action as a centered nav item,
+ * so it passes **no** [primaryAction] — and then the **plain** toolbar overload is used. This matters: the
+ * `floatingActionButton`-slot overload reserves the docked-FAB gap on the right *even when the slot is
+ * empty*, which shifts the pill left-of-centre. Using the plain overload keeps the pill horizontally
+ * centred. A direct caller that *does* pass a [primaryAction] still gets the docked FAB.
  *
  * Colors come from `FrnkTheme` tokens, not `MaterialTheme` — `HorizontalFloatingToolbar` is the toolkit's
  * sole Material3 surface and is themed explicitly. This actual never touches `DrawableResource`.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-actual fun FrnkBottomNavBar(
+actual fun FrnkBottomFloatingBar(
     items: List<FrnkNavBarItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
@@ -52,18 +57,26 @@ actual fun FrnkBottomNavBar(
             fabContentColor = Theme[colors][colorOnPrimary],
         )
 
+    val hasFab = primaryAction != null && onPrimaryAction != null
+
     // contentAlignment on the Box (below) handles centering; this only lifts the pill off the system nav.
+    // NB: no `animateContentSize()` here — it clips its content to the animated bounds, which cut off the
+    // pill's bottom-edge shadow (the shadow spreads beyond the toolbar's measured size).
     val toolbarModifier = Modifier.padding(bottom = frnkBottomSystemBarInset() + PillBottomMargin)
 
     // contentAlignment keeps the pill centered no matter how wide the incoming [modifier] is (the scaffold
     // passes a fillMaxWidth() overlay modifier).
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
-        if (primaryAction != null && onPrimaryAction != null) {
+        if (hasFab) {
             HorizontalFloatingToolbar(
                 expanded = true,
                 floatingActionButton = {
-                    FloatingToolbarDefaults.StandardFloatingActionButton(onClick = onPrimaryAction) {
-                        Icon(imageVector = primaryAction.icon, contentDescription = primaryAction.label)
+                    FloatingToolbarDefaults.StandardFloatingActionButton(
+                        onClick = { onPrimaryAction?.invoke() },
+                    ) {
+                        primaryAction?.let { action ->
+                            Icon(imageVector = action.icon, contentDescription = action.label)
+                        }
                     }
                 },
                 colors = toolbarColors,
@@ -77,8 +90,7 @@ actual fun FrnkBottomNavBar(
                 colors = toolbarColors,
                 modifier = toolbarModifier,
                 // The no-FAB overload defaults to Level0 (0.dp) — no shadow — while the WithFab overload
-                // defaults to Level1. Pin it to the WithFab elevation so the pill casts the same shadow on
-                // every screen, whether or not a primary-action FAB is wired.
+                // defaults to Level1. Pin it to the WithFab elevation so the pill casts the same shadow.
                 expandedShadowElevation = FloatingToolbarDefaults.ContainerExpandedElevationWithFab,
             ) {
                 NavBarItems(items, selectedIndex, onItemSelected)

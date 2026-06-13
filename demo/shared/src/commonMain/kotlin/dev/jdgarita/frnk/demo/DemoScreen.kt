@@ -41,9 +41,6 @@ import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.app.FrnkAppScope
 import dev.jdgarita.frnk.ui.app.FrnkAppShell
-import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBar
-import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavBarState
-import dev.jdgarita.frnk.ui.atoms.FrnkBottomNavItem
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
@@ -63,6 +60,8 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
+import dev.jdgarita.frnk.ui.bottomnav.FrnkBottomFloatingBar
+import dev.jdgarita.frnk.ui.bottomnav.FrnkNavBarItem
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -176,6 +175,7 @@ fun DemoScreen(
                 polymorphic(NavKey::class) {
                     subclass(DemoRoute.Components::class, DemoRoute.Components.serializer())
                     subclass(DemoRoute.ComponentDetail::class, DemoRoute.ComponentDetail.serializer())
+                    subclass(DemoRoute.NavLab::class, DemoRoute.NavLab.serializer())
                 }
             }
         }
@@ -269,6 +269,11 @@ fun DemoScreen(
                 ) {
                     ComponentContent(route.name, state, vm::send, onEffect)
                 }
+            }
+            // The Bottom Nav Lab — a full-screen harness comparing the adaptive bar's two primary-action
+            // behaviours (the app's tabbed bar hides because DemoRoute.NavLab is a FrnkFullScreenRoute).
+            entry<DemoRoute.NavLab> {
+                NavLabScreen(state = state, onIntent = vm::send, onBack = { scope.back() })
             }
             // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
             // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
@@ -483,6 +488,11 @@ private fun HomeTabContent(
                     color = colorOnSurfaceVariant,
                 ),
         )
+        // Full-screen harness to compare the adaptive bar's two primary-action behaviours on-device.
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Open Bottom Nav Lab", variant = FrnkButtonVariant.Outlined),
+            onClick = { onIntent(DemoIntent.OpenNavLab) },
+        )
     }
 
     FrnkDivider(state = FrnkDividerState.Horizontal())
@@ -672,7 +682,7 @@ private val componentNames =
         "FrnkDivider",
         "FrnkSwitch",
         "FrnkSegmentedControl",
-        "FrnkBottomNavBar",
+        "FrnkBottomFloatingBar",
         "Ripple",
         "FrnkListRow",
         "FrnkSwipeable",
@@ -857,26 +867,26 @@ private fun ComponentContent(
                 onOptionSelected = {},
             )
         }
-        "FrnkBottomNavBar" -> {
+        "FrnkBottomFloatingBar" -> {
             FrnkText(
                 state =
                     FrnkTextState.BodySmall(
-                        text = "The atom standalone — the bar at the foot of this screen is the same atom.",
+                        text =
+                            "The real adaptive bar — the very same component shown at the foot of every screen " +
+                                "(a Material3 floating pill on Android, a native glassy UITabBar on iOS).",
                         color = colorOnSurfaceVariant,
                     ),
             )
-            FrnkBottomNavBar(
-                state =
-                    FrnkBottomNavBarState(
-                        items =
-                            listOf(
-                                FrnkBottomNavItem("a", Theme[icons][iconSearch], "Search"),
-                                FrnkBottomNavItem("b", Theme[icons][iconCheck], "Check"),
-                                FrnkBottomNavItem("c", Theme[icons][iconSettings], "Settings"),
-                            ),
-                        selectedIndex = state.galleryNavIndex,
+            FrnkBottomFloatingBar(
+                items =
+                    listOf(
+                        FrnkNavBarItem("a", Theme[icons][iconSearch], "magnifyingglass", "Search"),
+                        FrnkNavBarItem("b", Theme[icons][iconCheck], "checkmark", "Check"),
+                        FrnkNavBarItem("c", Theme[icons][iconSettings], "gearshape", "Settings"),
                     ),
+                selectedIndex = state.galleryNavIndex,
                 onItemSelected = { onIntent(DemoIntent.GalleryNavChanged(it)) },
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         "Ripple" -> {

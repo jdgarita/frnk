@@ -25,7 +25,7 @@ import dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset
  * different package).
  */
 @Composable
-expect fun FrnkBottomNavBar(
+expect fun FrnkBottomFloatingBar(
     items: List<FrnkNavBarItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
@@ -34,22 +34,20 @@ expect fun FrnkBottomNavBar(
     onPrimaryAction: (() -> Unit)? = null,
 )
 
-/** Shared layout metrics for the toolkit's adaptive bottom bar ([FrnkBottomNavBar]). */
+/** Shared layout metrics for the toolkit's adaptive bottom bar ([FrnkBottomFloatingBar]). */
 object FrnkNavBarDefaults {
     /**
-     * Body height of the bar. An **approximation** shared across both engines: the Android floating
-     * pill is shorter than this and the iOS native `UITabBar` is ~49pt + safe-area — neither is an exact
-     * match. Internal because hosts should reserve [reservedHeight] (body + the bottom system-bar inset)
-     * when padding scrollable content; the bare body clips the last item on edge-to-edge devices. Read by
-     * [FrnkTabbedNavScaffold] to inset content scrolling **behind** the overlaid bar.
+     * Body height of the bar. A deliberate **over-approximation** shared across both engines (the Android
+     * floating pill is shorter; the iOS `UITabBar` is ~49pt + safe area) — over-reserving is safer than
+     * clipping the last content item. Internal because hosts should reserve [reservedHeight] (body + the
+     * bottom system-bar inset) when padding scrollable content.
      */
     internal val BarHeight: Dp = 80.dp
 
     /**
-     * The bar's **full** reserved height = [BarHeight] + the bottom navigation-bar inset the bar sits
-     * above. Hosts that **overlay** the bar over scrollable content (as [FrnkTabbedNavScaffold] does)
-     * reserve this much as the content's bottom inset so the last item clears the bar. See [BarHeight] for
-     * the per-platform approximation caveat.
+     * The bar's **full** reserved height = [BarHeight] + the bottom system-bar inset the bar floats above.
+     * Hosts that overlay the bar over scrollable content (as `FrnkTabbedNavScaffold` does) reserve this much
+     * as the content's bottom inset so the last item clears the bar.
      */
     val reservedHeight: Dp
         @Composable

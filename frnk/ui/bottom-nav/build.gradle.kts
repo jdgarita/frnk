@@ -39,11 +39,14 @@ kotlin {
             implementation(libs.compose.material3.expressive)
         }
         iosMain.dependencies {
-            // iOS bar = narendraanjana09's adaptive-nav-bar: a native glassy UITabBar (iOS 26+) / Material3
-            // Compose bar (older) with an inline add button. Pure Kotlin/Compose (no extra native cinterop),
-            // so umbrella XCFrameworks still link under the consumer's existing dynamic_lookup. Its
-            // `NavigationItem.icon` is a non-null `DrawableResource` — fed the bundled placeholder above.
-            implementation(libs.adaptive.nav.bar)
+            // iOS bar = the toolkit's own **vendored** native glassy UITabBar (iOS 26+) / Material3 Compose
+            // bar (older), under `ui.bottomnav.vendor` — adapted from narendraanjana09's adaptive-nav-bar so
+            // the toolkit owns the bar's animations/transitions outright (the published library exposes no
+            // animatable hook). Material3 is needed only by the older-iOS fallback (`ComposeNavigationBar`);
+            // it was previously transitive from the library. Still quarantined to this one module. Pure
+            // Kotlin/Compose (no extra native cinterop), so umbrella XCFrameworks still link under the
+            // consumer's existing dynamic_lookup. The vendored fallback reads the bundled placeholder above.
+            implementation(libs.compose.material3.expressive)
         }
     }
 }

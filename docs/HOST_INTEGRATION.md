@@ -332,7 +332,7 @@ setContent {
 
 ### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 
-The adaptive bottom bar (`FrnkBottomNavBar`, `:ui-bottom-nav`) takes **`ImageVector`** icons in the common
+The adaptive bottom bar (`FrnkBottomFloatingBar`, `:ui-bottom-nav`) takes **`ImageVector`** icons in the common
 API (`FrnkNavBarItem.icon` / `FrnkAdaptiveNavTab.icon`), plus an `iosSystemIcon` SF-Symbol string for the
 native iOS bar. On **Android** the bar is a Material3 Expressive `HorizontalFloatingToolbar` that renders the
 `ImageVector` directly — it never touches `DrawableResource`, so **there is no host-side asset-bundling step**

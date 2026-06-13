@@ -44,6 +44,12 @@ data class DemoState(
     val remoteWelcome: String = "",
     val cameraResult: String = "Not captured",
     val cameraPermission: String = "",
+    // Bottom Nav Lab — compares the adaptive bar's two primary-action behaviours.
+    // navLabMode: 0 = ① animated FAB, 1 = ② centered item. navLabPrimaryOn drives the FAB present/absent
+    // toggle in Mode ① (simulating Home↔Settings). navLabSelectedKey is the highlighted tab.
+    val navLabMode: Int = 0,
+    val navLabPrimaryOn: Boolean = true,
+    val navLabSelectedKey: String = "home",
 ) : UiState
 
 sealed interface DemoIntent : UiIntent {
@@ -105,6 +111,23 @@ sealed interface DemoIntent : UiIntent {
     data object CapturePhoto : DemoIntent
 
     data object RequestCameraPermission : DemoIntent
+
+    // Bottom Nav Lab.
+    data object OpenNavLab : DemoIntent
+
+    data class NavLabModeChanged(
+        val index: Int,
+    ) : DemoIntent
+
+    data class NavLabPrimaryToggled(
+        val on: Boolean,
+    ) : DemoIntent
+
+    data class NavLabTabSelected(
+        val key: String,
+    ) : DemoIntent
+
+    data object NavLabActionTapped : DemoIntent
 }
 
 sealed interface DemoEffect : UiEffect {
@@ -236,6 +259,11 @@ class DemoViewModel(
                 val status = permissions.request(Permission.Camera)
                 setState { copy(cameraPermission = status.name) }
             }
+            DemoIntent.OpenNavLab -> emit(DemoEffect.Navigate(NAV_LAB_ROUTE_KEY))
+            is DemoIntent.NavLabModeChanged -> setState { copy(navLabMode = intent.index) }
+            is DemoIntent.NavLabPrimaryToggled -> setState { copy(navLabPrimaryOn = intent.on) }
+            is DemoIntent.NavLabTabSelected -> setState { copy(navLabSelectedKey = intent.key) }
+            DemoIntent.NavLabActionTapped -> emit(DemoEffect.Toast("Primary action tapped (launch a screen)"))
         }
     }
 

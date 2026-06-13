@@ -5,23 +5,26 @@ The toolkit's **platform-adaptive bottom navigation** module: a Material3 *Expre
 bar (older) on iOS, plus the tabbed scaffold + tab builder that wire it up. Depends on `:ui-scaffolds`
 (tokens, theme, `EffectCollector`).
 
-## The adaptive bar (`FrnkBottomNavBar`)
+## The adaptive bar (`FrnkBottomFloatingBar`)
 
-`FrnkBottomNavBar` is an **`expect`/`actual` composable** — each platform renders with its own engine, so
+`FrnkBottomFloatingBar` is an **`expect`/`actual` composable** — each platform renders with its own engine, so
 Material3 never leaves Android:
-- **Android** (`androidMain/FrnkBottomNavBar.android.kt`) — a Material3 *Expressive*
+- **Android** (`androidMain/FrnkBottomFloatingBar.android.kt`) — a Material3 *Expressive*
   `HorizontalFloatingToolbar` floating pill, drawing each item's `ImageVector` directly via `IconButton` +
   `Icon`. The primary-action button is the toolbar's built-in docked FAB (`floatingActionButton` slot).
-- **iOS** (`iosMain/FrnkBottomNavBar.ios.kt`) — narendraanjana09's
-  [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)
-  (`io.github.narendraanjana09:adaptive-nav-bar`) `AdaptiveNavigationBar`: a native glassy `UITabBar`
-  (iOS 26+) / Material3 Compose bar (older iOS), driven by each item's **SF-Symbol** `iosSystemIcon`. The
-  primary-action button is the library's inline `IosFabItem`.
+- **iOS** (`iosMain/FrnkBottomFloatingBar.ios.kt`) — the toolkit's **vendored** `AdaptiveNavigationBar`
+  (under `ui.bottomnav.vendor`, adapted from narendraanjana09's
+  [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)): a native glassy `UITabBar`
+  (iOS 26+) / Material3 Compose bar (older iOS), driven by each item's **SF-Symbol** `iosSystemIcon`. A
+  primary-action button renders as the vendored inline `IosFabItem` **when one is wired** — but the app flow
+  uses **Mode B** (a permanent centered bar item, no FAB; see `mobiai brain search "primary action Mode B"`).
+  Vendored so the toolkit owns the bar's animations (the upstream artifact exposed no Compose-animatable hook).
 
 The primary-action button is frnk-owned (`FrnkNavPrimaryAction` + `stringPrimaryAction` token + the
 `iconNavAdd` theme icon, same bookend treatment as Home/Settings) and surfaced to hosts via the scaffold's
 `onPrimaryAction` callback — the host decides what tapping it does, **per screen** (re-skin per surface by
-passing a custom `primaryAction`). It shows only when an action is wired. **Screen routing:** pass
+passing a custom `primaryAction`). It shows only when an action is wired, and the scaffold renders it as a
+**permanent centered bar item (Mode B)**, not a FAB. **Screen routing:** pass
 `primaryActionRegistry` (`FrnkPrimaryActionRegistry`, `:core-nav`) and the currently active screen claims the
 button via `FrnkPrimaryActionHandler { onIntent(...) }` (`:ui-scaffolds`) — the scaffold provides the
 registry through `LocalFrnkPrimaryActionRegistry`, a screen claim wins over `onPrimaryAction` (the host-level
@@ -31,7 +34,8 @@ fallback), and the button hides when neither is wired. `FrnkAppShell` wires the 
 > adaptive-nav-bar, A/B-selectable via `FrnkAdaptiveNavEngine`. Calf was removed when adaptive-nav-bar became
 > the default; then the **Android** engine was swapped from adaptive-nav-bar's Material3 `NavigationBar` to a
 > Material3 Expressive `HorizontalFloatingToolbar` and the common API moved from `DrawableResource` to
-> `ImageVector` (adaptive-nav-bar kept on iOS only). The spike history is in the MobiAI brain
+> `ImageVector` (adaptive-nav-bar kept on iOS only, then **vendored** into `ui.bottomnav.vendor`); the FAB was
+> retired for a centered bar item (Mode B). The spike + decision history is in the MobiAI brain
 > (`mobiai brain search "adaptive bottom nav"`).
 
 ## Icons: `ImageVector` (Android) + SF-Symbol (iOS)
@@ -46,9 +50,9 @@ engines consume different things:
   Compose vector, so this identifier stays explicit. `rememberFrnkAdaptiveNavTabs(...)` supplies `"house"` /
   `"gearshape"`; hosts give middle tabs their own.
 
-adaptive-nav-bar's `NavigationItem.icon` / `IosFabItem.icon` are non-null `DrawableResource`s (used only on
+The vendored bar's `NavigationItem.icon` / `IosFabItem.icon` are non-null `DrawableResource`s (used only on
 the older-iOS Compose fallback bar), but the API no longer carries one — so the **iOS** actual feeds the
-library a single bundled placeholder, `commonMain/composeResources/drawable/frnk_nav_placeholder.xml` (in
+vendored bar a single bundled placeholder, `commonMain/composeResources/drawable/frnk_nav_placeholder.xml` (in
 commonMain because the Compose-resources plugin generates the `Res` accessor there regardless; only the iOS
 actual references it). On iOS 26+ it is never shown (the glass bar uses `systemIcon`). `compose.components.resources`
 is a commonMain dependency for that generated accessor; no Material3 rides on it. The library adds no native
@@ -57,12 +61,12 @@ cinterop, so the XCFrameworks still link under `dynamic_lookup`.
 ## Why this is its own module
 
 It is the **one place in the toolkit that intentionally takes a Material3 dependency.** The Android bar is a
-Material3 Expressive `HorizontalFloatingToolbar`, and adaptive-nav-bar (iOS) hard-depends on
-`compose.material3` for its older-iOS fallback. Isolating both here keeps Material3 to a single, named module
+Material3 Expressive `HorizontalFloatingToolbar`, and the **vendored** iOS bar's older-iOS fallback
+(`ComposeNavigationBar`) needs `compose.material3`. Isolating both here keeps Material3 to a single, named module
 rather than smeared across the design-system modules `:ui-theme`/`:ui-components`/`:ui-scaffolds` (which stay
 Material-free, `compose-unstyled` only). The dependency is **split by source set** — `compose.material3`
-(pinned to `1.10.0-alpha05` for `HorizontalFloatingToolbar`) in `androidMain`, adaptive-nav-bar +
-`compose.components.resources` in `iosMain` — but it's all in this one module's `build.gradle.kts`, so the
+(pinned to `1.10.0-alpha05` for `HorizontalFloatingToolbar`) in `androidMain`, `compose.material3` (for the
+vendored fallback) + `compose.components.resources` in `iosMain` — but it's all in this one module's `build.gradle.kts`, so the
 quarantine holds. `:ui-app` `api`-depends on this module, so **Material3 reaches every consumer of the nav
 layer** — a deliberate, host-approved trade.
 
@@ -95,11 +99,11 @@ links under the consumer's existing `-undefined dynamic_lookup`.
 
 ## Contents (`ui/bottomnav/`)
 
-- `FrnkBottomNavBar.kt` (common) — the `expect fun FrnkBottomNavBar(items, selectedIndex, onItemSelected,
+- `FrnkBottomFloatingBar.kt` (common) — the `expect fun FrnkBottomFloatingBar(items, selectedIndex, onItemSelected,
   modifier, primaryAction, onPrimaryAction)` + `FrnkNavBarItem` (`key`, `icon: ImageVector`, `iosSystemIcon`,
   `label`) + the shared `FrnkNavBarDefaults` (`reservedHeight`, read by `FrnkTabbedNavScaffold` to inset
   content behind the overlaid bar). The two actuals:
-  - `FrnkBottomNavBar.android.kt` — a Material3 Expressive `HorizontalFloatingToolbar` (floating pill),
+  - `FrnkBottomFloatingBar.android.kt` — a Material3 Expressive `HorizontalFloatingToolbar` (floating pill),
     centered at the bottom; each item is an `IconButton` over its `ImageVector` (selected = `colorPrimary`,
     idle = `colorOnSurfaceVariant`); the primary action is the toolbar's docked FAB slot. Colors come from
     `FloatingToolbarDefaults.standardFloatingToolbarColors(...)` themed with `FrnkTheme` tokens, not
@@ -107,20 +111,20 @@ links under the consumer's existing `-undefined dynamic_lookup`.
     `ContainerExpandedElevation` (`Level0` = 0.dp, no shadow) while the WithFab overload defaults to
     `ContainerExpandedElevationWithFab` (`Level1`), so the no-FAB call pins `expandedShadowElevation` to the
     WithFab value — the pill casts the same shadow on every screen, FAB or not.
-  - `FrnkBottomNavBar.ios.kt` — adaptive-nav-bar's `AdaptiveNavigationBar`, themed from `FrnkTheme` tokens
-    via `AdaptiveNavigationBarDefaults.colors(...)` (selected = `colorPrimary`, unselected =
-    `colorOnSurfaceVariant`, indicator = `colorPrimaryContainer`, surface = `colorSurface`). Items render
-    from `iosSystemIcon` + the bundled placeholder drawable; the primary action is an inline `IosFabItem`.
-    `key(...)`-ed on the FAB's presence + color tokens because on iOS 26+ the library bakes its FAB handler
-    and brand palette into the native `UITabBarAppearance` once in its `UIKitView` factory and never
-    re-applies them (see the file's KDoc for the snap-on-recreate caveat).
+  - `FrnkBottomFloatingBar.ios.kt` — the **vendored** `AdaptiveNavigationBar` (`ui.bottomnav.vendor`), themed
+    from `FrnkTheme` tokens via `AdaptiveNavigationBarDefaults.colors(...)` (selected = `colorPrimary`,
+    unselected = `colorOnSurfaceVariant`, indicator = `colorPrimaryContainer`, surface = `colorSurface`).
+    Items render from `iosSystemIcon` + the bundled placeholder drawable; a wired primary action is an inline
+    `IosFabItem`. **Not** `key(...)`-ed: the vendored bar splits its `UIKitView` factory/update so FAB presence
+    + theme changes re-apply in place (no recreate/snap) — that animatable control is exactly why it was
+    vendored. (Mode B means the app flow shows no FAB anyway; the bar still animates for direct/NavLab use.)
   Most hosts use the scaffold; call the bar directly only when wiring your own selected-tab state /
   navigation. For a Material-free floating pill in the design-system tier, use the distinct `FrnkBottomNavBar`
   in `:ui-components` (different package).
 - `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, primaryAction, onPrimaryAction, primaryActionRegistry, hideBarFor, entryProvider)`.
   The **nav3 multiple-back-stack** tabbed scaffold: the single composable a host calls to get a standard
   tabbed app. It absorbs the `FrnkNavDisplay` (driven by `tabbed.current`), the persistent
-  `FrnkBottomNavBar` overlay (tab switch / re-tap-to-root + the built-in primary-action button),
+  `FrnkBottomFloatingBar` overlay (tab switch / re-tap-to-root + the built-in primary-action button),
   `FrnkTabbedBackHandler` (back-from-non-home-root→home), full-screen bar hiding (`hideBarFor`), and the
   bottom-inset bookkeeping (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows, so
   screens on `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically — no per-screen `bottomInset`
@@ -161,7 +165,9 @@ links under the consumer's existing `-undefined dynamic_lookup`.
 - `androidMain`: `implementation(libs.compose.material3.expressive)` (material3 `1.10.0-alpha05`) — the
   `HorizontalFloatingToolbar`. **The sole Material3 dependency in the toolkit.** Don't add Material3 to any
   other shared module.
-- `iosMain`: `implementation(libs.adaptive.nav.bar)` — the native glassy bar engine.
+- `iosMain`: `implementation(libs.compose.material3.expressive)` — Material3 for the **vendored** bar's
+  older-iOS `ComposeNavigationBar` fallback (previously transitive from the dropped `adaptive-nav-bar`
+  artifact). The bar engine itself is vendored under `ui.bottomnav.vendor` — no external bar dependency.
 
 ## Rules
 

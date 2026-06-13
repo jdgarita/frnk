@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
- * A single item rendered by [FrnkBottomNavBar]. Icons are split by what each platform's engine can
+ * A single item rendered by [FrnkBottomFloatingBar]. Icons are split by what each platform's engine can
  * actually consume:
  *  - [icon] — a Compose [ImageVector], rendered directly by the Android Material3 `HorizontalFloatingToolbar`.
  *  - [iosSystemIcon] — an SF-Symbol name, rendered by the native glassy `UITabBar` (iOS 26+). The native

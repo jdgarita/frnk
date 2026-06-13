@@ -519,3 +519,59 @@ Material3 quarantine preserved: split by source set (material3 expressive in and
 - frnk/ui/bottom-nav/src/androidMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.android.kt
 - frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.ios.kt
 - frnk/ui/bottom-nav/build.gradle.kts
+
+## Adaptive bottom bar = FrnkBottomFloatingBar (atom pill keeps FrnkBottomNavBar)
+
+- id: adaptive-bottom-bar-frnkbottomfloatingbar-atom-pill-keeps-fr-20260612-233651
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-bottom-nav
+- date: 2026-06-12
+
+The platform-adaptive bottom bar in :ui-bottom-nav (expect/actual: Material3 *Expressive* HorizontalFloatingToolbar on Android, native glassy UITabBar on iOS) was renamed **FrnkBottomNavBar -> FrnkBottomFloatingBar** (composable + the 3 files). The separate Material-free pill atom in :ui-components (package ui.atoms) **keeps** the name FrnkBottomNavBar.
+
+**Why:** the two components previously shared the name FrnkBottomNavBar, disambiguated only by package — confusing. Renaming the adaptive bar disambiguates them by name: adaptive bar = FrnkBottomFloatingBar, design-system pill = FrnkBottomNavBar.
+
+**How to apply:** the demo Components catalog entry 'FrnkBottomFloatingBar' now renders the *real* adaptive bar (the same expect/actual component shown at the foot of every screen via FrnkTabbedNavScaffold/FrnkAppShell) using FrnkNavBarItem, NOT the atom pill — so the showcase matches the live bar on both Android & iOS. Supporting types (FrnkNavBarItem, FrnkNavBarDefaults, FrnkNavPrimaryAction) kept their names. The atom pill is still consumed by the index-based BottomNavScaffold.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt
+
+## Bottom-nav primary action is a centered bar item (Mode B), not a FAB
+
+- id: bottom-nav-primary-action-is-a-centered-bar-item-mode-b-not-20260612-233702
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-bottom-nav
+- date: 2026-06-12
+
+FrnkTabbedNavScaffold injects the primary action as a **permanent centered '+' item** in FrnkBottomFloatingBar (internal PRIMARY_ACTION_KEY, inserted at the middle of the tabs), rather than a docked FAB (Android) / inline IosFabItem (iOS). The bar therefore stays full-width/centered and identical on both platforms — no FAB, no narrowing slide.
+
+**Why:** with the FAB approach, the native iOS UITabBar **snapped with zero animation** when the FAB appeared/disappeared and the bar shifted narrow<->full-width; the public UITabBar API can't be driven to animate that slide or to control the Home-vs-other-screen safe-area reservation (proven on-sim). Mode B sidesteps it entirely. Chosen over Mode A (animated FAB) after an on-device A/B in the demo's Bottom Nav Lab.
+
+**How to apply:** the bar's primaryAction/onPrimaryAction params still exist (NavLab Mode A compares the FAB path; direct callers may opt in), but the scaffold + FrnkAppShell use Mode B everywhere. hideBarFor (defaults to FrnkFullScreenRoute) + FrnkNavBarDefaults.reservedHeight are retained so content clears the bar. On Android the no-FAB toolbar overload is used (plain HorizontalFloatingToolbar) so the pill stays horizontally centered, with expandedShadowElevation pinned to the WithFab value for shadow parity; animateContentSize() was removed because it clipped the pill's bottom-edge shadow.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt
+
+## iOS adaptive bottom bar vendored into ui.bottomnav.vendor
+
+- id: ios-adaptive-bottom-bar-vendored-into-ui-bottomnav-vendor-20260612-233712
+- type: architecture_decision
+- status: active
+- platform: ios
+- area: ui-bottom-nav
+- date: 2026-06-12
+
+The iOS FrnkBottomFloatingBar no longer depends on the io.github.narendraanjana09:adaptive-nav-bar artifact. Its source is **vendored** under frnk/ui/bottom-nav/src/iosMain/.../vendor/ (AdaptiveNavigationBar + AdaptiveNavBarModels), adapted by the toolkit.
+
+**Why:** the published library builds the whole UITabBar in its UIKitView *factory* and exposes no Compose-animatable hook, so frnk couldn't own the bar's slide/fade transitions (it had to wrap the view in key(...), destroying/recreating it on every FAB/theme change -> snap). Vendoring gives full control: the vendored bar splits factory/update so FAB presence + theme re-apply in place (no recreate). (Mode B means the app flow no longer shows a FAB anyway, but the vendored bar animates for direct/NavLab use.)
+
+**How to apply (build):** dropped libs.adaptive.nav.bar + its version-catalog entry; iosMain now implements libs.compose.material3.expressive (Material3 is needed ONLY by the vendored older-iOS ComposeNavigationBar fallback — previously transitive from the library). Still quarantined to this one module; pure Kotlin/Compose (no extra native cinterop), so umbrella XCFrameworks still link under dynamic_lookup. The vendored fallback still reads the bundled frnk_nav_placeholder drawable. Upstream repo has no LICENSE — attribution headers were added to the vendored files.
+
+### Files
+- frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/vendor/AdaptiveNavigationBar.kt
+- frnk/ui/bottom-nav/build.gradle.kts

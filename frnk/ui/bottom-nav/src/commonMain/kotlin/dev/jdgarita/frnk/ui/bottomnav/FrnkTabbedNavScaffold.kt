@@ -40,7 +40,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
  * from the same list via `rememberFrnkTabbedBackStacks(tabs = navTabs.map { FrnkTab(it.key, it.root) })`,
  * or use [rememberFrnkAdaptiveNavTabs] which returns a remembered Home + middle + Settings list.
  *
- * **Bar.** Renders [FrnkBottomNavBar] — a Material3 *Expressive* `HorizontalFloatingToolbar` (floating
+ * **Bar.** Renders [FrnkBottomFloatingBar] — a Material3 *Expressive* `HorizontalFloatingToolbar` (floating
  * pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS — **with a
  * built-in primary-action button**: pass [onPrimaryAction] to wire it (the host decides what tapping it
  * does) and optionally a custom [primaryAction] to re-skin it per screen. The bar's platform actual renders
@@ -87,30 +87,8 @@ fun FrnkTabbedNavScaffold(
     // pops and the home-root exit are handled by FrnkNavDisplay / the system.
     FrnkTabbedBackHandler(tabbed)
 
-    val top = tabbed.current.lastOrNull()
-    val barHidden = top != null && hideBarFor(top)
-    val selectedIndex = tabs.indexOfFirst { it.key == tabbed.currentTabKey }
-    val barVisible = !barHidden && selectedIndex >= 0
-
-    // Read the bar's reserved height unconditionally (it's a @Composable getter), then reserve it for
-    // content only while the bar shows — exposed via LocalFrnkBottomBarInset so destinations on
-    // FrnkScreenScaffold / FrnkMviScreen pick it up through their bottomInset default.
-    val reservedHeight = FrnkNavBarDefaults.reservedHeight
-    val contentInset = if (barVisible) reservedHeight else 0.dp
-
-    // Shared tab-bar behaviour for both engines: re-tap the active tab → pop to its root; tap another →
-    // switch, keeping each tab's own back stack (multiple back stacks).
-    val onItemSelected: (Int) -> Unit = { index ->
-        val targetKey = tabs[index].key
-        if (targetKey == tabbed.currentTabKey) {
-            tabbed.resetCurrentToRoot()
-        } else {
-            tabbed.switchTo(targetKey)
-        }
-    }
-
-    // The screen-registered handler wins over the host-level fallback; the button hides when neither
-    // is wired. Collected lifecycle-aware so a claim made/released while backgrounded settles on resume.
+    // The screen-registered handler wins over the host-level fallback; the action shows when either is
+    // wired. Collected lifecycle-aware so a claim made/released while backgrounded settles on resume.
     val registeredAction =
         if (primaryActionRegistry != null) {
             val active by primaryActionRegistry.active.collectAsStateWithLifecycle()
@@ -119,6 +97,61 @@ fun FrnkTabbedNavScaffold(
             null
         }
     val effectivePrimaryAction = registeredAction ?: onPrimaryAction
+
+    // The descriptor (icon/label) for the primary-action item — the host-supplied [primaryAction] wins,
+    // otherwise the toolkit default ("+"). Resolved only when an action is actually wired.
+    val defaultPrimary = rememberFrnkNavPrimaryAction()
+    val primaryDescriptor = if (effectivePrimaryAction != null) primaryAction ?: defaultPrimary else null
+
+    // **Mode B:** the primary action is a permanent **centered item** in the bar — not a docked/inline FAB.
+    // When an action is wired (a screen claims it, or a host fallback), inject a "+" item at the centre of
+    // the tabs; tapping it fires the action without changing the selected tab. The bar therefore stays
+    // full-width/centred on every platform — no FAB, no narrowing slide, identical Android/iOS layout.
+    val navBarItems =
+        remember(tabs, primaryDescriptor) {
+            val tabItems =
+                tabs.map {
+                    FrnkNavBarItem(key = it.key, icon = it.icon, iosSystemIcon = it.iosSystemIcon, label = it.label)
+                }
+            if (primaryDescriptor == null) {
+                tabItems
+            } else {
+                tabItems.toMutableList().apply {
+                    add(
+                        (size + 1) / 2,
+                        FrnkNavBarItem(
+                            key = PRIMARY_ACTION_KEY,
+                            icon = primaryDescriptor.icon,
+                            iosSystemIcon = primaryDescriptor.iosSystemIcon,
+                            label = primaryDescriptor.label,
+                        ),
+                    )
+                }
+            }
+        }
+
+    val selectedIndex = navBarItems.indexOfFirst { it.key == tabbed.currentTabKey }
+
+    // Re-tap the active tab → pop to its root; tap another → switch (multiple back stacks). The injected
+    // primary-action item fires the action and leaves the selected tab unchanged.
+    val onItemSelected: (Int) -> Unit = { index ->
+        val key = navBarItems[index].key
+        when {
+            key == PRIMARY_ACTION_KEY -> effectivePrimaryAction?.invoke()
+            key == tabbed.currentTabKey -> tabbed.resetCurrentToRoot()
+            else -> tabbed.switchTo(key)
+        }
+    }
+
+    // Hide the bar on full-screen routes (paywall, onboarding, …); also guard against an unknown tab.
+    val top = tabbed.current.lastOrNull()
+    val barVisible = (top == null || !hideBarFor(top)) && selectedIndex >= 0
+
+    // Reserve the bar's footprint as the content's bottom inset (read unconditionally — it's a @Composable
+    // getter) so screens on FrnkScreenScaffold / FrnkMviScreen pad their scrollable content above the bar
+    // and the last item isn't hidden behind it. Provided as 0 while the bar is hidden.
+    val reservedHeight = FrnkNavBarDefaults.reservedHeight
+    val contentInset = if (barVisible) reservedHeight else 0.dp
 
     Box(modifier = modifier.fillMaxSize()) {
         CompositionLocalProvider(
@@ -133,32 +166,16 @@ fun FrnkTabbedNavScaffold(
         }
 
         if (barVisible) {
-            val navBarItems =
-                remember(tabs) {
-                    tabs.map {
-                        FrnkNavBarItem(
-                            key = it.key,
-                            icon = it.icon,
-                            iosSystemIcon = it.iosSystemIcon,
-                            label = it.label,
-                        )
-                    }
-                }
-            // Resolve the primary-action descriptor only when the action is actually wired (the
-            // host-supplied [primaryAction] wins; otherwise fall back to the toolkit default). The bar's
-            // platform actual renders it — a docked FAB on Android, an inline button on iOS — so this
-            // scaffold no longer docks a platform-specific FAB itself.
-            val action = effectivePrimaryAction
-            val resolvedPrimaryAction =
-                if (action != null) primaryAction ?: rememberFrnkNavPrimaryAction() else null
-            FrnkBottomNavBar(
+            FrnkBottomFloatingBar(
                 items = navBarItems,
                 selectedIndex = selectedIndex,
                 onItemSelected = onItemSelected,
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-                primaryAction = resolvedPrimaryAction,
-                onPrimaryAction = action,
             )
         }
     }
 }
+
+/** Key of the injected centered primary-action ("+") item — distinguishes it from real tabs in
+ *  selection handling. Internal, never a real route key. */
+private const val PRIMARY_ACTION_KEY = "__frnk_primary_action__"

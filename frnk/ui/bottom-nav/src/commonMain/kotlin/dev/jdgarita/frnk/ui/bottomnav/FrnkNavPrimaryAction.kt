@@ -15,7 +15,7 @@ import dev.jdgarita.frnk.ui.theme.strings
  * treatment as the Home/Settings bookends: a default [icon] (the `iconNavAdd` theme token, a plus glyph) +
  * [iosSystemIcon] (`"plus"`, for the iOS native bar) + [label] (the [stringPrimaryAction] token,
  * host-overridable via `FrnkThemeConfig.stringOverrides`). The button renders as a docked FAB on Android
- * and an inline button beside the items on iOS (see [FrnkBottomNavBar]); it shows only when an action is
+ * and an inline button beside the items on iOS (see [FrnkBottomFloatingBar]); it shows only when an action is
  * wired.
  *
  * It is the **primary action** of the current surface, not a fixed "add" — a host wires it per screen

@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.demo
 
 import androidx.navigation3.runtime.NavKey
+import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import kotlinx.serialization.Serializable
 
 /**
@@ -23,4 +24,12 @@ sealed interface DemoRoute : NavKey {
     data class ComponentDetail(
         val name: String,
     ) : DemoRoute
+
+    /**
+     * The "Bottom Nav Lab" — a full-screen harness for comparing the two primary-action behaviours of the
+     * adaptive bar (Mode ① animated FAB vs Mode ② centered item). [FrnkFullScreenRoute] so the app's tabbed
+     * bar hides while the lab shows its own bar.
+     */
+    @Serializable
+    data object NavLab : DemoRoute, FrnkFullScreenRoute
 }
