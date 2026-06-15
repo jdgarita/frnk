@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,16 +32,14 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
-import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
+import dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconCheck
-import dev.jdgarita.frnk.ui.theme.iconClose
 import dev.jdgarita.frnk.ui.theme.iconSizeLg
 import dev.jdgarita.frnk.ui.theme.iconSizeSm
 import dev.jdgarita.frnk.ui.theme.iconSizes
@@ -55,7 +54,6 @@ import dev.jdgarita.frnk.ui.theme.spacingMd
 import dev.jdgarita.frnk.ui.theme.spacingSm
 import dev.jdgarita.frnk.ui.theme.spacingXxs
 import dev.jdgarita.frnk.ui.theme.stringAppName
-import dev.jdgarita.frnk.ui.theme.stringClose
 import dev.jdgarita.frnk.ui.theme.stringPaywallContinue
 import dev.jdgarita.frnk.ui.theme.stringPaywallEmpty
 import dev.jdgarita.frnk.ui.theme.stringPaywallFreeTrialBadge
@@ -91,16 +89,13 @@ fun PaywallScreen(
 
     EffectCollector(vm.effects, onEffect = onEffect)
 
-    FrnkScreenScaffold(
-        topBar =
-            FrnkTopAppBarState(
-                title = "",
-                navigationIcon = Theme[icons][iconClose],
-                navigationContentDescription = Theme[strings][stringClose],
-            ),
+    FrnkFullScreenScaffold(
+        onCloseClick = { vm.send(PaywallIntent.Close) },
         modifier = modifier,
-        onNavigationClick = { vm.send(PaywallIntent.Close) },
+        contentPadding = PaddingValues(Theme[spacing][spacingLg]),
     ) { padding ->
+        // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
+        // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
         PaywallScreenContent(
             state = state,
             features = features,
@@ -117,9 +112,7 @@ fun PaywallScreenContent(
     features: List<String>,
     onIntent: (PaywallIntent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: androidx.compose.foundation.layout.PaddingValues =
-        androidx.compose.foundation.layout
-            .PaddingValues(Theme[spacing][spacingLg]),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
 ) {
     val title = "${Theme[strings][stringPaywallTitlePrefix]} ${Theme[strings][stringAppName]} ${Theme[strings][stringProName]}"
     Column(

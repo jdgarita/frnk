@@ -26,6 +26,7 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
 import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
+import dev.jdgarita.frnk.ui.scaffolds.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.FrnkThemeConfig
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
@@ -40,8 +41,11 @@ import org.koin.compose.koinInject
  * ([requireFrnkKoin]), a Settings tab driven by the **live**
  * [EntitlementManager] (the Subscription section flips Free↔Pro as entitlements change), the
  * monetization-aware Settings handler ([rememberFrnkSettingsHandler]: Upgrade → paywall, Restore,
- * god mode, Manage Subscription) with appearance / onboarding / feedback fallbacks, and the
- * auto-mounted [ToolkitRoute.Paywall] destination ([paywallFeatures]).
+ * god mode, Manage Subscription) with appearance / onboarding / feedback fallbacks, the
+ * auto-mounted [ToolkitRoute.Paywall] destination ([paywallFeatures]), and **first-launch
+ * onboarding** — when [onboardingPages] are supplied and [showOnboardingOnFirstLaunch] is true, the
+ * onboarding flow is presented once on first open (persisted via a `KeyValueStore`-backed
+ * [rememberOnboardingGate]; no-op when no store is bound).
  *
  * Minimal host integration:
  *
@@ -81,6 +85,7 @@ fun FrnkAppScaffold(
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
     settingsExtraSections: List<SettingsSectionState> = emptyList(),
     onboardingPages: List<OnboardingPageState> = emptyList(),
+    showOnboardingOnFirstLaunch: Boolean = true,
     paywallFeatures: List<String> = emptyList(),
     onMessage: (String) -> Unit = {},
     effects: @Composable (FrnkAppScope) -> Unit = {},
@@ -92,6 +97,9 @@ fun FrnkAppScaffold(
     // EntitlementManager); resolve leniently and degrade the Settings tab + paywall when absent.
     val entitlements: EntitlementManager? = remember(koin) { koin.getOrNull<EntitlementManager>() }
     val isPro by (entitlements?.isPro ?: remember { MutableStateFlow(false) }).collectAsStateWithLifecycle()
+    // First-launch gate: present onboarding once on first open. Resolved leniently (null when no
+    // KeyValueStore is bound), same degrade-gracefully pattern as [entitlements].
+    val onboardingGate = rememberOnboardingGate()
 
     FrnkAppShell(
         appVersion = appVersion,
@@ -133,7 +141,16 @@ fun FrnkAppScaffold(
             )
         },
         onboardingPages = onboardingPages,
-        effects = effects,
+        effects = { scope ->
+            // Auto-present onboarding on first launch (mounted only when pages are supplied), then
+            // run the host's own collectors.
+            FrnkFirstLaunchOnboardingEffect(
+                scope = scope,
+                gate = onboardingGate,
+                enabled = showOnboardingOnFirstLaunch && onboardingPages.isNotEmpty(),
+            )
+            effects(scope)
+        },
         entries = { scope ->
             // The paywall ships with the toolkit — mounted automatically when monetization is in the
             // graph (the same ToolkitRoute.Paywall the settings handler targets on UpgradeToPro).

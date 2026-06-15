@@ -308,6 +308,7 @@ setContent {
         hostRoutes = SerializersModule { /* your @Serializable routes */ },
         settingsExtraSections = listOf(myPrefsSection),        // injected before Legal by default
         onboardingPages = myOnboardingPages,                   // omit → no onboarding entry
+        showOnboardingOnFirstLaunch = true,                    // auto-present onboarding once on first launch (default)
         homePrimaryActionEnabled = true,                       // Home claims the bar's Create/Add button
         onHomeEffect = { effect -> /* HomeEffect.PrimaryActionInvoked / ActionInvoked(key) */ },
         entries = { scope -> entry<SessionsRoute> { … } },     // your destinations + pushes
@@ -326,6 +327,12 @@ setContent {
 - Any screen can claim the bar's primary-action button for its lifetime with
   `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button hides while no screen
   holds a claim and no host fallback is wired).
+- When `onboardingPages` is supplied, onboarding is **auto-presented once on first launch** and
+  persisted through a `KeyValueStore`-backed gate (install `prefsModule` for cross-launch persistence;
+  with no store bound it falls back to once-per-session). Set `showOnboardingOnFirstLaunch = false` to
+  present it only on demand (Settings → Show onboarding). Full-window screens (onboarding, paywall) use
+  **`FrnkFullScreenScaffold`** — an immersive template with an always-on ✕ that reserves the safe-area
+  insets + close-button band for you; reuse it for your own full-screen surfaces.
 - `FrnkAppScaffold` (`:ui-app`) layers the monetization batteries over **`FrnkAppShell`**
   (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkAppShell` directly — the
   same shell minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the reference.

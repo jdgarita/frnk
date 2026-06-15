@@ -56,3 +56,4 @@ demo/ios-app/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
 # CI artifacts
 reports/
 test-results/
+.hotswan/

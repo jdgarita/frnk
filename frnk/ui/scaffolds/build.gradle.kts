@@ -22,6 +22,11 @@ kotlin {
             // FeedbackEmail (mailto draft) behind FeedbackEmailLauncher; available transitively via coreMvi
             // but declared directly since used here.
             implementation(projects.sharedUtils)
+            // KeyValueStore + Preference<T> backing OnboardingGate (the first-launch gate).
+            // implementation (not api): OnboardingGate's constructor is internal, so KeyValueStore
+            // never appears in this module's public API and consumers don't need it transitively.
+            // Pure stdlib, no SDK/native cinterop, so umbrella XCFrameworks stay clean.
+            implementation(projects.dataPrefsApi)
 
             // Koin: koinViewModel() in the VM-backed scaffolds, koinEntryProvider() + the navigation<Route>
             // DSL in FrnkNavDisplay. api so hosts build their own graphs/screens without redeclaring.

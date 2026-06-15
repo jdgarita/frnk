@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,18 +31,12 @@ import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
-import dev.jdgarita.frnk.ui.atoms.FrnkIconButton
-import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.theme.colorBackground
-import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
-import dev.jdgarita.frnk.ui.theme.iconClose
-import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.theme.spacing
@@ -49,7 +44,6 @@ import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingMd
 import dev.jdgarita.frnk.ui.theme.spacingXs
 import dev.jdgarita.frnk.ui.theme.stringBack
-import dev.jdgarita.frnk.ui.theme.stringClose
 import dev.jdgarita.frnk.ui.theme.stringGetStarted
 import dev.jdgarita.frnk.ui.theme.stringNext
 import dev.jdgarita.frnk.ui.theme.strings
@@ -103,11 +97,14 @@ fun OnboardingScreen(
  *
  * Two separate [LaunchedEffect]s keyed by the source-of-truth on each side prevent a feedback loop.
  *
+ * **Chrome:** the immersive backdrop + the always-on top-right close (✕) come from
+ * [FrnkFullScreenScaffold]; this renderer only lays out the pager / pips / navigation row inside it.
+ *
  * **Layout note:** when [OnboardingScreenState.pagerHeight] is `null`, the pager uses
  * `Modifier.weight(1f)` inside this function's own `Column`, so it fills the **Column's** remaining
- * vertical space (the area left over after the top-right close button, pips, and button row). This
- * function provides that `Column`; advanced callers don't need to wrap it in one, and they don't
- * need to worry about `weight` being a no-op in a non-Column parent.
+ * vertical space (the area left over after the pips and button row). This function provides that
+ * `Column`; advanced callers don't need to wrap it in one, and they don't need to worry about
+ * `weight` being a no-op in a non-Column parent.
  */
 @Composable
 fun OnboardingScreenContent(
@@ -129,54 +126,46 @@ fun OnboardingScreenContent(
         }
     }
 
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .background(Theme[colors][colorBackground])
-                .padding(horizontal = Theme[spacing][spacingLg], vertical = Theme[spacing][spacingMd]),
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            FrnkIconButton(
-                modifier = Modifier.align(Alignment.TopEnd),
-                state =
-                    FrnkIconButtonState.Content(
-                        imageVector = Theme[icons][iconClose],
-                        contentDescription = Theme[strings][stringClose],
-                        tint = colorOnSurfaceVariant,
-                    ),
-                onClick = { onIntent(OnboardingIntent.CloseClicked) },
-            )
-        }
+    FrnkFullScreenScaffold(
+        onCloseClick = { onIntent(OnboardingIntent.CloseClicked) },
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = Theme[spacing][spacingLg], vertical = Theme[spacing][spacingMd]),
+    ) { padding ->
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
+        ) {
+            val pagerModifier =
+                if (state.pagerHeight != null) {
+                    Modifier.fillMaxWidth().height(state.pagerHeight)
+                } else {
+                    Modifier.fillMaxWidth().weight(1f)
+                }
 
-        val pagerModifier =
-            if (state.pagerHeight != null) {
-                Modifier.fillMaxWidth().height(state.pagerHeight)
-            } else {
-                Modifier.fillMaxWidth().weight(1f)
+            HorizontalPager(
+                state = pagerState,
+                modifier = pagerModifier,
+                userScrollEnabled = state.userScrollEnabled,
+            ) { page ->
+                OnboardingPageContent(state = state.pages[page])
             }
 
-        HorizontalPager(
-            state = pagerState,
-            modifier = pagerModifier,
-            userScrollEnabled = state.userScrollEnabled,
-        ) { page ->
-            OnboardingPageContent(state = state.pages[page])
+            OnboardingPips(
+                pageCount = pageCount,
+                currentPage = state.currentPageIndex,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+
+            OnboardingNavigationRow(
+                isFirstPage = state.isFirstPage,
+                isLastPage = state.isLastPage,
+                onPrevious = { onIntent(OnboardingIntent.PreviousClicked) },
+                onNext = { onIntent(OnboardingIntent.NextClicked) },
+            )
         }
-
-        OnboardingPips(
-            pageCount = pageCount,
-            currentPage = state.currentPageIndex,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-
-        OnboardingNavigationRow(
-            isFirstPage = state.isFirstPage,
-            isLastPage = state.isLastPage,
-            onPrevious = { onIntent(OnboardingIntent.PreviousClicked) },
-            onNext = { onIntent(OnboardingIntent.NextClicked) },
-        )
     }
 }
 

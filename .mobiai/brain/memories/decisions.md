@@ -575,3 +575,52 @@ The iOS FrnkBottomFloatingBar no longer depends on the io.github.narendraanjana0
 ### Files
 - frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/vendor/AdaptiveNavigationBar.kt
 - frnk/ui/bottom-nav/build.gradle.kts
+
+## First-launch onboarding + FrnkFullScreenScaffold
+
+- id: first-launch-onboarding-frnkfullscreenscaffold-20260615-032640
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui/scaffolds + app-root
+- date: 2026-06-15
+
+A pasted spec asked for a parallel app-root (AppRoute / FrnkRootRouter / FrnkTabNavScaffold / first-launch). Most of it already existed (ToolkitRoute, FrnkScreenScaffold, FrnkTabbedNavScaffold, FrnkAppShell/FrnkAppScaffold). Decision: **extend the existing system**, do NOT build a parallel route/router/tab-scaffold (would duplicate + drift + name-collide). Skipped a Material-free nav3 tab scaffold for now.
+
+Two genuinely-new pieces shipped:
+1. **FrnkFullScreenScaffold** (:ui-scaffolds) — immersive chrome template (close ✕ via WindowInsets.safeDrawing + container + BoxScope content), mirroring FrnkScreenScaffold. **No sealed Skeleton/Error state** despite the original plan: scaffold chrome owns no skeleton (HOST_INTEGRATION §9; FrnkScreenScaffold has no state either) — host content owns loading visuals. OnboardingScreen + PaywallScreen were refactored onto it (dropped their hand-rolled close buttons).
+2. **First-launch onboarding gating** — OnboardingGate (KeyValueStore-backed Preference<Boolean>, key "frnk.onboarding.seen") + rememberOnboardingGate() in :ui-scaffolds (needed api(projects.dataPrefsApi) — pure stdlib, XCFramework-clean), and FrnkFirstLaunchOnboardingEffect in :ui-bottom-nav (where FrnkAppScope lives). FrnkAppScaffold wires it automatically (new showOnboardingOnFirstLaunch=true param, lenient gate resolution like EntitlementManager); the demo (on the bare FrnkAppShell, cant see :ui-app) opts into the same helper in its effects slot.
+
+**Mechanics that made it small:** FrnkAppShell already pops Onboarding-close back to its pusher, so pushing ToolkitRoute.Onboarding over the Home tab on first launch gives close→Home for free; Settings→Onboarding→close→Settings unchanged. **Semantics:** mark-seen ON PRESENT (not on completion) so a mid-onboarding kill donot re-show; flippable by calling gate.markSeen() from a completion handler instead.
+
+**Demo caveat:** demo uses FakeKeyValueStore (in-memory, per-session), so every COLD start replays first-launch — intended. Cross-launch persistence is covered by OnboardingGateTest + real disk-backed prefsModule on hosts. Verified on Android emulator: first-launch onboarding, close→Home, paywall-from-Home full-screen chrome, paywall close→Home; iOS validated at DemoKit XCFramework link level.
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkFullScreenScaffold.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/OnboardingGate.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkFirstLaunchOnboardingEffect.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt
+
+## FrnkFullScreenScaffold owns merged content padding (code-review hardening)
+
+- id: frnkfullscreenscaffold-owns-merged-content-padding-code-revi-20260615-034600
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui/scaffolds
+- date: 2026-06-15
+
+Follow-up to [first-launch-onboarding]. A high-effort code review surfaced 6 findings; all addressed:
+
+1. (confirmed) Paywall HeadlineSmall title could render under the overlaid close ✕ (no reserved top band, unconstrained title width). FIX + altitude generalization: FrnkFullScreenScaffold now takes `contentPadding: PaddingValues` and its `content` slot is `BoxScope.(PaddingValues) -> Unit` — the scaffold folds safe-drawing insets + a reserved close-button band (FrnkFullScreenScaffoldDefaults.CloseButtonHeight = 48.dp) + the caller padding into ONE merged PaddingValues handed to content (mirrors how FrnkScreenScaffold hands merged padding). Onboarding + Paywall apply that padding; the ✕ can never collide with content and a scroll list scrolls UNDER the pinned ✕.
+2. (#5) Paywall bottom inset was outside verticalScroll (fixed dead strip). FIX: padding is now applied INSIDE the scroll via PaywallScreenContent(contentPadding=padding) — scroll-with-content restored.
+3. (#2) markSeen() persisted BEFORE navigate. FIX: navigate first, then mark.
+4. (#3) First-launch silently never showed when host had onboardingPages but no KeyValueStore. FIX: FrnkFirstLaunchOnboardingEffect falls back to a rememberSaveable session flag (shows once per app run) when gate==null.
+5. (#4) OnboardingGate exposed a public ctor naming KeyValueStore. FIX: ctor is now `internal` → KeyValueStore no longer in :ui-scaffolds public API → downgraded api(dataPrefsApi) to implementation(dataPrefsApi).
+6. (#6, latent) FrnkFirstLaunchOnboardingEffect enabled flag is decoupled from whether ToolkitRoute.Onboarding is registered — navigating to an unregistered route throws from nav3 NavDisplay. No in-tree crash (callers tie enabled to onboardingPages.isNotEmpty()); KDoc now states the precondition loudly.
+
+Verified on Android emulator: paywall header now sits below the ✕; onboarding still centered/clears bars. Full compileAndroidMain + ktlintCheck + testAndroidHostTest + DemoKit XCFramework all green.
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkFullScreenScaffold.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkFirstLaunchOnboardingEffect.kt

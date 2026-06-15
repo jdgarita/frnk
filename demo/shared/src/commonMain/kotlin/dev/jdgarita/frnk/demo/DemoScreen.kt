@@ -41,6 +41,7 @@ import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.app.FrnkAppScope
 import dev.jdgarita.frnk.ui.app.FrnkAppShell
+import dev.jdgarita.frnk.ui.app.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
@@ -92,6 +93,7 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsToggleRowState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
+import dev.jdgarita.frnk.ui.scaffolds.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
@@ -246,6 +248,14 @@ fun DemoScreen(
         // forwarded to the host. Lives in the shell's `effects` slot so one lifecycle-aware collector
         // survives tab swaps.
         effects = { scope ->
+            // First-launch onboarding: the demo composes the bare shell (not :ui-app's FrnkAppScaffold,
+            // which wires this automatically), so it opts into the same gate helper here. The demo's
+            // FakeKeyValueStore is per-session, so each fresh launch replays onboarding-on-first-open.
+            FrnkFirstLaunchOnboardingEffect(
+                scope = scope,
+                gate = rememberOnboardingGate(),
+                enabled = true,
+            )
             EffectCollector(vm.effects) { effect ->
                 routeDemoEffect(effect, { route -> scope.navigateTo(route) }, onEffect)
             }
