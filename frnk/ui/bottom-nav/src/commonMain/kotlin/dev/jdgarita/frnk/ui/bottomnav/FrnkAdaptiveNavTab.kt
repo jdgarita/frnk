@@ -12,8 +12,8 @@ import androidx.navigation3.runtime.NavKey
  * It is the presentation sibling of `dev.jdgarita.frnk.ui.nav.FrnkNavTab`: same `key` + [root]
  * back-stack model, but with the bar's icon forms. Build the per-tab back stacks from the same list via
  * `rememberFrnkTabbedBackStacks(tabs = navTabs.map { FrnkTab(it.key, it.root) })`, and let
- * [FrnkTabbedNavScaffold] derive the bar items from it. [rememberFrnkAdaptiveNavTabs] builds the default
- * Home + middle + Settings list with the toolkit's theme icons.
+ * [FrnkTabbedNavScaffold] derive the bar items from it. [rememberFrnkBottomNavState] builds the fixed
+ * Home + feature + Settings tabs (as a [FrnkBottomNavState]) with the toolkit's theme icons.
  */
 @Immutable
 data class FrnkAdaptiveNavTab(

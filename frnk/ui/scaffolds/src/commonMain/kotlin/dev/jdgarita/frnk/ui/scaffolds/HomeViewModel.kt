@@ -14,7 +14,6 @@ class HomeViewModel(
         when (intent) {
             is HomeIntent.TopBarActionClicked -> emit(HomeEffect.ActionInvoked(intent.action.key))
             HomeIntent.NavigationClicked -> emit(HomeEffect.NavigationInvoked)
-            HomeIntent.PrimaryActionClicked -> emit(HomeEffect.PrimaryActionInvoked)
         }
     }
 }

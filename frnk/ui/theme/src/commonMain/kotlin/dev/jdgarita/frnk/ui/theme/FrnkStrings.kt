@@ -19,10 +19,6 @@ val stringGenericError = ThemeToken<String>("string_generic_error")
 // Bottom-nav scaffold strings. The Settings tab reuses [stringSettings].
 val stringNavHome = ThemeToken<String>("string_nav_home")
 
-// Label for the adaptive bar's built-in primary-action button (FrnkNavPrimaryAction, :shared-ui-nav).
-// Treated like the Home/Settings bookends — host-overridable per screen via FrnkThemeConfig.stringOverrides.
-val stringPrimaryAction = ThemeToken<String>("string_primary_action")
-
 // Settings scaffold strings. Default copy for the settings catalog; hosts override per token.
 val stringSettings = ThemeToken<String>("string_settings")
 val stringAppearance = ThemeToken<String>("string_appearance")
@@ -85,7 +81,6 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringSearch to "Search",
         stringGenericError to "Something went wrong.",
         stringNavHome to "Home",
-        stringPrimaryAction to "Add",
         stringSettings to "Settings",
         stringAppearance to "Appearance",
         stringPreferences to "Preferences",

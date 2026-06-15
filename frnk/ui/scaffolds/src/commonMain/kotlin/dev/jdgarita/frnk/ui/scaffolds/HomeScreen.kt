@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionHandler
 import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingMd
@@ -28,10 +27,7 @@ import org.koin.core.parameter.parametersOf
  *
  * VM-backed convenience wrapper around [HomeScreenContent]: resolves a [HomeViewModel] from Koin
  * (initialised with [initialState] via `parametersOf`), forwards its state to the stateless renderer,
- * and surfaces one-shot effects to [onEffect]. Mirrors [SettingsScreen] exactly. When
- * `initialState.primaryActionEnabled` is set, the screen also claims the bottom bar's primary-action
- * button for its lifetime (via [FrnkPrimaryActionHandler]) and routes taps through the ViewModel as
- * [HomeIntent.PrimaryActionClicked] → [HomeEffect.PrimaryActionInvoked].
+ * and surfaces one-shot effects to [onEffect]. Mirrors [SettingsScreen] exactly.
  *
  * **The scaffold owns the vertical scroll** (recorded slot decision): [content] supplies items into a
  * `Column` that already scrolls behind the pinned top bar and the host's floating bottom bar, with
@@ -56,12 +52,6 @@ fun HomeScreen(
     val state by vm.state.collectAsStateWithLifecycle()
 
     EffectCollector(vm.effects, onEffect = onEffect)
-
-    // Claim the bottom bar's primary-action button while this screen is the active destination —
-    // routed through the VM so the tap stays on the strict MVI path.
-    FrnkPrimaryActionHandler(enabled = state.primaryActionEnabled) {
-        vm.send(HomeIntent.PrimaryActionClicked)
-    }
 
     HomeScreenContent(
         state = state,

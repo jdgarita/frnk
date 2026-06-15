@@ -19,36 +19,37 @@ Material3 never leaves Android:
   the items only — no FAB. Vendored so the toolkit owns the bar's `UIKitView` update block (the upstream
   artifact exposed no Compose-driven hook), which re-applies theme changes in place instead of recreating.
 
-The app flow's primary action is **Mode B** — a permanent **centered bar item**, never a FAB
-(see `mobiai brain search "primary action Mode B"`). It is frnk-owned (`FrnkNavPrimaryAction` +
-`stringPrimaryAction` token + the `iconNavAdd` theme icon, same bookend treatment as Home/Settings) and
-surfaced to hosts via the scaffold's `onPrimaryAction` callback — the host decides what tapping it does,
-**per screen** (re-skin per surface by passing a custom `primaryAction`). It shows only when an action is
-wired, and `FrnkTabbedNavScaffold` injects it as a centered item. **Screen routing:** pass
-`primaryActionRegistry` (`FrnkPrimaryActionRegistry`, `:core-nav`) and the currently active screen claims the
-button via `FrnkPrimaryActionHandler { onIntent(...) }` (`:ui-scaffolds`) — the scaffold provides the
-registry through `LocalFrnkPrimaryActionRegistry`, a screen claim wins over `onPrimaryAction` (the host-level
-fallback), and the button hides when neither is wired. `FrnkAppShell` wires the registry automatically.
+The bar is a **fixed three-tab** shape — `Home · feature · Settings`, in that order — shown on every
+screen (no FAB, no dynamically-injected item). The **center "feature" tab is the host's only
+configurable slot** (`FrnkFeatureItem`: `route` + `label` + `icon: ImageVector` + `iosSystemIcon`); Home
+and Settings are toolkit-owned bookends built from theme tokens. It is a **real navigable tab** (own
+back stack, selection highlight, re-tap-to-root) — point it at the app's signature surface (a "New X"
+flow, a capture screen, the main library) and register its `route` in the host's `entryProvider`.
+`rememberFrnkBottomNavState(homeRoot, settingsRoot, feature)` returns the fixed `FrnkBottomNavState`
+(`internal` constructor — only `feature` is settable). The old dynamic primary-action / FAB / Mode-B
+mechanism (`FrnkNavPrimaryAction`, `FrnkPrimaryActionRegistry`, `FrnkPrimaryActionHandler`,
+`onPrimaryAction`) was removed — see `mobiai brain search "fixed three-tab bottom bar"`.
 
 > **History.** Originally one of *two* engines: [Calf](https://github.com/MohamedRejeb/Calf) and
 > adaptive-nav-bar, A/B-selectable via `FrnkAdaptiveNavEngine`. Calf was removed when adaptive-nav-bar became
 > the default; then the **Android** engine was swapped from adaptive-nav-bar's Material3 `NavigationBar` to a
 > Material3 Expressive `HorizontalFloatingToolbar` and the common API moved from `DrawableResource` to
 > `ImageVector` (adaptive-nav-bar kept on iOS only, then **vendored** into `ui.bottomnav.vendor`); the FAB was
-> retired for a centered bar item (Mode B). The spike + decision history is in the MobiAI brain
-> (`mobiai brain search "adaptive bottom nav"`).
+> retired for a centered bar item (Mode B), and the dynamic primary-action mechanism was later dropped
+> entirely for the fixed three-tab `Home · feature · Settings` bar. The spike + decision history is in the
+> MobiAI brain (`mobiai brain search "adaptive bottom nav"`).
 
 ## Icons: `ImageVector` (Android) + SF-Symbol (iOS)
 
 The common item (`FrnkNavBarItem`) and tab (`FrnkAdaptiveNavTab`) carry **two** icon forms because the
 engines consume different things:
 - `icon: ImageVector` — a clean shared Compose vector, rendered directly by the Android floating toolbar.
-  Defaults come from theme icon tokens (`iconNavHome`/`iconSettings`/`iconNavAdd`), host-overridable via
-  `FrnkThemeConfig.iconOverrides`. **No `DrawableResource` anywhere on Android** — so there is **no host-side
-  asset-packaging step** (the old AGP-9 wart is gone).
+  The Home/Settings bookends default to theme icon tokens (`iconNavHome`/`iconSettings`), host-overridable
+  via `FrnkThemeConfig.iconOverrides`. **No `DrawableResource` anywhere on Android** — so there is **no
+  host-side asset-packaging step** (the old AGP-9 wart is gone).
 - `iosSystemIcon: String` — an SF-Symbol name. The native iOS 26+ `UITabBar` renders a UIKit symbol, not a
-  Compose vector, so this identifier stays explicit. `rememberFrnkAdaptiveNavTabs(...)` supplies `"house"` /
-  `"gearshape"`; hosts give middle tabs their own.
+  Compose vector, so this identifier stays explicit. `rememberFrnkBottomNavState(...)` supplies `"house"` /
+  `"gearshape"` for the bookends; the host gives the center `feature` tab its own.
 
 The vendored bar's `NavigationItem.icon` is a non-null `DrawableResource` (used only on the older-iOS Compose
 fallback bar), but the API no longer carries one — so the **iOS** actual feeds the
@@ -81,20 +82,22 @@ links under the consumer's existing `-undefined dynamic_lookup`.
 ## Contents (`ui/app/`)
 
 - `FrnkAppShell.kt` — **the one-call app shell** (host-enablement). Stands up a complete tabbed app:
-  `FrnkTheme(themeConfig)` wrap, `frnkNavConfiguration(hostRoutes)`, `rememberFrnkAdaptiveNavTabs`
-  (Home + `middleTabs` + Settings), `rememberFrnkTabbedBackStacks`, `FrnkTabbedNavScaffold`, built-in
+  `FrnkTheme(themeConfig)` wrap, `frnkNavConfiguration(hostRoutes)`, `rememberFrnkBottomNavState`
+  (the fixed `Home · feature · Settings` tabs; the center tab supplied as `feature: FrnkFeatureItem`),
+  `rememberFrnkTabbedBackStacks`, `FrnkTabbedNavScaffold`, built-in
   **Home** (`HomeScreen` with the host's `homeContent` `ColumnScope` slot; `homeTopBar`/`homeVmKey`/
-  `homePrimaryActionEnabled`/`onHomeEffect`), **Settings** (default catalogue + `settingsExtraSections`,
+  `onHomeEffect`), **Settings** (default catalogue + `settingsExtraSections`,
   overridable via the `settingsState`/`settingsEffects` composable factories + `settingsVmKey`),
   optional **Onboarding** (`onboardingPages` → registers `ToolkitRoute.Onboarding`; back/close pops),
-  deep-links (`pendingRoutes: FrnkPendingRouteRequest?`), and a shell-owned `FrnkPrimaryActionRegistry`.
+  and deep-links (`pendingRoutes: FrnkPendingRouteRequest?`).
   Host extension points — `effects` (the single `EffectCollector` home), `entries`
-  (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; **never** re-register the built-in routes,
-  nav3 `require`-throws on duplicates), and the effect handlers — all receive the `FrnkAppScope`.
+  (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; register the **`feature` tab's route** here, and
+  **never** re-register the built-in routes — nav3 `require`-throws on duplicates), and the effect
+  handlers — all receive the `FrnkAppScope`.
   Assumes **Koin is already started** (`frnkUiModules()` in `:ui-app` carries all scaffold VM modules). `:ui-app`'s
   `FrnkAppScaffold` layers the monetization batteries over this; `:demo-shared` uses the shell
   directly (it can't see `:ui-app`) and is the reference integration.
-- `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` + `primaryActions` registry +
+- `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` +
   `navigateTo`/`back`/`clearAndNavigateTo`) handed to every shell extension point.
 
 ## Contents (`ui/bottomnav/`)
@@ -119,10 +122,10 @@ links under the consumer's existing `-undefined dynamic_lookup`.
     in-place control is exactly why it was vendored. The bar is full-width and static.
   Most hosts use the scaffold; call the bar directly only when wiring your own selected-tab state /
   navigation. This is the toolkit's sole bottom-nav bar.
-- `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, primaryAction, onPrimaryAction, primaryActionRegistry, hideBarFor, entryProvider)`.
+- `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, hideBarFor, entryProvider)`.
   The **nav3 multiple-back-stack** tabbed scaffold: the single composable a host calls to get a standard
   tabbed app. It absorbs the `FrnkNavDisplay` (driven by `tabbed.current`), the persistent
-  `FrnkBottomFloatingBar` overlay (tab switch / re-tap-to-root + the built-in primary-action button),
+  `FrnkBottomFloatingBar` overlay (one item per tab; tab switch / re-tap-to-root),
   `FrnkTabbedBackHandler` (back-from-non-home-root→home), full-screen bar hiding (`hideBarFor`), and the
   bottom-inset bookkeeping (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows, so
   screens on `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically — no per-screen `bottomInset`
@@ -138,18 +141,19 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   `FrnkNavDisplay` + `FrnkTabbedBackHandler` + its own bar).
   `@OptIn(KoinExperimentalAPI::class)` (for the `koinEntryProvider()` default — doesn't propagate to callers
   passing their own provider).
-- `FrnkAdaptiveNavTab.kt` / `FrnkAdaptiveNavDefaults.kt` — the tab type (`key` + `root` + `icon: ImageVector`
-  + `iosSystemIcon` SF-Symbol) and `rememberFrnkAdaptiveNavTabs(homeRoot, settingsRoot, middleTabs, …)`, which
-  enforces the product rule **every app has at least Home + Settings**: a fixed Home tab, the host's optional
-  `middleTabs`, then a fixed Settings tab (bookend labels from `FrnkStrings`, icons from the `iconNavHome` /
-  `iconSettings` theme tokens + `"house"` / `"gearshape"` SF-Symbols).
-- `FrnkNavPrimaryAction.kt` — the primary-action descriptor (`icon: ImageVector` + `iosSystemIcon` + `label`)
-  and `rememberFrnkNavPrimaryAction(...)` (defaults to the `iconNavAdd` token + `"plus"`).
+- `FrnkAdaptiveNavTab.kt` / `FrnkFeatureItem.kt` / `FrnkBottomNavState.kt` / `FrnkAdaptiveNavDefaults.kt` —
+  the per-tab type (`key` + `root` + `icon: ImageVector` + `iosSystemIcon` SF-Symbol), the host-facing
+  center-tab config (`FrnkFeatureItem`: `route` + `label` + `icon` + `iosSystemIcon` + `key`), the view
+  state (`FrnkBottomNavState`, `internal` ctor, holding the fixed `home`/`feature`/`settings` tabs +
+  `tabs`), and `rememberFrnkBottomNavState(homeRoot, settingsRoot, feature, …)`, which builds the fixed
+  three-tab shape: a Home tab, the host's `feature` tab, then a Settings tab (bookend labels from
+  `FrnkStrings`, icons from the `iconNavHome` / `iconSettings` theme tokens + `"house"` / `"gearshape"`
+  SF-Symbols). The product rule **every app has Home + Settings** is structural — they cannot be omitted.
 
 ## Override model
 
-- **Override the tabs**: pass `middleTabs` to `rememberFrnkAdaptiveNavTabs` (Home/Settings bookends are always
-  present), or build the `List<FrnkAdaptiveNavTab>` by hand for a fully custom shape.
+- **Configure the center tab**: pass a `feature: FrnkFeatureItem` to `rememberFrnkBottomNavState` (the
+  Home/Settings bookends are fixed), or build the `List<FrnkAdaptiveNavTab>` by hand for a fully custom shape.
 - **Wire the navigation**: use `FrnkTabbedNavScaffold` with a host-owned `rememberFrnkTabbedBackStacks` + an
   `entryProvider` — frnk owns the display + bar + tab switching + back convention + bar-inset; the host owns
   the back stacks and registers destinations.

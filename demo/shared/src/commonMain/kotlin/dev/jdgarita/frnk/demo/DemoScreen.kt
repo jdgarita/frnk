@@ -60,8 +60,8 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
 import dev.jdgarita.frnk.ui.bottomnav.FrnkBottomFloatingBar
+import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavBarItem
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
@@ -129,15 +129,14 @@ import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Smoke harness for the toolkit — and the reference integration of **[FrnkAppShell]**, the one-call
- * app root. The shell owns the theme wrap, the nav3 saved-state config, the Home + Components +
+ * app root. The shell owns the theme wrap, the nav3 saved-state config, the fixed Home · Components ·
  * Settings adaptive tabs with per-tab back stacks, the persistent bottom bar (tab switching, back
- * conventions, full-screen hiding, bottom-inset), the built-in Home / Settings / Onboarding
- * destinations, and the primary-action registry; the demo supplies only its content:
+ * conventions, full-screen hiding, bottom-inset), and the built-in Home / Settings / Onboarding
+ * destinations; the demo supplies only its content:
  *  - **Home** (`ToolkitRoute.Home`, the shell's built-in `HomeScreen`) — the toolkit showcase via
- *    [HomeTabContent] in the `homeContent` slot; the crown Upgrade action + the bar's primary-action
- *    button arrive as `HomeEffect`s.
- *  - **Components** ([DemoRoute.Components], the demo's middle tab) — a gallery of every `Frnk*`
- *    atom; tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
+ *    [HomeTabContent] in the `homeContent` slot; the crown Upgrade action arrives as a `HomeEffect`.
+ *  - **Components** ([DemoRoute.Components], the demo's center `feature` tab) — a gallery of every
+ *    `Frnk*` atom; tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
  *  - **Settings** (`ToolkitRoute.Settings`, the shell's built-in tab) — the default catalogue with
  *    the demo's extra sections injected via `extraSections`, effects handled by
  *    [demoSettingsHandler] (the toolkit monetization wiring + demo fallbacks).
@@ -154,12 +153,9 @@ import org.koin.compose.viewmodel.koinViewModel
  * *can* depend on `:shared` uses `FrnkAppScaffold` instead, which layers the Koin assertion + live
  * entitlement-driven Settings + auto-mounted paywall over this same shell.
  *
- * **Bottom bar.** The adaptive bar renders its built-in primary-action button (FAB on Android / inline on
- * iOS), **screen-routed** through the shell's registry: the Home tab claims it (`homePrimaryActionEnabled`),
- * so it shows there and hides on the other tabs with no host-level conditional. The adaptive-nav spike
- * evaluation + the Android resource-packaging workaround are recorded in the MobiAI brain
- * (`mobiai brain search "adaptive bottom nav"`); the workaround assets live in
- * `demo/android-app/src/main/assets/composeResources/`.
+ * **Bottom bar.** The adaptive bar always shows exactly three tabs — Home · Components · Settings —
+ * with the center "Components" tab supplied as the shell's `feature` item. The adaptive-nav spike
+ * evaluation is recorded in the MobiAI brain (`mobiai brain search "adaptive bottom nav"`).
  */
 @Composable
 fun DemoScreen(
@@ -180,19 +176,16 @@ fun DemoScreen(
                 }
             }
         }
-    // One declaration per tab. The shell supplies the Home/Settings bookends (labels from theme tokens +
-    // theme ImageVector icons); the host only adds its middle "Components" tab, supplying a Compose
-    // ImageVector (Android) + SF-Symbol (iOS) the way a real host would.
-    val middleTabs =
+    // The shell supplies the Home/Settings bookends (labels from theme tokens + theme ImageVector icons);
+    // the host configures only the center "feature" tab — here the demo points it at its "Components"
+    // gallery, supplying a Compose ImageVector (Android) + SF-Symbol (iOS) the way a real host would.
+    val feature =
         remember {
-            listOf(
-                FrnkAdaptiveNavTab(
-                    key = "components",
-                    root = DemoRoute.Components,
-                    label = "Components",
-                    icon = Lucide.Component,
-                    iosSystemIcon = "square.grid.2x2",
-                ),
+            FrnkFeatureItem(
+                route = DemoRoute.Components,
+                label = "Components",
+                icon = Lucide.Component,
+                iosSystemIcon = "square.grid.2x2",
             )
         }
 
@@ -216,20 +209,15 @@ fun DemoScreen(
         modifier = Modifier.fillMaxSize(),
         themeConfig = demoPurpleThemeConfig(),
         appearanceController = appearanceController,
-        middleTabs = middleTabs,
+        feature = feature,
         hostRoutes = hostRoutes,
         homeTopBar = homeTopBar,
         // The Home VM is seeded once via parametersOf; re-key it when isPro flips so the Upgrade
         // action appears/disappears (same trick as the Settings VM below).
         homeVmKey = "home-${state.isPro}",
-        // The Home tab claims the bar's primary-action button (adaptive-nav-bar engine only) through
-        // the registry — replacing the old `tabbed.currentTabKey` conditional at the host root. The
-        // other tabs hold no claim, so the button hides there automatically.
-        homePrimaryActionEnabled = true,
         onHomeEffect = { effect ->
             when (effect) {
                 is HomeEffect.ActionInvoked -> if (effect.key == "upgrade") vm.send(DemoIntent.RequestUpgrade)
-                HomeEffect.PrimaryActionInvoked -> onEffect(DemoEffect.Toast("New item tapped"))
                 HomeEffect.NavigationInvoked -> Unit
             }
         },
@@ -346,8 +334,8 @@ private fun demoSettingsHandler(
 /**
  * Home tab body — the toolkit showcase, rendered inside the shell's built-in `HomeScreen` slot (the
  * scaffold owns the pinned top bar + the scrolling column + the merged padding; this just supplies
- * the items). The top-bar Upgrade action and the bar's primary-action button arrive as `HomeEffect`s
- * handled in [DemoScreen]'s `onHomeEffect`.
+ * the items). The top-bar Upgrade action arrives as a `HomeEffect` handled in [DemoScreen]'s
+ * `onHomeEffect`.
  */
 @Composable
 private fun HomeTabContent(

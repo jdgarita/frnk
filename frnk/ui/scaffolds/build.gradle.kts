@@ -4,7 +4,7 @@ plugins {
 
 // :ui-scaffolds — page templates (Onboarding / Settings / BottomNav / Home / FrnkScreenScaffold) + the
 // Compose binding layer for the MVI engine (FrnkMviScreen, EffectCollector) and the Navigation3 engine
-// (FrnkNavDisplay, FrnkNavTab, FrnkTabbedBackStacks/-Handler, slide animations, FrnkPrimaryActionHandler).
+// (FrnkNavDisplay, FrnkNavTab, FrnkTabbedBackStacks/-Handler, slide animations).
 // Extracted from :shared-ui-atoms at restructure Stage 7b — the Compose-bearing layer above the atoms,
 // below the features/bottom-nav. Kotlin packages unchanged (dev.jdgarita.frnk.ui.{scaffolds,mvi,nav}).
 kotlin {

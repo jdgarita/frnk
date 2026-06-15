@@ -14,8 +14,7 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
-import dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction
+import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
@@ -63,8 +62,9 @@ import org.koin.compose.koinInject
  *
  * Without monetization modules installed (no [EntitlementManager] in the graph) the Settings tab
  * renders with `isPro = false` and monetization rows degrade to no-ops; the paywall entry is not mounted.
- * Extension points ([effects], [entries], [onHomeEffect], [middleTabs], …) are forwarded to
- * [FrnkAppShell] — see its docs for the contracts (notably: don't re-register the built-in routes).
+ * Extension points ([effects], [entries], [onHomeEffect], [feature], …) are forwarded to
+ * [FrnkAppShell] — see its docs for the contracts (notably: register the [feature] tab's route in
+ * [entries], and don't re-register the built-in routes).
  */
 @Composable
 fun FrnkAppScaffold(
@@ -73,15 +73,12 @@ fun FrnkAppScaffold(
     modifier: Modifier = Modifier,
     themeConfig: FrnkThemeConfig = FrnkThemeConfig.Default,
     appearanceController: AppearanceController? = null,
-    middleTabs: List<FrnkAdaptiveNavTab> = emptyList(),
+    feature: FrnkFeatureItem,
     hostRoutes: SerializersModule = EmptySerializersModule(),
-    primaryAction: FrnkNavPrimaryAction? = null,
-    onPrimaryAction: (() -> Unit)? = null,
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     pendingRoutes: FrnkPendingRouteRequest? = null,
     homeTopBar: FrnkTopAppBarState? = null,
     homeVmKey: String? = null,
-    homePrimaryActionEnabled: Boolean = false,
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
     settingsExtraSections: List<SettingsSectionState> = emptyList(),
     onboardingPages: List<OnboardingPageState> = emptyList(),
@@ -106,15 +103,12 @@ fun FrnkAppScaffold(
         modifier = modifier,
         themeConfig = themeConfig,
         appearanceController = appearanceController,
-        middleTabs = middleTabs,
+        feature = feature,
         hostRoutes = hostRoutes,
-        primaryAction = primaryAction,
-        onPrimaryAction = onPrimaryAction,
         hideBarFor = hideBarFor,
         pendingRoutes = pendingRoutes,
         homeTopBar = homeTopBar ?: FrnkTopAppBarState(title = appName),
         homeVmKey = homeVmKey,
-        homePrimaryActionEnabled = homePrimaryActionEnabled,
         onHomeEffect = onHomeEffect,
         settingsState = { _ ->
             rememberDefaultSettingsState(

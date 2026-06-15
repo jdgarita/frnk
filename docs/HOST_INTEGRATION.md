@@ -293,10 +293,10 @@ A host that adds its own KMP library modules can apply the same plugin by adding
 ## 8. Spin up the whole app with `FrnkAppScaffold`
 
 After `initializeFrnk(...)` (§4), the **batteries-included app root** stands up a complete tabbed app —
-theme, type-safe nav3 with per-tab back stacks, the adaptive bottom bar (Home + your middle tabs +
-Settings), a Home template you fill with content, the default Settings catalogue driven by the live
-`EntitlementManager` (Upgrade → paywall, Restore, Manage Subscription, appearance, feedback), an
-optional onboarding flow, and the auto-mounted paywall — in one call:
+theme, type-safe nav3 with per-tab back stacks, the adaptive bottom bar (the fixed `Home · feature ·
+Settings` three-tab shape), a Home template you fill with content, the default Settings catalogue driven
+by the live `EntitlementManager` (Upgrade → paywall, Restore, Manage Subscription, appearance, feedback),
+an optional onboarding flow, and the auto-mounted paywall — in one call:
 
 ```kotlin
 setContent {
@@ -304,14 +304,18 @@ setContent {
         appName = "MyApp",
         appVersion = "v1.0.0",
         themeConfig = myThemeConfig(),                         // §2 token overrides
-        middleTabs = listOf(sessionsTab),                      // FrnkAdaptiveNavTab, remembered
+        feature = FrnkFeatureItem(                             // the bar's one host-configurable tab
+            route = SessionsRoute,                             //   register it in `entries` below
+            label = "Sessions",
+            icon = Lucide.CalendarClock,                       //   ImageVector (Android)
+            iosSystemIcon = "calendar",                        //   SF-Symbol (iOS)
+        ),
         hostRoutes = SerializersModule { /* your @Serializable routes */ },
         settingsExtraSections = listOf(myPrefsSection),        // injected before Legal by default
         onboardingPages = myOnboardingPages,                   // omit → no onboarding entry
         showOnboardingOnFirstLaunch = true,                    // auto-present onboarding once on first launch (default)
-        homePrimaryActionEnabled = true,                       // Home claims the bar's Create/Add button
-        onHomeEffect = { effect -> /* HomeEffect.PrimaryActionInvoked / ActionInvoked(key) */ },
-        entries = { scope -> entry<SessionsRoute> { … } },     // your destinations + pushes
+        onHomeEffect = { effect -> /* HomeEffect.ActionInvoked(key) / NavigationInvoked */ },
+        entries = { scope -> entry<SessionsRoute> { … } },     // the feature tab's root + your pushes
         effects = { scope -> EffectCollector(vm.effects) { scope.navigateTo(it.route) } },
     ) {
         // Home tab body — the scaffold owns the scrolling column + bar insets.
@@ -320,13 +324,14 @@ setContent {
 }
 ```
 
-- Every extension point receives a **`FrnkAppScope`** (`navigateTo` / `back` / `clearAndNavigateTo` +
-  the primary-action registry) so a single `EffectCollector` drives navigation.
+- The bar always shows exactly three tabs — `Home · feature · Settings`. The center **`feature`** tab is
+  the only one you configure (`FrnkFeatureItem`); it's a real navigable tab (own back stack,
+  re-tap-to-root). Point it at your app's signature surface (a "New X" flow, a capture screen, the main
+  library) and **register its `route` in `entries`** — the shell owns only Home/Settings/Onboarding.
+- Every extension point receives a **`FrnkAppScope`** (`navigateTo` / `back` / `clearAndNavigateTo`) so a
+  single `EffectCollector` drives navigation.
 - Don't re-register the built-in routes (`ToolkitRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
   `entries` — nav3 throws on duplicate entry registrations.
-- Any screen can claim the bar's primary-action button for its lifetime with
-  `FrnkPrimaryActionHandler { onIntent(MyIntent.CreateClicked) }` (the button hides while no screen
-  holds a claim and no host fallback is wired).
 - When `onboardingPages` is supplied, onboarding is **auto-presented once on first launch** and
   persisted through a `KeyValueStore`-backed gate (install `prefsModule` for cross-launch persistence;
   with no store bound it falls back to once-per-session). Set `showOnboardingOnFirstLaunch = false` to
@@ -340,16 +345,17 @@ setContent {
 ### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 
 The adaptive bottom bar (`FrnkBottomFloatingBar`, `:ui-bottom-nav`) takes **`ImageVector`** icons in the common
-API (`FrnkNavBarItem.icon` / `FrnkAdaptiveNavTab.icon`), plus an `iosSystemIcon` SF-Symbol string for the
-native iOS bar. On **Android** the bar is a Material3 Expressive `HorizontalFloatingToolbar` that renders the
-`ImageVector` directly — it never touches `DrawableResource`, so **there is no host-side asset-bundling step**
-(the old `MissingResourceException` / `assets/composeResources/…` workaround is gone).
+API (`FrnkNavBarItem.icon` / `FrnkAdaptiveNavTab.icon` / `FrnkFeatureItem.icon`), plus an `iosSystemIcon`
+SF-Symbol string for the native iOS bar. On **Android** the bar is a Material3 Expressive
+`HorizontalFloatingToolbar` that renders the `ImageVector` directly — it never touches `DrawableResource`, so
+**there is no host-side asset-bundling step** (the old `MissingResourceException` /
+`assets/composeResources/…` workaround is gone).
 
-Supply middle-tab icons as plain `ImageVector`s (e.g. Lucide vectors, or your own), the same way the demo's
-"Components" tab uses `Lucide.Component`. Defaults for the Home/Settings bookends + the primary-action button
-come from theme icon tokens (`iconNavHome` / `iconSettings` / `iconNavAdd`), overridable via
-`FrnkThemeConfig.iconOverrides`. iOS-only: the library's older-iOS Compose fallback needs a `DrawableResource`,
-which the toolkit supplies internally via a single bundled placeholder — nothing for the host to do.
+Supply the `feature` tab's icon as a plain `ImageVector` (e.g. a Lucide vector, or your own), the same way the
+demo's "Components" tab uses `Lucide.Component`. Defaults for the Home/Settings bookends come from theme icon
+tokens (`iconNavHome` / `iconSettings`), overridable via `FrnkThemeConfig.iconOverrides`. iOS-only: the
+library's older-iOS Compose fallback needs a `DrawableResource`, which the toolkit supplies internally via a
+single bundled placeholder — nothing for the host to do.
 
 ## 9. Component style guide — sealed state + `Skeleton` object
 

@@ -15,13 +15,11 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.bottomnav.FrnkAdaptiveNavTab
-import dev.jdgarita.frnk.ui.bottomnav.FrnkNavPrimaryAction
+import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
-import dev.jdgarita.frnk.ui.bottomnav.rememberFrnkAdaptiveNavTabs
+import dev.jdgarita.frnk.ui.bottomnav.rememberFrnkBottomNavState
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
-import dev.jdgarita.frnk.ui.nav.FrnkPrimaryActionRegistry
 import dev.jdgarita.frnk.ui.nav.FrnkTab
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.nav.frnkNavConfiguration
@@ -55,11 +53,11 @@ import kotlinx.serialization.modules.SerializersModule
 
 /**
  * The toolkit's **app shell**: one composable that stands up a complete tabbed app — [FrnkTheme]
- * wrap, the Navigation3 saved-state configuration, the Home + [middleTabs] + Settings adaptive tabs,
- * per-tab back stacks, [FrnkTabbedNavScaffold] (bar, back conventions, full-screen hiding,
+ * wrap, the Navigation3 saved-state configuration, the fixed `Home · [feature] · Settings` adaptive
+ * tabs, per-tab back stacks, [FrnkTabbedNavScaffold] (bar, back conventions, full-screen hiding,
  * bottom-inset), built-in **Home** ([HomeScreen] with the host's [homeContent] slot), **Settings**
  * ([rememberDefaultSettingsState] catalogue + [settingsExtraSections]) and optional **Onboarding**
- * ([onboardingPages]) destinations, deep-linking ([pendingRoutes]), and the primary-action registry.
+ * ([onboardingPages]) destinations, and deep-linking ([pendingRoutes]).
  * A host that used to hand-wire ~150 lines of theme + nav + tab plumbing writes one call.
  *
  * Assumes **Koin is already started** (the VM-backed scaffolds resolve through `koinViewModel`) —
@@ -69,9 +67,14 @@ import kotlinx.serialization.modules.SerializersModule
  * when your module can't see `:ui-app` (as `:shared-demo` does) or when you want to supply those
  * pieces yourself.
  *
- * Host extension points, each handed the [FrnkAppScope] (back stacks + primary-action registry):
+ * The center **[feature]** tab is the host's one configurable tab — point it at the app's signature
+ * surface (a "New X" flow, a capture screen, the main library). It is a real navigable tab, so the
+ * host **must** register its root via [entries] (`entry(feature.route) { … }`), exactly like any other
+ * host route; the shell owns only Home/Settings/Onboarding.
+ *
+ * Host extension points, each handed the [FrnkAppScope] (the per-tab back stacks):
  *  - [homeContent] — the Home tab's body; items in a scaffold-owned scrolling column ([HomeScreen]).
- *  - [entries] — additional destinations (middle-tab roots, pushed details), registered on the
+ *  - [entries] — additional destinations (the [feature] tab's root, pushed details), registered on the
  *    shell's `entryProvider`. **Do not** re-register [homeRoot], [settingsRoot],
  *    `ToolkitRoute.Onboarding` (when [onboardingPages] is non-empty) — nav3 throws on duplicates.
  *  - [effects] — composed inside the theme above the scaffold; put the host's single
@@ -79,11 +82,6 @@ import kotlinx.serialization.modules.SerializersModule
  *  - [onHomeEffect] / [settingsEffects] — the built-in tabs' effect handlers. The default Settings
  *    handler applies appearance changes and opens onboarding; everything else is a no-op until the
  *    host (or `FrnkAppScaffold`) supplies a handler.
- *
- * The bar's primary-action button (the "Create/Add" FAB) is screen-routed: set
- * [homePrimaryActionEnabled] so the Home tab claims it (taps arrive as [HomeEffect.PrimaryActionInvoked]),
- * and any other destination can claim it with
- * `FrnkPrimaryActionHandler { … }`. [onPrimaryAction] remains the host-level fallback.
  */
 @Composable
 fun FrnkAppShell(
@@ -94,16 +92,13 @@ fun FrnkAppShell(
     // Tabs / navigation.
     homeRoot: NavKey = ToolkitRoute.Home,
     settingsRoot: NavKey = ToolkitRoute.Settings,
-    middleTabs: List<FrnkAdaptiveNavTab> = emptyList(),
+    feature: FrnkFeatureItem,
     hostRoutes: SerializersModule = EmptySerializersModule(),
-    primaryAction: FrnkNavPrimaryAction? = null,
-    onPrimaryAction: (() -> Unit)? = null,
     hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     pendingRoutes: FrnkPendingRouteRequest? = null,
     // Built-in Home tab.
     homeTopBar: FrnkTopAppBarState? = null,
     homeVmKey: String? = null,
-    homePrimaryActionEnabled: Boolean = false,
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
     // Built-in Settings tab.
     settingsState: (@Composable (FrnkAppScope) -> SettingsScreenState)? = null,
@@ -120,16 +115,15 @@ fun FrnkAppShell(
     val controller = appearanceController ?: remember { AppearanceController() }
     FrnkTheme(config = themeConfig, appearanceController = controller) {
         val navConfig = remember(hostRoutes) { frnkNavConfiguration(hostRoutes) }
-        val navTabs =
-            rememberFrnkAdaptiveNavTabs(
+        val navState =
+            rememberFrnkBottomNavState(
                 homeRoot = homeRoot,
                 settingsRoot = settingsRoot,
-                middleTabs = middleTabs,
+                feature = feature,
             )
-        val backStackTabs = remember(navTabs) { navTabs.map { FrnkTab(key = it.key, root = it.root) } }
+        val backStackTabs = remember(navState) { navState.tabs.map { FrnkTab(key = it.key, root = it.root) } }
         val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = backStackTabs)
-        val primaryActions = remember { FrnkPrimaryActionRegistry() }
-        val scope = remember(tabbed, primaryActions) { FrnkAppScope(tabbed, primaryActions) }
+        val scope = remember(tabbed) { FrnkAppScope(tabbed) }
 
         // Deep-link signal: a route requested before (or while) the shell is up navigates once and
         // is consumed. State-based (FrnkPendingRouteRequest), so an early request still delivers.
@@ -148,11 +142,8 @@ fun FrnkAppShell(
 
         FrnkTabbedNavScaffold(
             tabbed = tabbed,
-            tabs = navTabs,
+            tabs = navState.tabs,
             modifier = modifier.fillMaxSize(),
-            primaryAction = primaryAction,
-            onPrimaryAction = onPrimaryAction,
-            primaryActionRegistry = primaryActions,
             hideBarFor = hideBarFor,
             entryProvider =
                 entryProvider {
@@ -162,7 +153,6 @@ fun FrnkAppShell(
                             initialState =
                                 HomeScreenState(
                                     topBar = topBar,
-                                    primaryActionEnabled = homePrimaryActionEnabled,
                                 ),
                             // The VM is seeded once via parametersOf — pass a fresh homeVmKey when a
                             // dynamic [homeTopBar] (e.g. an action hidden once Pro) must re-seed it.

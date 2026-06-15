@@ -63,24 +63,13 @@ class HomeViewModelTest {
         }
 
     @Test
-    fun primary_action_click_re_emits_primary_action_invoked() =
-        runTest(dispatcher) {
-            val vm = HomeViewModel(initialState())
-            val effect = async { vm.effects.first() }
-
-            vm.send(HomeIntent.PrimaryActionClicked)
-
-            assertEquals(HomeEffect.PrimaryActionInvoked, effect.await())
-        }
-
-    @Test
     fun intents_leave_the_chrome_state_untouched() =
         runTest(dispatcher) {
             val initial = initialState()
             val vm = HomeViewModel(initial)
             val effect = async { vm.effects.first() }
 
-            vm.send(HomeIntent.PrimaryActionClicked)
+            vm.send(HomeIntent.NavigationClicked)
             effect.await()
 
             assertEquals(initial, vm.state.value)

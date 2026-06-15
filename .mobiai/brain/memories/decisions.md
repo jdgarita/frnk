@@ -678,3 +678,28 @@ Verified: compileAndroidMain + iosSimulatorArm64 for ui-bottom-nav & demo-shared
 - frnk/ui/bottom-nav/src/androidMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.android.kt
 - frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.ios.kt
 - frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/vendor/AdaptiveNavigationBar.kt
+
+## Bottom bar: fixed 3-tab Home·feature·Settings (primary-action machinery removed)
+
+- id: bottom-bar-fixed-3-tab-home-feature-settings-primary-action-20260615-172658
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-bottom-nav
+- date: 2026-06-15
+
+**Decision.** `FrnkBottomFloatingBar` (via `FrnkTabbedNavScaffold` / `FrnkAppShell`) is now a **fixed three-tab** bar — `Home · feature · Settings` — shown on every screen. The center **"feature"** tab is the only host-configurable slot (`FrnkFeatureItem`: route + label + icon:ImageVector + iosSystemIcon). It is a real navigable tab (own back stack, selection highlight, re-tap-to-root). Home/Settings are toolkit-owned bookends built from theme tokens via `rememberFrnkBottomNavState(homeRoot, settingsRoot, feature)` → `FrnkBottomNavState` (internal ctor; only `feature` settable).
+
+**Why.** Previously the bar showed a variable item count: tabs (Home + middleTabs + Settings) plus a dynamically-injected centered primary-action "+" item (Mode B) that only appeared when a screen claimed it — so Home had 4 items but other tabs had 3. The user wanted a stable, always-3-item bar where the middle slot is the host's app-specific entry point (typically an "add"/New-X/camera surface). Modeling it as a navigable tab (not a transient action) matched the existing multiple-back-stack scaffold and the demo's Components tab with the least disruption.
+
+**What was removed (reverses the earlier "Mode B / keep FrnkNavPrimaryAction" decisions).** The entire dynamic primary-action mechanism: `FrnkPrimaryActionRegistry` (:core-nav), `FrnkPrimaryActionHandler` + `LocalFrnkPrimaryActionRegistry` (:ui-scaffolds), `FrnkNavPrimaryAction`/`rememberFrnkNavPrimaryAction` + the Mode-B injection/`PRIMARY_ACTION_KEY` in `FrnkTabbedNavScaffold`, `FrnkTabbedNavScaffold`'s `primaryAction`/`onPrimaryAction`/`primaryActionRegistry` params, `FrnkAppScope.primaryActions`, `FrnkAppShell`/`FrnkAppScaffold`'s `primaryAction`/`onPrimaryAction`/`homePrimaryActionEnabled`, `HomeScreenState.primaryActionEnabled` + `HomeIntent.PrimaryActionClicked` + `HomeEffect.PrimaryActionInvoked`, and the now-unused `iconNavAdd`/`stringPrimaryAction` theme tokens. `rememberFrnkAdaptiveNavTabs(middleTabs=…)` → replaced by `rememberFrnkBottomNavState(feature=…)`.
+
+**Host contract.** The feature tab's root is host content — register `entry(feature.route) { … }` in `entries` (the shell owns only Home/Settings/Onboarding). `feature` is a required, non-defaulted param (a default route would have no registered destination and crash nav3). `FrnkBottomFloatingBar`'s expect/actual signature was unchanged (already list-based: items/selectedIndex/onItemSelected). Demo wires feature → DemoRoute.Components.
+
+**Review refinements (same change).** (1) `rememberFrnkBottomNavState` now `require(...)`s `feature.key != homeKey && != settingsKey` — colliding keys would otherwise give duplicate back-stack keys + wrong `indexOfFirst` selection silently. (2) `demo-android`'s `AppScaffoldSmokeActivity` declares its **own** harness-local `@Serializable data object SmokeFeatureRoute : NavKey` instead of borrowing `:demo-shared`'s `DemoRoute.Components` — this required applying `alias(libs.plugins.kotlin.serialization)` to `:demo-android`, which **works fine alongside AGP 9's built-in Kotlin** (same mechanism as the already-applied `kotlin.compose` compiler plugin; built-in Kotlin does accept Kotlin compiler plugins). (3) Kept `FrnkFeatureItem` (host-facing config, `route`) separate from `FrnkAdaptiveNavTab` (internal tab, `root`) — deliberate, mirrors the existing `FrnkNavTab`/`FrnkAdaptiveNavTab` "presentation sibling" precedent.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavState.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkFeatureItem.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavDefaults.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt

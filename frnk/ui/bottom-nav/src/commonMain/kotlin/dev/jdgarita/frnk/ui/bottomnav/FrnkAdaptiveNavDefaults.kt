@@ -12,35 +12,41 @@ import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.theme.strings
 
 /**
- * Builds the default [FrnkAdaptiveNavTab] list for [FrnkTabbedNavScaffold], enforcing the toolkit's
- * product contract — **every app has at least Home and Settings** — for the nav3 multiple-back-stack
- * path: a fixed **Home** tab, the host's optional [middleTabs], then a fixed
- * **Settings** tab. Home and Settings carry the toolkit's theme icons ([iconNavHome]/[iconSettings]
- * `ImageVector`s for Android) + SF-Symbol names (`"house"`/`"gearshape"` for iOS), with labels from
- * `stringNavHome`/`stringSettings`. Hosts re-skin the icons/labels through `FrnkThemeConfig`.
+ * Builds the toolkit's fixed three-tab [FrnkBottomNavState] for [FrnkTabbedNavScaffold]: a fixed
+ * **Home** tab, the host's configurable center **[feature]** tab, then a fixed **Settings** tab — the
+ * `Home · feature · Settings` shape the adaptive bar always renders. Home and Settings carry the
+ * toolkit's theme icons ([iconNavHome]/[iconSettings] `ImageVector`s for Android) + SF-Symbol names
+ * (`"house"`/`"gearshape"` for iOS), with labels from `stringNavHome`/`stringSettings`. Hosts re-skin
+ * the bookend icons/labels through `FrnkThemeConfig`; the center tab is shaped by [feature].
  *
  * The host supplies each bookend's back-stack [homeRoot]/[settingsRoot] (the `NavKey` its tab starts
- * from) since routes are host-defined; middle tabs (with their own icons/roots) slot between them.
+ * from) since routes are host-defined; the [feature] tab carries its own route + icons.
  *
- * **Pass a stable [middleTabs] list** — `remember` each `FrnkAdaptiveNavTab` (or the whole list) rather
- * than constructing them inline every recomposition. This builder keys its `remember` on [middleTabs], so
- * a freshly-built tab each frame busts this cache → a new tab list every frame → `FrnkTabbedNavScaffold`
- * (and the derived back stacks) become non-skippable.
+ * **Pass a stable [feature]** — `remember` the [FrnkFeatureItem] rather than constructing it inline
+ * every recomposition. This builder keys its `remember` on [feature], so a freshly-built item each
+ * frame busts this cache → a new state every frame → `FrnkTabbedNavScaffold` (and the derived back
+ * stacks) become non-skippable.
  *
  * @param homeRoot the Home tab's back-stack root destination.
  * @param settingsRoot the Settings tab's back-stack root destination.
- * @param middleTabs the host's configurable destinations between Home and Settings.
+ * @param feature the host's configurable center tab (route + icons + label).
  * @param homeKey stable key for the Home tab.
  * @param settingsKey stable key for the Settings tab.
  */
 @Composable
-fun rememberFrnkAdaptiveNavTabs(
+fun rememberFrnkBottomNavState(
     homeRoot: NavKey,
     settingsRoot: NavKey,
-    middleTabs: List<FrnkAdaptiveNavTab> = emptyList(),
+    feature: FrnkFeatureItem,
     homeKey: String = "home",
     settingsKey: String = "settings",
-): List<FrnkAdaptiveNavTab> {
+): FrnkBottomNavState {
+    // The three tab keys back per-tab back stacks and drive selection (indexOfFirst by key) — they must
+    // be distinct, or switching/selecting the feature tab would silently target the Home/Settings stack.
+    require(feature.key != homeKey && feature.key != settingsKey) {
+        "feature.key ('${feature.key}') must differ from homeKey ('$homeKey') and settingsKey ('$settingsKey')"
+    }
+
     val homeLabel = Theme[strings][stringNavHome]
     val settingsLabel = Theme[strings][stringSettings]
     val homeIcon = Theme[icons][iconNavHome]
@@ -49,7 +55,7 @@ fun rememberFrnkAdaptiveNavTabs(
     return remember(
         homeRoot,
         settingsRoot,
-        middleTabs,
+        feature,
         homeKey,
         settingsKey,
         homeLabel,
@@ -57,8 +63,8 @@ fun rememberFrnkAdaptiveNavTabs(
         homeIcon,
         settingsIcon,
     ) {
-        buildList {
-            add(
+        FrnkBottomNavState(
+            home =
                 FrnkAdaptiveNavTab(
                     key = homeKey,
                     root = homeRoot,
@@ -66,9 +72,15 @@ fun rememberFrnkAdaptiveNavTabs(
                     icon = homeIcon,
                     iosSystemIcon = "house",
                 ),
-            )
-            addAll(middleTabs)
-            add(
+            feature =
+                FrnkAdaptiveNavTab(
+                    key = feature.key,
+                    root = feature.route,
+                    label = feature.label,
+                    icon = feature.icon,
+                    iosSystemIcon = feature.iosSystemIcon,
+                ),
+            settings =
                 FrnkAdaptiveNavTab(
                     key = settingsKey,
                     root = settingsRoot,
@@ -76,7 +88,6 @@ fun rememberFrnkAdaptiveNavTabs(
                     icon = settingsIcon,
                     iosSystemIcon = "gearshape",
                 ),
-            )
-        }
+        )
     }
 }

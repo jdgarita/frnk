@@ -16,16 +16,10 @@ import dev.jdgarita.frnk.ui.mvi.UiState
  * visuals belong to the host's slot content, which uses the atoms' own sealed `Skeleton` states.
  *
  * @param topBar the pinned top bar (title, optional navigation icon, trailing actions, search mode).
- * @param primaryActionEnabled when `true`, the screen claims the bottom bar's primary-action button
- *   (via `FrnkPrimaryActionHandler`) while it is the active destination — taps surface as
- *   [HomeIntent.PrimaryActionClicked] → [HomeEffect.PrimaryActionInvoked]. Requires the hosting
- *   `FrnkTabbedNavScaffold` to carry a `primaryActionRegistry` (and the `AdaptiveNavBar` engine to
- *   actually render the button).
  */
 @Immutable
 data class HomeScreenState(
     val topBar: FrnkTopAppBarState,
-    val primaryActionEnabled: Boolean = false,
 ) : UiState
 
 sealed interface HomeIntent : UiIntent {
@@ -36,9 +30,6 @@ sealed interface HomeIntent : UiIntent {
 
     /** The leading top-bar navigation icon was tapped. */
     data object NavigationClicked : HomeIntent
-
-    /** The bottom bar's primary-action button was tapped while this screen held the claim. */
-    data object PrimaryActionClicked : HomeIntent
 }
 
 sealed interface HomeEffect : UiEffect {
@@ -49,7 +40,4 @@ sealed interface HomeEffect : UiEffect {
 
     /** Re-emission of [HomeIntent.NavigationClicked]. */
     data object NavigationInvoked : HomeEffect
-
-    /** Re-emission of [HomeIntent.PrimaryActionClicked] — the host decides what "Create/Add" means. */
-    data object PrimaryActionInvoked : HomeEffect
 }
