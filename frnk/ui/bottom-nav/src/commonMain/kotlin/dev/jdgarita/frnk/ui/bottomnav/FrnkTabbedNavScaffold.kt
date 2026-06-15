@@ -42,9 +42,9 @@ import org.koin.core.annotation.KoinExperimentalAPI
  *
  * **Bar.** Renders [FrnkBottomFloatingBar] — a Material3 *Expressive* `HorizontalFloatingToolbar` (floating
  * pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS — **with a
- * built-in primary-action button**: pass [onPrimaryAction] to wire it (the host decides what tapping it
- * does) and optionally a custom [primaryAction] to re-skin it per screen. The bar's platform actual renders
- * the button — a docked FAB on Android, an inline button on iOS. The button shows only when an action is
+ * built-in primary-action item**: pass [onPrimaryAction] to wire it (the host decides what tapping it
+ * does) and optionally a custom [primaryAction] to re-skin it per screen. The scaffold injects it as a
+ * permanent **centered bar item** (Mode B) on both platforms — no FAB. The item shows only when an action is
  * wired. Tabs render through their `icon` (`ImageVector`, Android) / `iosSystemIcon` (SF-Symbol, iOS).
  *
  * **Primary-action routing.** Two complementary ways to wire the button:

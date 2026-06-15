@@ -11,20 +11,20 @@ bar (older) on iOS, plus the tabbed scaffold + tab builder that wire it up. Depe
 Material3 never leaves Android:
 - **Android** (`androidMain/FrnkBottomFloatingBar.android.kt`) — a Material3 *Expressive*
   `HorizontalFloatingToolbar` floating pill, drawing each item's `ImageVector` directly via `IconButton` +
-  `Icon`. The primary-action button is the toolbar's built-in docked FAB (`floatingActionButton` slot).
+  `Icon`. Renders the items only — no FAB.
 - **iOS** (`iosMain/FrnkBottomFloatingBar.ios.kt`) — the toolkit's **vendored** `AdaptiveNavigationBar`
   (under `ui.bottomnav.vendor`, adapted from narendraanjana09's
   [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)): a native glassy `UITabBar`
-  (iOS 26+) / Material3 Compose bar (older iOS), driven by each item's **SF-Symbol** `iosSystemIcon`. A
-  primary-action button renders as the vendored inline `IosFabItem` **when one is wired** — but the app flow
-  uses **Mode B** (a permanent centered bar item, no FAB; see `mobiai brain search "primary action Mode B"`).
-  Vendored so the toolkit owns the bar's animations (the upstream artifact exposed no Compose-animatable hook).
+  (iOS 26+) / Material3 Compose bar (older iOS), driven by each item's **SF-Symbol** `iosSystemIcon`. Renders
+  the items only — no FAB. Vendored so the toolkit owns the bar's `UIKitView` update block (the upstream
+  artifact exposed no Compose-driven hook), which re-applies theme changes in place instead of recreating.
 
-The primary-action button is frnk-owned (`FrnkNavPrimaryAction` + `stringPrimaryAction` token + the
-`iconNavAdd` theme icon, same bookend treatment as Home/Settings) and surfaced to hosts via the scaffold's
-`onPrimaryAction` callback — the host decides what tapping it does, **per screen** (re-skin per surface by
-passing a custom `primaryAction`). It shows only when an action is wired, and the scaffold renders it as a
-**permanent centered bar item (Mode B)**, not a FAB. **Screen routing:** pass
+The app flow's primary action is **Mode B** — a permanent **centered bar item**, never a FAB
+(see `mobiai brain search "primary action Mode B"`). It is frnk-owned (`FrnkNavPrimaryAction` +
+`stringPrimaryAction` token + the `iconNavAdd` theme icon, same bookend treatment as Home/Settings) and
+surfaced to hosts via the scaffold's `onPrimaryAction` callback — the host decides what tapping it does,
+**per screen** (re-skin per surface by passing a custom `primaryAction`). It shows only when an action is
+wired, and `FrnkTabbedNavScaffold` injects it as a centered item. **Screen routing:** pass
 `primaryActionRegistry` (`FrnkPrimaryActionRegistry`, `:core-nav`) and the currently active screen claims the
 button via `FrnkPrimaryActionHandler { onIntent(...) }` (`:ui-scaffolds`) — the scaffold provides the
 registry through `LocalFrnkPrimaryActionRegistry`, a screen claim wins over `onPrimaryAction` (the host-level
@@ -50,8 +50,8 @@ engines consume different things:
   Compose vector, so this identifier stays explicit. `rememberFrnkAdaptiveNavTabs(...)` supplies `"house"` /
   `"gearshape"`; hosts give middle tabs their own.
 
-The vendored bar's `NavigationItem.icon` / `IosFabItem.icon` are non-null `DrawableResource`s (used only on
-the older-iOS Compose fallback bar), but the API no longer carries one — so the **iOS** actual feeds the
+The vendored bar's `NavigationItem.icon` is a non-null `DrawableResource` (used only on the older-iOS Compose
+fallback bar), but the API no longer carries one — so the **iOS** actual feeds the
 vendored bar a single bundled placeholder, `commonMain/composeResources/drawable/frnk_nav_placeholder.xml` (in
 commonMain because the Compose-resources plugin generates the `Res` accessor there regardless; only the iOS
 actual references it). On iOS 26+ it is never shown (the glass bar uses `systemIcon`). `compose.components.resources`
@@ -99,25 +99,24 @@ links under the consumer's existing `-undefined dynamic_lookup`.
 
 ## Contents (`ui/bottomnav/`)
 
-- `FrnkBottomFloatingBar.kt` (common) — the `expect fun FrnkBottomFloatingBar(items, selectedIndex, onItemSelected,
-  modifier, primaryAction, onPrimaryAction)` + `FrnkNavBarItem` (`key`, `icon: ImageVector`, `iosSystemIcon`,
+- `FrnkBottomFloatingBar.kt` (common) — the `expect fun FrnkBottomFloatingBar(items, selectedIndex,
+  onItemSelected, modifier)` + `FrnkNavBarItem` (`key`, `icon: ImageVector`, `iosSystemIcon`,
   `label`) + the shared `FrnkNavBarDefaults` (`reservedHeight`, read by `FrnkTabbedNavScaffold` to inset
-  content behind the overlaid bar). The two actuals:
+  content behind the overlaid bar). The bar renders items only — no FAB (the primary action is a centered
+  item injected by the scaffold). The two actuals:
   - `FrnkBottomFloatingBar.android.kt` — a Material3 Expressive `HorizontalFloatingToolbar` (floating pill),
     centered at the bottom; each item is an `IconButton` over its `ImageVector` (selected = `colorPrimary`,
-    idle = `colorOnSurfaceVariant`); the primary action is the toolbar's docked FAB slot. Colors come from
+    idle = `colorOnSurfaceVariant`). Colors come from
     `FloatingToolbarDefaults.standardFloatingToolbarColors(...)` themed with `FrnkTheme` tokens, not
-    `MaterialTheme`. Never touches `DrawableResource`. **Shadow parity:** the no-FAB overload defaults to
-    `ContainerExpandedElevation` (`Level0` = 0.dp, no shadow) while the WithFab overload defaults to
-    `ContainerExpandedElevationWithFab` (`Level1`), so the no-FAB call pins `expandedShadowElevation` to the
-    WithFab value — the pill casts the same shadow on every screen, FAB or not.
+    `MaterialTheme`. Never touches `DrawableResource`. **Shadow parity:** the plain (no-FAB) overload defaults
+    to `ContainerExpandedElevation` (`Level0` = 0.dp, no shadow); it pins `expandedShadowElevation` to
+    `ContainerExpandedElevationWithFab` (`Level1`) so the pill still casts the standard floating-toolbar shadow.
   - `FrnkBottomFloatingBar.ios.kt` — the **vendored** `AdaptiveNavigationBar` (`ui.bottomnav.vendor`), themed
     from `FrnkTheme` tokens via `AdaptiveNavigationBarDefaults.colors(...)` (selected = `colorPrimary`,
     unselected = `colorOnSurfaceVariant`, indicator = `colorPrimaryContainer`, surface = `colorSurface`).
-    Items render from `iosSystemIcon` + the bundled placeholder drawable; a wired primary action is an inline
-    `IosFabItem`. **Not** `key(...)`-ed: the vendored bar splits its `UIKitView` factory/update so FAB presence
-    + theme changes re-apply in place (no recreate/snap) — that animatable control is exactly why it was
-    vendored. (Mode B means the app flow shows no FAB anyway; the bar still animates for direct/NavLab use.)
+    Items render from `iosSystemIcon` + the bundled placeholder drawable. The vendored bar splits its
+    `UIKitView` factory/update so selection + theme changes re-apply in place (no recreate/snap) — that
+    in-place control is exactly why it was vendored. The bar is full-width and static.
   Most hosts use the scaffold; call the bar directly only when wiring your own selected-tab state /
   navigation. This is the toolkit's sole bottom-nav bar.
 - `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, primaryAction, onPrimaryAction, primaryActionRegistry, hideBarFor, entryProvider)`.

@@ -14,10 +14,9 @@ import dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset
  *  - **iOS** — narendraanjana09's adaptive-nav-bar: a native glassy `UITabBar` (iOS 26+) / Material3
  *    Compose bar (older), driven by each item's [FrnkNavBarItem.iosSystemIcon] SF-Symbol.
  *
- * [onItemSelected] receives the tapped index. **Primary-action button:** when [primaryAction] and
- * [onPrimaryAction] are both non-null the bar shows a built-in add/primary button — the toolbar's docked
- * FAB on Android, the library's inline button on iOS. Both actuals theme from `FrnkTheme` tokens, not the
- * platform/Material defaults.
+ * [onItemSelected] receives the tapped index. The bar renders the items only — the toolkit's primary action
+ * is a permanent **centered bar item** injected by [FrnkTabbedNavScaffold] (Mode B), not a separate FAB, so
+ * the bar has no FAB slot. Both actuals theme from `FrnkTheme` tokens, not the platform/Material defaults.
  *
  * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkTabbedNavScaffold] (or
  * `FrnkAppShell` above it) rather than calling it directly.
@@ -28,8 +27,6 @@ expect fun FrnkBottomFloatingBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    primaryAction: FrnkNavPrimaryAction? = null,
-    onPrimaryAction: (() -> Unit)? = null,
 )
 
 /** Shared layout metrics for the toolkit's adaptive bottom bar ([FrnkBottomFloatingBar]). */

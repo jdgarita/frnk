@@ -11,12 +11,11 @@ import dev.jdgarita.frnk.ui.theme.stringPrimaryAction
 import dev.jdgarita.frnk.ui.theme.strings
 
 /**
- * The adaptive bar's built-in **primary-action button** — frnk-owned and given the same first-class
+ * The adaptive bar's built-in **primary-action item** — frnk-owned and given the same first-class
  * treatment as the Home/Settings bookends: a default [icon] (the `iconNavAdd` theme token, a plus glyph) +
  * [iosSystemIcon] (`"plus"`, for the iOS native bar) + [label] (the [stringPrimaryAction] token,
- * host-overridable via `FrnkThemeConfig.stringOverrides`). The button renders as a docked FAB on Android
- * and an inline button beside the items on iOS (see [FrnkBottomFloatingBar]); it shows only when an action is
- * wired.
+ * host-overridable via `FrnkThemeConfig.stringOverrides`). [FrnkTabbedNavScaffold] injects it as a permanent
+ * **centered bar item** (Mode B) on both platforms; it shows only when an action is wired.
  *
  * It is the **primary action** of the current surface, not a fixed "add" — a host wires it per screen
  * (create on one tab, compose on another, scan on a third). Re-skin the icon/label per context by passing

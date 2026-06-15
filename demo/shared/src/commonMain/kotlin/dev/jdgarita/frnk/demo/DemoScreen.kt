@@ -177,7 +177,6 @@ fun DemoScreen(
                 polymorphic(NavKey::class) {
                     subclass(DemoRoute.Components::class, DemoRoute.Components.serializer())
                     subclass(DemoRoute.ComponentDetail::class, DemoRoute.ComponentDetail.serializer())
-                    subclass(DemoRoute.NavLab::class, DemoRoute.NavLab.serializer())
                 }
             }
         }
@@ -279,11 +278,6 @@ fun DemoScreen(
                 ) {
                     ComponentContent(route.name, state, vm::send, onEffect)
                 }
-            }
-            // The Bottom Nav Lab — a full-screen harness comparing the adaptive bar's two primary-action
-            // behaviours (the app's tabbed bar hides because DemoRoute.NavLab is a FrnkFullScreenRoute).
-            entry<DemoRoute.NavLab> {
-                NavLabScreen(state = state, onIntent = vm::send, onBack = { scope.back() })
             }
             // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
             // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
@@ -497,11 +491,6 @@ private fun HomeTabContent(
                             "FrnkNavDisplay — Request Upgrade pushes the Paywall; the bottom bar switches tabs.",
                     color = colorOnSurfaceVariant,
                 ),
-        )
-        // Full-screen harness to compare the adaptive bar's two primary-action behaviours on-device.
-        FrnkButton(
-            state = FrnkButtonState.Content(text = "Open Bottom Nav Lab", variant = FrnkButtonVariant.Outlined),
-            onClick = { onIntent(DemoIntent.OpenNavLab) },
         )
     }
 

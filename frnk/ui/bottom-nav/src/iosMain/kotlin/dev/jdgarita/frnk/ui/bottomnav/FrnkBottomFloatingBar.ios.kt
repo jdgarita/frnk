@@ -9,9 +9,7 @@ import dev.jdgarita.frnk.ui.bottomnav.generated.resources.Res
 import dev.jdgarita.frnk.ui.bottomnav.generated.resources.frnk_nav_placeholder
 import dev.jdgarita.frnk.ui.bottomnav.vendor.AdaptiveNavigationBar
 import dev.jdgarita.frnk.ui.bottomnav.vendor.AdaptiveNavigationBarDefaults
-import dev.jdgarita.frnk.ui.bottomnav.vendor.IosFabItem
 import dev.jdgarita.frnk.ui.bottomnav.vendor.NavigationItem
-import dev.jdgarita.frnk.ui.theme.colorOnPrimary
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
@@ -23,7 +21,7 @@ import dev.jdgarita.frnk.ui.theme.colors
  * `UITabBar` on iOS 26+ / Material3 Compose bar on older iOS), under `ui.bottomnav.vendor`. Each
  * [FrnkNavBarItem] renders from its [FrnkNavBarItem.iosSystemIcon] SF-Symbol on the native bar.
  *
- * The vendored bar's `NavigationItem.icon` / `IosFabItem.icon` are non-null `DrawableResource`s used only
+ * The vendored bar's `NavigationItem.icon` is a non-null `DrawableResource` used only
  * by the older-iOS Compose fallback, but the common API speaks `ImageVector` (which the native `UITabBar`
  * cannot consume). We therefore feed it a single bundled [Res.drawable.frnk_nav_placeholder] for that slot;
  * on iOS 26+ it is never shown (the glass bar uses `systemIcon`).
@@ -31,15 +29,9 @@ import dev.jdgarita.frnk.ui.theme.colors
  * Themed from `FrnkTheme` tokens (the vendored defaults take no `MaterialTheme`): selected = `colorPrimary`,
  * unselected = `colorOnSurfaceVariant`, indicator = `colorPrimaryContainer`, surface = `colorSurface`.
  *
- * **Primary-action button.** When [primaryAction] and [onPrimaryAction] are both non-null, an [IosFabItem]
- * is handed to the bar, which renders the glass FAB **inline beside the nav items** and fires
- * [onPrimaryAction] via `onIosFabClick`.
- *
- * **Animated.** Unlike the old library wrapper, the bar is **not** wrapped in `key(...)`. The vendored
- * `AdaptiveNavigationBar` owns its `UIKitView` update block, so the FAB appearing/disappearing and the
- * tab bar sliding narrow↔full-width are **animated** (no recreate, no snap); theme color changes are
- * re-applied in place. The host can flip `primaryAction` per screen (e.g. Home only) and the bar
- * transitions smoothly.
+ * The toolkit's primary action is a permanent centered nav item (Mode B, injected by the scaffold), so the
+ * bar has no FAB. The vendored `AdaptiveNavigationBar` still owns its `UIKitView` update block, so selection
+ * and theme-color changes are re-applied in place (no recreate, no snap).
  */
 @Composable
 actual fun FrnkBottomFloatingBar(
@@ -47,14 +39,11 @@ actual fun FrnkBottomFloatingBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     modifier: Modifier,
-    primaryAction: FrnkNavPrimaryAction?,
-    onPrimaryAction: (() -> Unit)?,
 ) {
     val selectedColor = Theme[colors][colorPrimary]
     val unselectedColor = Theme[colors][colorOnSurfaceVariant]
     val indicatorColor = Theme[colors][colorPrimaryContainer]
     val containerColor = Theme[colors][colorSurface]
-    val onPrimaryColor = Theme[colors][colorOnPrimary]
 
     val navItems =
         remember(items) {
@@ -75,27 +64,12 @@ actual fun FrnkBottomFloatingBar(
             }
         }
 
-    val iosFab =
-        if (primaryAction != null && onPrimaryAction != null) {
-            IosFabItem(
-                title = primaryAction.label,
-                icon = Res.drawable.frnk_nav_placeholder,
-                systemIcon = primaryAction.iosSystemIcon,
-                contentColor = onPrimaryColor,
-                containerColor = selectedColor,
-                contentDescription = primaryAction.label,
-            )
-        } else {
-            null
-        }
-
     // The vendored AdaptiveNavigationBar takes no `modifier`, so wrap it to apply the caller's layout
-    // (the scaffold aligns this at BottomCenter + fillMaxWidth). No `key(...)` — the bar animates FAB
-    // presence / theme changes inside its own UIKitView update block.
+    // (the scaffold aligns this at BottomCenter + fillMaxWidth). The bar re-applies theme changes in place
+    // inside its own UIKitView update block.
     Box(modifier = modifier) {
         AdaptiveNavigationBar(
             items = navItems,
-            iosFab = iosFab,
             selectedIndex = selectedIndex,
             colors =
                 AdaptiveNavigationBarDefaults.colors(
@@ -107,7 +81,6 @@ actual fun FrnkBottomFloatingBar(
                     unselectedTextColor = unselectedColor,
                 ),
             onItemSelected = onItemSelected,
-            onIosFabClick = { onPrimaryAction?.invoke() },
         )
     }
 }

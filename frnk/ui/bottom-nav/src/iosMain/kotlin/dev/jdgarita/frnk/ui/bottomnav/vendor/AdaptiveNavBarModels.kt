@@ -8,7 +8,7 @@ import org.jetbrains.compose.resources.DrawableResource
  * github.com/narendraanjana09/adaptive-navigation-bar. The upstream repository ships no LICENSE file;
  * the relevant iOS source is vendored here, with attribution, so the toolkit owns the native iOS bar
  * outright. The published library builds the whole `UITabBar` in its `UIKitView` factory and exposes no
- * Compose-animatable hook, which is exactly the control we need for the bar's slide/fade transitions.
+ * Compose-driven update hook, which is exactly the control we need to re-apply theme changes in place.
  *
  * **iOS-only.** Android renders a Material3 `HorizontalFloatingToolbar` (see `FrnkBottomFloatingBar.android.kt`);
  * none of this is referenced from `commonMain` or `androidMain`. Trimmed vs upstream: the
@@ -28,17 +28,6 @@ data class NavigationItem(
     val badge: String? = null,
     val showBadgeDot: Boolean = false,
     val enabled: Boolean = true,
-    val contentDescription: String? = null,
-)
-
-/** The inline iOS primary-action button rendered beside the tabs (the glass FAB on iOS 26+). */
-data class IosFabItem(
-    val title: String = "",
-    val showLabel: Boolean = false,
-    val icon: DrawableResource,
-    val systemIcon: String,
-    val contentColor: Color,
-    val containerColor: Color,
     val contentDescription: String? = null,
 )
 

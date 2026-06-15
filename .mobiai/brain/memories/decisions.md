@@ -649,3 +649,32 @@ Verified: `./gradlew compileAndroidMain :demo-android:compileDebugKotlin` + `:ui
 ### Files
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.kt
 - frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/BottomNavInsets.kt
+
+## Bottom bar: animated-FAB mode removed; Mode B centered item is the sole behaviour
+
+- id: bottom-bar-animated-fab-mode-removed-mode-b-centered-item-is-20260615-165043
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui-bottom-nav
+- date: 2026-06-15
+
+The adaptive bar carried two primary-action behaviours, A/B-compared in a demo NavLab screen: Mode (1) an animated FAB (Material3 docked FAB on Android; iOS glass UIVisualEffectView FAB fading/scaling in while the native UITabBar slid narrow<->full-width), and Mode (2) a permanent centered "+" item injected into the bar.
+
+Decision (user, 2026-06-15): drop the animated-FAB mode entirely and ship Mode B (centered item) only. Production already used only Mode B — FrnkTabbedNavScaffold/FrnkAppShell/FrnkAppScaffold inject the centered item and call the bar WITHOUT primaryAction/onPrimaryAction; the FAB path had exactly one caller (the NavLab harness).
+
+Removed end-to-end:
+- FrnkBottomFloatingBar expect/actual lost the primaryAction + onPrimaryAction params (signature is now items/selectedIndex/onItemSelected/modifier).
+- Android: deleted the docked-FAB HorizontalFloatingToolbar(floatingActionButton=...) branch; kept only the plain overload, still pinning expandedShadowElevation = ContainerExpandedElevationWithFab for shadow parity.
+- iOS vendored AdaptiveNavigationBar: deleted the glass FAB (buildFab/FabHandler/existingFab), the narrow<->full slide geometry (targetTabBarFrame, narrowWidth, fab/tabItem metrics), BAR_ANIM_DURATION, IosBarState.lastFabPresent, and the IosFabItem model. Bar is now full-width + static; the UIKitView split factory/update is kept ONLY for in-place selection sync + theme-colour re-apply (still the reason it stays vendored).
+- Demo NavLab removed wholesale: NavLabScreen.kt, DemoRoute.NavLab, NAV_LAB_ROUTE_KEY + dispatch, all navLab* VM state/intents/reducers, route registration + entry + the 'Open Bottom Nav Lab' button.
+
+FrnkNavPrimaryAction / rememberFrnkNavPrimaryAction are KEPT — they describe the centered '+' item (icon/label/iosSystemIcon), not a FAB.
+
+Verified: compileAndroidMain + iosSimulatorArm64 for ui-bottom-nav & demo-shared, demo-android compile, testAndroidHostTest + demo-android unit tests, ktlintFormat all green; ran demo-android on device — centered '+' shows on Home (4 items), drops to 3 items on tabs with no claim, tab switching works.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.kt
+- frnk/ui/bottom-nav/src/androidMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.android.kt
+- frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.ios.kt
+- frnk/ui/bottom-nav/src/iosMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/vendor/AdaptiveNavigationBar.kt

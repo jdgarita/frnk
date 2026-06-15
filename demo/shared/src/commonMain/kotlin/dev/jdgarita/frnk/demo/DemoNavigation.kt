@@ -27,12 +27,8 @@ fun routeDemoEffect(
         is DemoEffect.Navigate ->
             when (effect.routeKey) {
                 FeatureGate.PAYWALL_ROUTE_KEY -> navigate(ToolkitRoute.Paywall)
-                NAV_LAB_ROUTE_KEY -> navigate(DemoRoute.NavLab)
                 else -> onForward(effect)
             }
         is DemoEffect.Toast -> onForward(effect)
     }
 }
-
-/** Route key the demo's "Bottom Nav Lab" navigation effect carries (see [routeDemoEffect]). */
-const val NAV_LAB_ROUTE_KEY = "navlab"

@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.demo
 
 import androidx.navigation3.runtime.NavKey
-import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import kotlinx.serialization.Serializable
 
 /**
@@ -9,7 +8,7 @@ import kotlinx.serialization.Serializable
  * Onboarding flow moved to the toolkit defaults (`ToolkitRoute.Home` / `ToolkitRoute.Settings` /
  * `ToolkitRoute.Onboarding`) when `DemoScreen` adopted `FrnkAppShell`, and the paywall is the
  * toolkit-owned `ToolkitRoute.Paywall` — so all that's left here is the middle "Components" tab:
- * its root, and the detail screen pushed onto it.
+ * its root, and the detail screen pushed onto it ([ComponentDetail]).
  *
  * Each member is a `@Serializable` [NavKey] so it can key a `NavBackStack` (and restore via
  * `SavedStateConfiguration`), and so [ComponentDetail] carries a typed `name` argument.
@@ -24,12 +23,4 @@ sealed interface DemoRoute : NavKey {
     data class ComponentDetail(
         val name: String,
     ) : DemoRoute
-
-    /**
-     * The "Bottom Nav Lab" — a full-screen harness for comparing the two primary-action behaviours of the
-     * adaptive bar (Mode ① animated FAB vs Mode ② centered item). [FrnkFullScreenRoute] so the app's tabbed
-     * bar hides while the lab shows its own bar.
-     */
-    @Serializable
-    data object NavLab : DemoRoute, FrnkFullScreenRoute
 }
