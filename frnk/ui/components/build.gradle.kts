@@ -27,7 +27,7 @@ kotlin {
             implementation(libs.compose.unstyled.button)
             implementation(libs.compose.unstyled.icon)
             implementation(libs.compose.unstyled.separators)
-            // Default Lucide vectors referenced directly by the FrnkBottomNavBar @Preview. Hosts override
+            // Default Lucide vectors used by atom previews + the FrnkTopAppBar host test. Hosts override
             // every icon via FrnkThemeConfig, so consumers don't take a Lucide dependency unless they
             // reference Lucide vectors at their own call sites.
             implementation(libs.icons.lucide)

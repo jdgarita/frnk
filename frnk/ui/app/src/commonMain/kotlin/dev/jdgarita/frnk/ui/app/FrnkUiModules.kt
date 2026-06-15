@@ -1,6 +1,5 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
@@ -8,7 +7,7 @@ import org.koin.core.module.Module
 
 /**
  * The toolkit's SDK-free scaffold ViewModel modules — tiny factories every VM-backed scaffold
- * (Home/Settings/Onboarding/BottomNav, and the [FrnkAppScaffold] shell built on them) resolves from.
+ * (Home/Settings/Onboarding, and the [FrnkAppScaffold] shell built on them) resolves from.
  *
  * Hosts prepend this to their explicit Koin module list:
  *
@@ -32,5 +31,4 @@ fun frnkUiModules(): List<Module> =
         homeScaffoldModule,
         settingsScaffoldModule,
         onboardingScaffoldModule,
-        bottomNavScaffoldModule,
     )

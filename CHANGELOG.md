@@ -15,6 +15,10 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Removed
+
+- **Breaking:** the Material-free **`FrnkBottomNavBar`** pill atom (`:ui-components`) and its index-based **`BottomNavScaffold`** family (`BottomNavScaffold`/`BottomNavScaffoldState`/`BottomNavViewModel`/`BottomNavScaffoldModule`/`BottomNavDefaults`, plus `bottomNavScaffoldModule`) are deleted — no host or demo ever used them. **`FrnkBottomFloatingBar`** (`:ui-bottom-nav`, reached via `FrnkTabbedNavScaffold` / `FrnkAppShell`) is now the toolkit's sole bottom-nav bar. `frnkUiModules()` no longer carries `bottomNavScaffoldModule`. The shared `frnkBottomSystemBarInset()` helper (`:ui-components`) stays — the adaptive bar's `reservedHeight` reads it.
+
 ### Added
 
 - **Scaffold system / one-call app root**: **`FrnkAppShell`** (`:shared-ui-nav`, `ui/app/`) stands up a complete tabbed app in one composable — `FrnkTheme` wrap, nav3 saved-state config, Home + middle + Settings adaptive tabs with per-tab back stacks, `FrnkTabbedNavScaffold`, built-in Home/Settings/Onboarding destinations, deep-links (`FrnkPendingRouteRequest`), and the primary-action registry; host extension points (`homeContent`, `entries`, `effects`, effect handlers) all receive a **`FrnkAppScope`** (`navigateTo`/`back`/`clearAndNavigateTo` + the registry). **`FrnkAppScaffold`** (`:shared`) layers the batteries on top: a fail-fast Koin assertion, a Settings tab driven by the **live** `EntitlementManager.isPro` (VM re-keys on flips), the `rememberFrnkSettingsHandler` monetization wiring with appearance/onboarding/feedback fallbacks, and an auto-mounted `ToolkitRoute.Paywall` — a fresh host boots with `initializeFrnk(context = this)` + one `FrnkAppScaffold(...)` call (~15 lines vs ~180 hand-wired). Degrades gracefully under `MonetizationChoice.None`.

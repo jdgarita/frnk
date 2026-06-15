@@ -90,7 +90,7 @@ fun FrnkSwitch(
                     onValueChange = {
                         // Convention: selection atoms fire on an actual change. For a switch every
                         // toggle *is* a change, so this is unconditional (multi-option atoms like
-                        // FrnkSegmentedControl/FrnkBottomNavBar guard on `index != selected`).
+                        // FrnkSegmentedControl guard on `index != selected`).
                         haptics.perform(HapticType.Selection)
                         onCheckedChange(it)
                     },

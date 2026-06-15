@@ -119,8 +119,7 @@ links under the consumer's existing `-undefined dynamic_lookup`.
     + theme changes re-apply in place (no recreate/snap) — that animatable control is exactly why it was
     vendored. (Mode B means the app flow shows no FAB anyway; the bar still animates for direct/NavLab use.)
   Most hosts use the scaffold; call the bar directly only when wiring your own selected-tab state /
-  navigation. For a Material-free floating pill in the design-system tier, use the distinct `FrnkBottomNavBar`
-  in `:ui-components` (different package).
+  navigation. This is the toolkit's sole bottom-nav bar.
 - `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, primaryAction, onPrimaryAction, primaryActionRegistry, hideBarFor, entryProvider)`.
   The **nav3 multiple-back-stack** tabbed scaffold: the single composable a host calls to get a standard
   tabbed app. It absorbs the `FrnkNavDisplay` (driven by `tabbed.current`), the persistent
@@ -136,8 +135,8 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   for ad-hoc rules. `entryProvider` defaults to `koinEntryProvider()` (pair with the `navigation<Route>`
   DSL); pass an inline `entryProvider { entry<…> { … } }` when screens share one host-scoped VM (the demo
   does). This is the **Material3 adaptive-bar** scaffold by design; a host that wants multiple-back-stack
-  nav3 **without** Material3 (e.g. the Material-free `FrnkBottomNavBar` pill) hand-wires the primitives
-  instead (`rememberFrnkTabbedBackStacks` + `FrnkNavDisplay` + `FrnkTabbedBackHandler` + its own bar).
+  nav3 **without** Material3 hand-wires the primitives instead (`rememberFrnkTabbedBackStacks` +
+  `FrnkNavDisplay` + `FrnkTabbedBackHandler` + its own bar).
   `@OptIn(KoinExperimentalAPI::class)` (for the `koinEntryProvider()` default — doesn't propagate to callers
   passing their own provider).
 - `FrnkAdaptiveNavTab.kt` / `FrnkAdaptiveNavDefaults.kt` — the tab type (`key` + `root` + `icon: ImageVector`

@@ -20,9 +20,7 @@ import dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset
  * platform/Material defaults.
  *
  * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkTabbedNavScaffold] (or
- * `FrnkAppShell` above it) rather than calling it directly. For a Material-free floating pill that lives
- * in the design-system tier, use `FrnkBottomNavBar` in `:ui-components` instead (a distinct component in a
- * different package).
+ * `FrnkAppShell` above it) rather than calling it directly.
  */
 @Composable
 expect fun FrnkBottomFloatingBar(

@@ -68,8 +68,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
  * This is the **Material3 adaptive-bar** tabbed scaffold by design (the bar renders through this module's
  * Material3 surface). A host that wants nav3 multiple-back-stack navigation **without** Material3 wires the
  * lower-level primitives directly — `rememberFrnkTabbedBackStacks` +
- * `FrnkNavDisplay(backStack = tabbed.current)` + `FrnkTabbedBackHandler` + a bar of its choosing (e.g. the
- * Material-free `FrnkBottomNavBar` pill in `:ui-components`).
+ * `FrnkNavDisplay(backStack = tabbed.current)` + `FrnkTabbedBackHandler` + a bar of its choosing.
  */
 @OptIn(KoinExperimentalAPI::class)
 @Composable

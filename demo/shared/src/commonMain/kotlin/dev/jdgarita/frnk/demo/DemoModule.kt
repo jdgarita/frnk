@@ -15,7 +15,6 @@ import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
-import dev.jdgarita.frnk.ui.scaffolds.bottomNavScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
@@ -38,7 +37,6 @@ val demoModule =
         includes(homeScaffoldModule)
         includes(onboardingScaffoldModule)
         includes(settingsScaffoldModule)
-        includes(bottomNavScaffoldModule)
         // Stage 11 capability scaffolds — all no-op api defaults so DemoKit's common surface stays
         // SDK-free. androidDemoApp overrides remoteConfig with the real Firebase remoteConfigModule;
         // camera/permissions have no impl yet, so they stay no-op everywhere (demoed as such).

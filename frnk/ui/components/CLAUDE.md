@@ -14,7 +14,7 @@ haptics binding now live in `:ui-theme` / `:haptics`; the scaffolds + Compose MV
 
 ## Contents
 
-- `ui/atoms/` — `Frnk*` atoms, each in its own file with an `@Immutable` `*State` class. **Interactive atoms auto-fire haptics on interaction** via `LocalFrnkHaptics.current.perform(...)` (gated by the global enabled flag): `FrnkButton`/`FrnkIconButton` → `HapticType.Click`; `FrnkSwitch`/`FrnkSegmentedControl`/`FrnkBottomNavBar` → `HapticType.Selection` (multi-option selectors fire only on actual change). New interactive atoms should follow suit.
+- `ui/atoms/` — `Frnk*` atoms, each in its own file with an `@Immutable` `*State` class. **Interactive atoms auto-fire haptics on interaction** via `LocalFrnkHaptics.current.perform(...)` (gated by the global enabled flag): `FrnkButton`/`FrnkIconButton` → `HapticType.Click`; `FrnkSwitch`/`FrnkSegmentedControl` → `HapticType.Selection` (multi-option selectors fire only on actual change). New interactive atoms should follow suit.
   - `FrnkSkeleton.kt` — `FrnkSkeleton` (`@Immutable`) + `FrnkSkeletonHighlight` (Shimmer/Fade/None) + the internal `Modifier.frnkSkeleton(...)`. **State architecture:** each interactive/content atom's `*State` is a **`sealed interface` with a `Content` data class + a `data object Skeleton`**; the composable `when`-switches (Skeleton branch = non-interactive token-styled block via `Modifier.frnkSkeleton(...)`). **Exception:** `FrnkTextState` keeps a per-subtype `skeleton` field for content-sized text skeletons **and** adds a `Skeleton` object. All skeleton values resolve from theme tokens. Backed by the vendored `ui/placeholder/`.
   - `FrnkText.kt` — sealed `FrnkTextState` (Text/Title/TitleMedium/HeadlineSmall/Body/BodyMedium/BodySmall/AppName).
   - `FrnkButton.kt` — `FrnkButtonState` + `FrnkButtonVariant` (Filled/Outlined/Ghost).
@@ -22,9 +22,8 @@ haptics binding now live in `:ui-theme` / `:haptics`; the scaffolds + Compose MV
   - `FrnkDivider.kt` — sealed `FrnkDividerState` (Horizontal/Vertical).
   - `FrnkSwitch.kt` — `FrnkSwitchState`; animated on/off toggle on foundation primitives (`toggleable`, `Role.Switch`), no Material3.
   - `FrnkSegmentedControl.kt` — `FrnkSegmentedControlState` (options + selectedIndex); n-way single-select pill (drives the settings theme toggle).
-  - `FrnkBottomNavBar.kt` — `FrnkBottomNavBarState` (`items` + selectedIndex); a stateless icon-only floating **pill** bottom nav (the Material-free bar; the adaptive Material3 bar lives in `:ui-bottom-nav`). `FrnkBottomNavBarDefaults.reservedHeight` is what hosts pad scrollable content with.
   - `FrnkTopAppBar.kt` — `FrnkTopAppBarState` (title + optional `navigationIcon` + `actions`); status-bar-safe, with a search mode. `FrnkTopAppBarDefaults.BarHeight` (56.dp) for hosts floating the bar over edge-to-edge content.
-  - `BottomNavInsets.kt` — inset helpers for the floating pill.
+  - `BottomNavInsets.kt` — `frnkBottomSystemBarInset()`, the bottom system-nav inset read shared with `:ui-bottom-nav`'s adaptive bar `reservedHeight`.
 - `ui/molecules/` — **Molecules tier** (P4-1): small compositions of atoms + tokens. Each has an `@Immutable *State`, callbacks before `modifier`, tokens-only styling, a `@Preview` in `commonDebug/.../ui/molecules/previews/`, a recorded skeleton decision; interactive molecules reuse the automatic ripple + haptics.
   - `FrnkListRow.kt` — `FrnkListRowState` + `FrnkListRow(state, onClick?, modifier, trailing?, swipe?, …)`. Icon → title/subtitle column → trailing slot; optional whole-row `onClick`; optional `FrnkSwipeable` wrap. Skeleton: **yes**.
   - `FrnkSwipeable.kt` (+ `FrnkSwipeAction.kt`, `FrnkSwipeController.kt`) — the generic swipe-to-action primitive (Dismiss/Reveal) usable around any content. Pure Compose Foundation; haptics via `LocalFrnkHaptics`. Skeleton: **no, by design** (interaction chrome). **Headless, Material3-free reimplementation** of stevdza-san/Swipeable-KMP.
@@ -46,7 +45,7 @@ haptics binding now live in `:ui-theme` / `:haptics`; the scaffolds + Compose MV
 
 - `api(projects.uiTheme)` — tokens + theme engine; transitively re-exports compose-unstyled `theming` (the `Theme[...]` lookups) and the `:haptics` contract (`LocalFrnkHaptics` / `HapticType`).
 - `implementation(compose-unstyled.{primitives,button,icon,separators})` — the headless primitives the atoms wrap; `implementation` keeps the consumer surface slim.
-- `implementation(icons-lucide)` — Lucide vectors referenced directly by the `FrnkBottomNavBar` `@Preview`. Hosts override every icon via `FrnkThemeConfig`, so consumers don't take a Lucide dependency unless they reference Lucide vectors at their own call sites.
+- `implementation(icons-lucide)` — Lucide vectors used by atom previews + the `FrnkTopAppBar` host test. Hosts override every icon via `FrnkThemeConfig`, so consumers don't take a Lucide dependency unless they reference Lucide vectors at their own call sites.
 - `api(compose.runtime / foundation / ui)` via `frnk.kmp.library.composehosttest`.
 
 ## Rules

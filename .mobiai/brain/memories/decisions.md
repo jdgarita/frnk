@@ -624,3 +624,28 @@ Verified on Android emulator: paywall header now sits below the ✕; onboarding 
 ### Files
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkFullScreenScaffold.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkFirstLaunchOnboardingEffect.kt
+
+## FrnkBottomFloatingBar is the sole bottom-nav bar; FrnkBottomNavBar + BottomNavScaffold removed
+
+- id: frnkbottomfloatingbar-is-the-sole-bottom-nav-bar-frnkbottomn-20260615-162823
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui-bottom-nav
+- date: 2026-06-15
+
+Decision (2026-06-15): The toolkit now has ONE bottom-nav bar — `FrnkBottomFloatingBar` (`:ui-bottom-nav`, the expect/actual Material3 HorizontalFloatingToolbar on Android / vendored glassy UITabBar on iOS), reached via `FrnkTabbedNavScaffold` / `FrnkAppShell` / `FrnkAppScaffold`.
+
+We DELETED the duplicate Material-free `FrnkBottomNavBar` pill atom (`:ui-components` `ui/atoms/`) and its entire index-based `BottomNavScaffold` family (`BottomNavScaffold`, `BottomNavScaffoldState`, `BottomNavViewModel`, `BottomNavScaffoldModule`, `BottomNavDefaults`, `bottomNavScaffoldModule`) plus the `FrnkBottomNavBarPreviews`.
+
+Why: an audit (asked to evaluate the two bars) found the pill + BottomNavScaffold had ZERO host/demo usage — all three demo layers (`:demo-shared` via `FrnkAppShell`, `:demo-android` MainActivity + AppScaffoldSmokeActivity, `demo/ios-app` via DemoKit) render `FrnkBottomFloatingBar` only. They were unvalidated public surface shipping in the XCFramework. User chose removal over adding a demo showcase.
+
+Wiring changes: removed `bottomNavScaffoldModule` from `frnkUiModules()` (`:ui-app`), its assertion in `FrnkUiModulesTest`, and the `includes(bottomNavScaffoldModule)` in the demo's `DemoModule`.
+
+KEPT: `frnkBottomSystemBarInset()` in `:ui-components` `BottomNavInsets.kt` — `FrnkBottomFloatingBar` imports it for its `FrnkNavBarDefaults.reservedHeight`. Also kept the `icons-lucide` dep in `:ui-components` (still used by `FrnkTopAppBarTest`).
+
+Verified: `./gradlew compileAndroidMain :demo-android:compileDebugKotlin` + `:ui-app:testAndroidHostTest` all green. Logged as a Breaking entry under CHANGELOG [Unreleased] > Removed. This supersedes any earlier 'two bars (adaptive vs Material-free pill)' framing in the docs.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomFloatingBar.kt
+- frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/BottomNavInsets.kt
