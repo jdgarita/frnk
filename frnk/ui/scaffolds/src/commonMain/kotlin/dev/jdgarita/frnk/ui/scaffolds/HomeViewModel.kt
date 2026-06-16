@@ -14,6 +14,7 @@ class HomeViewModel(
         when (intent) {
             is HomeIntent.TopBarActionClicked -> emit(HomeEffect.ActionInvoked(intent.action.key))
             HomeIntent.NavigationClicked -> emit(HomeEffect.NavigationInvoked)
+            is HomeIntent.ConfigChanged -> setState { intent.newState }
         }
     }
 }

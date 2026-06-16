@@ -153,6 +153,18 @@ sealed interface SettingsIntent : UiIntent {
 
     /** The version footer was tapped; enough taps reveal the hidden developer section. */
     data object VersionTapped : SettingsIntent
+
+    /**
+     * The host recomputed the catalogue (e.g. `isPro` flipped, or a string/icon/`extraSections`
+     * override changed) and handed down a fresh [newState]. The reducer adopts [newState]'s
+     * structure (subscription rows, titles, icons, footer, section list) while preserving the
+     * VM-owned interaction state — toggle `checked` values, the selected theme, and the version-tap
+     * dev-reveal progress — so reacting to entitlement changes never resets the user's in-session
+     * choices. This replaces the old "re-key the ViewModel to re-seed it" approach.
+     */
+    data class ConfigChanged(
+        val newState: SettingsScreenState,
+    ) : SettingsIntent
 }
 
 sealed interface SettingsEffect : UiEffect {

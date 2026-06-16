@@ -157,13 +157,12 @@ fun FrnkTabbedNavScaffold(
                 entryProvider {
                     entry(config.nav.homeRoot) {
                         val topBar = config.home.topBar ?: FrnkTopAppBarState(title = Theme[strings][stringNavHome])
+                        // Stable identity (remember-keyed on topBar) so HomeScreen's reactive sync only
+                        // fires when the chrome actually changed — e.g. a dynamic [home.topBar] action
+                        // hidden once Pro. HomeScreen merges it via HomeIntent.ConfigChanged; no re-key.
+                        val homeState = remember(topBar) { HomeScreenState(topBar = topBar) }
                         HomeScreen(
-                            initialState =
-                                HomeScreenState(
-                                    topBar = topBar,
-                                ),
-                            // The VM is seeded once via parametersOf — pass a fresh home.vmKey when a
-                            // dynamic [home.topBar] (e.g. an action hidden once Pro) must re-seed it.
+                            initialState = homeState,
                             vmKey = config.home.vmKey,
                             onEffect = { effect -> scope.onHomeEffect(effect) },
                             content = homeContent,

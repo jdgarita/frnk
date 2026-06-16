@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.mvi.SyncMviConfig
 import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingMd
@@ -36,8 +37,13 @@ import org.koin.core.parameter.parametersOf
  * that needs a `LazyColumn` or custom scroll drops one level to
  * [FrnkScreenScaffold]/[FrnkMviScreen][dev.jdgarita.frnk.ui.mvi.FrnkMviScreen] instead.
  *
- * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`; hosts that want full
- * state-hoisting control call [HomeScreenContent] directly.
+ * Like [SettingsScreen], the VM reacts to [initialState]: seeded once via `parametersOf`, then every
+ * later recomposition that yields a *new* [initialState] (e.g. a top-bar action that shows only while
+ * Free, after `isPro` flips) is adopted via [HomeIntent.ConfigChanged]. So **leave [vmKey] at its
+ * default**; pass a fresh [initialState] (stably `remember`-ed) rather than re-keying to re-seed.
+ *
+ * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`; change it only to force a fresh VM.
+ * Hosts that want full state-hoisting control call [HomeScreenContent] directly.
  */
 @Composable
 fun HomeScreen(
@@ -50,6 +56,9 @@ fun HomeScreen(
 ) {
     val vm: HomeViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
     val state by vm.state.collectAsStateWithLifecycle()
+
+    // Sync later chrome recomputes (e.g. a Free-only top-bar action after isPro flipped) into the live VM.
+    SyncMviConfig(vm, initialState, HomeIntent::ConfigChanged)
 
     EffectCollector(vm.effects, onEffect = onEffect)
 

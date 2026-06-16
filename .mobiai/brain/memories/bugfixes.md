@@ -77,3 +77,27 @@ Verified on-device (android run + android screen capture): Settings pill now sho
 
 ### Files
 - frnk/ui/bottom-nav/src/androidMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavBar.android.kt
+
+## God-mode toggle didn't flip: mapRows skipped developerSection (masked by old VM re-keying)
+
+- id: god-mode-toggle-didn-t-flip-maprows-skipped-developersection-20260616-204438
+- type: bug_fix
+- status: active
+- platform: kmp
+- area: state_management
+- date: 2026-06-16
+
+### Symptom
+After switching Settings from VM re-keying to the reactive `ConfigChanged` merge, the demo's god-mode toggle (Settings -> Developer section) no longer flipped on when tapped — it stayed off.
+
+### Root cause
+`SettingsViewModel.mapRows` (which backs `withToggle`/`withTheme`) only reduced `sections`, never `developerSection`. The god-mode toggle lives in `developerSection`, so `ToggleChanged` never updated it in VM state. The old re-key approach masked this latent bug because every flip re-seeded a fresh VM from the recomputed catalogue (`demoSettingsState(isGodMode=...)`). With the reactive merge, `mergedWith` then preserved the VM's stale `false` over the incoming `true`, so the toggle could never turn on.
+
+### Fix
+`mapRows` now also maps `developerSection.rows` alongside the visible `sections`. Tapping the dev-section toggle updates VM state optimistically; the round-trip `ConfigChanged` keeps it. Regression test: `SettingsViewModelTest.toggling_a_developer_section_row_updates_state_and_survives_config_changed`.
+
+Surfaced as a regression while implementing [[reactive-settings-home-vm-config-sync]].
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt
+- frnk/ui/scaffolds/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModelTest.kt

@@ -212,17 +212,19 @@ fun DemoScreen(
 
     // The host's declarative config, bundled by feature. feature/hostRoutes/homeTopBar are already
     // remembered above, and demoPurpleThemeConfig()/demoOnboardingPages are stable, so this builds an
-    // equal FrnkTabbedNavConfig across recompositions (keeping the scaffold skippable). The Home/Settings
-    // VM keys re-key only when isPro/isGodMode flip — so the Subscription section swaps Upgrade↔Manage and
-    // the Home Upgrade action appears/disappears (the VMs are seeded once via parametersOf).
+    // equal FrnkTabbedNavConfig across recompositions (keeping the scaffold skippable). No vmKey
+    // re-keying: the Home and Settings VMs react to isPro/isGodMode on their own (the recomputed
+    // homeTopBar / demoSettingsState flow down and are merged in via *Intent.ConfigChanged), so the
+    // Subscription section swaps Upgrade↔Manage and the Home Upgrade action appears/disappears while a
+    // single VM (and its in-session toggle/dev-reveal state) lives on.
     val config =
         remember(state.isPro, state.isGodMode, feature, hostRoutes, homeTopBar) {
             FrnkTabbedNavConfig(
                 app = FrnkAppInfo(name = "frnk", version = "v${Frnk.VERSION}"),
                 nav = FrnkNavConfig(feature = feature, hostRoutes = hostRoutes),
                 theme = demoPurpleThemeConfig(),
-                home = FrnkHomeConfig(topBar = homeTopBar, vmKey = "home-${state.isPro}"),
-                settings = FrnkSettingsConfig(vmKey = "settings-${state.isPro}-${state.isGodMode}"),
+                home = FrnkHomeConfig(topBar = homeTopBar),
+                settings = FrnkSettingsConfig(),
                 onboarding = FrnkOnboardingConfig(pages = demoOnboardingPages),
             )
         }
@@ -1214,9 +1216,9 @@ private fun demoSettingsState(
         )
     val godModeIcon = Theme[icons][iconUpgrade]
     // "Developer" section holding the god-mode toggle. The demo always shows it (showDeveloperSection =
-    // true) so it stays stable across the isPro/isGodMode VM re-key (toggling god mode flips isPro, which
-    // re-seeds the settings VM). Real apps can instead leave it hidden and use the 7-tap version-footer
-    // reveal gesture (the toolkit supports both).
+    // true). Toggling god mode flips isPro, which recomputes this state; the single settings VM merges
+    // it in via SettingsIntent.ConfigChanged (preserving the toggle/dev-reveal). Real apps can instead
+    // leave it hidden and use the 7-tap version-footer reveal gesture (the toolkit supports both).
     val developerSection =
         remember(godModeIcon, isGodMode) {
             SettingsSectionState(

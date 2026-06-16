@@ -95,12 +95,12 @@ fun FrnkAppScaffold(
     // KeyValueStore is bound), same degrade-gracefully pattern as [entitlements].
     val onboardingGate = rememberOnboardingGate()
 
-    // Project the host config onto the lower scaffold, injecting the two batteries this layer owns:
-    //  - the Home top bar defaults to the app name (vs. the lower scaffold's generic "Home" string);
-    //  - the Settings VM is re-keyed on entitlement state so the Subscription section swaps
-    //    Upgrade↔Manage (the VM is seeded once via parametersOf; without a fresh key it keeps the stale
-    //    initial catalogue). A host-set settings.vmKey is preserved as a prefix rather than discarded,
-    //    so a custom seed still re-seeds on isPro flips.
+    // Project the host config onto the lower scaffold, injecting the one battery this layer owns: the
+    // Home top bar defaults to the app name (vs. the lower scaffold's generic "Home" string). Settings
+    // passes through verbatim — the Settings VM reacts to isPro on its own (the recomputed catalogue
+    // below flows down through settingsState and is merged in via SettingsIntent.ConfigChanged), so no
+    // vmKey re-keying is needed. The remember stays keyed on isPro so rememberDefaultSettingsState
+    // rebuilds the Subscription rows (Free↔Pro) when entitlements flip.
     val tabbedConfig =
         remember(config, isPro) {
             config.toTabbedNavConfig().copy(
@@ -110,10 +110,6 @@ fun FrnkAppScaffold(
                     } else {
                         config.home
                     },
-                settings =
-                    config.settings.copy(
-                        vmKey = config.settings.vmKey?.let { "$it-$isPro" } ?: "frnk-settings-$isPro",
-                    ),
             )
         }
 

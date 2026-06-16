@@ -783,3 +783,61 @@ Verified: ktlintFormat + compileAndroidMain + demo-android compile, testAndroidH
 
 ### Files
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/ext/FrnkAppConfigExt.kt
+
+## Prioritize Hoisted State over Internal State for ViewStates/AppStates
+
+- id: prioritize-hoisted-state-over-internal-state-for-viewstates-20260616-191659
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: state_management
+- date: 2026-06-16
+
+### Decision
+For all ViewStates and AppStates, prioritize **Hoisted State** over Internal State.
+
+Screen / navigation / business state lives in the feature's `MviViewModel` (`*State` + `*Intent`), exposed via StateFlow and hoisted up. Composables stay stateless: they read from the collected `state` and emit `onIntent(...)`. AppState/config is likewise declared once by the host as an `@Immutable` bundle (`*Config`) and passed down.
+
+Do **not** hold screen/nav/business state as `var ... by remember { mutableStateOf(...) }` inside a composable. Reserve `remember`/`rememberSaveable` only for genuinely-local, transient UI holders (scroll, pager, focus, animation state, and `remember`-derived builders).
+
+### Reason
+- Testability: reducers and state transitions are unit-testable in `commonMain` without a composition.
+- Predictability & single source of truth: state changes flow through the MVI reducer (`setState { copy(...) }`), not scattered local mutations.
+- KMP/Compose correctness: stateless composables recompose deterministically; `@Immutable` config bundles keep params stable.
+- Consistency: the toolkit's atoms, molecules, organisms, and scaffolds already follow this; new code must match them.
+
+### Scope
+Applies project-wide to ViewStates and AppStates going forward — Principal-level default for this KMP/Compose toolkit.
+
+## Reactive Settings/Home VM config-sync (SyncMviConfig + *Intent.ConfigChanged); drop isPro vmKey re-keying
+
+- id: reactive-settings-home-vm-config-sync-syncmviconfig-intent-c-20260616-204432
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: state_management
+- date: 2026-06-16
+
+The Settings and Home scaffolds keep a single persistent `MviViewModel` and **react** to host-recomputed state via a `ConfigChanged` intent, instead of re-creating the VM by folding `isPro` into its Koin `vmKey`.
+
+### How
+- `SyncMviConfig(viewModel, config, asIntent)` (`:ui-scaffolds` `ui/mvi/`) is the one helper that feeds a recomputed `config` into a persistent VM. Seeded once via `parametersOf`; it skips the seed pass (`state.value === config`) and dispatches `asIntent(config)` on every later structurally-distinct config. Keys structurally — the toolkit state types are `@Immutable data class`es, so a freshly-built-but-equal config is a no-op.
+- `SettingsIntent.ConfigChanged` -> `mergedWith(incoming)`: adopts the incoming structure (Free/Pro subscription rows, titles, footer, and the **theme from the appearance controller**) while preserving VM-owned interaction state (toggle `checked` matched by row id; version-tap dev-reveal). `HomeIntent.ConfigChanged` -> wholesale replace, since `HomeScreenState` is pure chrome.
+- `FrnkAppScaffold` no longer re-keys the Settings VM (`"frnk-settings-$isPro"` removed); the demo dropped `home-$isPro` and `settings-$isPro-$isGodMode`. `vmKey` stays a host escape hatch (force a fresh VM), kept symmetric across all four scaffolds (Settings/Home/Onboarding/Paywall).
+
+### Reason
+Re-keying threw away the entire VM on every `isPro` flip — resetting in-VM state seeded by value (notifications toggle, god-mode reveal progress) and accumulating stale VM instances in the nav entry's `ViewModelStore` (retained until the entry is disposed; `onCleared` deferred). The reactive merge keeps one VM, preserves interaction state, and removes the instance accumulation. The `state.value !== config` reference guard is correct because the state types are data classes and `parametersOf` seeds the exact object on first composition.
+
+### Tradeoffs / notes
+- **Theme is taken from `incoming`, not preserved.** Appearance has a single source of truth (the host's appearance controller, which `incoming` is built from), so an appearance change from any path is reflected; the toggle's optimistic feedback comes from the `ThemeSelected` reducer, not the merge.
+- **1-frame stale render** on a *live, in-place* `isPro` flip is accepted (inherent to `collectAsStateWithLifecycle` + an async intent channel); a screen (re)entered after the flip seeds correctly and never shows the old config. Documented in `SyncMviConfig` KDoc.
+- `mergedWith` hard-codes which fields are VM-owned; a contract comment at the `incoming.copy(...)` site guards future additions (a new user-mutated field must be preserved there or it resets on every `ConfigChanged`).
+
+See also [[prioritize-hoisted-state-over-internal-state-for-viewstates]].
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/SyncMviConfig.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreen.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreen.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt

@@ -30,6 +30,16 @@ sealed interface HomeIntent : UiIntent {
 
     /** The leading top-bar navigation icon was tapped. */
     data object NavigationClicked : HomeIntent
+
+    /**
+     * The host recomputed the chrome (e.g. a top-bar action that appears only while Free) and handed
+     * down a fresh [newState]. The VM adopts it wholesale — [HomeScreenState] is pure chrome with no
+     * VM-owned interaction state to preserve. Mirrors [SettingsIntent.ConfigChanged]; replaces the old
+     * "re-key the ViewModel to re-seed it" approach.
+     */
+    data class ConfigChanged(
+        val newState: HomeScreenState,
+    ) : HomeIntent
 }
 
 sealed interface HomeEffect : UiEffect {

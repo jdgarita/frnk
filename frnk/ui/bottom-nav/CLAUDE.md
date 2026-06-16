@@ -119,7 +119,7 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   `config.nav.feature: FrnkFeatureItem`), `rememberFrnkTabbedBackStacks`, built-in **Home** (`HomeScreen` with
   the host's `homeContent` `ColumnScope` slot; `config.home.topBar`/`config.home.vmKey`/`onHomeEffect`),
   **Settings** (default catalogue + `config.settings.extraSections`, overridable via the
-  `settingsState`/`settingsEffects` composable factories + `config.settings.vmKey`), optional **Onboarding**
+  `settingsState`/`settingsEffects` composable factories), optional **Onboarding**
   (`config.onboarding.pages` → registers `ToolkitRoute.Onboarding`; back/close pops), and deep-links
   (`pendingRoutes: FrnkPendingRouteRequest?`). The host's declarative input is bundled in
   `config` (`FrnkTabbedNavConfig`); the composable keeps only behaviour as params — the `@Composable`

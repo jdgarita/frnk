@@ -27,6 +27,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkSwitchState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.mvi.SyncMviConfig
 import dev.jdgarita.frnk.ui.organisms.FrnkSectionCard
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
@@ -54,10 +55,16 @@ import org.koin.core.parameter.parametersOf
  * renderer, and surfaces one-shot effects to [onEffect]. Mirrors
  * [OnboardingScreen][dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen] exactly.
  *
- * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`. By default the VM is reused for
- * the lifetime of the enclosing `ViewModelStoreOwner`; change [vmKey] each time the screen is shown
- * (e.g. `key = "settings-$openCounter"`) to get a fresh flow. Hosts that want full state-hoisting
- * control should call [SettingsScreenContent] directly.
+ * The VM reacts to [initialState]: it is seeded once via `parametersOf`, then every later recomposition
+ * that produces a *new* [initialState] (e.g. the host's [rememberDefaultSettingsState] rebuilt because
+ * `isPro` flipped) is merged in via [SettingsIntent.ConfigChanged] — adopting the new catalogue while
+ * preserving the user's in-session toggles, theme, and dev-reveal. So a single VM tracks entitlement
+ * changes; **leave [vmKey] at its default** rather than re-keying to re-seed.
+ *
+ * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`. By default the VM is reused for the
+ * lifetime of the enclosing `ViewModelStoreOwner`; change [vmKey] only to force a *fresh* VM (a hard
+ * reset that discards the merged state). Hosts that want full state-hoisting control should call
+ * [SettingsScreenContent] directly.
  */
 @Composable
 fun SettingsScreen(
@@ -69,6 +76,9 @@ fun SettingsScreen(
 ) {
     val vm: SettingsViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
     val state by vm.state.collectAsStateWithLifecycle()
+
+    // Sync later catalogue recomputes (e.g. isPro flipped upstream) into the live VM.
+    SyncMviConfig(vm, initialState, SettingsIntent::ConfigChanged)
 
     EffectCollector(vm.effects, onEffect = onEffect)
 
