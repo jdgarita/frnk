@@ -39,9 +39,6 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
-import dev.jdgarita.frnk.ui.app.FrnkAppScope
-import dev.jdgarita.frnk.ui.app.FrnkAppShell
-import dev.jdgarita.frnk.ui.app.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
@@ -60,9 +57,12 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
 import dev.jdgarita.frnk.ui.bottomnav.FrnkBottomFloatingBar
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
+import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavBarItem
+import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -128,8 +128,8 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Smoke harness for the toolkit — and the reference integration of **[FrnkAppShell]**, the one-call
- * app root. The shell owns the theme wrap, the nav3 saved-state config, the fixed Home · Components ·
+ * Smoke harness for the toolkit — and the reference integration of **[FrnkTabbedNavScaffold]**, the
+ * one-call app root. It owns the theme wrap, the nav3 saved-state config, the fixed Home · Components ·
  * Settings adaptive tabs with per-tab back stacks, the persistent bottom bar (tab switching, back
  * conventions, full-screen hiding, bottom-inset), and the built-in Home / Settings / Onboarding
  * destinations; the demo supplies only its content:
@@ -190,7 +190,7 @@ fun DemoScreen(
         }
 
     // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro. Built
-    // with a plain Lucide icon — DemoScreen sits outside the theme (FrnkAppShell installs it).
+    // with a plain Lucide icon — DemoScreen sits outside the theme (FrnkTabbedNavScaffold installs it).
     val homeTopBar =
         remember(state.isPro) {
             FrnkTopAppBarState(
@@ -204,7 +204,7 @@ fun DemoScreen(
             )
         }
 
-    FrnkAppShell(
+    FrnkTabbedNavScaffold(
         appVersion = "v${Frnk.VERSION}",
         modifier = Modifier.fillMaxSize(),
         themeConfig = demoPurpleThemeConfig(),
@@ -1261,7 +1261,7 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
 }
 
 /**
- * The shell's built-in onboarding flow ([FrnkAppShell]'s `onboardingPages`) — plain data built with
+ * The built-in onboarding flow ([FrnkTabbedNavScaffold]'s `onboardingPages`) — plain data built with
  * Lucide icons directly (it's constructed outside the theme, so token lookups aren't available; a
  * host that wants token-driven icons builds the pages inside its own themed composable instead).
  */

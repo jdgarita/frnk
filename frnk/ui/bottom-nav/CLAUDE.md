@@ -79,28 +79,18 @@ layer** — a deliberate, host-approved trade.
 adaptive-nav-bar is pure Kotlin/Compose (no extra native cinterop / SPM package), so the XCFramework still
 links under the consumer's existing `-undefined dynamic_lookup`.
 
-## Contents (`ui/app/`)
-
-- `FrnkAppShell.kt` — **the one-call app shell** (host-enablement). Stands up a complete tabbed app:
-  `FrnkTheme(themeConfig)` wrap, `frnkNavConfiguration(hostRoutes)`, `rememberFrnkBottomNavState`
-  (the fixed `Home · feature · Settings` tabs; the center tab supplied as `feature: FrnkFeatureItem`),
-  `rememberFrnkTabbedBackStacks`, `FrnkTabbedNavScaffold`, built-in
-  **Home** (`HomeScreen` with the host's `homeContent` `ColumnScope` slot; `homeTopBar`/`homeVmKey`/
-  `onHomeEffect`), **Settings** (default catalogue + `settingsExtraSections`,
-  overridable via the `settingsState`/`settingsEffects` composable factories + `settingsVmKey`),
-  optional **Onboarding** (`onboardingPages` → registers `ToolkitRoute.Onboarding`; back/close pops),
-  and deep-links (`pendingRoutes: FrnkPendingRouteRequest?`).
-  Host extension points — `effects` (the single `EffectCollector` home), `entries`
-  (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; register the **`feature` tab's route** here, and
-  **never** re-register the built-in routes — nav3 `require`-throws on duplicates), and the effect
-  handlers — all receive the `FrnkAppScope`.
-  Assumes **Koin is already started** (`frnkUiModules()` in `:ui-app` carries all scaffold VM modules). `:ui-app`'s
-  `FrnkAppScaffold` layers the monetization batteries over this; `:demo-shared` uses the shell
-  directly (it can't see `:ui-app`) and is the reference integration.
-- `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` +
-  `navigateTo`/`back`/`clearAndNavigateTo`) handed to every shell extension point.
-
 ## Contents (`ui/bottomnav/`)
+
+> The one-call app shell **`FrnkAppShell` was merged into `FrnkTabbedNavScaffold`** below — there is now a
+> single public tabbed-app composable. The two helpers it exposed to hosts moved here too (was the
+> module's separate `ui/app/` package, now folded into `…ui.bottomnav` so the module is single-package):
+
+- `FrnkAppScope.kt` — `@Stable` handle (`tabbed: FrnkTabbedBackStacks` +
+  `navigateTo`/`back`/`clearAndNavigateTo`) handed to every `FrnkTabbedNavScaffold` extension point.
+- `FrnkFirstLaunchOnboardingEffect.kt` — drops into the `effects` slot to present onboarding once on
+  first launch (persisted via `:ui-scaffolds`' `rememberOnboardingGate`; session-only when no
+  `KeyValueStore` is bound). `:ui-app`'s `FrnkAppScaffold` wires it automatically; hosts on the bare
+  `FrnkTabbedNavScaffold` (e.g. the demo) call it themselves.
 
 - `FrnkBottomFloatingBar.kt` (common) — the `expect fun FrnkBottomFloatingBar(items, selectedIndex,
   onItemSelected, modifier)` + `FrnkNavBarItem` (`key`, `icon: ImageVector`, `iosSystemIcon`,
@@ -122,25 +112,34 @@ links under the consumer's existing `-undefined dynamic_lookup`.
     in-place control is exactly why it was vendored. The bar is full-width and static.
   Most hosts use the scaffold; call the bar directly only when wiring your own selected-tab state /
   navigation. This is the toolkit's sole bottom-nav bar.
-- `FrnkTabbedNavScaffold.kt` — `FrnkTabbedNavScaffold(tabbed, tabs, modifier, hideBarFor, entryProvider)`.
-  The **nav3 multiple-back-stack** tabbed scaffold: the single composable a host calls to get a standard
-  tabbed app. It absorbs the `FrnkNavDisplay` (driven by `tabbed.current`), the persistent
-  `FrnkBottomFloatingBar` overlay (one item per tab; tab switch / re-tap-to-root),
-  `FrnkTabbedBackHandler` (back-from-non-home-root→home), full-screen bar hiding (`hideBarFor`), and the
-  bottom-inset bookkeeping (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows, so
-  screens on `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically — no per-screen `bottomInset`
-  threading). **The host still owns `tabbed`** (`rememberFrnkTabbedBackStacks(tabs = …)`) and the same
-  (remembered) `List<FrnkAdaptiveNavTab>`, so it can drive effect-based navigation from its own
-  `EffectCollector` — this scaffold structures/renders, the host owns state. `hideBarFor` **defaults to
-  `{ it is FrnkFullScreenRoute }`** (the marker in `:core-nav`), so full-screen routes declare the
-  intent on themselves rather than the host keeping a predicate in sync with `entryProvider`; override only
-  for ad-hoc rules. `entryProvider` defaults to `koinEntryProvider()` (pair with the `navigation<Route>`
-  DSL); pass an inline `entryProvider { entry<…> { … } }` when screens share one host-scoped VM (the demo
-  does). This is the **Material3 adaptive-bar** scaffold by design; a host that wants multiple-back-stack
-  nav3 **without** Material3 hand-wires the primitives instead (`rememberFrnkTabbedBackStacks` +
-  `FrnkNavDisplay` + `FrnkTabbedBackHandler` + its own bar).
-  `@OptIn(KoinExperimentalAPI::class)` (for the `koinEntryProvider()` default — doesn't propagate to callers
-  passing their own provider).
+- `FrnkTabbedNavScaffold.kt` — **the one-call tabbed app** (host-enablement); the single public composable a
+  host calls to get a complete tabbed app. `FrnkTabbedNavScaffold(appVersion, …, feature, …) { homeContent }`
+  stands it all up: `FrnkTheme(themeConfig)` wrap, `frnkNavConfiguration(hostRoutes)`,
+  `rememberFrnkBottomNavState` (the fixed `Home · feature · Settings` tabs; the center tab supplied as
+  `feature: FrnkFeatureItem`), `rememberFrnkTabbedBackStacks`, built-in **Home** (`HomeScreen` with the
+  host's `homeContent` `ColumnScope` slot; `homeTopBar`/`homeVmKey`/`onHomeEffect`), **Settings** (default
+  catalogue + `settingsExtraSections`, overridable via the `settingsState`/`settingsEffects` composable
+  factories + `settingsVmKey`), optional **Onboarding** (`onboardingPages` → registers
+  `ToolkitRoute.Onboarding`; back/close pops), and deep-links (`pendingRoutes: FrnkPendingRouteRequest?`).
+  Host extension points — `effects` (the single `EffectCollector` home), `entries`
+  (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; register the **`feature` tab's route** here, and
+  **never** re-register the built-in routes — nav3 `require`-throws on duplicates), and the effect handlers
+  — all receive the `FrnkAppScope`. Assumes **Koin is already started** (`frnkUiModules()` in `:ui-app`
+  carries all scaffold VM modules). `:ui-app`'s `FrnkAppScaffold` layers the monetization batteries over
+  this; `:demo-shared` uses it directly (it can't see `:ui-app`) and is the reference integration.
+  - **Private `TabbedNavHost` render core (same file).** The nav3 multiple-back-stack mechanics live in a
+    `private` helper the public composable hands its created `tabbed` + `entryProvider`: the `FrnkNavDisplay`
+    (driven by `tabbed.current`), the persistent `FrnkBottomFloatingBar` overlay (one item per tab; tab
+    switch / re-tap-to-root), `FrnkTabbedBackHandler` (back-from-non-home-root→home), full-screen bar hiding
+    (`hideBarFor`, **defaults to `{ it is FrnkFullScreenRoute }`** — the `:core-nav` marker), and the
+    bottom-inset bookkeeping (provides `LocalFrnkBottomBarInset` = the bar's `reservedHeight` while it shows,
+    so screens on `FrnkScreenScaffold`/`FrnkMviScreen` reserve it automatically). This is the **Material3
+    adaptive-bar** path by design; a host that wants multiple-back-stack nav3 **without** Material3 — or a
+    tab shape other than the fixed three — hand-wires the primitives instead (`rememberFrnkTabbedBackStacks`
+    + `FrnkNavDisplay` + `FrnkTabbedBackHandler` + its own bar). **History:** `FrnkTabbedNavScaffold` was
+    previously the *generic* host-owned-state scaffold (`(tabbed, tabs, hideBarFor, entryProvider)`) and
+    `FrnkAppShell` (`ui/app/`) was the opinionated assembly above it; they were merged into this one public
+    composable (the generic form became the private render core).
 - `FrnkAdaptiveNavTab.kt` / `FrnkFeatureItem.kt` / `FrnkBottomNavState.kt` / `FrnkAdaptiveNavDefaults.kt` —
   the per-tab type (`key` + `root` + `icon: ImageVector` + `iosSystemIcon` SF-Symbol), the host-facing
   center-tab config (`FrnkFeatureItem`: `route` + `label` + `icon` + `iosSystemIcon` + `key`), the view

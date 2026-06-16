@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.app
+package dev.jdgarita.frnk.ui.bottomnav
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,13 +14,13 @@ import dev.jdgarita.frnk.ui.scaffolds.OnboardingGate
  * not been seen, navigates to [ToolkitRoute.Onboarding] (pushed onto the current tab — typically Home,
  * so closing it pops back to Home) and records it as seen so later launches don't re-present it.
  *
- * Drop it into the [FrnkAppShell] `effects` slot, where the [FrnkAppScope] is live and a single
+ * Drop it into the [FrnkTabbedNavScaffold] `effects` slot, where the [FrnkAppScope] is live and a single
  * collector survives tab swaps. `FrnkAppScaffold` (`:ui-app`) wires this automatically from a
- * `rememberOnboardingGate()`; shells that bypass `:ui-app` (e.g. the demo, which composes
- * [FrnkAppShell] directly) call it themselves.
+ * `rememberOnboardingGate()`; hosts that bypass `:ui-app` (e.g. the demo, which composes
+ * [FrnkTabbedNavScaffold] directly) call it themselves.
  *
  * **Precondition:** [enabled] must imply that [ToolkitRoute.Onboarding] is registered as a nav entry
- * (in [FrnkAppShell] that means `onboardingPages` is non-empty). Navigating to an unregistered route
+ * (in [FrnkTabbedNavScaffold] that means `onboardingPages` is non-empty). Navigating to an unregistered route
  * throws from nav3's `NavDisplay`, so callers must derive [enabled] from the same condition that
  * registers the destination — `FrnkAppScaffold` uses `showOnboardingOnFirstLaunch && onboardingPages.isNotEmpty()`.
  *

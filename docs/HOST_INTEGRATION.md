@@ -24,7 +24,7 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:ui-theme` | `ui-theme` | `projects.uiTheme` | `FrnkTheme` + tokens (compose-unstyled). |
 | `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
 | `:ui-scaffolds` | `ui-scaffolds` | `projects.uiScaffolds` | Page templates + Compose MVI/nav bindings. |
-| `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkAppShell`. **Sole Material3 module.** |
+| `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkTabbedNavScaffold` (the one-call tabbed app). **Sole Material3 module.** |
 | `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkAppScaffold` + `frnkUiModules()`. The batteries-included apex. |
 | `:data-db-api` | `data-db-api` | `projects.dataDbApi` | `SqlDriverFactory` SPI (toolkit owns no schema). |
 | `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform SQLDelight drivers → `databaseModule`. |
@@ -94,7 +94,7 @@ FrnkTheme(
 }
 ```
 
-`FrnkAppScaffold` / `FrnkAppShell` take the same `themeConfig` and wrap `FrnkTheme` for you.
+`FrnkAppScaffold` / `FrnkTabbedNavScaffold` take the same `themeConfig` and wrap `FrnkTheme` for you.
 
 **Custom icon pack.** The toolkit ships a default Lucide-backed icon registry (`iconBack`, `iconClose`,
 `iconSearch`, `iconSettings`, …). A host overrides any or all of them — **or adds brand-specific icons** —
@@ -115,7 +115,7 @@ FrnkThemeConfig(
 ## 3. Map ToolkitRoute to Compose screens
 
 The toolkit's `ToolkitRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
-default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). When using `FrnkAppShell` /
+default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). When using `FrnkTabbedNavScaffold` /
 `FrnkAppScaffold` (§8), those routes are already wired — you don't map them. For a hand-wired nav3
 host, register them on your `FrnkNavDisplay` `entryProvider` and drive navigation through the MVI
 effect channel, mutating the host-owned `NavBackStack`:
@@ -338,9 +338,10 @@ setContent {
   present it only on demand (Settings → Show onboarding). Full-window screens (onboarding, paywall) use
   **`FrnkFullScreenScaffold`** — an immersive template with an always-on ✕ that reserves the safe-area
   insets + close-button band for you; reuse it for your own full-screen surfaces.
-- `FrnkAppScaffold` (`:ui-app`) layers the monetization batteries over **`FrnkAppShell`**
-  (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkAppShell` directly — the
-  same shell minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the reference.
+- `FrnkAppScaffold` (`:ui-app`) layers the monetization batteries over **`FrnkTabbedNavScaffold`**
+  (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkTabbedNavScaffold` directly —
+  the same one-call tabbed app minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the
+  reference.
 
 ### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 

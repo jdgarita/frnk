@@ -14,7 +14,10 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
+import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
+import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
@@ -35,7 +38,7 @@ import kotlinx.serialization.modules.SerializersModule
 import org.koin.compose.koinInject
 
 /**
- * The toolkit's **batteries-included app root** — `FrnkAppShell` plus the runtime-resolved wiring
+ * The toolkit's **batteries-included app root** — [FrnkTabbedNavScaffold] plus the runtime-resolved wiring
  * no hand-built shell gets for free: a fail-fast check that `initializeFrnk(...)` ran
  * ([requireFrnkKoin]), a Settings tab driven by the **live**
  * [EntitlementManager] (the Subscription section flips Free↔Pro as entitlements change), the
@@ -63,8 +66,8 @@ import org.koin.compose.koinInject
  * Without monetization modules installed (no [EntitlementManager] in the graph) the Settings tab
  * renders with `isPro = false` and monetization rows degrade to no-ops; the paywall entry is not mounted.
  * Extension points ([effects], [entries], [onHomeEffect], [feature], …) are forwarded to
- * [FrnkAppShell] — see its docs for the contracts (notably: register the [feature] tab's route in
- * [entries], and don't re-register the built-in routes).
+ * [FrnkTabbedNavScaffold] — see its docs for the contracts (notably: register the [feature] tab's route
+ * in [entries], and don't re-register the built-in routes).
  */
 @Composable
 fun FrnkAppScaffold(
@@ -98,7 +101,7 @@ fun FrnkAppScaffold(
     // KeyValueStore is bound), same degrade-gracefully pattern as [entitlements].
     val onboardingGate = rememberOnboardingGate()
 
-    FrnkAppShell(
+    FrnkTabbedNavScaffold(
         appVersion = appVersion,
         modifier = modifier,
         themeConfig = themeConfig,

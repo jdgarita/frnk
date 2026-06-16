@@ -18,8 +18,8 @@ import dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset
  * is a permanent **centered bar item** injected by [FrnkTabbedNavScaffold] (Mode B), not a separate FAB, so
  * the bar has no FAB slot. Both actuals theme from `FrnkTheme` tokens, not the platform/Material defaults.
  *
- * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkTabbedNavScaffold] (or
- * `FrnkAppShell` above it) rather than calling it directly.
+ * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkTabbedNavScaffold]
+ * rather than calling it directly.
  */
 @Composable
 expect fun FrnkBottomFloatingBar(

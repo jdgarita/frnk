@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * Verifies [frnkUiModules] carries every scaffold VM module `FrnkAppScaffold`/`FrnkAppShell` resolve
+ * Verifies [frnkUiModules] carries every scaffold VM module `FrnkAppScaffold`/`FrnkTabbedNavScaffold` resolve
  * — pure list inspection, no `startKoin`. Guards the host bootstrap contract: a missing entry here
  * surfaces as a runtime `NoDefinitionFound` in every host.
  */

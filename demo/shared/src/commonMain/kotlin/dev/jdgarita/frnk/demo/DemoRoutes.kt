@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * Type-safe Navigation3 destinations the demo still owns. The Home / Settings tab roots and the
  * Onboarding flow moved to the toolkit defaults (`ToolkitRoute.Home` / `ToolkitRoute.Settings` /
- * `ToolkitRoute.Onboarding`) when `DemoScreen` adopted `FrnkAppShell`, and the paywall is the
+ * `ToolkitRoute.Onboarding`) when `DemoScreen` adopted `FrnkTabbedNavScaffold`, and the paywall is the
  * toolkit-owned `ToolkitRoute.Paywall` — so all that's left here is the middle "Components" tab:
  * its root, and the detail screen pushed onto it ([ComponentDetail]).
  *

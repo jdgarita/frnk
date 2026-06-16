@@ -703,3 +703,32 @@ Verified: compileAndroidMain + iosSimulatorArm64 for ui-bottom-nav & demo-shared
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkFeatureItem.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAdaptiveNavDefaults.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt
+
+## Merged FrnkAppShell into FrnkTabbedNavScaffold (one public tabbed-app composable)
+
+- id: merged-frnkappshell-into-frnktabbednavscaffold-one-public-ta-20260616-152854
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui-bottom-nav / app shell
+- date: 2026-06-16
+
+Decision (user, 2026-06-16): collapse the FrnkAppShell + FrnkTabbedNavScaffold two-layer split into ONE public composable. FrnkAppShell (the opinionated app shell in :ui-bottom-nav ui/app/) is DELETED; FrnkTabbedNavScaffold (ui/bottomnav/) now carries FrnkAppShell's exact signature/body (FrnkTheme wrap + frnkNavConfiguration + rememberFrnkBottomNavState fixed Home·feature·Settings + rememberFrnkTabbedBackStacks + FrnkAppScope + deep-link + built-in Home/Settings/Onboarding + the FrnkAppSettingsTab/rememberShellSettingsHandler private helpers).
+
+This REVERSES the prior 'keep separate' evaluation. Why reverse: FrnkAppShell was the ONLY in-repo caller of FrnkTabbedNavScaffold and the generic host-owned-state form had ZERO external callers, so the public split earned nothing day-to-day; user wanted one component in charge.
+
+How it stays clean: the old generic FrnkTabbedNavScaffold(tabbed, tabs, hideBarFor, entryProvider) body is preserved VERBATIM as a private 'TabbedNavHost' helper in the same file (bar overlay + LocalFrnkBottomBarInset + FrnkTabbedBackHandler + FrnkNavDisplay). So zero behaviour change — pure surface/relocation refactor. Dropped the koinEntryProvider() default + @OptIn(KoinExperimentalAPI) since the private core is always handed an explicit provider.
+
+What was traded (accepted): the generic, theme-agnostic, host-owns-state PUBLIC scaffold is gone. A host wanting a custom tab shape or a Material3-free bar now drops to the raw primitives (rememberFrnkTabbedBackStacks + FrnkNavDisplay + FrnkTabbedBackHandler + own bar). The surviving name FrnkTabbedNavScaffold now over-promises (it's really an app shell) — rename + de-publishing FrnkAppScope were explicitly left as OPTIONAL follow-ups, not done.
+
+Migration for callers: rename FrnkAppShell(...) -> FrnkTabbedNavScaffold(...) (identical args); import moves dev.jdgarita.frnk.ui.app.FrnkAppShell -> dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold. Callers rewired: FrnkAppScaffold (:ui-app), DemoScreen (:demo-shared). :ui-app compile surface unchanged (already api-deps :ui-bottom-nav).
+
+Follow-up (same change, addressing code-review feedback): (1) the relocated private helpers were renamed off the dead 'shell' vocabulary — rememberShellSettingsHandler -> rememberDefaultSettingsHandler, FrnkAppSettingsTab -> TabbedNavSettingsTab. (2) FrnkAppScope + FrnkFirstLaunchOnboardingEffect MOVED from package dev.jdgarita.frnk.ui.app -> dev.jdgarita.frnk.ui.bottomnav (and physically from ui/app/ into ui/bottomnav/), deleting the module's now-empty separate ui/app package so :ui-bottom-nav is single-package. FrnkAppScaffold (:ui-app, package …ui.app) lost same-package access and now imports both from …ui.bottomnav; DemoScreen's imports updated likewise. Behaviour unchanged.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkAppScope.kt (moved from ui/app/)
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkFirstLaunchOnboardingEffect.kt (moved from ui/app/)
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppShell.kt (deleted)
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt

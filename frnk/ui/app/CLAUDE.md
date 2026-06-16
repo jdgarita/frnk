@@ -4,14 +4,14 @@ The apex of the ui column (`dev.jdgarita.frnk.ui.app`) — the batteries-include
 
 ## Public surface
 
-- `FrnkAppScaffold(appName, appVersion, …) { homeContent }` — `:ui-bottom-nav`'s `FrnkAppShell` plus the runtime-resolved batteries: fail-fast Koin check (`:core-di`'s `requireFrnkKoin()`), Settings driven by the **live** `EntitlementManager.isPro` (VM re-keys on flips; degrades to Free when no monetization modules are installed), the monetization-aware Settings handler (`rememberFrnkSettingsHandler` with appearance/onboarding/feedback fallbacks), the auto-mounted `ToolkitRoute.Paywall`, and **first-launch onboarding** (`showOnboardingOnFirstLaunch`, default true) — auto-presented once via `:ui-scaffolds`' `rememberOnboardingGate()` + `:ui-bottom-nav`'s `FrnkFirstLaunchOnboardingEffect` when `onboardingPages` are supplied. Shares the `dev.jdgarita.frnk.ui.app` package with `FrnkAppShell`/`FrnkAppScope` (different module — namespace `…ui.app` is unique).
+- `FrnkAppScaffold(appName, appVersion, …) { homeContent }` — `:ui-bottom-nav`'s `FrnkTabbedNavScaffold` plus the runtime-resolved batteries: fail-fast Koin check (`:core-di`'s `requireFrnkKoin()`), Settings driven by the **live** `EntitlementManager.isPro` (VM re-keys on flips; degrades to Free when no monetization modules are installed), the monetization-aware Settings handler (`rememberFrnkSettingsHandler` with appearance/onboarding/feedback fallbacks), the auto-mounted `ToolkitRoute.Paywall`, and **first-launch onboarding** (`showOnboardingOnFirstLaunch`, default true) — auto-presented once via `:ui-scaffolds`' `rememberOnboardingGate()` + `:ui-bottom-nav`'s `FrnkFirstLaunchOnboardingEffect` when `onboardingPages` are supplied. `FrnkAppScope` (the handle handed to its extension points) lives in `:ui-bottom-nav`, package `…ui.bottomnav` — imported here.
 - `frnkUiModules(): List<Module>` — the SDK-free scaffold VM modules (home/settings/onboarding) every host prepends to its `initializeFrnk(...)` list. Only scaffold VMs belong here; anything touching a third-party SDK is a separate module the host installs explicitly.
 
 ## Rules
 
 - **No `*-impl` compile deps — ever.** `EntitlementManager`/`AnalyticsTracker` resolve from Koin at runtime; the compile surface is `:ui-bottom-nav` + `:shared-monetization-ui` + `:analytics-api` + `:core-di`.
 - Monetization is optional: resolve it leniently (`koin.getOrNull`), degrade UI when absent. Don't add a hard `get<EntitlementManager>()`.
-- Material3 arrives transitively via `:ui-bottom-nav` (the accepted batteries-included trade). Hosts that refuse Material3 hand-wire `FrnkAppShell`'s lower-level pieces instead and skip this module.
+- Material3 arrives transitively via `:ui-bottom-nav` (the accepted batteries-included trade). Hosts that refuse Material3 hand-wire `FrnkTabbedNavScaffold`'s lower-level primitives (`rememberFrnkTabbedBackStacks` + `FrnkNavDisplay` + `FrnkTabbedBackHandler` + own bar) instead and skip this module.
 
 ## Dependencies
 
@@ -20,4 +20,4 @@ The apex of the ui column (`dev.jdgarita.frnk.ui.app`) — the batteries-include
 
 ## Demo
 
-`demo-android`'s `AppScaffoldSmokeActivity` is the device smoke (`adb shell am start -n dev.jdgarita.frnk.demo/.AppScaffoldSmokeActivity`); `:demo-shared` can't exercise this module (it composes `FrnkAppShell` directly).
+`demo-android`'s `AppScaffoldSmokeActivity` is the device smoke (`adb shell am start -n dev.jdgarita.frnk.demo/.AppScaffoldSmokeActivity`); `:demo-shared` can't exercise this module (it composes `FrnkTabbedNavScaffold` directly).

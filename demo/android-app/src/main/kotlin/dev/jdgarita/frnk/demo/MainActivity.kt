@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                 controller.isAppearanceLightNavigationBars = !isDark
             }
 
-            // DemoScreen owns the FrnkTheme wrap now (via FrnkAppShell); the hoisted controller is
+            // DemoScreen owns the FrnkTheme wrap now (via FrnkTabbedNavScaffold); the hoisted controller is
             // passed through so the system-bar sync above keeps observing the in-app toggle.
             DemoScreen(appearanceController = appearanceController, onEffect = ::handleEffect)
         }
