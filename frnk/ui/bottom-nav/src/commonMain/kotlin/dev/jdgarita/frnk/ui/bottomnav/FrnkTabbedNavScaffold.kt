@@ -21,7 +21,6 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
-import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
 import dev.jdgarita.frnk.ui.nav.FrnkTab
@@ -36,7 +35,6 @@ import dev.jdgarita.frnk.ui.scaffolds.HomeScreen
 import dev.jdgarita.frnk.ui.scaffolds.HomeScreenState
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingEffect
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen
 import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
@@ -47,7 +45,6 @@ import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.FrnkTheme
-import dev.jdgarita.frnk.ui.theme.FrnkThemeConfig
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
@@ -55,18 +52,22 @@ import dev.jdgarita.frnk.ui.theme.spacingXl
 import dev.jdgarita.frnk.ui.theme.stringNavHome
 import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.theme.strings
-import kotlinx.serialization.modules.EmptySerializersModule
-import kotlinx.serialization.modules.SerializersModule
 
 /**
  * The toolkit's **one-call tabbed app** — a single composable that stands up a complete app: the
- * [FrnkTheme] wrap, the Navigation3 saved-state configuration, the fixed `Home · [feature] · Settings`
+ * [FrnkTheme] wrap, the Navigation3 saved-state configuration, the fixed `Home · feature · Settings`
  * adaptive tabs, per-tab back stacks, the platform-adaptive bottom bar + nav3 multiple-back-stack
  * rendering (bar overlay, tab switching, back convention, full-screen hiding, bottom-inset), built-in
  * **Home** ([HomeScreen] with the host's [homeContent] slot), **Settings** ([rememberDefaultSettingsState]
- * catalogue + [settingsExtraSections]) and optional **Onboarding** ([onboardingPages]) destinations, and
- * deep-linking ([pendingRoutes]). A host that used to hand-wire ~150 lines of theme + nav + tab plumbing
- * writes one call.
+ * catalogue + [FrnkSettingsConfig.extraSections]) and optional **Onboarding**
+ * ([FrnkOnboardingConfig.pages]) destinations, and deep-linking ([pendingRoutes]). A host that used to
+ * hand-wire ~150 lines of theme + nav + tab plumbing writes one call.
+ *
+ * **Config vs. parameters.** The host's declarative input — app identity, navigation shape, theme, and the
+ * built-in tabs' configuration — is bundled in [config] ([FrnkTabbedNavConfig]). The composable keeps only
+ * *behaviour* as parameters: the `@Composable` slots/factories ([homeContent], [settingsState],
+ * [settingsEffects], [effects], [entries]), the event callback [onHomeEffect], and the runtime controllers
+ * ([appearanceController], [pendingRoutes]) — none of which can live in an `@Immutable` config.
  *
  * **Bar + navigation.** Internally renders the fixed three-tab [FrnkBottomFloatingBar] — a Material3
  * *Expressive* `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar`
@@ -86,20 +87,20 @@ import kotlinx.serialization.modules.SerializersModule
  * Settings, monetization handler, auto-mounted paywall); use this composable directly when your module
  * can't see `:ui-app` (as `:shared-demo` does) or when you want to supply those pieces yourself.
  *
- * The center **[feature]** tab is the host's one configurable tab — point it at the app's signature
- * surface (a "New X" flow, a capture screen, the main library). It is a real navigable tab, so the host
- * **must** register its root via [entries] (`entry(feature.route) { … }`), exactly like any other host
- * route; this composable owns only Home/Settings/Onboarding.
+ * The center [FrnkNavConfig.feature] tab is the host's one configurable tab — point it at the app's
+ * signature surface (a "New X" flow, a capture screen, the main library). It is a real navigable tab, so
+ * the host **must** register its root via [entries] (`entry(feature.route) { … }`), exactly like any other
+ * host route; this composable owns only Home/Settings/Onboarding.
  *
- * [hideBarFor] returns `true` for routes that should hide the bar (full-screen pushes like an onboarding
- * flow or a paywall). It **defaults to `{ it is FrnkFullScreenRoute }`**, so a route declares the intent
- * on itself rather than the host maintaining a separate predicate.
+ * [FrnkNavConfig.hideBarFor] returns `true` for routes that should hide the bar (full-screen pushes like an
+ * onboarding flow or a paywall). It **defaults to `{ it is FrnkFullScreenRoute }`**, so a route declares
+ * the intent on itself rather than the host maintaining a separate predicate.
  *
  * Host extension points, each handed the [FrnkAppScope] (the per-tab back stacks):
  *  - [homeContent] — the Home tab's body; items in a scaffold-owned scrolling column ([HomeScreen]).
- *  - [entries] — additional destinations (the [feature] tab's root, pushed details), registered on the
- *    `entryProvider`. **Do not** re-register [homeRoot], [settingsRoot], `ToolkitRoute.Onboarding` (when
- *    [onboardingPages] is non-empty) — nav3 throws on duplicates.
+ *  - [entries] — additional destinations (the feature tab's root, pushed details), registered on the
+ *    `entryProvider`. **Do not** re-register [FrnkNavConfig.homeRoot], [FrnkNavConfig.settingsRoot],
+ *    `ToolkitRoute.Onboarding` (when [FrnkOnboardingConfig.pages] is non-empty) — nav3 throws on duplicates.
  *  - [effects] — composed inside the theme above the nav host; put the host's single `EffectCollector`
  *    here and drive navigation via `scope.navigateTo(route)`.
  *  - [onHomeEffect] / [settingsEffects] — the built-in tabs' effect handlers. The default Settings handler
@@ -108,41 +109,25 @@ import kotlinx.serialization.modules.SerializersModule
  */
 @Composable
 fun FrnkTabbedNavScaffold(
-    appVersion: String,
+    config: FrnkTabbedNavConfig,
     modifier: Modifier = Modifier,
-    themeConfig: FrnkThemeConfig = FrnkThemeConfig.Default,
     appearanceController: AppearanceController? = null,
-    // Tabs / navigation.
-    homeRoot: NavKey = ToolkitRoute.Home,
-    settingsRoot: NavKey = ToolkitRoute.Settings,
-    feature: FrnkFeatureItem,
-    hostRoutes: SerializersModule = EmptySerializersModule(),
-    hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     pendingRoutes: FrnkPendingRouteRequest? = null,
-    // Built-in Home tab.
-    homeTopBar: FrnkTopAppBarState? = null,
-    homeVmKey: String? = null,
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
-    // Built-in Settings tab.
     settingsState: (@Composable (FrnkAppScope) -> SettingsScreenState)? = null,
-    settingsExtraSections: List<SettingsSectionState> = emptyList(),
-    settingsVmKey: String? = null,
     settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)? = null,
-    // Built-in Onboarding (registered only when pages are supplied).
-    onboardingPages: List<OnboardingPageState> = emptyList(),
-    // Host extension points.
     effects: @Composable (FrnkAppScope) -> Unit = {},
     entries: EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit = {},
     homeContent: @Composable ColumnScope.() -> Unit,
 ) {
     val controller = appearanceController ?: remember { AppearanceController() }
-    FrnkTheme(config = themeConfig, appearanceController = controller) {
-        val navConfig = remember(hostRoutes) { frnkNavConfiguration(hostRoutes) }
+    FrnkTheme(config = config.theme, appearanceController = controller) {
+        val navConfig = remember(config.nav.hostRoutes) { frnkNavConfiguration(config.nav.hostRoutes) }
         val navState =
             rememberFrnkBottomNavState(
-                homeRoot = homeRoot,
-                settingsRoot = settingsRoot,
-                feature = feature,
+                homeRoot = config.nav.homeRoot,
+                settingsRoot = config.nav.settingsRoot,
+                feature = config.nav.feature,
             )
         val backStackTabs = remember(navState) { navState.tabs.map { FrnkTab(key = it.key, root = it.root) } }
         val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = backStackTabs)
@@ -167,38 +152,41 @@ fun FrnkTabbedNavScaffold(
             tabbed = tabbed,
             tabs = navState.tabs,
             modifier = modifier.fillMaxSize(),
-            hideBarFor = hideBarFor,
+            hideBarFor = config.nav.hideBarFor,
             entryProvider =
                 entryProvider {
-                    entry(homeRoot) {
-                        val topBar = homeTopBar ?: FrnkTopAppBarState(title = Theme[strings][stringNavHome])
+                    entry(config.nav.homeRoot) {
+                        val topBar = config.home.topBar ?: FrnkTopAppBarState(title = Theme[strings][stringNavHome])
                         HomeScreen(
                             initialState =
                                 HomeScreenState(
                                     topBar = topBar,
                                 ),
-                            // The VM is seeded once via parametersOf — pass a fresh homeVmKey when a
-                            // dynamic [homeTopBar] (e.g. an action hidden once Pro) must re-seed it.
-                            vmKey = homeVmKey,
+                            // The VM is seeded once via parametersOf — pass a fresh home.vmKey when a
+                            // dynamic [home.topBar] (e.g. an action hidden once Pro) must re-seed it.
+                            vmKey = config.home.vmKey,
                             onEffect = { effect -> scope.onHomeEffect(effect) },
                             content = homeContent,
                         )
                     }
-                    entry(settingsRoot) {
+                    entry(config.nav.settingsRoot) {
                         TabbedNavSettingsTab(
                             scope = scope,
-                            appVersion = appVersion,
+                            appVersion = config.app.version,
                             settingsState = settingsState,
-                            extraSections = settingsExtraSections,
-                            vmKey = settingsVmKey,
+                            extraSections = config.settings.extraSections,
+                            vmKey = config.settings.vmKey,
                             settingsEffects = settingsEffects,
-                            onboardingAvailable = onboardingPages.isNotEmpty(),
+                            onboardingAvailable = config.onboarding.pages.isNotEmpty(),
                         )
                     }
-                    if (onboardingPages.isNotEmpty()) {
+                    if (config.onboarding.pages.isNotEmpty()) {
                         entry(ToolkitRoute.Onboarding) {
                             OnboardingScreen(
-                                initialState = remember(onboardingPages) { OnboardingScreenState(pages = onboardingPages) },
+                                initialState =
+                                    remember(config.onboarding.pages) {
+                                        OnboardingScreenState(pages = config.onboarding.pages)
+                                    },
                                 modifier = Modifier.fillMaxSize(),
                                 onEffect = { effect ->
                                     when (effect) {
@@ -232,7 +220,7 @@ fun FrnkTabbedNavScaffold(
 @Composable
 private fun TabbedNavHost(
     tabbed: FrnkTabbedBackStacks,
-    tabs: List<FrnkAdaptiveNavTab>,
+    tabs: List<FrnkBottomNavTab>,
     modifier: Modifier = Modifier,
     hideBarFor: (NavKey) -> Boolean,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
@@ -241,25 +229,29 @@ private fun TabbedNavHost(
     // pops and the home-root exit are handled by FrnkNavDisplay / the system.
     FrnkTabbedBackHandler(tabbed)
 
-    // One bar item per tab — the bar always shows exactly the tabs handed in (no FAB, no injected item).
-    val navBarItems =
-        remember(tabs) {
-            tabs.map {
-                FrnkNavBarItem(key = it.key, icon = it.icon, iosSystemIcon = it.iosSystemIcon, label = it.label)
-            }
+    // The bar's view state: one item per tab (no FAB, no injected item) + the selected index, derived
+    // from the active tab key. Recomputed only when the tabs or the active tab change.
+    val viewState =
+        remember(tabs, tabbed.currentTabKey) {
+            val items =
+                tabs.map {
+                    FrnkNavBarItem(key = it.key, icon = it.icon, iosSystemIcon = it.iosSystemIcon, label = it.label)
+                }
+            FrnkTabbedNavViewState(
+                navBarItems = items,
+                navBarItemIndexSelected = items.indexOfFirst { it.key == tabbed.currentTabKey },
+            )
         }
-
-    val selectedIndex = navBarItems.indexOfFirst { it.key == tabbed.currentTabKey }
 
     // Re-tap the active tab → pop to its root; tap another → switch (multiple back stacks).
     val onItemSelected: (Int) -> Unit = { index ->
-        val key = navBarItems[index].key
+        val key = viewState.navBarItems[index].key
         if (key == tabbed.currentTabKey) tabbed.resetCurrentToRoot() else tabbed.switchTo(key)
     }
 
     // Hide the bar on full-screen routes (paywall, onboarding, …); also guard against an unknown tab.
     val top = tabbed.current.lastOrNull()
-    val barVisible = (top == null || !hideBarFor(top)) && selectedIndex >= 0
+    val barVisible = (top == null || !hideBarFor(top)) && viewState.navBarItemIndexSelected >= 0
 
     // Reserve the bar's footprint as the content's bottom inset (read unconditionally — it's a @Composable
     // getter) so screens on FrnkScreenScaffold / FrnkMviScreen pad their scrollable content above the bar
@@ -280,8 +272,8 @@ private fun TabbedNavHost(
 
         if (barVisible) {
             FrnkBottomFloatingBar(
-                items = navBarItems,
-                selectedIndex = selectedIndex,
+                items = viewState.navBarItems,
+                selectedIndex = viewState.navBarItemIndexSelected,
                 onItemSelected = onItemSelected,
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
             )

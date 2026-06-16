@@ -57,11 +57,17 @@ import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAppInfo
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
 import dev.jdgarita.frnk.ui.bottomnav.FrnkBottomFloatingBar
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
+import dev.jdgarita.frnk.ui.bottomnav.FrnkHomeConfig
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavBarItem
+import dev.jdgarita.frnk.ui.bottomnav.FrnkNavConfig
+import dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig
+import dev.jdgarita.frnk.ui.bottomnav.FrnkSettingsConfig
+import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavConfig
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
@@ -204,17 +210,27 @@ fun DemoScreen(
             )
         }
 
+    // The host's declarative config, bundled by feature. feature/hostRoutes/homeTopBar are already
+    // remembered above, and demoPurpleThemeConfig()/demoOnboardingPages are stable, so this builds an
+    // equal FrnkTabbedNavConfig across recompositions (keeping the scaffold skippable). The Home/Settings
+    // VM keys re-key only when isPro/isGodMode flip — so the Subscription section swaps Upgrade↔Manage and
+    // the Home Upgrade action appears/disappears (the VMs are seeded once via parametersOf).
+    val config =
+        remember(state.isPro, state.isGodMode, feature, hostRoutes, homeTopBar) {
+            FrnkTabbedNavConfig(
+                app = FrnkAppInfo(name = "frnk", version = "v${Frnk.VERSION}"),
+                nav = FrnkNavConfig(feature = feature, hostRoutes = hostRoutes),
+                theme = demoPurpleThemeConfig(),
+                home = FrnkHomeConfig(topBar = homeTopBar, vmKey = "home-${state.isPro}"),
+                settings = FrnkSettingsConfig(vmKey = "settings-${state.isPro}-${state.isGodMode}"),
+                onboarding = FrnkOnboardingConfig(pages = demoOnboardingPages),
+            )
+        }
+
     FrnkTabbedNavScaffold(
-        appVersion = "v${Frnk.VERSION}",
+        config = config,
         modifier = Modifier.fillMaxSize(),
-        themeConfig = demoPurpleThemeConfig(),
         appearanceController = appearanceController,
-        feature = feature,
-        hostRoutes = hostRoutes,
-        homeTopBar = homeTopBar,
-        // The Home VM is seeded once via parametersOf; re-key it when isPro flips so the Upgrade
-        // action appears/disappears (same trick as the Settings VM below).
-        homeVmKey = "home-${state.isPro}",
         onHomeEffect = { effect ->
             when (effect) {
                 is HomeEffect.ActionInvoked -> if (effect.key == "upgrade") vm.send(DemoIntent.RequestUpgrade)
@@ -224,24 +240,21 @@ fun DemoScreen(
         settingsState = { _ ->
             demoSettingsState(LocalAppearanceController.current.appearance, state.isPro, state.isGodMode)
         },
-        // Re-seed the settings VM when entitlement state changes so the Subscription section swaps
-        // Upgrade↔Manage (and the god-mode toggle reflects the current value). The VM is seeded once
-        // via parametersOf, so without a fresh key it'd keep the stale initial state.
-        settingsVmKey = "settings-${state.isPro}-${state.isGodMode}",
         settingsEffects = { scope -> demoSettingsHandler(scope, onEffect) },
-        onboardingPages = demoOnboardingPages,
         // Single central collector for the shared VM's one-shot effects (the channel is single-
         // consumer): navigation effects push onto the current tab's back stack; everything else is
         // forwarded to the host. Lives in the shell's `effects` slot so one lifecycle-aware collector
         // survives tab swaps.
         effects = { scope ->
             // First-launch onboarding: the demo composes the bare shell (not :ui-app's FrnkAppScaffold,
-            // which wires this automatically), so it opts into the same gate helper here. The demo's
-            // FakeKeyValueStore is per-session, so each fresh launch replays onboarding-on-first-open.
+            // which wires this automatically), so it opts into the same gate helper here — gated on the
+            // config flag, which is how a bare-FrnkTabbedNavScaffold host honours
+            // FrnkOnboardingConfig.showOnFirstLaunch (the reference pattern). The demo's FakeKeyValueStore
+            // is per-session, so each fresh launch replays onboarding-on-first-open.
             FrnkFirstLaunchOnboardingEffect(
                 scope = scope,
                 gate = rememberOnboardingGate(),
-                enabled = true,
+                enabled = config.onboarding.showOnFirstLaunch && config.onboarding.pages.isNotEmpty(),
             )
             EffectCollector(vm.effects) { effect ->
                 routeDemoEffect(effect, { route -> scope.navigateTo(route) }, onEffect)

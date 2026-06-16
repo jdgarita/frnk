@@ -6,15 +6,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavKey
 import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.Lucide
+import dev.jdgarita.frnk.ui.app.FrnkAppConfig
 import dev.jdgarita.frnk.ui.app.FrnkAppScaffold
+import dev.jdgarita.frnk.ui.app.FrnkMonetizationConfig
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.bottomnav.FrnkAppInfo
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
+import dev.jdgarita.frnk.ui.bottomnav.FrnkNavConfig
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.utils.Frnk
 import kotlinx.serialization.Serializable
@@ -48,24 +53,35 @@ class AppScaffoldSmokeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val config =
+                remember {
+                    FrnkAppConfig(
+                        app = FrnkAppInfo(name = "frnk", version = "v${Frnk.VERSION}"),
+                        nav =
+                            FrnkNavConfig(
+                                // The bar's one host-configurable tab, pointed at this harness's own screen.
+                                feature =
+                                    FrnkFeatureItem(
+                                        route = SmokeFeatureRoute,
+                                        label = "Feature",
+                                        icon = Lucide.Component,
+                                        iosSystemIcon = "square.grid.2x2",
+                                    ),
+                                hostRoutes =
+                                    SerializersModule {
+                                        polymorphic(NavKey::class) {
+                                            subclass(SmokeFeatureRoute::class, SmokeFeatureRoute.serializer())
+                                        }
+                                    },
+                            ),
+                        monetization =
+                            FrnkMonetizationConfig(
+                                paywallFeatures = listOf("Unlimited everything", "No ads", "Priority support"),
+                            ),
+                    )
+                }
             FrnkAppScaffold(
-                appName = "frnk",
-                appVersion = "v${Frnk.VERSION}",
-                // The bar's one host-configurable tab, pointed at this harness's own placeholder screen.
-                feature =
-                    FrnkFeatureItem(
-                        route = SmokeFeatureRoute,
-                        label = "Feature",
-                        icon = Lucide.Component,
-                        iosSystemIcon = "square.grid.2x2",
-                    ),
-                hostRoutes =
-                    SerializersModule {
-                        polymorphic(NavKey::class) {
-                            subclass(SmokeFeatureRoute::class, SmokeFeatureRoute.serializer())
-                        }
-                    },
-                paywallFeatures = listOf("Unlimited everything", "No ads", "Priority support"),
+                config = config,
                 onMessage = ::toast,
                 entries = {
                     entry<SmokeFeatureRoute> {

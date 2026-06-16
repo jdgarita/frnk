@@ -65,7 +65,7 @@ fun rememberFrnkBottomNavState(
     ) {
         FrnkBottomNavState(
             home =
-                FrnkAdaptiveNavTab(
+                FrnkBottomNavTab.Home(
                     key = homeKey,
                     root = homeRoot,
                     label = homeLabel,
@@ -73,7 +73,7 @@ fun rememberFrnkBottomNavState(
                     iosSystemIcon = "house",
                 ),
             feature =
-                FrnkAdaptiveNavTab(
+                FrnkBottomNavTab.Feature(
                     key = feature.key,
                     root = feature.route,
                     label = feature.label,
@@ -81,7 +81,7 @@ fun rememberFrnkBottomNavState(
                     iosSystemIcon = feature.iosSystemIcon,
                 ),
             settings =
-                FrnkAdaptiveNavTab(
+                FrnkBottomNavTab.Settings(
                     key = settingsKey,
                     root = settingsRoot,
                     label = settingsLabel,

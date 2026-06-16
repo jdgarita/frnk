@@ -94,7 +94,8 @@ FrnkTheme(
 }
 ```
 
-`FrnkAppScaffold` / `FrnkTabbedNavScaffold` take the same `themeConfig` and wrap `FrnkTheme` for you.
+`FrnkAppScaffold` / `FrnkTabbedNavScaffold` take the theme override as `config.theme` (a `FrnkThemeConfig`)
+and wrap `FrnkTheme` for you.
 
 **Custom icon pack.** The toolkit ships a default Lucide-backed icon registry (`iconBack`, `iconClose`,
 `iconSearch`, `iconSettings`, …). A host overrides any or all of them — **or adds brand-specific icons** —
@@ -181,7 +182,7 @@ fun bootstrapMyAppKit(): KoinApplication =
     initializeFrnk(modules = frnkUiModules() + databaseModule + prefsModule + /* … */ myAppModules)
 ```
 
-After bootstrap, `FrnkAppScaffold(appName, appVersion) { /* home items */ }` (§8) is the
+After bootstrap, `FrnkAppScaffold(config = FrnkAppConfig(...)) { /* home items */ }` (§8) is the
 batteries-included app root; it fails fast with an explanation if `initializeFrnk` didn't run.
 
 ## 5. Custom analytics
@@ -298,22 +299,41 @@ Settings` three-tab shape), a Home template you fill with content, the default S
 by the live `EntitlementManager` (Upgrade → paywall, Restore, Manage Subscription, appearance, feedback),
 an optional onboarding flow, and the auto-mounted paywall — in one call:
 
+The host's declarative input is one `@Immutable` **`FrnkAppConfig`** bundle, grouped into a sub-config
+per feature area (`*Config` = host input declared once; the toolkit's runtime state stays in `*State` /
+`*ViewState`). The composable keeps only *behaviour* as parameters — the `@Composable` slots
+(`homeContent`/`entries`/`effects`), the event callbacks (`onMessage`/`onHomeEffect`), and the runtime
+controllers (`appearanceController`/`pendingRoutes`):
+
 ```kotlin
 setContent {
+    val config = remember {
+        FrnkAppConfig(
+            app = FrnkAppInfo(name = "MyApp", version = "v1.0.0"),
+            nav = FrnkNavConfig(
+                feature = FrnkFeatureItem(                     // the bar's one host-configurable tab
+                    route = SessionsRoute,                     //   register it in `entries` below
+                    label = "Sessions",
+                    icon = Lucide.CalendarClock,               //   ImageVector (Android)
+                    iosSystemIcon = "calendar",                //   SF-Symbol (iOS)
+                ),
+                hostRoutes = SerializersModule { /* your @Serializable routes */ },
+            ),
+            theme = myThemeConfig(),                           // §2 token overrides
+            settings = FrnkSettingsConfig(
+                extraSections = listOf(myPrefsSection),        // injected before Legal by default
+            ),
+            onboarding = FrnkOnboardingConfig(
+                pages = myOnboardingPages,                     // empty → no onboarding entry
+                showOnFirstLaunch = true,                      // auto-present once on first launch (default)
+            ),
+            monetization = FrnkMonetizationConfig(
+                paywallFeatures = listOf("Unlimited everything", "No ads"),
+            ),
+        )
+    }
     FrnkAppScaffold(
-        appName = "MyApp",
-        appVersion = "v1.0.0",
-        themeConfig = myThemeConfig(),                         // §2 token overrides
-        feature = FrnkFeatureItem(                             // the bar's one host-configurable tab
-            route = SessionsRoute,                             //   register it in `entries` below
-            label = "Sessions",
-            icon = Lucide.CalendarClock,                       //   ImageVector (Android)
-            iosSystemIcon = "calendar",                        //   SF-Symbol (iOS)
-        ),
-        hostRoutes = SerializersModule { /* your @Serializable routes */ },
-        settingsExtraSections = listOf(myPrefsSection),        // injected before Legal by default
-        onboardingPages = myOnboardingPages,                   // omit → no onboarding entry
-        showOnboardingOnFirstLaunch = true,                    // auto-present onboarding once on first launch (default)
+        config = config,
         onHomeEffect = { effect -> /* HomeEffect.ActionInvoked(key) / NavigationInvoked */ },
         entries = { scope -> entry<SessionsRoute> { … } },     // the feature tab's root + your pushes
         effects = { scope -> EffectCollector(vm.effects) { scope.navigateTo(it.route) } },
@@ -332,9 +352,9 @@ setContent {
   single `EffectCollector` drives navigation.
 - Don't re-register the built-in routes (`ToolkitRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
   `entries` — nav3 throws on duplicate entry registrations.
-- When `onboardingPages` is supplied, onboarding is **auto-presented once on first launch** and
+- When `onboarding.pages` is supplied, onboarding is **auto-presented once on first launch** and
   persisted through a `KeyValueStore`-backed gate (install `prefsModule` for cross-launch persistence;
-  with no store bound it falls back to once-per-session). Set `showOnboardingOnFirstLaunch = false` to
+  with no store bound it falls back to once-per-session). Set `onboarding.showOnFirstLaunch = false` to
   present it only on demand (Settings → Show onboarding). Full-window screens (onboarding, paywall) use
   **`FrnkFullScreenScaffold`** — an immersive template with an always-on ✕ that reserves the safe-area
   insets + close-button band for you; reuse it for your own full-screen surfaces.
@@ -346,7 +366,7 @@ setContent {
 ### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 
 The adaptive bottom bar (`FrnkBottomFloatingBar`, `:ui-bottom-nav`) takes **`ImageVector`** icons in the common
-API (`FrnkNavBarItem.icon` / `FrnkAdaptiveNavTab.icon` / `FrnkFeatureItem.icon`), plus an `iosSystemIcon`
+API (`FrnkNavBarItem.icon` / `FrnkBottomNavTab.icon` / `FrnkFeatureItem.icon`), plus an `iosSystemIcon`
 SF-Symbol string for the native iOS bar. On **Android** the bar is a Material3 Expressive
 `HorizontalFloatingToolbar` that renders the `ImageVector` directly — it never touches `DrawableResource`, so
 **there is no host-side asset-bundling step** (the old `MissingResourceException` /

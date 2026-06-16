@@ -41,7 +41,7 @@ mechanism (`FrnkNavPrimaryAction`, `FrnkPrimaryActionRegistry`, `FrnkPrimaryActi
 
 ## Icons: `ImageVector` (Android) + SF-Symbol (iOS)
 
-The common item (`FrnkNavBarItem`) and tab (`FrnkAdaptiveNavTab`) carry **two** icon forms because the
+The common item (`FrnkNavBarItem`) and tab (`FrnkBottomNavTab`) carry **two** icon forms because the
 engines consume different things:
 - `icon: ImageVector` — a clean shared Compose vector, rendered directly by the Android floating toolbar.
   The Home/Settings bookends default to theme icon tokens (`iconNavHome`/`iconSettings`), host-overridable
@@ -113,15 +113,18 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   Most hosts use the scaffold; call the bar directly only when wiring your own selected-tab state /
   navigation. This is the toolkit's sole bottom-nav bar.
 - `FrnkTabbedNavScaffold.kt` — **the one-call tabbed app** (host-enablement); the single public composable a
-  host calls to get a complete tabbed app. `FrnkTabbedNavScaffold(appVersion, …, feature, …) { homeContent }`
-  stands it all up: `FrnkTheme(themeConfig)` wrap, `frnkNavConfiguration(hostRoutes)`,
+  host calls to get a complete tabbed app. `FrnkTabbedNavScaffold(config: FrnkTabbedNavConfig, …) { homeContent }`
+  stands it all up: `FrnkTheme(config.theme)` wrap, `frnkNavConfiguration(config.nav.hostRoutes)`,
   `rememberFrnkBottomNavState` (the fixed `Home · feature · Settings` tabs; the center tab supplied as
-  `feature: FrnkFeatureItem`), `rememberFrnkTabbedBackStacks`, built-in **Home** (`HomeScreen` with the
-  host's `homeContent` `ColumnScope` slot; `homeTopBar`/`homeVmKey`/`onHomeEffect`), **Settings** (default
-  catalogue + `settingsExtraSections`, overridable via the `settingsState`/`settingsEffects` composable
-  factories + `settingsVmKey`), optional **Onboarding** (`onboardingPages` → registers
-  `ToolkitRoute.Onboarding`; back/close pops), and deep-links (`pendingRoutes: FrnkPendingRouteRequest?`).
-  Host extension points — `effects` (the single `EffectCollector` home), `entries`
+  `config.nav.feature: FrnkFeatureItem`), `rememberFrnkTabbedBackStacks`, built-in **Home** (`HomeScreen` with
+  the host's `homeContent` `ColumnScope` slot; `config.home.topBar`/`config.home.vmKey`/`onHomeEffect`),
+  **Settings** (default catalogue + `config.settings.extraSections`, overridable via the
+  `settingsState`/`settingsEffects` composable factories + `config.settings.vmKey`), optional **Onboarding**
+  (`config.onboarding.pages` → registers `ToolkitRoute.Onboarding`; back/close pops), and deep-links
+  (`pendingRoutes: FrnkPendingRouteRequest?`). The host's declarative input is bundled in
+  `config` (`FrnkTabbedNavConfig`); the composable keeps only behaviour as params — the `@Composable`
+  slots/factories, the `onHomeEffect` callback, and the runtime controllers (`appearanceController`,
+  `pendingRoutes`). Host extension points — `effects` (the single `EffectCollector` home), `entries`
   (`EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit`; register the **`feature` tab's route** here, and
   **never** re-register the built-in routes — nav3 `require`-throws on duplicates), and the effect handlers
   — all receive the `FrnkAppScope`. Assumes **Koin is already started** (`frnkUiModules()` in `:ui-app`
@@ -140,19 +143,28 @@ links under the consumer's existing `-undefined dynamic_lookup`.
     previously the *generic* host-owned-state scaffold (`(tabbed, tabs, hideBarFor, entryProvider)`) and
     `FrnkAppShell` (`ui/app/`) was the opinionated assembly above it; they were merged into this one public
     composable (the generic form became the private render core).
-- `FrnkAdaptiveNavTab.kt` / `FrnkFeatureItem.kt` / `FrnkBottomNavState.kt` / `FrnkAdaptiveNavDefaults.kt` —
-  the per-tab type (`key` + `root` + `icon: ImageVector` + `iosSystemIcon` SF-Symbol), the host-facing
+- `FrnkBottomNavTab.kt` / `FrnkFeatureItem.kt` / `FrnkBottomNavState.kt` / `FrnkAdaptiveNavDefaults.kt` —
+  the per-tab type (`FrnkBottomNavTab`, a `sealed class` with one subtype per fixed slot — `Home` /
+  `Feature` / `Settings` — each carrying `key` + `root` + `icon: ImageVector` + `iosSystemIcon` SF-Symbol;
+  it superseded the old `FrnkAdaptiveNavTab` data class so the three-tab shape is typed), the host-facing
   center-tab config (`FrnkFeatureItem`: `route` + `label` + `icon` + `iosSystemIcon` + `key`), the view
   state (`FrnkBottomNavState`, `internal` ctor, holding the fixed `home`/`feature`/`settings` tabs +
-  `tabs`), and `rememberFrnkBottomNavState(homeRoot, settingsRoot, feature, …)`, which builds the fixed
-  three-tab shape: a Home tab, the host's `feature` tab, then a Settings tab (bookend labels from
-  `FrnkStrings`, icons from the `iconNavHome` / `iconSettings` theme tokens + `"house"` / `"gearshape"`
-  SF-Symbols). The product rule **every app has Home + Settings** is structural — they cannot be omitted.
+  `tabs: List<FrnkBottomNavTab>`), and `rememberFrnkBottomNavState(homeRoot, settingsRoot, feature, …)`,
+  which builds the fixed three-tab shape: a Home tab, the host's `feature` tab, then a Settings tab (bookend
+  labels from `FrnkStrings`, icons from the `iconNavHome` / `iconSettings` theme tokens + `"house"` /
+  `"gearshape"` SF-Symbols). The product rule **every app has Home + Settings** is structural — they cannot
+  be omitted.
+- `FrnkTabbedNavConfig.kt` — the host's `@Immutable` config bundle for `FrnkTabbedNavScaffold` + its feature
+  sub-configs (`FrnkAppInfo`, `FrnkNavConfig`, `FrnkHomeConfig`, `FrnkSettingsConfig`, `FrnkOnboardingConfig`;
+  theme reuses `FrnkThemeConfig`). **Convention:** `*Config` = host input declared once; runtime, toolkit-owned
+  state stays in `*State`/`*ViewState`. `:ui-app`'s `FrnkAppConfig` is the batteries-included superset.
+- `FrnkTabbedNavViewState.kt` — the bar's runtime view state (`navBarItems` + `navBarItemIndexSelected`),
+  derived inside the private `TabbedNavHost` from the active tab and fed to `FrnkBottomFloatingBar`.
 
 ## Override model
 
 - **Configure the center tab**: pass a `feature: FrnkFeatureItem` to `rememberFrnkBottomNavState` (the
-  Home/Settings bookends are fixed), or build the `List<FrnkAdaptiveNavTab>` by hand for a fully custom shape.
+  Home/Settings bookends are fixed), or build the `List<FrnkBottomNavTab>` by hand for a fully custom shape.
 - **Wire the navigation**: use `FrnkTabbedNavScaffold` with a host-owned `rememberFrnkTabbedBackStacks` + an
   `entryProvider` — frnk owns the display + bar + tab switching + back convention + bar-inset; the host owns
   the back stacks and registers destinations.

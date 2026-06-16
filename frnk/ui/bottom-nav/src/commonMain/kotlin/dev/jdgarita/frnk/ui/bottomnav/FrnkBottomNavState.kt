@@ -21,9 +21,9 @@ import androidx.compose.runtime.Immutable
  */
 @Immutable
 class FrnkBottomNavState internal constructor(
-    val home: FrnkAdaptiveNavTab,
-    val feature: FrnkAdaptiveNavTab,
-    val settings: FrnkAdaptiveNavTab,
+    val home: FrnkBottomNavTab.Home,
+    val feature: FrnkBottomNavTab.Feature,
+    val settings: FrnkBottomNavTab.Settings,
 ) {
-    val tabs: List<FrnkAdaptiveNavTab> = listOf(home, feature, settings)
+    val tabs: List<FrnkBottomNavTab> = listOf(home, feature, settings)
 }

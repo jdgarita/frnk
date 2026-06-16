@@ -732,3 +732,54 @@ Follow-up (same change, addressing code-review feedback): (1) the relocated priv
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppShell.kt (deleted)
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoScreen.kt
+
+## FrnkAppScaffold/FrnkTabbedNavScaffold take a FrnkAppConfig/FrnkTabbedNavConfig bundle
+
+- id: frnkappscaffold-frnktabbednavscaffold-take-a-frnkappconfig-f-20260616-171324
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui-app / ui-bottom-nav public API
+- date: 2026-06-16
+
+The two public app-root composables had grown to 21 (FrnkAppScaffold) / 24 (FrnkTabbedNavScaffold) flat parameters. We bundled the **data-shaped** params into one `@Immutable` config, grouped into a `*Config` sub-bundle per feature area.
+
+**Naming convention (the rule to keep):** `*Config` = host-supplied input declared once and rarely changing (FrnkAppConfig, FrnkThemeConfig). `*State`/`*ViewState` = state the toolkit owns and mutates at runtime (MVI UiState, FrnkTabbedNavViewState). Don't name host config `*State` even though "it's Compose" — `*State` carries runtime-mutable/observable connotations and collides with MVI. Chose `Config` over `State` after the user (correctly) noted host config doesn't change at runtime.
+
+**Types.** `:ui-bottom-nav`: `FrnkTabbedNavConfig(app, nav, theme, home, settings, onboarding)` over sub-configs `FrnkAppInfo(name,version)`, `FrnkNavConfig(feature, hostRoutes, hideBarFor, homeRoot, settingsRoot)`, `FrnkHomeConfig(topBar, vmKey)`, `FrnkSettingsConfig(extraSections, vmKey)`, `FrnkOnboardingConfig(pages, showOnFirstLaunch)` (reuses `FrnkThemeConfig`). `:ui-app`: `FrnkAppConfig(...same six... + monetization: FrnkMonetizationConfig(paywallFeatures))` — the batteries superset; `monetization` can't live in `:ui-bottom-nav`. `FrnkAppConfig.toTabbedNavConfig()` (internal) projects the shared six down; FrnkAppScaffold then `.copy()`s in the app-name Home top bar + the `frnk-settings-$isPro` Settings VM key.
+
+**What stayed parameters (deliberate):** `@Composable` slots (homeContent, entries, effects, settingsState/settingsEffects factories) and event callbacks (onMessage, onHomeEffect) — storing `@Composable` lambdas in an `@Immutable` data class breaks its stability contract and fights the toolkit's slot-API convention. Runtime controllers `appearanceController` (@Stable, mutable) and `pendingRoutes` (FrnkPendingRouteRequest, StateFlow-backed signal) also stayed params — they're not immutable config. Net: FrnkAppScaffold 21→9 params, FrnkTabbedNavScaffold 24→10.
+
+**`showOnboardingOnFirstLaunch`** folded into `FrnkOnboardingConfig.showOnFirstLaunch` (shared) — still meaningful at the bare-scaffold layer: a direct FrnkTabbedNavScaffold host (the demo) reads it to gate its own FrnkFirstLaunchOnboardingEffect.
+
+**Internal bar/tab model (same change):** the WIP `FrnkBottomNavTab` (sealed, Home/Feature/Settings subtypes) **superseded** the `FrnkAdaptiveNavTab` data class (deleted, hard-replace, no alias) so the fixed three-tab shape is typed; `FrnkBottomNavState.tabs` is now `List<FrnkBottomNavTab>`. The WIP `FrnkTabbedNavViewState(navBarItems, navBarItemIndexSelected)` now holds the bar's derived render state inside the private TabbedNavHost (was loose locals).
+
+Verified: ktlintFormat + compileAndroidMain + demo-android compile, testAndroidHostTest + demo-android tests, DemoKit iOS XCFramework link, and ran demo-android on device — FrnkAppScaffold smoke + DemoScreen (onboarding/home/three-tab bar) both render.
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppConfig.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavConfig.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavScaffold.kt
+
+## Extension functions live in their own ext/<Type>Ext.kt file
+
+- id: extension-functions-live-in-their-own-ext-type-ext-kt-file-20260616-180244
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: code organization convention
+- date: 2026-06-16
+
+**Convention (forward-looking):** extension functions go in their **own file** under an `ext/` subpackage of the owning module — never appended to the target type's declaration file.
+
+- Package: `dev.jdgarita.frnk.<module>.ext` (e.g. `dev.jdgarita.frnk.ui.app.ext`).
+- File name: `<Type>Ext.kt` — extensions on `FrnkAppConfig` → `ext/FrnkAppConfigExt.kt`.
+- Worked example: `FrnkAppConfig.toTabbedNavConfig()` (the FrnkAppConfig → FrnkTabbedNavConfig projection) was moved out of `FrnkAppConfig.kt` into `frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/ext/FrnkAppConfigExt.kt`.
+
+**Why:** keeps data-class / type files declaration-only, and makes extensions discoverable in one predictable place per type.
+
+**Scope:** applies to every NEW extension function. Not a mandate to mass-migrate existing inline extensions. Also recorded as a bullet in the repo root `CLAUDE.md` "Conventions to follow when adding code".
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/ext/FrnkAppConfigExt.kt

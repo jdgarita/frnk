@@ -13,28 +13,22 @@ import dev.jdgarita.frnk.di.requireFrnkKoin
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
+import dev.jdgarita.frnk.ui.app.ext.toTabbedNavConfig
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
-import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
-import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.scaffolds.HomeEffect
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
 import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
-import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.scaffolds.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.theme.AppearanceController
-import dev.jdgarita.frnk.ui.theme.FrnkThemeConfig
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.serialization.modules.EmptySerializersModule
-import kotlinx.serialization.modules.SerializersModule
 import org.koin.compose.koinInject
 
 /**
@@ -44,10 +38,15 @@ import org.koin.compose.koinInject
  * [EntitlementManager] (the Subscription section flips Free↔Pro as entitlements change), the
  * monetization-aware Settings handler ([rememberFrnkSettingsHandler]: Upgrade → paywall, Restore,
  * god mode, Manage Subscription) with appearance / onboarding / feedback fallbacks, the
- * auto-mounted [ToolkitRoute.Paywall] destination ([paywallFeatures]), and **first-launch
- * onboarding** — when [onboardingPages] are supplied and [showOnboardingOnFirstLaunch] is true, the
- * onboarding flow is presented once on first open (persisted via a `KeyValueStore`-backed
+ * auto-mounted [ToolkitRoute.Paywall] destination ([FrnkMonetizationConfig.paywallFeatures]), and
+ * **first-launch onboarding** — when [FrnkOnboardingConfig.pages][dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig.pages]
+ * are supplied and [FrnkOnboardingConfig.showOnFirstLaunch][dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig.showOnFirstLaunch]
+ * is true, the onboarding flow is presented once on first open (persisted via a `KeyValueStore`-backed
  * [rememberOnboardingGate]; no-op when no store is bound).
+ *
+ * The host's declarative input is bundled in [config] ([FrnkAppConfig]); the composable keeps only
+ * *behaviour* as parameters (the `@Composable` slots [homeContent]/[effects]/[entries], the event
+ * callbacks [onMessage]/[onHomeEffect], and the runtime controllers [appearanceController]/[pendingRoutes]).
  *
  * Minimal host integration:
  *
@@ -57,7 +56,13 @@ import org.koin.compose.koinInject
  *
  * // Activity / ComposeUIViewController:
  * setContent {
- *     FrnkAppScaffold(appName = "Still", appVersion = "v1.0") {
+ *     FrnkAppScaffold(
+ *         config = FrnkAppConfig(
+ *             app = FrnkAppInfo(name = "Still", version = "v1.0"),
+ *             nav = FrnkNavConfig(feature = FrnkFeatureItem(…)),
+ *         ),
+ *         entries = { scope -> entry(featureRoute) { … } },
+ *     ) {
  *         // Home items — the scaffold owns the scrolling column.
  *     }
  * }
@@ -65,29 +70,18 @@ import org.koin.compose.koinInject
  *
  * Without monetization modules installed (no [EntitlementManager] in the graph) the Settings tab
  * renders with `isPro = false` and monetization rows degrade to no-ops; the paywall entry is not mounted.
- * Extension points ([effects], [entries], [onHomeEffect], [feature], …) are forwarded to
- * [FrnkTabbedNavScaffold] — see its docs for the contracts (notably: register the [feature] tab's route
- * in [entries], and don't re-register the built-in routes).
+ * Extension points ([effects], [entries], [onHomeEffect], …) are forwarded to [FrnkTabbedNavScaffold] —
+ * see its docs for the contracts (notably: register the feature tab's route in [entries], and don't
+ * re-register the built-in routes).
  */
 @Composable
 fun FrnkAppScaffold(
-    appName: String,
-    appVersion: String,
+    config: FrnkAppConfig,
     modifier: Modifier = Modifier,
-    themeConfig: FrnkThemeConfig = FrnkThemeConfig.Default,
     appearanceController: AppearanceController? = null,
-    feature: FrnkFeatureItem,
-    hostRoutes: SerializersModule = EmptySerializersModule(),
-    hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     pendingRoutes: FrnkPendingRouteRequest? = null,
-    homeTopBar: FrnkTopAppBarState? = null,
-    homeVmKey: String? = null,
-    onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
-    settingsExtraSections: List<SettingsSectionState> = emptyList(),
-    onboardingPages: List<OnboardingPageState> = emptyList(),
-    showOnboardingOnFirstLaunch: Boolean = true,
-    paywallFeatures: List<String> = emptyList(),
     onMessage: (String) -> Unit = {},
+    onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
     effects: @Composable (FrnkAppScope) -> Unit = {},
     entries: EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit = {},
     homeContent: @Composable ColumnScope.() -> Unit,
@@ -101,50 +95,61 @@ fun FrnkAppScaffold(
     // KeyValueStore is bound), same degrade-gracefully pattern as [entitlements].
     val onboardingGate = rememberOnboardingGate()
 
+    // Project the host config onto the lower scaffold, injecting the two batteries this layer owns:
+    //  - the Home top bar defaults to the app name (vs. the lower scaffold's generic "Home" string);
+    //  - the Settings VM is re-keyed on entitlement state so the Subscription section swaps
+    //    Upgrade↔Manage (the VM is seeded once via parametersOf; without a fresh key it keeps the stale
+    //    initial catalogue). A host-set settings.vmKey is preserved as a prefix rather than discarded,
+    //    so a custom seed still re-seeds on isPro flips.
+    val tabbedConfig =
+        remember(config, isPro) {
+            config.toTabbedNavConfig().copy(
+                home =
+                    if (config.home.topBar == null) {
+                        config.home.copy(topBar = FrnkTopAppBarState(title = config.app.name))
+                    } else {
+                        config.home
+                    },
+                settings =
+                    config.settings.copy(
+                        vmKey = config.settings.vmKey?.let { "$it-$isPro" } ?: "frnk-settings-$isPro",
+                    ),
+            )
+        }
+
     FrnkTabbedNavScaffold(
-        appVersion = appVersion,
+        config = tabbedConfig,
         modifier = modifier,
-        themeConfig = themeConfig,
         appearanceController = appearanceController,
-        feature = feature,
-        hostRoutes = hostRoutes,
-        hideBarFor = hideBarFor,
         pendingRoutes = pendingRoutes,
-        homeTopBar = homeTopBar ?: FrnkTopAppBarState(title = appName),
-        homeVmKey = homeVmKey,
         onHomeEffect = onHomeEffect,
         settingsState = { _ ->
             rememberDefaultSettingsState(
-                version = appVersion,
+                version = config.app.version,
                 appearance = LocalAppearanceController.current.appearance,
                 isPro = isPro,
                 // Blank in-content title — the shell's Settings top bar already shows the heading.
                 title = "",
-                extraSections = settingsExtraSections,
+                extraSections = config.settings.extraSections,
             )
         },
-        // Re-seed the Settings VM when entitlement state flips so the Subscription section swaps
-        // Upgrade↔Manage (the VM is seeded once via parametersOf; without a fresh key it would keep
-        // the stale initial catalogue).
-        settingsVmKey = "frnk-settings-$isPro",
         settingsEffects = { scope ->
             rememberFrnkAppSettingsHandler(
                 scope = scope,
-                appName = appName,
-                appVersion = appVersion,
+                appName = config.app.name,
+                appVersion = config.app.version,
                 entitlements = entitlements,
-                onboardingAvailable = onboardingPages.isNotEmpty(),
+                onboardingAvailable = config.onboarding.pages.isNotEmpty(),
                 onMessage = onMessage,
             )
         },
-        onboardingPages = onboardingPages,
         effects = { scope ->
             // Auto-present onboarding on first launch (mounted only when pages are supplied), then
             // run the host's own collectors.
             FrnkFirstLaunchOnboardingEffect(
                 scope = scope,
                 gate = onboardingGate,
-                enabled = showOnboardingOnFirstLaunch && onboardingPages.isNotEmpty(),
+                enabled = config.onboarding.showOnFirstLaunch && config.onboarding.pages.isNotEmpty(),
             )
             effects(scope)
         },
@@ -154,7 +159,7 @@ fun FrnkAppScaffold(
             if (entitlements != null) {
                 entry(ToolkitRoute.Paywall) {
                     FrnkPaywallDestination(
-                        features = paywallFeatures,
+                        features = config.monetization.paywallFeatures,
                         source = "settings",
                         onMessage = onMessage,
                         onClose = { scope.back() },
