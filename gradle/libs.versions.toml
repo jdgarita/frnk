@@ -15,7 +15,7 @@ datetime = "0.8.0"
 koin = "4.2.1"
 sqldelight = "2.3.2"
 settings = "1.3.0"
-viewmodel = "2.10.0"
+viewmodel = "2.11.0-beta01"
 # Navigation3 (the toolkit's navigation engine). `navigation3-ui` is JetBrains' CMP port
 # (org.jetbrains.androidx.navigation3); `navigation3-runtime` is the AndroidX pure-Kotlin/MP runtime
 # (androidx.navigation3) that ships NavKey/NavBackStack. The lifecycle-viewmodel-navigation3 decorator
