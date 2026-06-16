@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.SyncMviConfig
+import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingMd
@@ -28,22 +29,22 @@ import org.koin.core.parameter.parametersOf
  *
  * VM-backed convenience wrapper around [HomeScreenContent]: resolves a [HomeViewModel] from Koin
  * (initialised with [initialState] via `parametersOf`), forwards its state to the stateless renderer,
- * and surfaces one-shot effects to [onEffect]. Mirrors [SettingsScreen] exactly.
+ * and surfaces one-shot effects to [onEffect]. Mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreen] exactly.
  *
  * **The scaffold owns the vertical scroll** (recorded slot decision): [content] supplies items into a
  * `Column` that already scrolls behind the pinned top bar and the host's floating bottom bar, with
  * the merged padding (status bar + bar heights + [contentPadding] + `LocalFrnkBottomBarInset`)
  * applied — mis-applying that padding is the #1 way content ends up stuck under the bars. A host
  * that needs a `LazyColumn` or custom scroll drops one level to
- * [FrnkScreenScaffold]/[FrnkMviScreen][dev.jdgarita.frnk.ui.mvi.FrnkMviScreen] instead.
+ * [dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold]/[FrnkMviScreen][dev.jdgarita.frnk.ui.mvi.FrnkMviScreen] instead.
  *
- * Like [SettingsScreen], the VM reacts to [initialState]: seeded once via `parametersOf`, then every
+ * Like [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreen], the VM reacts to [initialState]: seeded once via `parametersOf`, then every
  * later recomposition that yields a *new* [initialState] (e.g. a top-bar action that shows only while
  * Free, after `isPro` flips) is adopted via [HomeIntent.ConfigChanged]. So **leave [vmKey] at its
  * default**; pass a fresh [initialState] (stably `remember`-ed) rather than re-keying to re-seed.
  *
  * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`; change it only to force a fresh VM.
- * Hosts that want full state-hoisting control call [HomeScreenContent] directly.
+ * [HomeScreenContent] is the module-internal stateless renderer (previews + this wrapper), not host API.
  */
 @Composable
 fun HomeScreen(
@@ -72,12 +73,12 @@ fun HomeScreen(
 }
 
 /**
- * Stateless renderer behind [HomeScreen] (used by previews and hosts that hoist their own state):
- * [FrnkScreenScaffold] with the top bar driven by [state], and a scrolling `Column` that applies the
+ * Module-internal stateless renderer behind [HomeScreen] (previews + the VM-backed wrapper):
+ * [dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold] with the top bar driven by [state], and a scrolling `Column` that applies the
  * scaffold's merged padding so [content] clears the pinned bars at rest.
  */
 @Composable
-fun HomeScreenContent(
+internal fun HomeScreenContent(
     state: HomeScreenState,
     onIntent: (HomeIntent) -> Unit,
     modifier: Modifier = Modifier,

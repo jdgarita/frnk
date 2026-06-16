@@ -1,8 +1,8 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule
-import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
-import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.home.homeScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.onboardingScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule
 import org.koin.core.module.Module
 
 /**

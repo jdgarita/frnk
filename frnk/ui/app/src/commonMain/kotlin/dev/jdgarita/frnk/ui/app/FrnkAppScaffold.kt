@@ -20,12 +20,12 @@ import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
-import dev.jdgarita.frnk.ui.scaffolds.HomeEffect
-import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
-import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
-import dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState
+import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
-import dev.jdgarita.frnk.ui.scaffolds.rememberOnboardingGate
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
+import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import kotlinx.coroutines.flow.MutableStateFlow

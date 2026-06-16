@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
 import dev.jdgarita.frnk.database.KeyValueStore
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingGate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

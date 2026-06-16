@@ -7,6 +7,12 @@ import com.composables.icons.lucide.Plus
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.RobolectricComposeTest
 import dev.jdgarita.frnk.ui.atoms.setFrnkContent
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsClickableRowState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsExtraSectionsPlacement
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
+import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,7 +20,7 @@ import kotlin.test.assertFalse
 
 /**
  * Verifies `rememberDefaultSettingsState`'s `extraSections` injection: each
- * [SettingsExtraSectionsPlacement] slots the host sections at the right point in the default
+ * [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsExtraSectionsPlacement] slots the host sections at the right point in the default
  * catalogue (Appearance → Preferences → Subscription → Support → Legal). Needs a real composition
  * (theme-token resolution inside `remember`), so it runs as a Robolectric Compose host test.
  */

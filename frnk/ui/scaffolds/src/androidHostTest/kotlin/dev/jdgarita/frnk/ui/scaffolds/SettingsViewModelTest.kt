@@ -3,6 +3,16 @@ package dev.jdgarita.frnk.ui.scaffolds
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsClickableRowState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsRowState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsStatusRowState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsThemeRowState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsToggleRowState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsViewModel
 import dev.jdgarita.frnk.ui.theme.Appearance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -19,7 +29,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Reducer tests for [SettingsViewModel.SettingsIntent.ConfigChanged][SettingsIntent.ConfigChanged] —
+ * Reducer tests for [SettingsViewModel.SettingsIntent.ConfigChanged][dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent.ConfigChanged] —
  * the merge that replaces the old "re-key the ViewModel on isPro" approach. Verifies the VM adopts an
  * externally-recomputed catalogue (Free→Pro subscription rows) while preserving its own interaction
  * state (toggle `checked`, theme selection, dev-reveal). Follows the `MviViewModelTest` template:
@@ -43,8 +53,18 @@ class SettingsViewModelTest {
 
     private fun freeSubscriptionRows() =
         listOf(
-            SettingsClickableRowState(id = "upgrade_to_pro", icon = icon, title = "Upgrade", action = SettingsAction.UpgradeToPro),
-            SettingsClickableRowState(id = "restore_purchases", icon = icon, title = "Restore", action = SettingsAction.RestorePurchases),
+            SettingsClickableRowState(
+                id = "upgrade_to_pro",
+                icon = icon,
+                title = "Upgrade",
+                action = SettingsAction.UpgradeToPro,
+            ),
+            SettingsClickableRowState(
+                id = "restore_purchases",
+                icon = icon,
+                title = "Restore",
+                action = SettingsAction.RestorePurchases,
+            ),
         )
 
     private fun proSubscriptionRows() =
@@ -136,12 +156,23 @@ class SettingsViewModelTest {
             val devSection = { checked: Boolean ->
                 SettingsSectionState(
                     title = "Developer",
-                    rows = listOf(SettingsToggleRowState(id = "god_mode", icon = icon, title = "God mode", checked = checked)),
+                    rows =
+                        listOf(
+                            SettingsToggleRowState(
+                                id = "god_mode",
+                                icon = icon,
+                                title = "God mode",
+                                checked = checked,
+                            ),
+                        ),
                 )
             }
             val vm =
                 SettingsViewModel(
-                    state(freeSubscriptionRows()).copy(developerSection = devSection(false), showDeveloperSection = true),
+                    state(freeSubscriptionRows()).copy(
+                        developerSection = devSection(false),
+                        showDeveloperSection = true,
+                    ),
                 )
 
             // Tapping the dev-section toggle must flip it in state (regression: mapRows skipped developerSection).

@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.settings
 
 import androidx.compose.runtime.Immutable
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
@@ -113,7 +113,7 @@ data class SettingsFooterState(
  * Configuration + runtime state for [SettingsScreen]. The screen is a list of [sections] (each a
  * card of [SettingsRowState] rows) plus an optional [footer]. State mutations flow through the
  * ViewModel reducer; hosts build the initial state by hand or via
- * [rememberDefaultSettingsState][dev.jdgarita.frnk.ui.scaffolds.rememberDefaultSettingsState].
+ * [rememberDefaultSettingsState][rememberDefaultSettingsState].
  */
 @Immutable
 data class SettingsScreenState(

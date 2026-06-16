@@ -14,8 +14,8 @@ import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.nav.navigateTo
-import dev.jdgarita.frnk.ui.scaffolds.SettingsAction
-import dev.jdgarita.frnk.ui.scaffolds.SettingsEffect
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -34,6 +34,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
@@ -64,12 +65,10 @@ import org.koin.core.parameter.parametersOf
  * **VMStore retention:** each distinct [vmKey] creates a permanent slot in the
  * `ViewModelStoreOwner`'s store until that owner is destroyed — `ViewModelStore` never evicts
  * keyed VMs when the composable leaves composition. [OnboardingViewModel] is tiny (one Int) so
- * this is memory-irrelevant for an overlay shown a handful of times per session. Hosts that need
- * bounded memory (or true single-shot lifecycle) should hoist their own state and call
- * [OnboardingScreenContent] directly.
+ * this is memory-irrelevant for an overlay shown a handful of times per session.
  *
- * Hosts that want full control over state hoisting (or that already use a different DI/MVI stack)
- * should call [OnboardingScreenContent] directly.
+ * [OnboardingScreenContent] is the module-internal stateless renderer (previews + this wrapper),
+ * not part of the public host API.
  */
 @Composable
 fun OnboardingScreen(
@@ -98,7 +97,7 @@ fun OnboardingScreen(
  * Two separate [LaunchedEffect]s keyed by the source-of-truth on each side prevent a feedback loop.
  *
  * **Chrome:** the immersive backdrop + the always-on top-right close (✕) come from
- * [FrnkFullScreenScaffold]; this renderer only lays out the pager / pips / navigation row inside it.
+ * [dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold]; this renderer only lays out the pager / pips / navigation row inside it.
  *
  * **Layout note:** when [OnboardingScreenState.pagerHeight] is `null`, the pager uses
  * `Modifier.weight(1f)` inside this function's own `Column`, so it fills the **Column's** remaining
@@ -107,7 +106,7 @@ fun OnboardingScreen(
  * `weight` being a no-op in a non-Column parent.
  */
 @Composable
-fun OnboardingScreenContent(
+internal fun OnboardingScreenContent(
     state: OnboardingScreenState,
     onIntent: (OnboardingIntent) -> Unit,
     modifier: Modifier = Modifier,

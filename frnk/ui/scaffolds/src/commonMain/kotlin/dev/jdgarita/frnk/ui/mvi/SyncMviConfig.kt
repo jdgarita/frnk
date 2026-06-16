@@ -21,8 +21,8 @@ import androidx.compose.runtime.LaunchedEffect
  * the comparison stays cheap.
  *
  * Single source of truth for the "sync external config into an MVI ViewModel" pattern — both
- * [SettingsScreen][dev.jdgarita.frnk.ui.scaffolds.SettingsScreen] and
- * [HomeScreen][dev.jdgarita.frnk.ui.scaffolds.HomeScreen] use it. (Note: the merge itself runs through
+ * [SettingsScreen][dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreen] and
+ * [HomeScreen][dev.jdgarita.frnk.ui.scaffolds.home.HomeScreen] use it. (Note: the merge itself runs through
  * the VM's intent channel, so a *live* config flip while the screen is composed lands on the next
  * frame; a screen that is (re)entered after the flip seeds correctly and never shows the old config.)
  *

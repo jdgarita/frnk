@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,7 +53,7 @@ import org.koin.core.parameter.parametersOf
  * VM-backed convenience wrapper around [SettingsScreenContent]. Resolves a [SettingsViewModel] from
  * Koin (initialised with [initialState] via `parametersOf`), forwards its state to the stateless
  * renderer, and surfaces one-shot effects to [onEffect]. Mirrors
- * [OnboardingScreen][dev.jdgarita.frnk.ui.scaffolds.OnboardingScreen] exactly.
+ * [OnboardingScreen][dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen] exactly.
  *
  * The VM reacts to [initialState]: it is seeded once via `parametersOf`, then every later recomposition
  * that produces a *new* [initialState] (e.g. the host's [rememberDefaultSettingsState] rebuilt because
@@ -63,8 +63,8 @@ import org.koin.core.parameter.parametersOf
  *
  * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`. By default the VM is reused for the
  * lifetime of the enclosing `ViewModelStoreOwner`; change [vmKey] only to force a *fresh* VM (a hard
- * reset that discards the merged state). Hosts that want full state-hoisting control should call
- * [SettingsScreenContent] directly.
+ * reset that discards the merged state). [SettingsScreenContent] is the module-internal stateless
+ * renderer (previews + this wrapper), not part of the public host API.
  */
 @Composable
 fun SettingsScreen(
@@ -95,7 +95,7 @@ fun SettingsScreen(
  * Pure and preview-friendly — all interaction is delegated to [onIntent].
  */
 @Composable
-fun SettingsScreenContent(
+internal fun SettingsScreenContent(
     state: SettingsScreenState,
     onIntent: (SettingsIntent) -> Unit,
     modifier: Modifier = Modifier,

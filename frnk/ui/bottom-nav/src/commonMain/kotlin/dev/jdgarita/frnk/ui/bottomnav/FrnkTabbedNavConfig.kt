@@ -5,8 +5,8 @@ import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
-import dev.jdgarita.frnk.ui.scaffolds.SettingsSectionState
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
 import dev.jdgarita.frnk.ui.theme.FrnkThemeConfig
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule

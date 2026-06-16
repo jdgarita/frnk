@@ -15,9 +15,9 @@ import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
-import dev.jdgarita.frnk.ui.scaffolds.homeScaffoldModule
-import dev.jdgarita.frnk.ui.scaffolds.onboardingScaffoldModule
-import dev.jdgarita.frnk.ui.scaffolds.settingsScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.home.homeScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.onboardingScaffoldModule
+import dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
 import dev.jdgarita.frnk.utils.PrintLogger

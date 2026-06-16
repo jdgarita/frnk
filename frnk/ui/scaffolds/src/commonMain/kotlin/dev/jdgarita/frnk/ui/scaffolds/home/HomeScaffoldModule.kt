@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.home
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -9,7 +9,7 @@ import org.koin.dsl.module
  * `frnkUiModules()` in `:ui-app` includes it.
  *
  * The ViewModel takes the initial [HomeScreenState] as a runtime parameter, so the call site passes
- * the configured chrome via `parametersOf(initialState)` — mirrors [settingsScaffoldModule].
+ * the configured chrome via `parametersOf(initialState)` — mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule].
  */
 val homeScaffoldModule =
     module {

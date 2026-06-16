@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

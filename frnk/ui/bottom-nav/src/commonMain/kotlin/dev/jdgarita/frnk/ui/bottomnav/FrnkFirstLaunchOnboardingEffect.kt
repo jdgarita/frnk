@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import dev.jdgarita.frnk.ui.nav.ToolkitRoute
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingGate
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingGate
 
 /**
  * Presents the built-in onboarding flow **once, on first launch**: when [enabled] and onboarding has

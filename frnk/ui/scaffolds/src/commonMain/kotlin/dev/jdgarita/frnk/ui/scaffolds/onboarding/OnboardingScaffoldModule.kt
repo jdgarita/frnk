@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module

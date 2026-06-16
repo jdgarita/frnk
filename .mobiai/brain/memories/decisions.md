@@ -841,3 +841,23 @@ See also [[prioritize-hoisted-state-over-internal-state-for-viewstates]].
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsScreen.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/HomeScreen.kt
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppScaffold.kt
+
+## Scaffolds split into per-feature subpackages; *Content renderers kept internal
+
+- id: scaffolds-split-into-per-feature-subpackages-content-rendere-20260616-210920
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-scaffolds
+- date: 2026-06-16
+
+The flat `dev.jdgarita.frnk.ui.scaffolds` package was reorganized into per-feature subpackages — `.home`, `.onboarding`, `.settings` — to group each scaffold's Screen/State/ViewModel/ScaffoldModule together as the set grows. Cross-cutting templates (FrnkScreenScaffold, FrnkFullScreenScaffold, FrnkBottomBarInset, FeedbackEmailLauncher) and the shared Onboarding* types stay in the root `ui.scaffolds` package. Settings reducer helpers (mergedWith/withTheme/withToggle/mapRows) were extracted out of SettingsViewModel.kt into `settings/ext/SettingsScreenStateExt.kt` (ext-function-own-file convention), leaving SettingsViewModel.kt as just the MVI state machine; the helpers went private->internal so the VM in the sibling `settings` package can call them.
+
+Decision: the stateless `*Content` renderers (HomeScreenContent/OnboardingScreenContent/SettingsScreenContent) are `internal`, not public. They are consumed only by in-module previews + the VM-backed wrapper; nothing out-of-module calls them. This implements the standing preference 'composables internal when possible' and overrides the older docs wording that exposed `*Content` for 'advanced hosts'. Promote to public only if a real cross-module/host call site appears.
+
+Trap avoided: moving Onboarding*/Home*/Settings* types into subpackages requires repointing every consumer import (DemoScreen, FrnkTabbedNavConfig, FrnkTabbedNavScaffold, previews) — a half-done move leaves unresolved references that only surface at compile (`:ui-scaffolds`/`:ui-bottom-nav`/`:demo-shared`). Also watch for IDE `_root_ide_package_.` auto-complete artifacts leaking in when a moved file references a type still in the parent package; add a real import instead.
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/home
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/settings

@@ -4,6 +4,10 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
+import dev.jdgarita.frnk.ui.scaffolds.home.HomeIntent
+import dev.jdgarita.frnk.ui.scaffolds.home.HomeScreenState
+import dev.jdgarita.frnk.ui.scaffolds.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
@@ -17,7 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Reducer/effect tests for [HomeViewModel] — the pass-through home-chrome state machine. Follows the
+ * Reducer/effect tests for [dev.jdgarita.frnk.ui.scaffolds.home.HomeViewModel] — the pass-through home-chrome state machine. Follows the
  * `MviViewModelTest` template (shared-ui-api): `Dispatchers.setMain` so `viewModelScope` drives the
  * intent collector. Lives in `androidHostTest` because this module has no `commonTest` source set.
  */

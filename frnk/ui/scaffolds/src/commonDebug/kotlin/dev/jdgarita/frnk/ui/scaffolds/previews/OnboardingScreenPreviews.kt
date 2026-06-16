@@ -10,9 +10,9 @@ import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingPageState
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenContent
-import dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenContent
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.iconCheck

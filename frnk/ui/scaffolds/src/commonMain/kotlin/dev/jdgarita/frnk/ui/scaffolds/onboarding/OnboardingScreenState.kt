@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.Dp

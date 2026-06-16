@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 

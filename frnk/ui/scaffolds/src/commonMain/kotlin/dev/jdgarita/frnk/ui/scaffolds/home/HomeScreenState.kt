@@ -1,4 +1,4 @@
-package dev.jdgarita.frnk.ui.scaffolds
+package dev.jdgarita.frnk.ui.scaffolds.home
 
 import androidx.compose.runtime.Immutable
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
@@ -11,8 +11,8 @@ import dev.jdgarita.frnk.ui.mvi.UiState
  * State for [HomeScreen] — the toolkit's home-tab page template: a [FrnkTopAppBar][topBar] pinned
  * over a vertically scrollable column the host fills through the screen's `content` slot.
  *
- * Skeleton decision (recorded): **non-sealed, no `Skeleton` object** — like [SettingsScreenState] /
- * [OnboardingScreenState] this is screen-template *chrome*, not a content-bearing atom. Loading
+ * Skeleton decision (recorded): **non-sealed, no `Skeleton` object** — like [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState] /
+ * [dev.jdgarita.frnk.ui.scaffolds.OnboardingScreenState] this is screen-template *chrome*, not a content-bearing atom. Loading
  * visuals belong to the host's slot content, which uses the atoms' own sealed `Skeleton` states.
  *
  * @param topBar the pinned top bar (title, optional navigation icon, trailing actions, search mode).
@@ -34,7 +34,7 @@ sealed interface HomeIntent : UiIntent {
     /**
      * The host recomputed the chrome (e.g. a top-bar action that appears only while Free) and handed
      * down a fresh [newState]. The VM adopts it wholesale — [HomeScreenState] is pure chrome with no
-     * VM-owned interaction state to preserve. Mirrors [SettingsIntent.ConfigChanged]; replaces the old
+     * VM-owned interaction state to preserve. Mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent.ConfigChanged]; replaces the old
      * "re-key the ViewModel to re-seed it" approach.
      */
     data class ConfigChanged(
