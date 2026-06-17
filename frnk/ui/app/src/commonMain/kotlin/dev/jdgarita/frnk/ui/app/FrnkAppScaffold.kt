@@ -27,6 +27,7 @@ import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
 import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.compose.koinInject
@@ -125,7 +126,7 @@ fun FrnkAppScaffold(
                 appearance = LocalAppearanceController.current.appearance,
                 isPro = isPro,
                 // Blank in-content title — the shell's Settings top bar already shows the heading.
-                title = "",
+                title = FrnkStringSource.Raw(""),
                 extraSections = config.settings.extraSections,
             )
         },

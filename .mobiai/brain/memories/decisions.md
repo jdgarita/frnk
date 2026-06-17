@@ -883,3 +883,72 @@ CONSEQUENCE: this makes monetizationModule REQUIRED for the VM-backed Settings s
 STEP 1 = wire+expose only. FrnkAppScaffold's isPro pass-down and rememberDefaultSettingsState catalogue are UNTOUCHED. Step 2 (later) moves catalogue logic into SettingsViewModel and retires SettingsDefaults.kt.
 
 Why :monetization-api not a ui-scaffolds port: user wanted domain use cases injected into VMs. Tests: SettingsViewModelTest (androidHostTest) covers Pro path + degrade-to-Free path.
+
+## Token-in-state for view text/icons (FrnkStringSource / FrnkIconSource)
+
+- id: token-in-state-for-view-text-icons-frnkstringsource-frnkicon-20260617-181751
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui/design-system
+- date: 2026-06-17
+
+## What & why
+View states now hold **theme-token references** resolved at the **leaf atom**, instead of resolved Strings/ImageVectors baked in by a `@Composable remember*State` builder. This lets ViewModels author/update state without composition (honours the hoisted-state rule) and makes state locale-/override-independent (re-resolves automatically when the theme changes).
+
+## The types (in :ui-theme, next to the tokens)
+- `FrnkStringSource` = `Token(ThemeToken<String>) | Raw(String) | Composite(parts, separator)`.
+- `FrnkIconSource` = `Token(ThemeToken<ImageVector>) | Vector(ImageVector)`.
+- `@Composable resolve()` extensions in `ui/theme/ext/` (Composite uses a plain for-loop because @Composable cant be called inside joinToString {}). Must run under `FrnkTheme{}`.
+- `ThemeToken` is a Compose-free key, but the artifact pulls compose.foundation, so these refs live in :ui-theme (a Compose module), NOT :core-mvi.
+
+## Atom shape (single field, no dual representation)
+- `FrnkText`: a `sealed class Resolvable(content: FrnkStringSource, ...)` intermediate; the 7 style-preset leaves (Raw/Title/.../BodySmall) hold one `content` field + a **String secondary constructor** that wraps in `FrnkStringSource.Raw` so the ~114 `Title(text="x")` call sites stay unchanged. `AppName` extends the base directly with `annotated: AnnotatedString` (the one non-Resolvable; a String cant carry per-char styling). Render is one `when` with Skeleton first; AppName/Resolvable share a private `FrnkStyledText` helper (resolved content wrapped as AnnotatedString).
+- `FrnkIcon.Content`: single non-null `icon: FrnkIconSource` + an `ImageVector` secondary constructor. Removed the old nullable `imageVector`+`source`+`?: return` (which allowed a silent invisible icon).
+- `FrnkTextDefaultSkeleton` is a **public** top-level val reused as the default for every subtype `skeleton` param (one source of truth; intentionally not private).
+
+## Why D2 (single stored field + secondary ctor) over alternatives
+Considered: (D1) drop String, wrap everywhere = ~160 edits + permanent verbosity; (D3) collapse the 8 style subtypes into one data class + factories = breaks every `when(state)` reducer, bigger. D2 fixes the dual-field/precedence/both-null smells with near-zero call-site churn; cost is per-subtype ctor boilerplate (default-drift hazard — keep primary & secondary defaults in sync).
+
+## Settings pilot
+`rememberDefaultSettingsState` is now a thin `@Composable` wrapper (reads live LocalFrnkHaptics, memoizes) over a **composition-free `defaultSettingsState(...)`** the VM/Koin can call. Settings row/section/footer state hold `FrnkStringSource`/`FrnkIconSource`. `SettingsFooterState.version` is `FrnkStringSource.Raw` (deliberately the concrete subtype — version is always a literal). `SyncMviConfig`/`ConfigChanged` still carries the genuinely dynamic host inputs (isPro, version, extraSections). Reducers are structural (match by id) so unaffected. `SettingsDefaultsTest` dropped Robolectric/Compose → plain reducer test.
+
+## Constraints / notes
+- `FrnkStringSource.Composite` is **titles-only, never list/row content** (per-recomposition ArrayList alloc in resolve()). 
+- Dormant `UiText` in :core-mvi left as-is (future Compose-free string ref for :core-mvi-only feature VMs; would need an id->token registry).
+- Verified on-device: onboarding (String path), Settings (token path + Free<->Pro ConfigChanged), Components gallery, FrnkText variant detail (all presets + AppName + Skeleton).
+
+### Files
+- frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkStringSource.kt
+- frnk/ui/theme/src/commonMain/kotlin/dev/jdgarita/frnk/ui/theme/FrnkIconSource.kt
+- frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkText.kt
+- frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkIcon.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/settings/SettingsDefaults.kt
+
+## Deferred: migrate FrnkSectionCard/FrnkSegmentedControl (+ FrnkListRow etc.) to FrnkStringSource
+
+- id: deferred-migrate-frnksectioncard-frnksegmentedcontrol-frnkli-20260617-181807
+- type: architecture_decision
+- status: temporary
+- platform: kmp
+- area: ui/design-system
+- date: 2026-06-17
+- review_after: 2026-09-17
+
+## Open follow-up (code-review finding #4)
+`FrnkSectionCard` (title/footnote) and `FrnkSegmentedControl` (options) render text **through FrnkText** but expose plain `String`/`List<String>`, so the Settings `*Content` resolves tokens one level up (`section.title?.resolve()`, `optionLabels.map { it.resolve() }`) instead of handing refs to the leaf. Same gap exists in `FrnkListRow`/`FrnkLabeledValue`/`FrnkEmptyState`/`FrnkProfileHeader`/`FrnkTopAppBar`.
+
+## Decision: do Option A later (chosen, not yet implemented)
+Migrate these components to accept `FrnkStringSource` (forward to the internal FrnkText) so resolution happens uniformly at the leaf. Plan:
+- `FrnkSegmentedControlState.Content.options: List<FrnkStringSource>`; `FrnkSectionCard` + `FrnkListSectionState` title/footnote: `FrnkStringSource?`; Settings drops its `.resolve()`/`.map{resolve()}` calls.
+- Add an ergonomic bridge in :ui-theme: `String.asTextSource` / `List<String>.asTextSources()` (wrap in Raw) — because JVM generic erasure blocks a `List<String>` vs `List<FrnkStringSource>` overload, and data-class fields cant carry a String secondary-ctor shim.
+- ~16 literal call sites (demo/tests/previews) get `.asTextSource(s)`.
+- Likely a small library-wide sweep (the other text-bearing components too) for full consistency.
+
+## Why deferred
+The token-in-state win (VM-authored, composition-free Settings *state*) is already achieved; this is internal leaf-resolution consistency, not correctness. Scoped as its own task to avoid bundling a library-wide sweep into the pilot. See the active "Token-in-state" decision for the shipped part.
+
+### Files
+- frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkSectionCard.kt
+- frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSegmentedControl.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/settings/SettingsScreen.kt

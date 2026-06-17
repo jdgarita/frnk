@@ -3,7 +3,6 @@ package dev.jdgarita.frnk.ui.scaffolds
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
-import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsClickableRowState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent
@@ -15,6 +14,8 @@ import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsThemeRowState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsToggleRowState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsViewModel
 import dev.jdgarita.frnk.ui.theme.Appearance
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -51,31 +52,36 @@ class SettingsViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private val icon = FrnkIconState.Content(imageVector = Lucide.Plus, contentDescription = null)
+    private val icon = FrnkIconSource.Vector(Lucide.Plus)
 
     private fun freeSubscriptionRows() =
         listOf(
             SettingsClickableRowState(
                 id = "upgrade_to_pro",
                 icon = icon,
-                title = "Upgrade",
+                title = FrnkStringSource.Raw("Upgrade"),
                 action = SettingsAction.UpgradeToPro,
             ),
             SettingsClickableRowState(
                 id = "restore_purchases",
                 icon = icon,
-                title = "Restore",
+                title = FrnkStringSource.Raw("Restore"),
                 action = SettingsAction.RestorePurchases,
             ),
         )
 
     private fun proSubscriptionRows() =
         listOf(
-            SettingsStatusRowState(id = "pro_member", icon = icon, title = "Pro Member", badge = "PRO"),
+            SettingsStatusRowState(
+                id = "pro_member",
+                icon = icon,
+                title = FrnkStringSource.Raw("Pro Member"),
+                badge = FrnkStringSource.Raw("PRO"),
+            ),
             SettingsClickableRowState(
                 id = "manage_subscription",
                 icon = icon,
-                title = "Manage",
+                title = FrnkStringSource.Raw("Manage"),
                 action = SettingsAction.ManageSubscription,
             ),
         )
@@ -85,32 +91,37 @@ class SettingsViewModelTest {
         notificationsChecked: Boolean = true,
         theme: Appearance = Appearance.System,
     ) = SettingsScreenState(
-        title = "",
+        title = FrnkStringSource.Raw(""),
         sections =
             listOf(
                 SettingsSectionState(
                     rows =
                         listOf(
                             SettingsThemeRowState(
-                                title = "Appearance",
+                                title = FrnkStringSource.Raw("Appearance"),
                                 selected = theme,
-                                optionLabels = listOf("System", "Light", "Dark"),
+                                optionLabels =
+                                    listOf(
+                                        FrnkStringSource.Raw("System"),
+                                        FrnkStringSource.Raw("Light"),
+                                        FrnkStringSource.Raw("Dark"),
+                                    ),
                             ),
                         ),
                 ),
                 SettingsSectionState(
-                    title = "Preferences",
+                    title = FrnkStringSource.Raw("Preferences"),
                     rows =
                         listOf(
                             SettingsToggleRowState(
                                 id = "notifications",
                                 icon = icon,
-                                title = "Notifications",
+                                title = FrnkStringSource.Raw("Notifications"),
                                 checked = notificationsChecked,
                             ),
                         ),
                 ),
-                SettingsSectionState(title = "Subscription", rows = subscriptionRows),
+                SettingsSectionState(title = FrnkStringSource.Raw("Subscription"), rows = subscriptionRows),
             ),
     )
 
@@ -160,13 +171,13 @@ class SettingsViewModelTest {
         runTest(dispatcher) {
             val devSection = { checked: Boolean ->
                 SettingsSectionState(
-                    title = "Developer",
+                    title = FrnkStringSource.Raw("Developer"),
                     rows =
                         listOf(
                             SettingsToggleRowState(
                                 id = "god_mode",
                                 icon = icon,
-                                title = "God mode",
+                                title = FrnkStringSource.Raw("God mode"),
                                 checked = checked,
                             ),
                         ),

@@ -1,60 +1,51 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
-import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.runComposeUiTest
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
-import dev.jdgarita.frnk.ui.atoms.FrnkIconState
-import dev.jdgarita.frnk.ui.atoms.RobolectricComposeTest
-import dev.jdgarita.frnk.ui.atoms.setFrnkContent
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsClickableRowState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsExtraSectionsPlacement
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
-import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
+import dev.jdgarita.frnk.ui.scaffolds.settings.defaultSettingsState
 import dev.jdgarita.frnk.ui.theme.Appearance
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 /**
- * Verifies `rememberDefaultSettingsState`'s `extraSections` injection: each
- * [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsExtraSectionsPlacement] slots the host sections at the right point in the default
- * catalogue (Appearance → Preferences → Subscription → Support → Legal). Needs a real composition
- * (theme-token resolution inside `remember`), so it runs as a Robolectric Compose host test.
+ * Verifies `defaultSettingsState`'s `extraSections` injection: each
+ * [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsExtraSectionsPlacement] slots the host sections at
+ * the right point in the default catalogue (Appearance → Preferences → Subscription → Support → Legal).
+ *
+ * Since the catalogue now holds **theme-token refs** ([FrnkStringSource]/[FrnkIconSource]) and the
+ * builder resolves nothing, this is a **plain** reducer test — no composition / Robolectric needed
+ * (previously this had to run as a Robolectric Compose host test to resolve `Theme[...]` inside `remember`).
  */
-@OptIn(ExperimentalTestApi::class)
-class SettingsDefaultsTest : RobolectricComposeTest() {
+class SettingsDefaultsTest {
     private val extra =
         SettingsSectionState(
-            title = "Host Section",
+            title = FrnkStringSource.Raw("Host Section"),
             rows =
                 listOf(
                     SettingsClickableRowState(
                         id = "host_row",
-                        icon = FrnkIconState.Content(imageVector = Lucide.Plus, contentDescription = null),
-                        title = "Host Row",
+                        icon = FrnkIconSource.Vector(Lucide.Plus),
+                        title = FrnkStringSource.Raw("Host Row"),
                         action = SettingsAction.Custom("host_row"),
                     ),
                 ),
         )
 
-    private fun buildState(placement: SettingsExtraSectionsPlacement): SettingsScreenState {
-        lateinit var state: SettingsScreenState
-        runComposeUiTest {
-            setFrnkContent {
-                state =
-                    rememberDefaultSettingsState(
-                        version = "v1.0",
-                        appearance = Appearance.System,
-                        extraSections = listOf(extra),
-                        extraSectionsPlacement = placement,
-                    )
-            }
-        }
-        return state
-    }
+    private fun buildState(placement: SettingsExtraSectionsPlacement): SettingsScreenState =
+        defaultSettingsState(
+            version = "v1.0",
+            appearance = Appearance.System,
+            extraSections = listOf(extra),
+            extraSectionsPlacement = placement,
+        )
 
     // Default catalogue order: [0] Appearance, [1] Preferences, [2] Subscription, [3] Support, [4] Legal.
 
@@ -85,12 +76,7 @@ class SettingsDefaultsTest : RobolectricComposeTest() {
 
     @Test
     fun no_extras_keeps_the_default_catalogue_unchanged() {
-        lateinit var state: SettingsScreenState
-        runComposeUiTest {
-            setFrnkContent {
-                state = rememberDefaultSettingsState(version = "v1.0", appearance = Appearance.System)
-            }
-        }
+        val state = defaultSettingsState(version = "v1.0", appearance = Appearance.System)
         assertEquals(5, state.sections.size)
         assertFalse(extra in state.sections)
     }

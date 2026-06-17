@@ -1,11 +1,17 @@
 package dev.jdgarita.frnk.ui.scaffolds.settings
 
 import androidx.compose.runtime.Immutable
-import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
 import dev.jdgarita.frnk.ui.theme.Appearance
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
+import dev.jdgarita.frnk.ui.theme.stringAppearance
+import dev.jdgarita.frnk.ui.theme.stringSettings
+import dev.jdgarita.frnk.ui.theme.stringThemeDark
+import dev.jdgarita.frnk.ui.theme.stringThemeLight
+import dev.jdgarita.frnk.ui.theme.stringThemeSystem
 
 /**
  * Typed catalogue of the actions a clickable settings row can fire. The toolkit ships the common
@@ -43,26 +49,26 @@ sealed interface SettingsRowState {
 
 /**
  * Row style 1 — a three-way (or n-way) segmented toggle. Used for theme selection but generic.
- * [options] are the values emitted via [SettingsIntent.ThemeSelected]; [optionLabels] is the
- * parallel list of display strings shown in the control (resolve from `FrnkStrings` at build time).
+ * [options] are the values emitted via [SettingsIntent.ThemeSelected]; [optionLabels] is the parallel
+ * list of display labels (theme-token [FrnkStringSource]s, resolved by the renderer — not baked here).
  */
 @Immutable
 data class SettingsThemeRowState(
     override val id: String = "theme",
-    val title: String,
-    val icon: FrnkIconState? = null,
+    val title: FrnkStringSource,
+    val icon: FrnkIconSource? = null,
     val selected: Appearance,
     val options: List<Appearance> = listOf(Appearance.System, Appearance.Light, Appearance.Dark),
-    val optionLabels: List<String>,
+    val optionLabels: List<FrnkStringSource>,
 ) : SettingsRowState
 
 /** Row style 2 — icon + title + optional subtitle + chevron. Fires [action] on click. */
 @Immutable
 data class SettingsClickableRowState(
     override val id: String,
-    val icon: FrnkIconState,
-    val title: String,
-    val subtitle: String? = null,
+    val icon: FrnkIconSource,
+    val title: FrnkStringSource,
+    val subtitle: FrnkStringSource? = null,
     val action: SettingsAction,
 ) : SettingsRowState
 
@@ -70,9 +76,9 @@ data class SettingsClickableRowState(
 @Immutable
 data class SettingsToggleRowState(
     override val id: String,
-    val icon: FrnkIconState,
-    val title: String,
-    val subtitle: String? = null,
+    val icon: FrnkIconSource,
+    val title: FrnkStringSource,
+    val subtitle: FrnkStringSource? = null,
     val checked: Boolean,
 ) : SettingsRowState
 
@@ -84,18 +90,18 @@ data class SettingsToggleRowState(
 @Immutable
 data class SettingsStatusRowState(
     override val id: String,
-    val icon: FrnkIconState,
-    val title: String,
-    val subtitle: String? = null,
-    val badge: String? = null,
+    val icon: FrnkIconSource,
+    val title: FrnkStringSource,
+    val subtitle: FrnkStringSource? = null,
+    val badge: FrnkStringSource? = null,
 ) : SettingsRowState
 
 /** A card grouping related rows, with an optional header [title] and trailing [footnote] help text. */
 @Immutable
 data class SettingsSectionState(
-    val title: String? = null,
+    val title: FrnkStringSource? = null,
     val rows: List<SettingsRowState>,
-    val footnote: String? = null,
+    val footnote: FrnkStringSource? = null,
 )
 
 /**
@@ -105,20 +111,39 @@ data class SettingsSectionState(
  */
 @Immutable
 data class SettingsFooterState(
-    val text: String,
-    val version: String,
+    val text: FrnkStringSource,
+    val version: FrnkStringSource.Raw,
 )
 
 /**
  * Configuration + runtime state for [SettingsScreen]. The screen is a list of [sections] (each a
  * card of [SettingsRowState] rows) plus an optional [footer]. State mutations flow through the
  * ViewModel reducer; hosts build the initial state by hand or via
- * [rememberDefaultSettingsState][rememberDefaultSettingsState].
+ * [defaultSettingsState][defaultSettingsState].
  */
 @Immutable
 data class SettingsScreenState(
-    val title: String = "Settings",
-    val sections: List<SettingsSectionState>,
+    val title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
+    // Minimal token-only default so the state is constructible (and the VM seedable) without
+    // composition; the full catalogue is built by [defaultSettingsState].
+    val sections: List<SettingsSectionState> =
+        listOf(
+            SettingsSectionState(
+                rows =
+                    listOf(
+                        SettingsThemeRowState(
+                            title = FrnkStringSource.Token(stringAppearance),
+                            selected = Appearance.System,
+                            optionLabels =
+                                listOf(
+                                    FrnkStringSource.Token(stringThemeSystem),
+                                    FrnkStringSource.Token(stringThemeLight),
+                                    FrnkStringSource.Token(stringThemeDark),
+                                ),
+                        ),
+                    ),
+            ),
+        ),
     val footer: SettingsFooterState? = null,
     /**
      * Optional hidden section (e.g. a god-mode toggle) shown only once revealed. Revealed by tapping

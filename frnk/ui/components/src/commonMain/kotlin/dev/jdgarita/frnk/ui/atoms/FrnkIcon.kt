@@ -11,7 +11,9 @@ import com.composeunstyled.LocalContentColor
 import com.composeunstyled.UnstyledIcon
 import com.composeunstyled.theme.Theme
 import com.composeunstyled.theme.ThemeToken
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.ext.resolve
 import dev.jdgarita.frnk.ui.theme.iconSizeMd
 import dev.jdgarita.frnk.ui.theme.iconSizes
 import dev.jdgarita.frnk.ui.theme.shapeFull
@@ -24,14 +26,28 @@ import dev.jdgarita.frnk.ui.theme.shapeFull
  * sealed-state + `Skeleton` shape — see docs/HOST_INTEGRATION.md §9 ("Component style guide").
  */
 sealed interface FrnkIconState {
+    /**
+     * The glyph, supplied as a [FrnkIconSource] — either a theme [FrnkIconSource.Token] (so host
+     * `iconOverrides` apply and a VM can author icon state without composition) or a host-supplied
+     * [FrnkIconSource.Vector]. A `String`-free secondary constructor accepts a raw [ImageVector]
+     * directly (wrapping it in [FrnkIconSource.Vector]), so existing call sites stay unchanged.
+     */
     @Immutable
     data class Content(
-        val imageVector: ImageVector,
+        val icon: FrnkIconSource,
         val contentDescription: String?,
         val size: Dp? = null,
         val tint: ThemeToken<Color>? = null,
         val tintAlpha: Float = 1f,
-    ) : FrnkIconState
+    ) : FrnkIconState {
+        constructor(
+            imageVector: ImageVector,
+            contentDescription: String?,
+            size: Dp? = null,
+            tint: ThemeToken<Color>? = null,
+            tintAlpha: Float = 1f,
+        ) : this(FrnkIconSource.Vector(imageVector), contentDescription, size, tint, tintAlpha)
+    }
 
     /**
      * Loading placeholder. [size] `null` uses the theme default icon size; pass the **eventual icon's
@@ -49,12 +65,13 @@ fun FrnkIcon(
 ) {
     when (state) {
         is FrnkIconState.Content -> {
+            val vector = state.icon.resolve()
             val tintToken = state.tint
             val resolvedTint =
                 (if (tintToken == null) LocalContentColor.current else Theme[colors][tintToken])
                     .copy(alpha = state.tintAlpha)
             UnstyledIcon(
-                imageVector = state.imageVector,
+                imageVector = vector,
                 contentDescription = state.contentDescription,
                 tint = resolvedTint,
                 modifier = modifier.size(state.size ?: Theme[iconSizes][iconSizeMd]),

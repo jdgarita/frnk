@@ -44,6 +44,7 @@ import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.FrnkTheme
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.spacing
@@ -301,7 +302,7 @@ private fun TabbedNavSettingsTab(
                 version = appVersion,
                 appearance = LocalAppearanceController.current.appearance,
                 // Blank in-content title — the top bar below already shows the heading.
-                title = "",
+                title = FrnkStringSource.Raw(""),
                 extraSections = extraSections,
             )
     val onEffect = settingsEffects?.invoke(scope) ?: rememberDefaultSettingsHandler(scope, onboardingAvailable)

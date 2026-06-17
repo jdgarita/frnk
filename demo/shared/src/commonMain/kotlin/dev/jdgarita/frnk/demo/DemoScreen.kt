@@ -22,7 +22,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
@@ -98,6 +97,8 @@ import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsToggleRowState
 import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
@@ -1206,26 +1207,25 @@ private fun demoSettingsState(
             version = "v${Frnk.VERSION}",
             appearance = appearance,
             isPro = isPro,
-            title = "",
+            title = FrnkStringSource.Raw(""),
             // Exercises the extraSections injection API (default placement: before the Legal section).
             extraSections = demoExtraSettingsSections(),
         )
-    val godModeIcon = Theme[icons][iconUpgrade]
     // "Developer" section holding the god-mode toggle. The demo always shows it (showDeveloperSection =
     // true). Toggling god mode flips isPro, which recomputes this state; the single settings VM merges
     // it in via SettingsIntent.ConfigChanged (preserving the toggle/dev-reveal). Real apps can instead
     // leave it hidden and use the 7-tap version-footer reveal gesture (the toolkit supports both).
     val developerSection =
-        remember(godModeIcon, isGodMode) {
+        remember(isGodMode) {
             SettingsSectionState(
-                title = "Developer",
+                title = FrnkStringSource.Raw("Developer"),
                 rows =
                     listOf(
                         SettingsToggleRowState(
                             id = GOD_MODE_TOGGLE_ID,
-                            icon = FrnkIconState.Content(imageVector = godModeIcon, contentDescription = null, tint = colorPrimary),
-                            title = "God mode",
-                            subtitle = "Force Pro on this device (testing)",
+                            icon = FrnkIconSource.Token(iconUpgrade),
+                            title = FrnkStringSource.Raw("God mode"),
+                            subtitle = FrnkStringSource.Raw("Force Pro on this device (testing)"),
                             checked = isGodMode,
                         ),
                     ),
@@ -1250,19 +1250,17 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
     // Haptic feedback lives in the toolkit's *default* catalog now (a real `LocalFrnkHaptics`-backed
     // toggle), so the demo no longer hand-rolls a haptics row — it just appends a demo-only Privacy
     // section to keep the Settings screen long enough that the collapsing bars engage.
-    val analyticsIcon = Theme[icons][iconPrivacy]
-    return remember(analyticsIcon) {
-        fun rowIcon(vector: ImageVector) = FrnkIconState.Content(imageVector = vector, contentDescription = null, tint = colorPrimary)
+    return remember {
         listOf(
             SettingsSectionState(
-                title = "Privacy",
+                title = FrnkStringSource.Raw("Privacy"),
                 rows =
                     listOf(
                         SettingsToggleRowState(
                             id = "analytics",
-                            icon = rowIcon(analyticsIcon),
-                            title = "Share analytics",
-                            subtitle = "Help improve the app",
+                            icon = FrnkIconSource.Token(iconPrivacy),
+                            title = FrnkStringSource.Raw("Share analytics"),
+                            subtitle = FrnkStringSource.Raw("Help improve the app"),
                             checked = true,
                         ),
                     ),

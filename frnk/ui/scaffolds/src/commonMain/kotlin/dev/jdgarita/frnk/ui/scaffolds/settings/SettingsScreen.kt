@@ -29,15 +29,18 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
 import dev.jdgarita.frnk.ui.mvi.SyncMviConfig
 import dev.jdgarita.frnk.ui.organisms.FrnkSectionCard
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
+import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.ext.resolve
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconSizeSm
 import dev.jdgarita.frnk.ui.theme.iconSizes
-import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.labelSmall
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
@@ -56,7 +59,7 @@ import org.koin.core.parameter.parametersOf
  * [OnboardingScreen][dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen] exactly.
  *
  * The VM reacts to [initialState]: it is seeded once via `parametersOf`, then every later recomposition
- * that produces a *new* [initialState] (e.g. the host's [rememberDefaultSettingsState] rebuilt because
+ * that produces a *new* [initialState] (e.g. the host's [defaultSettingsState] rebuilt because
  * `isPro` flipped) is merged in via [SettingsIntent.ConfigChanged] — adopting the new catalogue while
  * preserving the user's in-session toggles, theme, and dev-reveal. So a single VM tracks entitlement
  * changes; **leave [vmKey] at its default** rather than re-keying to re-seed.
@@ -112,8 +115,9 @@ internal fun SettingsScreenContent(
     ) {
         // Hosts that render their own header (e.g. a FrnkTopAppBar) pass a blank title to suppress
         // this one and avoid a duplicate heading.
-        if (state.title.isNotBlank()) {
-            FrnkText(state = FrnkTextState.HeadlineSmall(text = state.title))
+        val titleText = state.title.resolve()
+        if (titleText.isNotBlank()) {
+            FrnkText(state = FrnkTextState.HeadlineSmall(text = titleText))
         }
 
         state.sections.forEach { section ->
@@ -137,10 +141,12 @@ private fun SettingsSection(
 ) {
     // Card chrome (title + surface + dividers + animateContentSize + footnote) is shared with the
     // FrnkListSection organism via FrnkSectionCard; only the heterogeneous row rendering differs.
+    // FrnkSectionCard is shared chrome that takes plain Strings, so the section header/footnote refs
+    // resolve here (one level up) rather than at its leaf.
     FrnkSectionCard(
         rows = section.rows,
-        title = section.title,
-        footnote = section.footnote,
+        title = section.title?.resolve(),
+        footnote = section.footnote?.resolve(),
     ) { _, row ->
         SettingsRow(row = row, onIntent = onIntent)
     }
@@ -165,13 +171,18 @@ private fun SettingsRow(
                     horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    row.icon?.let { FrnkIcon(state = it) }
-                    FrnkText(state = FrnkTextState.TitleMedium(text = row.title))
+                    row.icon?.let {
+                        FrnkIcon(
+                            state =
+                                FrnkIconState.Content(icon = it, contentDescription = null, tint = colorPrimary),
+                        )
+                    }
+                    FrnkText(state = FrnkTextState.TitleMedium(content = row.title))
                 }
                 FrnkSegmentedControl(
                     state =
                         FrnkSegmentedControlState.Content(
-                            options = row.optionLabels,
+                            options = row.optionLabels.map { it.resolve() },
                             selectedIndex = selectedIndex,
                         ),
                     onOptionSelected = { index ->
@@ -192,7 +203,7 @@ private fun SettingsRow(
                 FrnkIcon(
                     state =
                         FrnkIconState.Content(
-                            imageVector = Theme[icons][iconChevronRight],
+                            icon = FrnkIconSource.Token(iconChevronRight),
                             contentDescription = null,
                             size = Theme[iconSizes][iconSizeSm],
                             tint = colorOnSurfaceVariant,
@@ -225,11 +236,11 @@ private fun SettingsRow(
 
 /** A small pill badge (e.g. "PRO") drawn in the primary-container palette. Non-interactive. */
 @Composable
-private fun SettingsBadge(text: String) {
+private fun SettingsBadge(text: FrnkStringSource) {
     FrnkText(
         state =
             FrnkTextState.Raw(
-                text = text,
+                content = text,
                 style = labelSmall,
                 color = colorOnPrimaryContainer,
             ),
@@ -244,9 +255,9 @@ private fun SettingsBadge(text: String) {
 /** Shared icon + title/subtitle + trailing-slot layout for clickable and toggle rows. */
 @Composable
 private fun SettingsRowScaffold(
-    icon: FrnkIconState,
-    title: String,
-    subtitle: String?,
+    icon: FrnkIconSource,
+    title: FrnkStringSource,
+    subtitle: FrnkStringSource?,
     modifier: Modifier = Modifier,
     trailing: @Composable () -> Unit,
 ) {
@@ -258,14 +269,14 @@ private fun SettingsRowScaffold(
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FrnkIcon(state = icon)
+        FrnkIcon(state = FrnkIconState.Content(icon = icon, contentDescription = null, tint = colorPrimary))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
         ) {
-            FrnkText(state = FrnkTextState.TitleMedium(text = title))
+            FrnkText(state = FrnkTextState.TitleMedium(content = title))
             subtitle?.let {
-                FrnkText(state = FrnkTextState.BodySmall(text = it, color = colorOnSurfaceVariant))
+                FrnkText(state = FrnkTextState.BodySmall(content = it, color = colorOnSurfaceVariant))
             }
         }
         trailing()
@@ -283,12 +294,12 @@ private fun SettingsFooter(
         verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
     ) {
         FrnkText(
-            state = FrnkTextState.BodySmall(text = footer.text, color = colorOnSurfaceVariant),
+            state = FrnkTextState.BodySmall(content = footer.text, color = colorOnSurfaceVariant),
         )
         FrnkText(
             state =
                 FrnkTextState.Raw(
-                    text = footer.version,
+                    content = footer.version,
                     style = labelSmall,
                     color = colorOnSurfaceVariant,
                 ),

@@ -2,13 +2,11 @@ package dev.jdgarita.frnk.ui.scaffolds.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.composeunstyled.theme.Theme
-import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.Appearance
-import dev.jdgarita.frnk.ui.theme.colorPrimary
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.iconFeedback
 import dev.jdgarita.frnk.ui.theme.iconHaptics
 import dev.jdgarita.frnk.ui.theme.iconManageSubscription
@@ -19,7 +17,6 @@ import dev.jdgarita.frnk.ui.theme.iconRate
 import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.iconTerms
 import dev.jdgarita.frnk.ui.theme.iconUpgrade
-import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.stringAppearance
 import dev.jdgarita.frnk.ui.theme.stringHaptics
 import dev.jdgarita.frnk.ui.theme.stringHapticsSubtitle
@@ -43,10 +40,9 @@ import dev.jdgarita.frnk.ui.theme.stringThemeDark
 import dev.jdgarita.frnk.ui.theme.stringThemeLight
 import dev.jdgarita.frnk.ui.theme.stringThemeSystem
 import dev.jdgarita.frnk.ui.theme.stringUpgradeToPro
-import dev.jdgarita.frnk.ui.theme.strings
 
 /**
- * Where [rememberDefaultSettingsState]'s `extraSections` slot into the default catalogue order
+ * Where [defaultSettingsState]'s `extraSections` slot into the default catalogue order
  * (Appearance → Preferences → Subscription → Support → Legal).
  */
 enum class SettingsExtraSectionsPlacement {
@@ -67,8 +63,13 @@ enum class SettingsExtraSectionsPlacement {
  * Builds a batteries-included [SettingsScreenState] from the toolkit's default catalogue: a theme
  * toggle, an optional notifications switch, a subscription section driven by [isPro] (see below), a
  * support section (Send Feedback, Rate, Show Onboarding), a legal section (Privacy, Terms), and the
- * "Built by JD in 🇨🇷 / [version]" footer. All copy and icons resolve from `FrnkStrings` /
- * `FrnkIcons`, so hosts re-skin every label and glyph through `FrnkThemeConfig`.
+ * "Built by JD in 🇨🇷 / [version]" footer.
+ *
+ * **Token-in-state.** All copy and icons are emitted as theme-token [FrnkStringSource]/[FrnkIconSource]
+ * references — resolved to real strings/glyphs by the leaf atoms at render time, so hosts re-skin every
+ * label and glyph through `FrnkThemeConfig`. Because no token is resolved here, this is a **plain
+ * function** (not `@Composable`): the ViewModel can build/rebuild its own catalogue without composition,
+ * and the state is locale-/override-independent (it re-resolves automatically when the theme changes).
  *
  * The subscription section follows a strict Free/Pro visibility matrix:
  *  - **Free** ([isPro] = false): "Upgrade to Pro" (opens the paywall) + "Restore Purchases".
@@ -82,16 +83,191 @@ enum class SettingsExtraSectionsPlacement {
  * @param appearance the currently-selected theme, reflected in the segmented control.
  * @param isPro switches the subscription section between the Free and Pro layouts (see above).
  * @param notificationsEnabled initial checked state of the notifications toggle.
+ * @param hapticsEnabled initial checked state of the haptic-feedback toggle. The host resolves this
+ *   from the live [LocalFrnkHaptics][dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics] (a composition
+ *   read) and passes it in, since this builder is no longer composable.
  * @param showNotifications when false, the notifications section is omitted entirely.
- * @param showHaptics when false, the haptic-feedback toggle is omitted entirely. When shown, its
- *   initial checked state is read from the ambient [LocalFrnkHaptics] so the row reflects (and the
- *   handler can drive) the real toggle — no host wiring required.
+ * @param showHaptics when false, the haptic-feedback toggle is omitted entirely.
  * @param extraSections host-specific sections injected into the default catalogue at
- *   [extraSectionsPlacement] — the middle ground between the stock catalogue and hand-building the
- *   whole [SettingsScreenState]. Custom rows flow through the existing contract:
+ *   [extraSectionsPlacement]. Custom rows flow through the existing contract:
  *   `SettingsAction.Custom(id)` on a clickable row surfaces as `SettingsEffect.ActionInvoked`.
  * @param extraSectionsPlacement where [extraSections] slot into the default order; defaults to
  *   [SettingsExtraSectionsPlacement.BeforeLegal] (app-specific rows above the legal boilerplate).
+ */
+fun defaultSettingsState(
+    version: String,
+    appearance: Appearance,
+    isPro: Boolean = false,
+    notificationsEnabled: Boolean = true,
+    hapticsEnabled: Boolean = true,
+    showNotifications: Boolean = true,
+    showHaptics: Boolean = true,
+    title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
+    extraSections: List<SettingsSectionState> = emptyList(),
+    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal,
+): SettingsScreenState {
+    val sections =
+        buildList {
+            fun addExtrasAt(placement: SettingsExtraSectionsPlacement) {
+                if (extraSectionsPlacement == placement) addAll(extraSections)
+            }
+            add(
+                SettingsSectionState(
+                    rows =
+                        listOf(
+                            SettingsThemeRowState(
+                                title = FrnkStringSource.Token(stringAppearance),
+                                selected = appearance,
+                                optionLabels =
+                                    listOf(
+                                        FrnkStringSource.Token(stringThemeSystem),
+                                        FrnkStringSource.Token(stringThemeLight),
+                                        FrnkStringSource.Token(stringThemeDark),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+            addExtrasAt(SettingsExtraSectionsPlacement.AfterAppearance)
+            if (showNotifications || showHaptics) {
+                add(
+                    SettingsSectionState(
+                        title = FrnkStringSource.Token(stringPreferences),
+                        rows =
+                            buildList {
+                                if (showNotifications) {
+                                    add(
+                                        SettingsToggleRowState(
+                                            id = "notifications",
+                                            icon = FrnkIconSource.Token(iconNotifications),
+                                            title = FrnkStringSource.Token(stringNotifications),
+                                            checked = notificationsEnabled,
+                                        ),
+                                    )
+                                }
+                                if (showHaptics) {
+                                    add(
+                                        SettingsToggleRowState(
+                                            id = HAPTICS_TOGGLE_ID,
+                                            icon = FrnkIconSource.Token(iconHaptics),
+                                            title = FrnkStringSource.Token(stringHaptics),
+                                            subtitle = FrnkStringSource.Token(stringHapticsSubtitle),
+                                            checked = hapticsEnabled,
+                                        ),
+                                    )
+                                }
+                            },
+                    ),
+                )
+            }
+            addExtrasAt(SettingsExtraSectionsPlacement.BeforeSubscription)
+            add(
+                SettingsSectionState(
+                    title = FrnkStringSource.Token(stringSectionSubscription),
+                    // Strict Free/Pro visibility matrix:
+                    //  - Free → Upgrade-to-Pro (opens the paywall) + Restore Purchases.
+                    //  - Pro  → a "Pro Member" status badge + Manage Subscription (deep-links the OS
+                    //    subscriptions page). Upgrade and Restore are hidden — dead weight once entitled.
+                    rows =
+                        if (isPro) {
+                            listOf(
+                                SettingsStatusRowState(
+                                    id = "pro_member",
+                                    icon = FrnkIconSource.Token(iconUpgrade),
+                                    title = FrnkStringSource.Token(stringProMember),
+                                    badge = FrnkStringSource.Token(stringProBadge),
+                                ),
+                                SettingsClickableRowState(
+                                    id = "manage_subscription",
+                                    icon = FrnkIconSource.Token(iconManageSubscription),
+                                    title = FrnkStringSource.Token(stringManageSubscription),
+                                    action = SettingsAction.ManageSubscription,
+                                ),
+                            )
+                        } else {
+                            listOf(
+                                SettingsClickableRowState(
+                                    id = "upgrade_to_pro",
+                                    icon = FrnkIconSource.Token(iconUpgrade),
+                                    title = FrnkStringSource.Token(stringUpgradeToPro),
+                                    action = SettingsAction.UpgradeToPro,
+                                ),
+                                SettingsClickableRowState(
+                                    id = "restore_purchases",
+                                    icon = FrnkIconSource.Token(iconRestore),
+                                    title = FrnkStringSource.Token(stringRestorePurchases),
+                                    action = SettingsAction.RestorePurchases,
+                                ),
+                            )
+                        },
+                ),
+            )
+            add(
+                SettingsSectionState(
+                    title = FrnkStringSource.Token(stringSectionSupport),
+                    rows =
+                        listOf(
+                            SettingsClickableRowState(
+                                id = "send_feedback",
+                                icon = FrnkIconSource.Token(iconFeedback),
+                                title = FrnkStringSource.Token(stringSendFeedback),
+                                action = SettingsAction.SendFeedback,
+                            ),
+                            SettingsClickableRowState(
+                                id = "rate_app",
+                                icon = FrnkIconSource.Token(iconRate),
+                                title = FrnkStringSource.Token(stringRateApp),
+                                action = SettingsAction.RateApp,
+                            ),
+                            SettingsClickableRowState(
+                                id = "show_onboarding",
+                                icon = FrnkIconSource.Token(iconOnboarding),
+                                title = FrnkStringSource.Token(stringShowOnboarding),
+                                action = SettingsAction.ShowOnboarding,
+                            ),
+                        ),
+                ),
+            )
+            addExtrasAt(SettingsExtraSectionsPlacement.BeforeLegal)
+            add(
+                SettingsSectionState(
+                    title = FrnkStringSource.Token(stringSectionLegal),
+                    rows =
+                        listOf(
+                            SettingsClickableRowState(
+                                id = "privacy_policy",
+                                icon = FrnkIconSource.Token(iconPrivacy),
+                                title = FrnkStringSource.Token(stringPrivacyPolicy),
+                                action = SettingsAction.PrivacyPolicy,
+                            ),
+                            SettingsClickableRowState(
+                                id = "terms_of_service",
+                                icon = FrnkIconSource.Token(iconTerms),
+                                title = FrnkStringSource.Token(stringTermsOfService),
+                                action = SettingsAction.TermsOfService,
+                            ),
+                        ),
+                ),
+            )
+            addExtrasAt(SettingsExtraSectionsPlacement.End)
+        }
+
+    return SettingsScreenState(
+        title = title,
+        sections = sections,
+        footer = SettingsFooterState(text = FrnkStringSource.Token(stringSettingsFooter), version = FrnkStringSource.Raw(version)),
+    )
+}
+
+/**
+ * `@Composable` convenience over [defaultSettingsState]: seeds the haptic-feedback toggle from the live
+ * ambient [LocalFrnkHaptics] (a composition read) and memoizes the result with [remember] so the catalogue
+ * only rebuilds when an input changes — the stable `config` [SyncMviConfig][dev.jdgarita.frnk.ui.mvi.SyncMviConfig]
+ * expects.
+ *
+ * This is now a thin wrapper: the substantive builder ([defaultSettingsState]) is composition-free, so a
+ * ViewModel/Koin factory can build the catalogue without composition. Reach for this wrapper only when
+ * building the state *inside* a composable that wants the live haptics state baked in.
  */
 @Composable
 fun rememberDefaultSettingsState(
@@ -101,241 +277,37 @@ fun rememberDefaultSettingsState(
     notificationsEnabled: Boolean = true,
     showNotifications: Boolean = true,
     showHaptics: Boolean = true,
-    title: String = Theme[strings][stringSettings],
+    title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
     extraSections: List<SettingsSectionState> = emptyList(),
     extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal,
 ): SettingsScreenState {
-    // Resolve every token up front so `remember` can key on the resolved values: if a host swaps a
-    // string/icon override, the catalogue rebuilds.
-    val labelAppearance = Theme[strings][stringAppearance]
-    val labelSystem = Theme[strings][stringThemeSystem]
-    val labelLight = Theme[strings][stringThemeLight]
-    val labelDark = Theme[strings][stringThemeDark]
-    val labelNotifications = Theme[strings][stringNotifications]
-    val labelPreferences = Theme[strings][stringPreferences]
-    val labelHaptics = Theme[strings][stringHaptics]
-    val labelHapticsSubtitle = Theme[strings][stringHapticsSubtitle]
-    // Seed the toggle from the live haptics state so the row reflects reality on first paint; runtime
-    // flips are owned by SettingsViewModel + applied by rememberFrnkSettingsHandler. .value (not a
-    // lifecycle collect) is enough — the VM owns the row's checked state after the first reduction.
+    // Seed from the live haptics state so the row reflects reality on first paint; runtime flips are
+    // owned by SettingsViewModel + applied by rememberFrnkSettingsHandler. .value (not a lifecycle
+    // collect) is enough — the VM owns the row's checked state after the first reduction.
     val hapticsEnabled = LocalFrnkHaptics.current.isEnabled.value
-    val labelUpgrade = Theme[strings][stringUpgradeToPro]
-    val labelManage = Theme[strings][stringManageSubscription]
-    val labelRestore = Theme[strings][stringRestorePurchases]
-    val labelProMember = Theme[strings][stringProMember]
-    val badgePro = Theme[strings][stringProBadge]
-    val labelFeedback = Theme[strings][stringSendFeedback]
-    val labelRate = Theme[strings][stringRateApp]
-    val labelOnboarding = Theme[strings][stringShowOnboarding]
-    val labelPrivacy = Theme[strings][stringPrivacyPolicy]
-    val labelTerms = Theme[strings][stringTermsOfService]
-    val headerSubscription = Theme[strings][stringSectionSubscription]
-    val headerSupport = Theme[strings][stringSectionSupport]
-    val headerLegal = Theme[strings][stringSectionLegal]
-    val footerText = Theme[strings][stringSettingsFooter]
-
-    val iconNotificationsVec = Theme[icons][iconNotifications]
-    val iconHapticsVec = Theme[icons][iconHaptics]
-    val iconUpgradeVec = Theme[icons][iconUpgrade]
-    val iconManageVec = Theme[icons][iconManageSubscription]
-    val iconRestoreVec = Theme[icons][iconRestore]
-    val iconFeedbackVec = Theme[icons][iconFeedback]
-    val iconRateVec = Theme[icons][iconRate]
-    val iconOnboardingVec = Theme[icons][iconOnboarding]
-    val iconPrivacyVec = Theme[icons][iconPrivacy]
-    val iconTermsVec = Theme[icons][iconTerms]
-
     return remember(
         version,
         appearance,
         isPro,
         notificationsEnabled,
+        hapticsEnabled,
         showNotifications,
         showHaptics,
-        hapticsEnabled,
         title,
         extraSections,
         extraSectionsPlacement,
-        labelAppearance,
-        labelSystem,
-        labelLight,
-        labelDark,
-        labelNotifications,
-        labelPreferences,
-        labelHaptics,
-        labelHapticsSubtitle,
-        labelUpgrade,
-        labelManage,
-        labelRestore,
-        labelProMember,
-        badgePro,
-        labelFeedback,
-        labelRate,
-        labelOnboarding,
-        labelPrivacy,
-        labelTerms,
-        headerSubscription,
-        headerSupport,
-        headerLegal,
-        footerText,
-        iconNotificationsVec,
-        iconHapticsVec,
-        iconUpgradeVec,
-        iconManageVec,
-        iconRestoreVec,
-        iconFeedbackVec,
-        iconRateVec,
-        iconOnboardingVec,
-        iconPrivacyVec,
-        iconTermsVec,
     ) {
-        fun rowIcon(vector: ImageVector) = FrnkIconState.Content(imageVector = vector, contentDescription = null, tint = colorPrimary)
-
-        val sections =
-            buildList {
-                fun addExtrasAt(placement: SettingsExtraSectionsPlacement) {
-                    if (extraSectionsPlacement == placement) addAll(extraSections)
-                }
-                add(
-                    SettingsSectionState(
-                        rows =
-                            listOf(
-                                SettingsThemeRowState(
-                                    title = labelAppearance,
-                                    selected = appearance,
-                                    optionLabels = listOf(labelSystem, labelLight, labelDark),
-                                ),
-                            ),
-                    ),
-                )
-                addExtrasAt(SettingsExtraSectionsPlacement.AfterAppearance)
-                if (showNotifications || showHaptics) {
-                    add(
-                        SettingsSectionState(
-                            title = labelPreferences,
-                            rows =
-                                buildList {
-                                    if (showNotifications) {
-                                        add(
-                                            SettingsToggleRowState(
-                                                id = "notifications",
-                                                icon = rowIcon(iconNotificationsVec),
-                                                title = labelNotifications,
-                                                checked = notificationsEnabled,
-                                            ),
-                                        )
-                                    }
-                                    if (showHaptics) {
-                                        add(
-                                            SettingsToggleRowState(
-                                                id = HAPTICS_TOGGLE_ID,
-                                                icon = rowIcon(iconHapticsVec),
-                                                title = labelHaptics,
-                                                subtitle = labelHapticsSubtitle,
-                                                checked = hapticsEnabled,
-                                            ),
-                                        )
-                                    }
-                                },
-                        ),
-                    )
-                }
-                addExtrasAt(SettingsExtraSectionsPlacement.BeforeSubscription)
-                add(
-                    SettingsSectionState(
-                        title = headerSubscription,
-                        // Strict Free/Pro visibility matrix:
-                        //  - Free → Upgrade-to-Pro (opens the paywall) + Restore Purchases.
-                        //  - Pro  → a "Pro Member" status badge + Manage Subscription (deep-links the OS
-                        //    subscriptions page). Upgrade and Restore are hidden — dead weight once entitled.
-                        rows =
-                            if (isPro) {
-                                listOf(
-                                    SettingsStatusRowState(
-                                        id = "pro_member",
-                                        icon = rowIcon(iconUpgradeVec),
-                                        title = labelProMember,
-                                        badge = badgePro,
-                                    ),
-                                    SettingsClickableRowState(
-                                        id = "manage_subscription",
-                                        icon = rowIcon(iconManageVec),
-                                        title = labelManage,
-                                        action = SettingsAction.ManageSubscription,
-                                    ),
-                                )
-                            } else {
-                                listOf(
-                                    SettingsClickableRowState(
-                                        id = "upgrade_to_pro",
-                                        icon = rowIcon(iconUpgradeVec),
-                                        title = labelUpgrade,
-                                        action = SettingsAction.UpgradeToPro,
-                                    ),
-                                    SettingsClickableRowState(
-                                        id = "restore_purchases",
-                                        icon = rowIcon(iconRestoreVec),
-                                        title = labelRestore,
-                                        action = SettingsAction.RestorePurchases,
-                                    ),
-                                )
-                            },
-                    ),
-                )
-                add(
-                    SettingsSectionState(
-                        title = headerSupport,
-                        rows =
-                            listOf(
-                                SettingsClickableRowState(
-                                    id = "send_feedback",
-                                    icon = rowIcon(iconFeedbackVec),
-                                    title = labelFeedback,
-                                    action = SettingsAction.SendFeedback,
-                                ),
-                                SettingsClickableRowState(
-                                    id = "rate_app",
-                                    icon = rowIcon(iconRateVec),
-                                    title = labelRate,
-                                    action = SettingsAction.RateApp,
-                                ),
-                                SettingsClickableRowState(
-                                    id = "show_onboarding",
-                                    icon = rowIcon(iconOnboardingVec),
-                                    title = labelOnboarding,
-                                    action = SettingsAction.ShowOnboarding,
-                                ),
-                            ),
-                    ),
-                )
-                addExtrasAt(SettingsExtraSectionsPlacement.BeforeLegal)
-                add(
-                    SettingsSectionState(
-                        title = headerLegal,
-                        rows =
-                            listOf(
-                                SettingsClickableRowState(
-                                    id = "privacy_policy",
-                                    icon = rowIcon(iconPrivacyVec),
-                                    title = labelPrivacy,
-                                    action = SettingsAction.PrivacyPolicy,
-                                ),
-                                SettingsClickableRowState(
-                                    id = "terms_of_service",
-                                    icon = rowIcon(iconTermsVec),
-                                    title = labelTerms,
-                                    action = SettingsAction.TermsOfService,
-                                ),
-                            ),
-                    ),
-                )
-                addExtrasAt(SettingsExtraSectionsPlacement.End)
-            }
-
-        SettingsScreenState(
+        defaultSettingsState(
+            version = version,
+            appearance = appearance,
+            isPro = isPro,
+            notificationsEnabled = notificationsEnabled,
+            hapticsEnabled = hapticsEnabled,
+            showNotifications = showNotifications,
+            showHaptics = showHaptics,
             title = title,
-            sections = sections,
-            footer = SettingsFooterState(text = footerText, version = version),
+            extraSections = extraSections,
+            extraSectionsPlacement = extraSectionsPlacement,
         )
     }
 }
