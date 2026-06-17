@@ -24,8 +24,13 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/FeatureGate.kt` — gating helper over the manager: `canUse(feature)`, reactive
   `observe(feature)`, `requestUpgrade(source)` (emits `Paywall_Viewed`, returns `PAYWALL_ROUTE_KEY`),
   host-configurable `freeFeatures`.
+- `monetization/usecase/ObserveProStatusUseCase.kt` — the toolkit's **first use case**: an injectable
+  `fun interface` returning `StateFlow<Boolean>` so ViewModels read Free/Pro via Koin instead of having
+  it threaded down through Compose. `DefaultObserveProStatusUseCase` re-exposes `EntitlementManager.isPro`.
+  Consumed by `:ui-scaffolds`' `SettingsViewModel`.
 - `monetization/MonetizationModule.kt` — `monetizationModule` binds `EntitlementManager`
-  (`DefaultEntitlementManager`) + `FeatureGate` over whatever `EntitlementProvider` the host installs.
+  (`DefaultEntitlementManager`) + `FeatureGate` + `ObserveProStatusUseCase`
+  (`DefaultObserveProStatusUseCase`) over whatever `EntitlementProvider` the host installs.
   Requires an `EntitlementProvider` + `KeyValueStore` + `AnalyticsTracker` in the graph.
 
 ## Rules

@@ -1,5 +1,7 @@
 package dev.jdgarita.frnk.monetization
 
+import dev.jdgarita.frnk.monetization.usecase.DefaultObserveProStatusUseCase
+import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
 import org.koin.dsl.module
 
 /**
@@ -14,4 +16,5 @@ val monetizationModule =
     module {
         single<EntitlementManager> { DefaultEntitlementManager(get(), get(), get()) }
         single { FeatureGate(get(), get()) }
+        single<ObserveProStatusUseCase> { DefaultObserveProStatusUseCase(get()) }
     }

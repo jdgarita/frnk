@@ -27,6 +27,11 @@ kotlin {
             // never appears in this module's public API and consumers don't need it transitively.
             // Pure stdlib, no SDK/native cinterop, so umbrella XCFrameworks stay clean.
             implementation(projects.dataPrefsApi)
+            // ObserveProStatusUseCase — injected leniently into SettingsViewModel so the VM can read
+            // Free/Pro internally instead of having it threaded down through Compose. Pure-interface
+            // domain module (no billing SDK / no native cinterop). implementation (not api): the VM is
+            // constructed only via Koin, so the use case never appears on this module's public surface.
+            implementation(projects.monetizationApi)
 
             // Koin: koinViewModel() in the VM-backed scaffolds, koinEntryProvider() + the navigation<Route>
             // DSL in FrnkNavDisplay. api so hosts build their own graphs/screens without redeclaring.

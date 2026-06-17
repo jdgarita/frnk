@@ -94,6 +94,7 @@ haptics ← ui-theme ← ui-components ← ui-scaffolds ← ui-bottom-nav ← ui
 ui-app ← {monetization-ui, analytics-api}     # resolves impls via Koin at runtime, never at compile time
 monetization-api ← {analytics-api, data-prefs-api}
 monetization-ui  ← {ui-scaffolds, monetization-api}
+ui-scaffolds     ← monetization-api           # SettingsViewModel.ObserveProStatusUseCase (needs monetizationModule in graph)
 remote-config-api ← remote-config-impl        # sibling of analytics, never merged into it
 Material3 only in ui-bottom-nav (ui-app inherits it transitively — the accepted batteries-included trade)
 Only demo modules may depend on *-impl modules from code; hosts wire impls via Koin modules only

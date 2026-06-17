@@ -861,3 +861,25 @@ Trap avoided: moving Onboarding*/Home*/Settings* types into subpackages requires
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/home
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/settings
+
+## Use-case concept: ObserveProStatusUseCase injected into SettingsViewModel
+
+- id: use-case-concept-observeprostatususecase-injected-into-setti-20260617-154211
+- type: architecture_decision
+- status: active
+- platform: kmp
+- date: 2026-06-17
+
+Introduced the use-case pattern in the frnk toolkit (domain use cases injected into ViewModels via Koin instead of threading domain state down through Compose).
+
+First use case: ObserveProStatusUseCase (fun interface -> StateFlow<Boolean>) + DefaultObserveProStatusUseCase, in :monetization-api (frnk/capabilities/monetization-api, package dev.jdgarita.frnk.monetization.usecase), next to EntitlementManager/FeatureGate; bound in monetizationModule (single<ObserveProStatusUseCase>{...}). Wraps EntitlementManager.isPro.
+
+Final wiring (user-directed, after rejecting both a nullable param and a no-op default): the use case is a REQUIRED Koin dependency — no NoOp, no nullable, no default value. SettingsViewModel (:ui-scaffolds): ctor param observeProStatus: ObserveProStatusUseCase (non-null, no default), exposed as val isPro: StateFlow<Boolean> = observeProStatus.invoke(). :ui-scaffolds gained implementation(projects.monetizationApi) (pure-interface, no SDK/cinterop).
+
+settingsScaffoldModule resolves it via get(): SettingsViewModel(initial = params.get(), observeProStatus = get()). The DefaultObserveProStatusUseCase binding lives in monetizationModule (it needs EntitlementManager).
+
+CONSEQUENCE: this makes monetizationModule REQUIRED for the VM-backed Settings scaffold — a host that installs frnkUiModules() (settingsScaffoldModule) WITHOUT monetizationModule will fail Koin resolution when the Settings VM is created (previously the design degraded to Free). The demo installs monetizationModule so it's fine. User explicitly chose this over the optional/degrade approaches.
+
+STEP 1 = wire+expose only. FrnkAppScaffold's isPro pass-down and rememberDefaultSettingsState catalogue are UNTOUCHED. Step 2 (later) moves catalogue logic into SettingsViewModel and retires SettingsDefaults.kt.
+
+Why :monetization-api not a ui-scaffolds port: user wanted domain use cases injected into VMs. Tests: SettingsViewModelTest (androidHostTest) covers Pro path + degrade-to-Free path.
