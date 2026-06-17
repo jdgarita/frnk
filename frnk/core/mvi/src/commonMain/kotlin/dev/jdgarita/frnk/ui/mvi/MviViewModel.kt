@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.ui.mvi
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.jdgarita.frnk.ui.mvi.ext.collect
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -55,5 +56,3 @@ abstract class MviViewModel<S : UiState, I : UiIntent, E : UiEffect>(
 
     protected abstract suspend fun onIntent(intent: I)
 }
-
-private suspend fun <T> kotlinx.coroutines.flow.Flow<T>.collect() = collect {}
