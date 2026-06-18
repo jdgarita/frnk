@@ -991,3 +991,27 @@ Proof migrations done: `PaywallViewModel`, `OnboardingViewModel`. Deferred (NOT 
 - frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviContract.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/RememberMviLifecycle.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt
+
+## ViewModels consume use cases, not EntitlementManager directly
+
+- id: viewmodels-consume-use-cases-not-entitlementmanager-directly-20260618-150250
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization
+- date: 2026-06-18
+
+Extended the use-case seam established by ObserveProStatusUseCase: PaywallViewModel no longer depends on EntitlementManager directly — it consumes the new PaywallPurchaseUseCase (interface in :monetization-api/usecase, internal DefaultPaywallPurchaseUseCase delegating to EntitlementManager, bound in monetizationModule). This keeps ViewModels agnostic of the concrete domain manager / billing SDK.
+
+WHY: EntitlementManager is meant to stay an internal-ish domain detail of :monetization-api; ViewModels resolving it directly leaks that coupling. Use cases are the sanctioned injection point.
+
+DESIGN CHOICE: one grouped use case (offerings/purchase/restore on a single interface) over three granular fun-interfaces — the three ops are cohesive (all the paywall's billing). The analytics funnel stays in DefaultEntitlementManager.purchase()/the VM; the use case is a pure pass-through (no double-tracking).
+
+NOT YET DONE (follow-up): EntitlementManager is still NOT internal — it remains public API consumed by FrnkSettingsHandler (:monetization-ui: restorePurchases/managementUrl/setGodMode), FrnkAppScaffold (:ui-app: isPro + getOrNull detection), and the demo (DemoViewModel/DemoScreen + DefaultEntitlementManager in DemoViewModelTest; FeatureGate's public ctor also exposes it). Making it internal requires extracting use cases for those consumers (restore / manage-subscription / set-god-mode / observe-status) and routing them through, plus making DefaultEntitlementManager internal and reworking the demo test. Scoped but multi-module.
+
+GOTCHA: when renaming the VM ctor param, propagate to the Koin named-arg call in PaywallScaffoldModule — tests use positional args so they compile even when commonMain is broken (the named-arg mismatch only surfaced in :shared-monetization-ui:compileAndroidMain, not testAndroidHostTest).
+
+### Files
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/usecase/PaywallPurchaseUseCase.kt
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/usecase/DefaultPaywallPurchaseUseCase.kt
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModel.kt

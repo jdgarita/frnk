@@ -28,9 +28,15 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   `fun interface` returning `StateFlow<Boolean>` so ViewModels read Free/Pro via Koin instead of having
   it threaded down through Compose. `DefaultObserveProStatusUseCase` re-exposes `EntitlementManager.isPro`.
   Consumed by `:ui-scaffolds`' `SettingsViewModel`.
+- `monetization/usecase/PaywallPurchaseUseCase.kt` — the paywall's **purchase use case**: an injectable
+  `interface` exposing `offerings()`/`purchase(id)`/`restore()` (all `AppResult`, never throw) so
+  `PaywallViewModel` runs the billing flow via Koin instead of depending on `EntitlementManager`
+  directly. `DefaultPaywallPurchaseUseCase` delegates to `EntitlementManager` (which keeps the analytics
+  funnel). Consumed by `:shared-monetization-ui`'s `PaywallViewModel`.
 - `monetization/MonetizationModule.kt` — `monetizationModule` binds `EntitlementManager`
   (`DefaultEntitlementManager`) + `FeatureGate` + `ObserveProStatusUseCase`
-  (`DefaultObserveProStatusUseCase`) over whatever `EntitlementProvider` the host installs.
+  (`DefaultObserveProStatusUseCase`) + `PaywallPurchaseUseCase` (`DefaultPaywallPurchaseUseCase`) over
+  whatever `EntitlementProvider` the host installs.
   Requires an `EntitlementProvider` + `KeyValueStore` + `AnalyticsTracker` in the graph.
 
 ## Rules

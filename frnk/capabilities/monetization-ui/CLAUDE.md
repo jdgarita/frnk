@@ -10,13 +10,14 @@ monetization domain (`:monetization-api`).
 - `PaywallScreen.kt` — `PaywallViewModel` (MVI) + stateless `PaywallScreenContent` + the VM-backed
   `PaywallScreen(source, features, onEffect)`. The VM loads `offerings()`, tracks the funnel
   (`Paywall_Viewed{source}`, `Purchase_*`, `Paywall_Dismissed`), and runs purchase/restore through the
-  frnk `EntitlementManager`; success → `PaywallEffect.Dismiss`, cancel/failure → `PaywallEffect.Message`
-  (never throws). UI is **stacked selectable plan cards** (radio + price + per-month + free-trial/best-value
+  injectable `PaywallPurchaseUseCase` (`:monetization-api`, delegates to `EntitlementManager` — so the
+  VM stays SDK/manager-agnostic); success → `PaywallEffect.Dismiss`, cancel/failure →
+  `PaywallEffect.Message` (never throws). UI is **stacked selectable plan cards** (radio + price + per-month + free-trial/best-value
   badge), a single CTA ("Start free trial" when the selected plan has a trial, else "Continue"), and
   Restore + Terms/Privacy. Product list shows a loading skeleton while offerings load.
-- `PaywallScaffoldModule.kt` — `paywallScaffoldModule` registers `PaywallViewModel` (`source` via
-  `parametersOf`; `EntitlementManager` + `AnalyticsTracker` from the graph). Hosts install it alongside
-  `revenueCatModule` + `monetizationModule` in their `initializeFrnk(...)` list.
+- `PaywallScaffoldModule.kt` — `paywallScaffoldModule` registers `PaywallViewModel` (`source` arrives at
+  attach time via `PaywallArguments`; `PaywallPurchaseUseCase` + `AnalyticsTracker` from the graph). Hosts
+  install it alongside `revenueCatModule` + `monetizationModule` in their `initializeFrnk(...)` list.
 - `PaywallNav.kt` — the Navigation3 paywall: a route-agnostic `@Composable FrnkPaywallDestination(features,
   source, onMessage, onClose)` destination body **and** `Module.frnkPaywallNavigation(...)` which registers it
   at `ToolkitRoute.Paywall` via Koin's `navigation<Route> { }` DSL (resolved by `FrnkNavDisplay`'s default

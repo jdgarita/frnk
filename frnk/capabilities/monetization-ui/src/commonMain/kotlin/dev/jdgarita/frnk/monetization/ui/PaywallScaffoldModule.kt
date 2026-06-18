@@ -4,11 +4,12 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 /**
- * Registers [PaywallViewModel]. [EntitlementManager] + [dev.jdgarita.frnk.backend.AnalyticsTracker]
- * resolve from the graph (monetizationModule + observability); the `source` is supplied at attach time
- * via `PaywallArguments`, not through Koin. Downstream Koin modules `includes(paywallScaffoldModule)`.
+ * Registers [PaywallViewModel]. [dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase] +
+ * [dev.jdgarita.frnk.backend.AnalyticsTracker] resolve from the graph (monetizationModule +
+ * observability); the `source` is supplied at attach time via `PaywallArguments`, not through Koin.
+ * Downstream Koin modules `includes(paywallScaffoldModule)`.
  */
 val paywallScaffoldModule =
     module {
-        viewModel { PaywallViewModel(entitlements = get(), analytics = get()) }
+        viewModel { PaywallViewModel(paywallPurchaseUseCase = get(), analytics = get()) }
     }

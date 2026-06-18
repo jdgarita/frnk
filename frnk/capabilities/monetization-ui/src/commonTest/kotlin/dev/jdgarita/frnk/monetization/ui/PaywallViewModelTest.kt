@@ -2,15 +2,12 @@ package dev.jdgarita.frnk.monetization.ui
 
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
-import dev.jdgarita.frnk.monetization.EntitlementManager
-import dev.jdgarita.frnk.monetization.EntitlementStatus
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -40,7 +37,7 @@ class PaywallViewModelTest {
     @Test
     fun attach_loads_offerings_and_defaults_to_yearly() =
         runTest(dispatcher) {
-            val vm = PaywallViewModel(FakeManager(offerings = AppResult.Success(products)), FakeAnalytics())
+            val vm = PaywallViewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), FakeAnalytics())
             vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
             assertEquals(2, vm.state.value.products.size)
@@ -52,7 +49,7 @@ class PaywallViewModelTest {
     fun attach_tracks_paywall_viewed() =
         runTest(dispatcher) {
             val analytics = FakeAnalytics()
-            val vm = PaywallViewModel(FakeManager(offerings = AppResult.Success(products)), analytics)
+            val vm = PaywallViewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), analytics)
             vm.attach(PaywallArguments("settings"))
             runCurrent()
             assertTrue(analytics.tracked.contains(ToolkitEvent.PaywallViewed.key))
@@ -63,7 +60,7 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 PaywallViewModel(
-                    FakeManager(offerings = AppResult.Success(products), purchase = AppResult.Success(true)),
+                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), purchase = AppResult.Success(true)),
                     FakeAnalytics(),
                 )
             vm.attach(PaywallArguments("home_topbar"))
@@ -84,7 +81,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 PaywallViewModel(
-                    FakeManager(offerings = AppResult.Success(products), purchase = AppResult.Failure(MonetizationError.StoreUnavailable)),
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        purchase = AppResult.Failure(MonetizationError.StoreUnavailable),
+                    ),
                     FakeAnalytics(),
                 )
             vm.attach(PaywallArguments("home_topbar"))
@@ -106,7 +106,7 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 PaywallViewModel(
-                    FakeManager(offerings = AppResult.Success(products), restore = AppResult.Success(true)),
+                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), restore = AppResult.Success(true)),
                     FakeAnalytics(),
                 )
             vm.attach(PaywallArguments("settings"))
@@ -123,26 +123,16 @@ class PaywallViewModelTest {
         }
 }
 
-private class FakeManager(
+private class FakePaywallPurchaseUseCase(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-) : EntitlementManager {
-    override val status: StateFlow<EntitlementStatus> = MutableStateFlow(EntitlementStatus.Free)
-    override val isPro: StateFlow<Boolean> = MutableStateFlow(false)
-    override val isGodMode: StateFlow<Boolean> = MutableStateFlow(false)
-
-    override fun setGodMode(enabled: Boolean) = Unit
-
-    override suspend fun refresh() = Unit
-
+) : PaywallPurchaseUseCase {
     override suspend fun offerings() = offerings
 
     override suspend fun purchase(productId: String) = purchase
 
-    override suspend fun restorePurchases() = restore
-
-    override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+    override suspend fun restore() = restore
 }
 
 private class FakeAnalytics : AnalyticsTracker {
