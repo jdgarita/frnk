@@ -8,11 +8,11 @@ import org.koin.dsl.module
  * convenience composable must install this module (or `includes(onboardingScaffoldModule)` it
  * from a parent module).
  *
- * The ViewModel takes the initial [OnboardingScreenState] as a runtime parameter, so the call site
- * passes the page list via `parametersOf(initialState)` — this keeps the page catalog at the
- * composable boundary rather than in the DI graph.
+ * The ViewModel takes no constructor params: the page catalog arrives as [OnboardingArguments] at
+ * attach time (via [OnboardingScreen]'s [dev.jdgarita.frnk.ui.mvi.FrnkScreen] wrapper), keeping it
+ * at the composable boundary rather than in the DI graph.
  */
 val onboardingScaffoldModule =
     module {
-        viewModel { params -> OnboardingViewModel(initial = params.get()) }
+        viewModel { OnboardingViewModel() }
     }

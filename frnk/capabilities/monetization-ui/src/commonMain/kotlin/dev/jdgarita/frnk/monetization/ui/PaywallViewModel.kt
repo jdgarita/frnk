@@ -7,7 +7,7 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
-import dev.jdgarita.frnk.ui.mvi.MviViewModel
+import dev.jdgarita.frnk.ui.mvi.ModelMviViewModel
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.launch
 
@@ -16,25 +16,36 @@ import kotlinx.coroutines.launch
  * the frnk-owned [EntitlementManager]. Success closes the paywall ([PaywallEffect.Dismiss]); cancel /
  * failure surface a [PaywallEffect.Message] — nothing throws.
  *
- * @param source where the paywall was opened from (`home_topbar`, `settings`, `feature_gate:<id>`).
+ * Owns a [PaywallModelState] (the data) and maps it to [PaywallScreenState] (the rendered state).
+ * Runtime input arrives as [PaywallArguments] at attach time (see [onAttached]); the `source` they carry
+ * tags the analytics funnel (`Paywall_Viewed` / `Paywall_Dismissed`).
  */
 class PaywallViewModel(
-    private val source: String,
     private val entitlements: EntitlementManager,
     private val analytics: AnalyticsTracker,
-) : MviViewModel<PaywallScreenState, PaywallIntent, PaywallEffect>(PaywallScreenState()) {
-    init {
-        analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to source))
+) : ModelMviViewModel<PaywallArguments, PaywallModelState, PaywallScreenState, PaywallIntent, PaywallEffect>(
+        factory = PaywallModelStateFactory,
+    ) {
+    override fun onAttached(arguments: PaywallArguments) {
+        analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to arguments.source))
         viewModelScope.launch { loadOfferings() }
     }
 
+    override fun mapToUiState(modelState: PaywallModelState): PaywallScreenState =
+        PaywallScreenState(
+            products = modelState.products,
+            selectedProductId = modelState.selectedProductId,
+            isLoading = modelState.isLoading,
+            isPurchasing = modelState.isPurchasing,
+        )
+
     override suspend fun onIntent(intent: PaywallIntent) {
         when (intent) {
-            is PaywallIntent.ProductSelected -> setState { copy(selectedProductId = intent.id) }
+            is PaywallIntent.ProductSelected -> updateModel { copy(selectedProductId = intent.id) }
             PaywallIntent.Purchase -> purchase()
             PaywallIntent.Restore -> restore()
             PaywallIntent.Close -> {
-                analytics.track(ToolkitEvent.PaywallDismissed, mapOf("source" to source))
+                analytics.track(ToolkitEvent.PaywallDismissed, mapOf("source" to arguments.source))
                 emit(PaywallEffect.Dismiss)
             }
         }
@@ -43,27 +54,28 @@ class PaywallViewModel(
     private suspend fun loadOfferings() {
         when (val result = entitlements.offerings()) {
             is AppResult.Success ->
-                setState {
+                updateModel {
                     copy(
                         products = result.data,
                         selectedProductId = defaultSelection(result.data),
                         isLoading = false,
                     )
                 }
+
             is AppResult.Failure -> {
-                setState { copy(isLoading = false) }
+                updateModel { copy(isLoading = false) }
                 emit(PaywallEffect.Message(result.error.message))
             }
         }
     }
 
     private suspend fun purchase() {
-        val id = currentState().selectedProductId ?: return
-        setState { copy(isPurchasing = true) }
+        val id = currentModel().selectedProductId ?: return
+        updateModel { copy(isPurchasing = true) }
         when (val result = entitlements.purchase(id)) {
             is AppResult.Success -> emit(PaywallEffect.Dismiss) // manager flips status reactively
             is AppResult.Failure -> {
-                setState { copy(isPurchasing = false) }
+                updateModel { copy(isPurchasing = false) }
                 if (result.error != MonetizationError.UserCancelled) {
                     emit(PaywallEffect.Message(result.error.message))
                 }
@@ -75,6 +87,7 @@ class PaywallViewModel(
         when (val result = entitlements.restorePurchases()) {
             is AppResult.Success ->
                 if (result.data) emit(PaywallEffect.Dismiss) else emit(PaywallEffect.Message("Nothing to restore"))
+
             is AppResult.Failure -> emit(PaywallEffect.Message(result.error.message))
         }
     }

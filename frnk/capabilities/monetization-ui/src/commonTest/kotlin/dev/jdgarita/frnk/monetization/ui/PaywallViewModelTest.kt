@@ -38,9 +38,10 @@ class PaywallViewModelTest {
     @AfterTest fun tearDown() = Dispatchers.resetMain()
 
     @Test
-    fun init_loads_offerings_and_defaults_to_yearly() =
+    fun attach_loads_offerings_and_defaults_to_yearly() =
         runTest(dispatcher) {
-            val vm = PaywallViewModel("home_topbar", FakeManager(offerings = AppResult.Success(products)), FakeAnalytics())
+            val vm = PaywallViewModel(FakeManager(offerings = AppResult.Success(products)), FakeAnalytics())
+            vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
             assertEquals(2, vm.state.value.products.size)
             assertEquals("yearly", vm.state.value.selectedProductId)
@@ -48,10 +49,11 @@ class PaywallViewModelTest {
         }
 
     @Test
-    fun init_tracks_paywall_viewed() =
+    fun attach_tracks_paywall_viewed() =
         runTest(dispatcher) {
             val analytics = FakeAnalytics()
-            PaywallViewModel("settings", FakeManager(offerings = AppResult.Success(products)), analytics)
+            val vm = PaywallViewModel(FakeManager(offerings = AppResult.Success(products)), analytics)
+            vm.attach(PaywallArguments("settings"))
             runCurrent()
             assertTrue(analytics.tracked.contains(ToolkitEvent.PaywallViewed.key))
         }
@@ -61,10 +63,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 PaywallViewModel(
-                    "home_topbar",
                     FakeManager(offerings = AppResult.Success(products), purchase = AppResult.Success(true)),
                     FakeAnalytics(),
                 )
+            vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
             val effects = mutableListOf<PaywallEffect>()
             val job = launch { vm.effects.toList(effects) }
@@ -82,10 +84,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 PaywallViewModel(
-                    "home_topbar",
                     FakeManager(offerings = AppResult.Success(products), purchase = AppResult.Failure(MonetizationError.StoreUnavailable)),
                     FakeAnalytics(),
                 )
+            vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
             val effects = mutableListOf<PaywallEffect>()
             val job = launch { vm.effects.toList(effects) }
@@ -104,10 +106,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 PaywallViewModel(
-                    "settings",
                     FakeManager(offerings = AppResult.Success(products), restore = AppResult.Success(true)),
                     FakeAnalytics(),
                 )
+            vm.attach(PaywallArguments("settings"))
             runCurrent()
             val effects = mutableListOf<PaywallEffect>()
             val job = launch { vm.effects.toList(effects) }

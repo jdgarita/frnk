@@ -56,3 +56,7 @@ abstract class MviViewModel<S : UiState, I : UiIntent, E : UiEffect>(
 
     protected abstract suspend fun onIntent(intent: I)
 }
+
+interface ModelStateFactory<TModelState : ModelState> {
+    fun initialModelState(): TModelState
+}

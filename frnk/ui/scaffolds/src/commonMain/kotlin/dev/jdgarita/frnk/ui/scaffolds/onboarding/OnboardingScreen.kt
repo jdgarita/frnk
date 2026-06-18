@@ -34,6 +34,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -49,18 +50,20 @@ import dev.jdgarita.frnk.ui.theme.stringGetStarted
 import dev.jdgarita.frnk.ui.theme.stringNext
 import dev.jdgarita.frnk.ui.theme.strings
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 /**
- * VM-backed convenience wrapper around [OnboardingScreenContent]. Resolves an
- * [OnboardingViewModel] from Koin (initialised with [initialState] via `parametersOf`), forwards
- * its state to the stateless renderer, and surfaces one-shot effects to [onEffect].
+ * VM-backed convenience wrapper around [OnboardingScreenContent]. Resolves an [OnboardingViewModel]
+ * from Koin and attaches it to the lifecycle with [arguments] via [FrnkScreen] (which calls the VM's
+ * `attach`/`onAttached` once), forwards its state to the stateless renderer, and surfaces one-shot
+ * effects to [onEffect].
  *
  * The [vmKey] parameter scopes the ViewModel inside the host's `ViewModelStore`. By default the
  * VM is reused for the lifetime of the enclosing `ViewModelStoreOwner` (typically the Activity),
- * so dismissing and re-opening the overlay reuses the same VM — the user lands back on whichever
- * page they left off. Hosts that want a fresh flow on every open should change [vmKey] each time
- * the overlay is shown (e.g. `key = "onboarding-$openCounter"` where `openCounter++` on each show).
+ * so dismissing and re-opening the overlay reuses the same VM — `attach` is guarded once, so the
+ * second open keeps the retained page (the user lands back on whichever page they left off). Hosts
+ * that want a fresh flow on every open should change [vmKey] each time the overlay is shown (e.g.
+ * `key = "onboarding-$openCounter"` where `openCounter++` on each show) — a new key creates a new VM
+ * that attaches fresh from [arguments].
  *
  * **VMStore retention:** each distinct [vmKey] creates a permanent slot in the
  * `ViewModelStoreOwner`'s store until that owner is destroyed — `ViewModelStore` never evicts
@@ -72,21 +75,23 @@ import org.koin.core.parameter.parametersOf
  */
 @Composable
 fun OnboardingScreen(
-    initialState: OnboardingScreenState,
+    arguments: OnboardingArguments,
     modifier: Modifier = Modifier,
     vmKey: String? = null,
     onEffect: (OnboardingEffect) -> Unit = {},
 ) {
-    val vm: OnboardingViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
-    val state by vm.state.collectAsStateWithLifecycle()
+    val vm: OnboardingViewModel = koinViewModel(key = vmKey)
+    FrnkScreen(viewModel = vm, arguments = arguments) {
+        val state by vm.state.collectAsStateWithLifecycle()
 
-    EffectCollector(vm.effects, onEffect = onEffect)
+        EffectCollector(vm.effects, onEffect = onEffect)
 
-    OnboardingScreenContent(
-        state = state,
-        onIntent = vm::send,
-        modifier = modifier,
-    )
+        OnboardingScreenContent(
+            state = state,
+            onIntent = vm::send,
+            modifier = modifier,
+        )
+    }
 }
 
 /**

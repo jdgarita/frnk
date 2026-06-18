@@ -4,6 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.Dp
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.mvi.Arguments
+import dev.jdgarita.frnk.ui.mvi.ModelState
+import dev.jdgarita.frnk.ui.mvi.ModelStateFactory
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
@@ -20,19 +23,52 @@ data class OnboardingPageState(
 )
 
 /**
- * Configuration + runtime state for [OnboardingScreen]. The `pages` list is treated as immutable
- * for the lifetime of the screen — pass the full list at construction time rather than mutating
- * it through intents.
+ * The data-only runtime input for [OnboardingViewModel], supplied at **attach time** (see
+ * [dev.jdgarita.frnk.ui.mvi.RememberMviLifecycle] / [dev.jdgarita.frnk.ui.mvi.FrnkScreen]) rather than
+ * through the constructor. Carries the onboarding configuration — the immutable page list and the two
+ * layout knobs — which `onAttached` seeds into [OnboardingModelState].
  *
- * **Invariant:** [pages] must be non-empty. An onboarding flow with no pages has no meaningful UI
- * to render (the pager would be empty, the pip row would be empty, and the Next button would have
- * nothing to advance to) — the constructor rejects the call rather than silently rendering a broken
- * screen. Because state mutations go through `copy(...)`, which re-runs `init`, the invariant
- * holds for the lifetime of every [OnboardingScreenState] instance.
+ * **Invariant:** [pages] must be non-empty. An onboarding flow with no pages has no meaningful UI to
+ * render (an empty pager, an empty pip row, a Next button with nothing to advance to) — this is the
+ * input that must be valid, so the guard lives here.
  *
  * [pagerHeight] is the single "configurable size" knob: `null` (default) lets the pager fill the
  * remaining vertical space via `Modifier.weight(1f)`; non-null pins the pager to that exact height,
  * useful when the host wants the buttons to sit above the keyboard or below a hero region.
+ */
+@Immutable
+data class OnboardingArguments(
+    val pages: List<OnboardingPageState>,
+    val pagerHeight: Dp? = null,
+    val userScrollEnabled: Boolean = true,
+) : Arguments {
+    init {
+        require(pages.isNotEmpty()) { "OnboardingArguments requires at least one page." }
+    }
+}
+
+/**
+ * The data-only layer for [OnboardingViewModel]. Seeded empty by [OnboardingModelStateFactory] at
+ * construction and filled from [OnboardingArguments] in `onAttached`; the VM mutates [currentPageIndex]
+ * as the user navigates.
+ */
+@Immutable
+data class OnboardingModelState(
+    val pages: List<OnboardingPageState> = emptyList(),
+    val currentPageIndex: Int = 0,
+    val pagerHeight: Dp? = null,
+    val userScrollEnabled: Boolean = true,
+) : ModelState
+
+object OnboardingModelStateFactory : ModelStateFactory<OnboardingModelState> {
+    override fun initialModelState() = OnboardingModelState()
+}
+
+/**
+ * The rendered state [OnboardingScreen] collects — derived from [OnboardingModelState] via the VM's
+ * `mapToUiState`. Tolerates an empty [pages] list: the engine maps the empty initial model into a
+ * UiState once at VM construction, before `onAttached` seeds the pages. The non-empty guarantee lives on
+ * [OnboardingArguments] (the input), not here.
  */
 @Immutable
 data class OnboardingScreenState(
@@ -41,10 +77,6 @@ data class OnboardingScreenState(
     val pagerHeight: Dp? = null,
     val userScrollEnabled: Boolean = true,
 ) : UiState {
-    init {
-        require(pages.isNotEmpty()) { "OnboardingScreenState requires at least one page." }
-    }
-
     val isFirstPage: Boolean get() = currentPageIndex == 0
     val isLastPage: Boolean get() = currentPageIndex == pages.lastIndex
 }

@@ -952,3 +952,42 @@ The token-in-state win (VM-authored, composition-free Settings *state*) is alrea
 - frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/organisms/FrnkSectionCard.kt
 - frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkSegmentedControl.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/settings/SettingsScreen.kt
+
+## Model-first MVI: Arguments + onAttached + FrnkScreen lifecycle wrapper
+
+- id: model-first-mvi-arguments-onattached-frnkscreen-lifecycle-wr-20260618-143809
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: core-mvi / ui-scaffolds
+- date: 2026-06-18
+
+## Decision
+
+Runtime inputs for a `ModelMviViewModel` arrive as a data-only `Arguments` bundle supplied at **attach time**, not via the constructor. A generic type param `A : Arguments` was added as the leading param of `ModelMviViewModel<A, M, S, I, E>`. A public `attach(arguments)` (guarded to run once) retains `arguments` (lateinit, `private set`) and invokes the overridable `onAttached(arguments)` hook, where the VM seeds its `ModelState` and starts loads. Service dependencies (managers, trackers) stay as ordinary constructor params — kept out of `Arguments`.
+
+The Compose driver is a wrapper pair in `:ui-scaffolds` (`ui/mvi/`, so binding can use `compose.runtime` while `:core-mvi` stays Compose-free):
+- `RememberMviLifecycle(vm, arguments)` — a `DisposableEffect` calls `vm.attach(arguments)` on first composition.
+- `FrnkScreen(vm, arguments) { content }` — thin wrapper that calls `RememberMviLifecycle` then renders `content()`, so screens don't repeat the attach call. Lives in `ui/mvi/` (next to `FrnkMviScreen`/`EffectCollector`), NOT a separate `ui/screen/` package.
+
+## Why
+
+- Side effects (analytics "viewed", offerings/data load) now fire when the screen is actually presented, not at construction.
+- Mirrors a proven `RememberLifecycle`/`MviViewModelWrapper` pattern from a prior project; chosen over VM-implements-`DefaultLifecycleObserver` because it needs ZERO new deps (`lifecycle-runtime` is already transitive in `:core-mvi`) and makes engine tests trivial (`vm.attach(args)` with no `LifecycleOwner`).
+- Replaces the old `koinViewModel { parametersOf(initialState) }` seeding — Koin VM registrations drop `parametersOf`; config arrives via `Arguments`.
+
+## Tradeoffs / gotchas
+
+- `arguments` is `lateinit` (reading before attach throws) — acceptable: intents only flow from a shown (already-attached) screen.
+- Model-first VMs map an EMPTY initial model to a UiState once at construction (before `onAttached` seeds it). Any UiState invariant must tolerate empty. For Onboarding the `require(pages.isNotEmpty())` invariant MOVED from `OnboardingScreenState` (the UiState) to `OnboardingArguments` (the input); reducers using `coerceIn(0, pages.lastIndex)` need `lastIndex.coerceAtLeast(0)` to survive the pre-attach empty frame. The empty frame is hidden behind the nav slide transition.
+- `attach` is guarded once, so a retained VM (same `vmKey`) keeps its state across re-open; a new `vmKey` gives a fresh attach.
+
+## Scope / status
+
+Proof migrations done: `PaywallViewModel`, `OnboardingViewModel`. Deferred (NOT done): renaming `ModelMviViewModel` -> `MviViewModel` + deleting the old `MviViewModel<S,I,E>` base; migrating `SettingsViewModel`/`HomeViewModel`/`DemoViewModel`; `onDetached`/`activate`/`deactivate` (ON_RESUME/ON_PAUSE) hooks (the `onDispose` in `RememberMviLifecycle` is structured for them). Verified on a Pixel 7a: onboarding full flow + paywall load/close.
+
+### Files
+- frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/ModelMviViewModel.kt
+- frnk/core/mvi/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/MviContract.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/RememberMviLifecycle.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt

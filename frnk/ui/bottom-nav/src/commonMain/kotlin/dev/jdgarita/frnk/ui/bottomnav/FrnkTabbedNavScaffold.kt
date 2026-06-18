@@ -34,9 +34,9 @@ import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeScreen
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeScreenState
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingArguments
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreen
@@ -183,9 +183,9 @@ fun FrnkTabbedNavScaffold(
                     if (config.onboarding.pages.isNotEmpty()) {
                         entry(ToolkitRoute.Onboarding) {
                             OnboardingScreen(
-                                initialState =
+                                arguments =
                                     remember(config.onboarding.pages) {
-                                        OnboardingScreenState(pages = config.onboarding.pages)
+                                        OnboardingArguments(pages = config.onboarding.pages)
                                     },
                                 modifier = Modifier.fillMaxSize(),
                                 onEffect = { effect ->

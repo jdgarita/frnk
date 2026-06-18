@@ -33,6 +33,7 @@ import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
+import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
@@ -66,7 +67,6 @@ import dev.jdgarita.frnk.ui.theme.stringProName
 import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
 import dev.jdgarita.frnk.ui.theme.strings
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 /**
  * The toolkit's basic paywall — a full screen of stacked, selectable plan cards over a frnk-owned
@@ -84,24 +84,26 @@ fun PaywallScreen(
     vmKey: String? = null,
     onEffect: (PaywallEffect) -> Unit = {},
 ) {
-    val vm: PaywallViewModel = koinViewModel(key = vmKey) { parametersOf(source) }
-    val state by vm.state.collectAsStateWithLifecycle()
+    val vm: PaywallViewModel = koinViewModel(key = vmKey)
+    FrnkScreen(viewModel = vm, arguments = PaywallArguments(source)) {
+        val state by vm.state.collectAsStateWithLifecycle()
 
-    EffectCollector(vm.effects, onEffect = onEffect)
+        EffectCollector(vm.effects, onEffect = onEffect)
 
-    FrnkFullScreenScaffold(
-        onCloseClick = { vm.send(PaywallIntent.Close) },
-        modifier = modifier,
-        contentPadding = PaddingValues(Theme[spacing][spacingLg]),
-    ) { padding ->
-        // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
-        // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
-        PaywallScreenContent(
-            state = state,
-            features = features,
-            onIntent = vm::send,
-            contentPadding = padding,
-        )
+        FrnkFullScreenScaffold(
+            onCloseClick = { vm.send(PaywallIntent.Close) },
+            modifier = modifier,
+            contentPadding = PaddingValues(Theme[spacing][spacingLg]),
+        ) { padding ->
+            // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
+            // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
+            PaywallScreenContent(
+                state = state,
+                features = features,
+                onIntent = vm::send,
+                contentPadding = padding,
+            )
+        }
     }
 }
 
