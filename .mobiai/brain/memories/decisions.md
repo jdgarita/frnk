@@ -1059,3 +1059,16 @@ Docs updated: CHANGELOG.md, ARCHITECTURE.md, HOST_INTEGRATION.md section 8, root
 - demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/MainActivity.kt
 - demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/MainViewController.kt
 - demo/shared/build.gradle.kts
+
+## demo-android Context.toast extension is the single toast helper
+
+- id: demo-android-context-toast-extension-is-the-single-toast-hel-20260618-181433
+- type: architecture_decision
+- status: active
+- platform: android
+- date: 2026-06-18
+
+The demo Android host's transient-feedback one-liner is the internal Context.toast(message) extension in demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/ext/ContextExt.kt (short Toast.makeText(...).show()). MainActivity.handleEffect uses it to surface DemoEffect.Toast. **Convention:** reuse Context.toast for any transient demo feedback instead of inlining Toast.makeText; keep toast plumbing in this single extension so call sites stay terse and consistent. Follows the ext/<Type>Ext.kt extension-function convention.
+
+### Files
+- demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/ext/ContextExt.kt

@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.demo
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,6 +8,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
+import dev.jdgarita.frnk.demo.ext.toast
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 
@@ -58,9 +58,5 @@ class MainActivity : ComponentActivity() {
             // FrnkNavDisplay back stack), so the host no longer surfaces them as toasts.
             is DemoEffect.Navigate -> Unit
         }
-    }
-
-    private fun toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
