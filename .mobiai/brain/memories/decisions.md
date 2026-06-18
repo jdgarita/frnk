@@ -1015,3 +1015,21 @@ GOTCHA: when renaming the VM ctor param, propagate to the Koin named-arg call in
 - frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/usecase/PaywallPurchaseUseCase.kt
 - frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/usecase/DefaultPaywallPurchaseUseCase.kt
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModel.kt
+
+## Onboarding Arguments: drop dead layout knobs, keep the non-empty pages guard
+
+- id: onboarding-arguments-drop-dead-layout-knobs-keep-the-non-emp-20260618-155158
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: ui-scaffolds/onboarding
+- date: 2026-06-18
+
+Removed `pagerHeight: Dp?` and `userScrollEnabled: Boolean` from OnboardingArguments/OnboardingModelState/OnboardingScreenState plus the conditional pager-modifier branch in OnboardingScreenContent. WHY: both were fully plumbed (Arguments -> ModelState -> ScreenState -> renderer) but unreachable dead config surface — the only production construction site (FrnkTabbedNavScaffold) and the public FrnkOnboardingConfig never exposed a setter, so pagerHeight was permanently null (pager always used Modifier.weight(1f)) and userScrollEnabled permanently true. Only a preview ever set pagerHeight, by bypassing Arguments.
+
+GOTCHA / kept invariant: the `init { require(pages.isNotEmpty()) }` guard on OnboardingArguments is NOT a layout knob and MUST stay — it is the fail-fast for the public OnboardingScreen(arguments=...) boundary that advanced hosts compose directly. The first cleanup pass accidentally deleted it along with the knobs while the kdoc still claimed 'the guard lives here'; restored, and locked in with OnboardingViewModelTest.empty_pages_fails_fast_at_construction. FrnkTabbedNavScaffold separately gates the Onboarding route + Arguments construction behind config.onboarding.pages.isNotEmpty(), so the toolkit's own path never hits the guard — but the direct-API path relies on it.
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingScreenState.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingViewModel.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingScreen.kt

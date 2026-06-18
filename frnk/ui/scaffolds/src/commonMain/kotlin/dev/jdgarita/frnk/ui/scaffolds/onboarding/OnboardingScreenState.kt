@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.unit.Dp
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.mvi.Arguments
@@ -25,22 +24,16 @@ data class OnboardingPageState(
 /**
  * The data-only runtime input for [OnboardingViewModel], supplied at **attach time** (see
  * [dev.jdgarita.frnk.ui.mvi.RememberMviLifecycle] / [dev.jdgarita.frnk.ui.mvi.FrnkScreen]) rather than
- * through the constructor. Carries the onboarding configuration — the immutable page list and the two
- * layout knobs — which `onAttached` seeds into [OnboardingModelState].
+ * through the constructor. Carries the onboarding configuration — the immutable page list — which
+ * `onAttached` seeds into [OnboardingModelState].
  *
  * **Invariant:** [pages] must be non-empty. An onboarding flow with no pages has no meaningful UI to
  * render (an empty pager, an empty pip row, a Next button with nothing to advance to) — this is the
  * input that must be valid, so the guard lives here.
- *
- * [pagerHeight] is the single "configurable size" knob: `null` (default) lets the pager fill the
- * remaining vertical space via `Modifier.weight(1f)`; non-null pins the pager to that exact height,
- * useful when the host wants the buttons to sit above the keyboard or below a hero region.
  */
 @Immutable
 data class OnboardingArguments(
     val pages: List<OnboardingPageState>,
-    val pagerHeight: Dp? = null,
-    val userScrollEnabled: Boolean = true,
 ) : Arguments {
     init {
         require(pages.isNotEmpty()) { "OnboardingArguments requires at least one page." }
@@ -56,8 +49,6 @@ data class OnboardingArguments(
 data class OnboardingModelState(
     val pages: List<OnboardingPageState> = emptyList(),
     val currentPageIndex: Int = 0,
-    val pagerHeight: Dp? = null,
-    val userScrollEnabled: Boolean = true,
 ) : ModelState
 
 object OnboardingModelStateFactory : ModelStateFactory<OnboardingModelState> {
@@ -74,8 +65,6 @@ object OnboardingModelStateFactory : ModelStateFactory<OnboardingModelState> {
 data class OnboardingScreenState(
     val pages: List<OnboardingPageState>,
     val currentPageIndex: Int = 0,
-    val pagerHeight: Dp? = null,
-    val userScrollEnabled: Boolean = true,
 ) : UiState {
     val isFirstPage: Boolean get() = currentPageIndex == 0
     val isLastPage: Boolean get() = currentPageIndex == pages.lastIndex

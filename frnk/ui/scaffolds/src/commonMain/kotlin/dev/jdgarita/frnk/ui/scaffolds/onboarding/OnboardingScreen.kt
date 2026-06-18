@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -104,11 +103,10 @@ fun OnboardingScreen(
  * **Chrome:** the immersive backdrop + the always-on top-right close (✕) come from
  * [dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold]; this renderer only lays out the pager / pips / navigation row inside it.
  *
- * **Layout note:** when [OnboardingScreenState.pagerHeight] is `null`, the pager uses
- * `Modifier.weight(1f)` inside this function's own `Column`, so it fills the **Column's** remaining
- * vertical space (the area left over after the pips and button row). This function provides that
- * `Column`; advanced callers don't need to wrap it in one, and they don't need to worry about
- * `weight` being a no-op in a non-Column parent.
+ * **Layout note:** the pager uses `Modifier.weight(1f)` inside this function's own `Column`, so it
+ * fills the **Column's** remaining vertical space (the area left over after the pips and button row).
+ * This function provides that `Column`; advanced callers don't need to wrap it in one, and they don't
+ * need to worry about `weight` being a no-op in a non-Column parent.
  */
 @Composable
 internal fun OnboardingScreenContent(
@@ -142,17 +140,9 @@ internal fun OnboardingScreenContent(
                     .padding(padding),
             verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
         ) {
-            val pagerModifier =
-                if (state.pagerHeight != null) {
-                    Modifier.fillMaxWidth().height(state.pagerHeight)
-                } else {
-                    Modifier.fillMaxWidth().weight(1f)
-                }
-
             HorizontalPager(
                 state = pagerState,
-                modifier = pagerModifier,
-                userScrollEnabled = state.userScrollEnabled,
+                modifier = Modifier.fillMaxWidth().weight(1f),
             ) { page ->
                 OnboardingPageContent(state = state.pages[page])
             }

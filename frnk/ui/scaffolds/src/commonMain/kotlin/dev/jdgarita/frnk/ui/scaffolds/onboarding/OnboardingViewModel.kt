@@ -7,7 +7,7 @@ import dev.jdgarita.frnk.ui.mvi.ModelMviViewModel
  * decides what "Completed" and "CloseRequested" mean (mark onboarding done, navigate away, log
  * analytics, …) by collecting effects.
  *
- * Model-first: the configuration (pages + layout knobs) arrives as [OnboardingArguments] at attach time
+ * Model-first: the configuration (the page list) arrives as [OnboardingArguments] at attach time
  * (see `onAttached`) rather than via the constructor; the VM mutates [OnboardingModelState] and the engine
  * derives [OnboardingScreenState] through [mapToUiState].
  */
@@ -19,8 +19,6 @@ class OnboardingViewModel :
         updateModel {
             copy(
                 pages = arguments.pages,
-                pagerHeight = arguments.pagerHeight,
-                userScrollEnabled = arguments.userScrollEnabled,
             )
         }
     }
@@ -29,8 +27,6 @@ class OnboardingViewModel :
         OnboardingScreenState(
             pages = modelState.pages,
             currentPageIndex = modelState.currentPageIndex,
-            pagerHeight = modelState.pagerHeight,
-            userScrollEnabled = modelState.userScrollEnabled,
         )
 
     override suspend fun onIntent(intent: OnboardingIntent) {

@@ -18,6 +18,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
@@ -43,6 +44,13 @@ class OnboardingViewModelTest {
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun empty_pages_fails_fast_at_construction() {
+        // The non-empty invariant is enforced at the input boundary (OnboardingArguments), so an
+        // onboarding flow with no pages fails loudly here instead of producing a broken 0-page pager.
+        assertFailsWith<IllegalArgumentException> { OnboardingArguments(pages = pages(0)) }
     }
 
     @Test

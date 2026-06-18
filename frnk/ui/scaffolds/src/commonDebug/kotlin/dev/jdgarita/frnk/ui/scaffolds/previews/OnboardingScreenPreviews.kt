@@ -5,8 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
@@ -54,13 +52,10 @@ private fun samplePages(): List<OnboardingPageState> {
 }
 
 @Composable
-private fun sampleState(
-    pageIndex: Int,
-    pagerHeight: Dp? = null,
-): OnboardingScreenState {
+private fun sampleState(pageIndex: Int): OnboardingScreenState {
     val pages = samplePages()
-    return remember(pages, pageIndex, pagerHeight) {
-        OnboardingScreenState(pages = pages, currentPageIndex = pageIndex, pagerHeight = pagerHeight)
+    return remember(pages, pageIndex) {
+        OnboardingScreenState(pages = pages, currentPageIndex = pageIndex)
     }
 }
 
@@ -109,17 +104,5 @@ private fun OnboardingScreen_MiddlePage_Dark() {
 private fun OnboardingScreen_LastPage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         OnboardingScreenContent(state = sampleState(2), onIntent = {}, modifier = Modifier.fillMaxSize())
-    }
-}
-
-@Preview
-@Composable
-private fun OnboardingScreen_FixedHeight_Light() {
-    PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreenContent(
-            state = sampleState(pageIndex = 1, pagerHeight = 280.dp),
-            onIntent = {},
-            modifier = Modifier.fillMaxSize(),
-        )
     }
 }
