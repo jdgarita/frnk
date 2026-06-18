@@ -1,7 +1,7 @@
 # iosDemoApp
 
 Internal smoke harness for the Frnk toolkit on iOS. Mirrors `demo-android` —
-renders the same Compose-Multiplatform `DemoScreen` from `:demo-shared` and
+renders the same Compose-Multiplatform `FrnkDemoApp` from `:demo-shared` and
 exercises the MVI engine + `FeatureGate` via fakes.
 
 ## Architecture

@@ -21,7 +21,7 @@ import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 
 @Composable
 private fun samplePages(): List<OnboardingPageState> {
-    // Mirror the remember(...) pattern used in DemoScreen.demoOnboardingState(): icon tokens are
+    // Mirror the remember(...) pattern used in the demo's onboarding pages: icon tokens are
     // stable across recompositions unless the host swaps iconOverrides, so the 3 page allocations
     // happen once instead of on every preview recomposition.
     val checkIcon = Theme[icons][iconCheck]

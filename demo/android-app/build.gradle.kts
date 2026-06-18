@@ -74,7 +74,7 @@ dependencies {
     // Toolkit surface — the individual modules this harness actually uses, like a real host
     // (the :shared/:androidApp aggregators died at restructure Stage 1). Atoms/theme/scaffolds/utils
     // arrive transitively via :demo-shared's api() deps.
-    implementation(projects.uiApp) // FrnkAppScaffold (MainActivity)
+    implementation(projects.uiApp) // FrnkAppScaffold — now wrapped by :demo-shared's DemoScreen (also transitive)
     implementation(projects.analyticsImpl) // firebaseObservabilityModule override
     implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real SqlDriverFactory for DemoDB

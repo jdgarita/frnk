@@ -1033,3 +1033,29 @@ GOTCHA / kept invariant: the `init { require(pages.isNotEmpty()) }` guard on Onb
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingScreenState.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingViewModel.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingScreen.kt
+
+## Demo entry point unified on FrnkAppScaffold; :ui-app boundary was soft
+
+- id: demo-entry-point-unified-on-frnkappscaffold-ui-app-boundary-20260618-175614
+- type: architecture_decision
+- status: active
+- platform: kmp
+- date: 2026-06-18
+
+Unified both demo platforms onto a single shared composable (:demo-shared's FrnkDemoApp — renamed from DemoScreen, file FrnkDemoApp.kt) that wraps :ui-app's batteries-included FrnkAppScaffold. demo-android's MainActivity and iosDemoApp's MainViewController both call FrnkDemoApp now; MainActivity is a thin platform host (enableEdgeToEdge + system-bar icon sync + toast only).
+
+KEY CORRECTION: the long-standing claim that ':demo-shared can't depend on :ui-app or it taints DemoKit.xcframework' was FALSE. :ui-app (frnk/ui/app/build.gradle.kts) depends only on :ui-bottom-nav + :shared-monetization-ui + :analytics-api + :core-di — NO *-impl, NO native cinterop (it resolves EntitlementManager/AnalyticsTracker from Koin at runtime). :demo-shared already depended on three of those four. Adding api(projects.uiApp) added zero RevenueCat/SQLite/Firebase symbols — verified by a clean ':demo-shared:assembleDemoKitDebugXCFramework' link. The boundary was soft architectural-purity, not a hard technical guard. The 'no *-impl in :demo-shared common surface' guarantee STILL holds.
+
+Why: previously Android used FrnkAppScaffold directly while iOS used the bare-shell FrnkTabbedNavScaffold (hand-wiring paywall + onboarding). That split meant no single shared App composable and the recommended real-host path (FrnkAppScaffold) was not demoed on iOS. Goal: model the structure real host apps should follow (android-app + shared + ios-app, with shared owning one App composable).
+
+Tradeoffs: (1) the bare FrnkTabbedNavScaffold shell is no longer hosted on-device by the demo — still exercised internally (FrnkAppScaffold composes it) and by its own module tests. (2) iOS paywall analytics 'source' flips demo->settings (now aligns with Android). Both acceptable.
+
+Follow-up (same session): renamed the unified entry composable DemoScreen -> FrnkDemoApp (file DemoScreen.kt -> FrnkDemoApp.kt via git mv) to match the 'shared owns one App composable' framing; updated all call sites + comments + docs.
+
+Docs updated: CHANGELOG.md, ARCHITECTURE.md, HOST_INTEGRATION.md section 8, root CLAUDE.md, frnk/ui/app/CLAUDE.md, demo/android-app/CLAUDE.md, README.md, demo/ios-app/README.md, ContentView.swift.
+
+### Files
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/FrnkDemoApp.kt
+- demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/MainActivity.kt
+- demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/MainViewController.kt
+- demo/shared/build.gradle.kts

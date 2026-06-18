@@ -13,14 +13,12 @@ import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
 
 /**
  * Registers the demo's own destinations — the center "Components" tab root ([DemoRoute.Components]) and
- * its pushed detail ([DemoRoute.ComponentDetail]) — on a scaffold's `entryProvider`. Scaffold-agnostic:
- * both the bare-shell host (`DemoScreen` over `FrnkTabbedNavScaffold`) and the batteries-included host
- * (demo-android's `MainActivity` over `FrnkAppScaffold`) call this, so there is one source of truth for
- * the demo's screens.
+ * its pushed detail ([DemoRoute.ComponentDetail]) — on the scaffold's `entryProvider`. Called from the
+ * unified [dev.jdgarita.frnk.demo.FrnkDemoApp] entry point (which both platform hosts share), so there
+ * is one source of truth for the demo's screens.
  *
- * It deliberately does **not** register `ToolkitRoute.Paywall`: the bare-shell host mounts that itself
- * while `FrnkAppScaffold` auto-mounts it, so leaving it out keeps this reusable across both (nav3 throws
- * on a duplicate route registration).
+ * It deliberately does **not** register `ToolkitRoute.Paywall`: `FrnkAppScaffold` auto-mounts that, so
+ * leaving it out avoids a duplicate route registration (nav3 throws on duplicates).
  *
  * All screens share the one host-scoped [dev.jdgarita.frnk.demo.DemoViewModel] (passed in as [state] +
  * [onIntent] + [onEffect]) rather than per-entry Koin VMs, hence inline entries over a Koin

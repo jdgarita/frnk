@@ -58,6 +58,9 @@ kotlin {
             export(projects.dataPrefsApi)
             export(projects.monetizationApi)
             export(projects.sharedMonetizationUi)
+            // Batteries-included app root (FrnkAppScaffold/FrnkAppConfig). Kotlin/Native `export` is
+            // non-transitive, so export it directly to keep the Swift surface consistent with the api() list.
+            export(projects.uiApp)
             // CrashKiOS resolves the native Crashlytics symbols through the host's Firebase SDK at the
             // app link step; defer them here (same approach as :iosApp / FrnkKit).
             linkerOpts("-undefined", "dynamic_lookup")
@@ -90,6 +93,10 @@ kotlin {
             api(projects.dataPrefsApi)
             api(projects.monetizationApi)
             api(projects.sharedMonetizationUi)
+            // The batteries-included app root. Safe in DemoKit's common surface: :ui-app depends only
+            // on :ui-bottom-nav + :shared-monetization-ui + :analytics-api + :core-di — no *-impl, no
+            // native cinterop — so it adds zero RevenueCat/SQLite/Firebase symbols to the framework.
+            api(projects.uiApp)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)

@@ -43,7 +43,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `monetization-api` | Entitlement / feature-gate interfaces. |
 | `monetization-impl` | RevenueCat impl. Exposes `revenueCatModule`. |
 | `shared-monetization-ui` | frnk-owned monetization **UI** (no RevenueCat dep): the `PaywallScreen`/`PaywallViewModel` MVI paywall wired via `frnkPaywallDestination(...)` + `paywallScaffoldModule`, plus the host-facing `rememberFrnkSettingsHandler()` (backed by an internal `platformManageSubscriptionsUrl()` `expect/actual` supplying the native subscription-management URL). |
-| `demo-shared` | Demo-only KMP module — bundles `DemoScreen` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `ui-theme`/`ui-components`/`ui-scaffolds`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
+| `demo-shared` | Demo-only KMP module — bundles `FrnkDemoApp` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `ui-theme`/`ui-components`/`ui-scaffolds`/`ui-app`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
 | `demo-android` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |
 
 ## 🧰 Tech stack

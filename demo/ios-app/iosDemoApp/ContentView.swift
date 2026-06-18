@@ -20,7 +20,7 @@ struct ContentView: View {
 
     private func handleEffect(_ effect: DemoEffect) {
         // Kotlin nested data classes (DemoEffect.Toast / DemoEffect.Navigate) are bridged to Swift as
-        // flattened top-level types. Navigation effects are consumed inside DemoScreen (routed into the
+        // flattened top-level types. Navigation effects are consumed inside FrnkDemoApp (routed into the
         // toolkit's FrnkNavHost back stack), so the host only surfaces toasts.
         switch effect {
         case let toast as DemoEffectToast:

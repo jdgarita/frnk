@@ -359,9 +359,11 @@ setContent {
   **`FrnkFullScreenScaffold`** — an immersive template with an always-on ✕ that reserves the safe-area
   insets + close-button band for you; reuse it for your own full-screen surfaces.
 - `FrnkAppScaffold` (`:ui-app`) layers the monetization batteries over **`FrnkTabbedNavScaffold`**
-  (`:ui-bottom-nav`). A module that can't depend on `:ui-app` composes `FrnkTabbedNavScaffold` directly —
-  the same one-call tabbed app minus the monetization batteries; `:demo-shared`'s `DemoScreen` is the
-  reference.
+  (`:ui-bottom-nav`). `:demo-shared`'s `FrnkDemoApp` is the reference integration of `FrnkAppScaffold` —
+  the single shared composable both `demo-android` and `iosDemoApp` call. A module that genuinely can't
+  depend on `:ui-app` (e.g. one that must avoid Material3, or a custom tab shape) composes
+  `FrnkTabbedNavScaffold` directly — the same one-call tabbed app minus the monetization batteries
+  (auto paywall + first-launch onboarding + live entitlement Settings), wiring those itself.
 
 ### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 

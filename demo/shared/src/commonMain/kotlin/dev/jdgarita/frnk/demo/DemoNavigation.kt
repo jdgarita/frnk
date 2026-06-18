@@ -16,7 +16,7 @@ import dev.jdgarita.frnk.ui.nav.ToolkitRoute
  * `DemoNavigationTest`).
  *
  * The `DemoViewModel` effect channel is single-consumer, so this must be invoked from exactly one
- * collector — the central `EffectCollector` above the `FrnkNavDisplay` in `DemoScreen`.
+ * collector — the central `EffectCollector` above the `FrnkNavDisplay` in `FrnkDemoApp`.
  */
 fun routeDemoEffect(
     effect: DemoEffect,

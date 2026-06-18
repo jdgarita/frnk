@@ -35,9 +35,11 @@ import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.demo.ext.demoFeatureEntries
 import dev.jdgarita.frnk.monetization.EntitlementManager
-import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
 import dev.jdgarita.frnk.monetization.ui.rememberFrnkSettingsHandler
+import dev.jdgarita.frnk.ui.app.FrnkAppConfig
+import dev.jdgarita.frnk.ui.app.FrnkAppScaffold
+import dev.jdgarita.frnk.ui.app.FrnkMonetizationConfig
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
@@ -60,14 +62,11 @@ import dev.jdgarita.frnk.ui.bottomnav.FrnkAppInfo
 import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
 import dev.jdgarita.frnk.ui.bottomnav.FrnkBottomFloatingBar
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFeatureItem
-import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.bottomnav.FrnkHomeConfig
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavBarItem
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNavConfig
 import dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig
 import dev.jdgarita.frnk.ui.bottomnav.FrnkSettingsConfig
-import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavConfig
-import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyState
 import dev.jdgarita.frnk.ui.molecules.FrnkEmptyStateState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
@@ -88,7 +87,6 @@ import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
@@ -132,112 +130,103 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Smoke harness for the toolkit — and the reference integration of **[FrnkTabbedNavScaffold]**, the
- * one-call app root. It owns the theme wrap, the nav3 saved-state config, the fixed Home · Components ·
- * Settings adaptive tabs with per-tab back stacks, the persistent bottom bar (tab switching, back
- * conventions, full-screen hiding, bottom-inset), and the built-in Home / Settings / Onboarding
- * destinations; the demo supplies only its content:
- *  - **Home** (`ToolkitRoute.Home`, the shell's built-in `HomeScreen`) — the toolkit showcase via
+ * Smoke harness for the toolkit — and the **unified entry point** for both demo platforms: the single
+ * shared composable that `demo-android`'s `MainActivity` and `iosDemoApp`'s `MainViewController` both
+ * call. It is the reference integration of **[FrnkAppScaffold]** (`:ui-app`), the batteries-included
+ * app root the toolkit tells real hosts to use. `:demo-shared` depends on `:ui-app` directly — safe
+ * for `DemoKit.xcframework` because `:ui-app` carries no `*-impl` / native cinterop (it resolves
+ * `EntitlementManager`/`AnalyticsTracker` from Koin at runtime).
+ *
+ * `FrnkAppScaffold` owns the theme wrap, the nav3 saved-state config, the fixed Home · Components ·
+ * Settings adaptive tabs with per-tab back stacks, the persistent bottom bar, the built-in
+ * Home/Settings/Onboarding destinations, **plus the runtime batteries** — a Koin fail-fast check, the
+ * live `EntitlementManager`-driven Settings, the **auto-mounted** `ToolkitRoute.Paywall`, and
+ * **first-launch onboarding** (so this composable no longer hand-wires either). The demo supplies only
+ * its content:
+ *  - **Home** (`ToolkitRoute.Home`, the built-in `HomeScreen`) — the toolkit showcase via
  *    [DemoHomeContent] in the `homeContent` slot; the crown Upgrade action arrives as a `HomeEffect`.
  *  - **Components** ([DemoRoute.Components], the demo's center `feature` tab) — a gallery of every
  *    `Frnk*` atom; tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
- *  - **Settings** (`ToolkitRoute.Settings`, the shell's built-in tab) — the default catalogue with
- *    the demo's extra sections injected via `extraSections`, effects handled by
- *    [demoSettingsHandler] (the toolkit monetization wiring + demo fallbacks).
+ *  - **Settings** (`ToolkitRoute.Settings`, the built-in tab) — the default catalogue plus the demo's
+ *    god-mode Developer section, injected via [FrnkAppScaffold]'s `settingsState`/`settingsEffects`
+ *    overrides ([rememberDemoSettingsState] / [demoSettingsHandler]).
  *
  * Navigation stays MVI-faithful: the shared [DemoViewModel] is resolved **once at this host scope**,
- * and its single one-shot effect stream is consumed by **one** [EffectCollector] in the shell's
+ * and its single one-shot effect stream is consumed by **one** [EffectCollector] in the scaffold's
  * `effects` slot, routing navigation via `scope.navigateTo(route)` ([routeDemoEffect]) and forwarding
  * the rest to the host's [onEffect]. On Android system/predictive back pops automatically; on iOS
  * every pushed screen also carries an on-screen back affordance. The only manual back handling left
  * is closing the Components search field before a pop.
  *
  * The host integration story: a real app passes its own [dev.jdgarita.frnk.ui.theme.FrnkThemeConfig]
- * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat). A host that
- * *can* depend on `:ui-app` uses `FrnkAppScaffold` instead (as demo-android's `MainActivity` does,
- * feeding it these same shared builders), which layers the Koin assertion + live entitlement-driven
- * Settings + auto-mounted paywall over this same shell.
+ * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat); the demo
+ * binds a fake. Each platform host stays thin — Android keeps `enableEdgeToEdge()` + the system-bar
+ * icon sync; iOS just wraps this in a `ComposeUIViewController`.
  *
  * **Bottom bar.** The adaptive bar always shows exactly three tabs — Home · Components · Settings —
  * with the center "Components" tab supplied as the shell's `feature` item. The adaptive-nav spike
  * evaluation is recorded in the MobiAI brain (`mobiai brain search "adaptive bottom nav"`).
  */
 @Composable
-fun DemoScreen(
+fun FrnkDemoApp(
     appearanceController: AppearanceController? = null,
     onEffect: (DemoEffect) -> Unit = {},
 ) {
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
-    // The demo's center "feature" tab + its host routes are scaffold-agnostic — shared verbatim with the
-    // Android FrnkAppScaffold host (demo-android's MainActivity). demoFeatureItem is a stable top-level
-    // val; demoHostRoutes() builds a fresh SerializersModule (no value equality), so it MUST be
-    // remembered once and held stable, else the config compares unequal each frame and the nav config
-    // rebuilds. See [demoHostRoutes].
+    // The demo's center "feature" tab + its host routes. demoFeatureItem is a stable top-level val;
+    // demoHostRoutes() builds a fresh SerializersModule (no value equality), so it MUST be remembered
+    // once and held stable, else the config compares unequal each frame and the nav config rebuilds.
+    // See [demoHostRoutes].
     val hostRoutes = remember { demoHostRoutes() }
     // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro.
     val homeTopBar = remember(state.isPro) { demoHomeTopBar(state.isPro) }
 
     // The host's declarative config, bundled by feature. hostRoutes/homeTopBar are remembered above and
     // demoFeatureItem/demoPurpleThemeConfig()/demoOnboardingPages are stable, so this builds an equal
-    // FrnkTabbedNavConfig across recompositions (keeping the scaffold skippable). No vmKey re-keying:
-    // the Home and Settings VMs react to isPro/isGodMode on their own (the recomputed homeTopBar /
-    // rememberDemoSettingsState flow down and are merged in via *Intent.ConfigChanged), so the Subscription
-    // section swaps Upgrade↔Manage and the Home Upgrade action appears/disappears while a single VM
-    // (and its in-session toggle/dev-reveal state) lives on.
+    // FrnkAppConfig across recompositions (keeping the scaffold skippable). No vmKey re-keying: the Home
+    // and Settings VMs react to isPro/isGodMode on their own (the recomputed homeTopBar /
+    // rememberDemoSettingsState flow down and are merged in via *Intent.ConfigChanged), so the
+    // Subscription section swaps Upgrade↔Manage and the Home Upgrade action appears/disappears while a
+    // single VM (and its in-session toggle/dev-reveal state) lives on.
     val config =
         remember(state.isPro, state.isGodMode, hostRoutes, homeTopBar) {
-            FrnkTabbedNavConfig(
+            FrnkAppConfig(
                 app = FrnkAppInfo(name = "frnk", version = "v${Frnk.VERSION}"),
                 nav = FrnkNavConfig(feature = demoFeatureItem, hostRoutes = hostRoutes),
                 theme = demoPurpleThemeConfig(),
                 home = FrnkHomeConfig(topBar = homeTopBar),
                 settings = FrnkSettingsConfig(),
                 onboarding = FrnkOnboardingConfig(pages = demoOnboardingPages),
+                monetization = FrnkMonetizationConfig(paywallFeatures = demoPaywallFeatures),
             )
         }
 
-    FrnkTabbedNavScaffold(
+    FrnkAppScaffold(
         config = config,
         modifier = Modifier.fillMaxSize(),
         appearanceController = appearanceController,
+        onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
         onHomeEffect = { effect -> demoHandleHomeEffect(vm, effect) },
+        // The demo's custom Settings catalogue (god-mode Developer section + extra sections) and handler,
+        // injected via FrnkAppScaffold's Settings overrides — keeping the Koin check, the auto-mounted
+        // paywall and first-launch onboarding the scaffold owns.
         settingsState = { _ ->
             rememberDemoSettingsState(LocalAppearanceController.current.appearance, state.isPro, state.isGodMode)
         },
         settingsEffects = { scope -> demoSettingsHandler(scope, onEffect) },
         // Single central collector for the shared VM's one-shot effects (the channel is single-
         // consumer): navigation effects push onto the current tab's back stack; everything else is
-        // forwarded to the host. Lives in the shell's `effects` slot so one lifecycle-aware collector
+        // forwarded to the host. Lives in the scaffold's `effects` slot so one lifecycle-aware collector
         // survives tab swaps.
-        effects = { scope ->
-            // First-launch onboarding: DemoScreen composes the bare shell (not :ui-app's FrnkAppScaffold,
-            // which wires this automatically), so it opts into the same gate helper here — gated on the
-            // config flag, which is how a bare-FrnkTabbedNavScaffold host honours
-            // FrnkOnboardingConfig.showOnFirstLaunch (the reference pattern). The demo's FakeKeyValueStore
-            // is per-session, so each fresh launch replays onboarding-on-first-open.
-            FrnkFirstLaunchOnboardingEffect(
-                scope = scope,
-                gate = rememberOnboardingGate(),
-                enabled = config.onboarding.showOnFirstLaunch && config.onboarding.pages.isNotEmpty(),
-            )
-            DemoEffectCollector(vm, scope, onEffect)
-        },
-        // Host destinations, registered on the shell's entryProvider. The demo's screens share the one
-        // host-scoped DemoViewModel rather than per-entry Koin VMs (see [demoFeatureEntries]). The
-        // paywall is mounted here because :demo-shared can't see :ui-app (whose FrnkAppScaffold
-        // auto-mounts it) — any host on the bare shell registers it the same way.
+        effects = { scope -> DemoEffectCollector(vm, scope, onEffect) },
+        // Host destinations, registered on the scaffold's entryProvider. The demo's screens share the
+        // one host-scoped DemoViewModel rather than per-entry Koin VMs (see [demoFeatureEntries]). The
+        // paywall is NOT registered here — FrnkAppScaffold auto-mounts ToolkitRoute.Paywall (and the
+        // first-launch onboarding effect) for us.
         entries = { scope ->
             demoFeatureEntries(scope = scope, state = state, onIntent = vm::send, onEffect = onEffect)
-            entry<ToolkitRoute.Paywall> {
-                FrnkPaywallDestination(
-                    features = demoPaywallFeatures,
-                    source = "demo",
-                    onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
-                    onClose = { scope.back() },
-                )
-            }
         },
     ) {
         DemoHomeContent(state = state, onIntent = vm::send)
@@ -271,9 +260,9 @@ fun demoHostRoutes(): SerializersModule =
     }
 
 /**
- * The paywall feature bullets shown on `ToolkitRoute.Paywall`. Shared so the bare-shell host
- * (DemoScreen, which mounts the paywall itself) and the FrnkAppScaffold host (demo-android, which feeds
- * these to `FrnkMonetizationConfig.paywallFeatures`) advertise the same list.
+ * The paywall feature bullets shown on `ToolkitRoute.Paywall`, fed to
+ * `FrnkMonetizationConfig.paywallFeatures` so `FrnkAppScaffold` advertises them on the auto-mounted
+ * paywall. A stable top-level val shared by both platform hosts via [FrnkDemoApp].
  */
 val demoPaywallFeatures: List<String> =
     listOf("Unlimited everything", "No ads", "Priority support")
@@ -367,7 +356,7 @@ fun demoSettingsHandler(
 /**
  * Home tab body — the toolkit showcase, rendered inside the shell's built-in `HomeScreen` slot (the
  * scaffold owns the pinned top bar + the scrolling column + the merged padding; this just supplies
- * the items). The top-bar Upgrade action arrives as a `HomeEffect` handled in [DemoScreen]'s
+ * the items). The top-bar Upgrade action arrives as a `HomeEffect` handled in [FrnkDemoApp]'s
  * `onHomeEffect`.
  */
 @Composable
