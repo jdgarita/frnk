@@ -3,7 +3,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.multiplatform)
 }
 
@@ -75,7 +74,7 @@ dependencies {
     // Toolkit surface — the individual modules this harness actually uses, like a real host
     // (the :shared/:androidApp aggregators died at restructure Stage 1). Atoms/theme/scaffolds/utils
     // arrive transitively via :demo-shared's api() deps.
-    implementation(projects.uiApp) // FrnkAppScaffold (AppScaffoldSmokeActivity)
+    implementation(projects.uiApp) // FrnkAppScaffold (MainActivity)
     implementation(projects.analyticsImpl) // firebaseObservabilityModule override
     implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real SqlDriverFactory for DemoDB
@@ -94,10 +93,6 @@ dependencies {
 
     // Android entry-point.
     implementation(libs.androidx.activity.compose)
-
-    // Lucide vectors referenced at a call site (AppScaffoldSmokeActivity's feature-tab icon). The
-    // toolkit ships icons via implementation deps, so a host that names a Lucide vector takes it itself.
-    implementation(libs.icons.lucide)
 
     // DI.
     implementation(libs.koin.core)

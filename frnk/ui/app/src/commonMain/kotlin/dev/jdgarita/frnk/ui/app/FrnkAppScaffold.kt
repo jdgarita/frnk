@@ -25,6 +25,7 @@ import dev.jdgarita.frnk.ui.scaffolds.onboarding.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
@@ -48,6 +49,13 @@ import org.koin.compose.koinInject
  * The host's declarative input is bundled in [config] ([FrnkAppConfig]); the composable keeps only
  * *behaviour* as parameters (the `@Composable` slots [homeContent]/[effects]/[entries], the event
  * callbacks [onMessage]/[onHomeEffect], and the runtime controllers [appearanceController]/[pendingRoutes]).
+ *
+ * [settingsState] / [settingsEffects] are optional **Settings overrides**: leave them null to keep the
+ * batteries-included default (the live [EntitlementManager]-driven catalogue + monetization-aware
+ * handler), or supply them to inject a host-owned catalogue/handler (e.g. a Developer section) while
+ * still getting the Koin check, auto-mounted paywall, and first-launch onboarding for free. This is the
+ * same pair [FrnkTabbedNavScaffold] exposes, surfaced here so a host need not drop to the lower scaffold
+ * just to customize Settings.
  *
  * Minimal host integration:
  *
@@ -83,6 +91,8 @@ fun FrnkAppScaffold(
     pendingRoutes: FrnkPendingRouteRequest? = null,
     onMessage: (String) -> Unit = {},
     onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
+    settingsState: (@Composable (FrnkAppScope) -> SettingsScreenState)? = null,
+    settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)? = null,
     effects: @Composable (FrnkAppScope) -> Unit = {},
     entries: EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit = {},
     homeContent: @Composable ColumnScope.() -> Unit,
@@ -120,26 +130,32 @@ fun FrnkAppScaffold(
         appearanceController = appearanceController,
         pendingRoutes = pendingRoutes,
         onHomeEffect = onHomeEffect,
-        settingsState = { _ ->
-            rememberDefaultSettingsState(
-                version = config.app.version,
-                appearance = LocalAppearanceController.current.appearance,
-                isPro = isPro,
-                // Blank in-content title — the shell's Settings top bar already shows the heading.
-                title = FrnkStringSource.Raw(""),
-                extraSections = config.settings.extraSections,
-            )
-        },
-        settingsEffects = { scope ->
-            rememberFrnkAppSettingsHandler(
-                scope = scope,
-                appName = config.app.name,
-                appVersion = config.app.version,
-                entitlements = entitlements,
-                onboardingAvailable = config.onboarding.pages.isNotEmpty(),
-                onMessage = onMessage,
-            )
-        },
+        // Host override when supplied; otherwise the batteries-included default — the live
+        // EntitlementManager-driven catalogue (NOT the lower scaffold's bare default). A host that
+        // injects its own catalogue (e.g. an extra Developer section) still gets the Koin check,
+        // auto-paywall and first-launch onboarding this layer owns.
+        settingsState =
+            settingsState ?: { _ ->
+                rememberDefaultSettingsState(
+                    version = config.app.version,
+                    appearance = LocalAppearanceController.current.appearance,
+                    isPro = isPro,
+                    // Blank in-content title — the shell's Settings top bar already shows the heading.
+                    title = FrnkStringSource.Raw(""),
+                    extraSections = config.settings.extraSections,
+                )
+            },
+        settingsEffects =
+            settingsEffects ?: { scope ->
+                rememberFrnkAppSettingsHandler(
+                    scope = scope,
+                    appName = config.app.name,
+                    appVersion = config.app.version,
+                    entitlements = entitlements,
+                    onboardingAvailable = config.onboarding.pages.isNotEmpty(),
+                    onMessage = onMessage,
+                )
+            },
         effects = { scope ->
             // Auto-present onboarding on first launch (mounted only when pages are supplied), then
             // run the host's own collectors.

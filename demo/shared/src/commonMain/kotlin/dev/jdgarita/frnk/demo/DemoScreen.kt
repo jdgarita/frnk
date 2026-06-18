@@ -33,6 +33,7 @@ import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Settings
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.backend.AnalyticsTracker
+import dev.jdgarita.frnk.demo.ext.demoFeatureEntries
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.monetization.ui.GOD_MODE_TOGGLE_ID
@@ -137,7 +138,7 @@ import org.koin.compose.viewmodel.koinViewModel
  * conventions, full-screen hiding, bottom-inset), and the built-in Home / Settings / Onboarding
  * destinations; the demo supplies only its content:
  *  - **Home** (`ToolkitRoute.Home`, the shell's built-in `HomeScreen`) — the toolkit showcase via
- *    [HomeTabContent] in the `homeContent` slot; the crown Upgrade action arrives as a `HomeEffect`.
+ *    [DemoHomeContent] in the `homeContent` slot; the crown Upgrade action arrives as a `HomeEffect`.
  *  - **Components** ([DemoRoute.Components], the demo's center `feature` tab) — a gallery of every
  *    `Frnk*` atom; tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
  *  - **Settings** (`ToolkitRoute.Settings`, the shell's built-in tab) — the default catalogue with
@@ -153,8 +154,9 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * The host integration story: a real app passes its own [dev.jdgarita.frnk.ui.theme.FrnkThemeConfig]
  * and binds a real [dev.jdgarita.frnk.monetization.EntitlementManager] (e.g. RevenueCat). A host that
- * *can* depend on `:shared` uses `FrnkAppScaffold` instead, which layers the Koin assertion + live
- * entitlement-driven Settings + auto-mounted paywall over this same shell.
+ * *can* depend on `:ui-app` uses `FrnkAppScaffold` instead (as demo-android's `MainActivity` does,
+ * feeding it these same shared builders), which layers the Koin assertion + live entitlement-driven
+ * Settings + auto-mounted paywall over this same shell.
  *
  * **Bottom bar.** The adaptive bar always shows exactly three tabs — Home · Components · Settings —
  * with the center "Components" tab supplied as the shell's `feature` item. The adaptive-nav spike
@@ -168,57 +170,27 @@ fun DemoScreen(
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
 
-    // The demo's only remaining host routes: the middle "Components" tab root + its pushed detail.
-    // Home / Settings / Onboarding / Paywall are the toolkit-owned ToolkitRoute defaults now.
-    val hostRoutes =
-        remember {
-            SerializersModule {
-                polymorphic(NavKey::class) {
-                    subclass(DemoRoute.Components::class, DemoRoute.Components.serializer())
-                    subclass(DemoRoute.ComponentDetail::class, DemoRoute.ComponentDetail.serializer())
-                }
-            }
-        }
-    // The shell supplies the Home/Settings bookends (labels from theme tokens + theme ImageVector icons);
-    // the host configures only the center "feature" tab — here the demo points it at its "Components"
-    // gallery, supplying a Compose ImageVector (Android) + SF-Symbol (iOS) the way a real host would.
-    val feature =
-        remember {
-            FrnkFeatureItem(
-                route = DemoRoute.Components,
-                label = "Components",
-                icon = Lucide.Component,
-                iosSystemIcon = "square.grid.2x2",
-            )
-        }
+    // The demo's center "feature" tab + its host routes are scaffold-agnostic — shared verbatim with the
+    // Android FrnkAppScaffold host (demo-android's MainActivity). demoFeatureItem is a stable top-level
+    // val; demoHostRoutes() builds a fresh SerializersModule (no value equality), so it MUST be
+    // remembered once and held stable, else the config compares unequal each frame and the nav config
+    // rebuilds. See [demoHostRoutes].
+    val hostRoutes = remember { demoHostRoutes() }
+    // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro.
+    val homeTopBar = remember(state.isPro) { demoHomeTopBar(state.isPro) }
 
-    // Entry point #1: a top-right "Upgrade to Pro" action on Home, hidden once the user is Pro. Built
-    // with a plain Lucide icon — DemoScreen sits outside the theme (FrnkTabbedNavScaffold installs it).
-    val homeTopBar =
-        remember(state.isPro) {
-            FrnkTopAppBarState(
-                title = "frnk",
-                actions =
-                    if (state.isPro) {
-                        emptyList()
-                    } else {
-                        listOf(FrnkTopAppBarAction(icon = Lucide.Crown, contentDescription = "Upgrade to Pro", key = "upgrade"))
-                    },
-            )
-        }
-
-    // The host's declarative config, bundled by feature. feature/hostRoutes/homeTopBar are already
-    // remembered above, and demoPurpleThemeConfig()/demoOnboardingPages are stable, so this builds an
-    // equal FrnkTabbedNavConfig across recompositions (keeping the scaffold skippable). No vmKey
-    // re-keying: the Home and Settings VMs react to isPro/isGodMode on their own (the recomputed
-    // homeTopBar / demoSettingsState flow down and are merged in via *Intent.ConfigChanged), so the
-    // Subscription section swaps Upgrade↔Manage and the Home Upgrade action appears/disappears while a
-    // single VM (and its in-session toggle/dev-reveal state) lives on.
+    // The host's declarative config, bundled by feature. hostRoutes/homeTopBar are remembered above and
+    // demoFeatureItem/demoPurpleThemeConfig()/demoOnboardingPages are stable, so this builds an equal
+    // FrnkTabbedNavConfig across recompositions (keeping the scaffold skippable). No vmKey re-keying:
+    // the Home and Settings VMs react to isPro/isGodMode on their own (the recomputed homeTopBar /
+    // rememberDemoSettingsState flow down and are merged in via *Intent.ConfigChanged), so the Subscription
+    // section swaps Upgrade↔Manage and the Home Upgrade action appears/disappears while a single VM
+    // (and its in-session toggle/dev-reveal state) lives on.
     val config =
-        remember(state.isPro, state.isGodMode, feature, hostRoutes, homeTopBar) {
+        remember(state.isPro, state.isGodMode, hostRoutes, homeTopBar) {
             FrnkTabbedNavConfig(
                 app = FrnkAppInfo(name = "frnk", version = "v${Frnk.VERSION}"),
-                nav = FrnkNavConfig(feature = feature, hostRoutes = hostRoutes),
+                nav = FrnkNavConfig(feature = demoFeatureItem, hostRoutes = hostRoutes),
                 theme = demoPurpleThemeConfig(),
                 home = FrnkHomeConfig(topBar = homeTopBar),
                 settings = FrnkSettingsConfig(),
@@ -230,14 +202,9 @@ fun DemoScreen(
         config = config,
         modifier = Modifier.fillMaxSize(),
         appearanceController = appearanceController,
-        onHomeEffect = { effect ->
-            when (effect) {
-                is HomeEffect.ActionInvoked -> if (effect.key == "upgrade") vm.send(DemoIntent.RequestUpgrade)
-                HomeEffect.NavigationInvoked -> Unit
-            }
-        },
+        onHomeEffect = { effect -> demoHandleHomeEffect(vm, effect) },
         settingsState = { _ ->
-            demoSettingsState(LocalAppearanceController.current.appearance, state.isPro, state.isGodMode)
+            rememberDemoSettingsState(LocalAppearanceController.current.appearance, state.isPro, state.isGodMode)
         },
         settingsEffects = { scope -> demoSettingsHandler(scope, onEffect) },
         // Single central collector for the shared VM's one-shot effects (the channel is single-
@@ -245,7 +212,7 @@ fun DemoScreen(
         // forwarded to the host. Lives in the shell's `effects` slot so one lifecycle-aware collector
         // survives tab swaps.
         effects = { scope ->
-            // First-launch onboarding: the demo composes the bare shell (not :ui-app's FrnkAppScaffold,
+            // First-launch onboarding: DemoScreen composes the bare shell (not :ui-app's FrnkAppScaffold,
             // which wires this automatically), so it opts into the same gate helper here — gated on the
             // config flag, which is how a bare-FrnkTabbedNavScaffold host honours
             // FrnkOnboardingConfig.showOnFirstLaunch (the reference pattern). The demo's FakeKeyValueStore
@@ -255,41 +222,17 @@ fun DemoScreen(
                 gate = rememberOnboardingGate(),
                 enabled = config.onboarding.showOnFirstLaunch && config.onboarding.pages.isNotEmpty(),
             )
-            EffectCollector(vm.effects) { effect ->
-                routeDemoEffect(effect, { route -> scope.navigateTo(route) }, onEffect)
-            }
+            DemoEffectCollector(vm, scope, onEffect)
         },
         // Host destinations, registered on the shell's entryProvider. The demo's screens share the one
-        // host-scoped DemoViewModel rather than per-entry Koin VMs, hence the inline entries. The
-        // paywall is mounted here because :shared-demo can't see :shared (whose FrnkAppScaffold
+        // host-scoped DemoViewModel rather than per-entry Koin VMs (see [demoFeatureEntries]). The
+        // paywall is mounted here because :demo-shared can't see :ui-app (whose FrnkAppScaffold
         // auto-mounts it) — any host on the bare shell registers it the same way.
         entries = { scope ->
-            entry<DemoRoute.Components> {
-                ComponentsListScreen(
-                    state = state,
-                    onIntent = vm::send,
-                    onOpenComponent = { name -> scope.navigateTo(DemoRoute.ComponentDetail(name)) },
-                )
-            }
-            entry<DemoRoute.ComponentDetail> { route ->
-                ComponentDetailScreen(
-                    name = route.name,
-                    onBack = { scope.back() },
-                ) {
-                    ComponentContent(route.name, state, vm::send, onEffect)
-                }
-            }
-            // Entry points #1/#2/#3 all land here, on the toolkit-owned `ToolkitRoute.Paywall`. The
-            // toolkit owns the paywall screen + VM (offerings, purchase/restore via the frnk
-            // EntitlementManager); the demo just mounts the destination + handles close/messages.
+            demoFeatureEntries(scope = scope, state = state, onIntent = vm::send, onEffect = onEffect)
             entry<ToolkitRoute.Paywall> {
                 FrnkPaywallDestination(
-                    features =
-                        listOf(
-                            "Unlimited everything",
-                            "No ads",
-                            "Priority support",
-                        ),
+                    features = demoPaywallFeatures,
                     source = "demo",
                     onMessage = { message -> onEffect(DemoEffect.Toast(message)) },
                     onClose = { scope.back() },
@@ -297,7 +240,85 @@ fun DemoScreen(
             }
         },
     ) {
-        HomeTabContent(state = state, onIntent = vm::send)
+        DemoHomeContent(state = state, onIntent = vm::send)
+    }
+}
+
+/**
+ * The demo's center "feature" tab — the "Components" gallery. A stable top-level val (so it can be the
+ * shared `feature` for both scaffold hosts without re-`remember`ing): a Compose [ImageVector][Lucide]
+ * (Android) + SF-Symbol (iOS) the way a real host configures the one host-configurable tab.
+ */
+val demoFeatureItem: FrnkFeatureItem =
+    FrnkFeatureItem(
+        route = DemoRoute.Components,
+        label = "Components",
+        icon = Lucide.Component,
+        iosSystemIcon = "square.grid.2x2",
+    )
+
+/**
+ * The demo's only host routes: the middle "Components" tab root + its pushed detail. Home / Settings /
+ * Onboarding / Paywall are the toolkit-owned `ToolkitRoute` defaults. Returns a fresh `SerializersModule`
+ * (no value equality) — callers must `remember` it once and hold it stable.
+ */
+fun demoHostRoutes(): SerializersModule =
+    SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(DemoRoute.Components::class, DemoRoute.Components.serializer())
+            subclass(DemoRoute.ComponentDetail::class, DemoRoute.ComponentDetail.serializer())
+        }
+    }
+
+/**
+ * The paywall feature bullets shown on `ToolkitRoute.Paywall`. Shared so the bare-shell host
+ * (DemoScreen, which mounts the paywall itself) and the FrnkAppScaffold host (demo-android, which feeds
+ * these to `FrnkMonetizationConfig.paywallFeatures`) advertise the same list.
+ */
+val demoPaywallFeatures: List<String> =
+    listOf("Unlimited everything", "No ads", "Priority support")
+
+/**
+ * The Home tab's top bar — Entry point #1's "Upgrade to Pro" crown action, hidden once the user is Pro.
+ * Plain Lucide icon (built outside the theme; the scaffold installs the theme). Shared by both hosts via
+ * `FrnkHomeConfig.topBar`.
+ */
+fun demoHomeTopBar(isPro: Boolean): FrnkTopAppBarState =
+    FrnkTopAppBarState(
+        title = "frnk",
+        actions =
+            if (isPro) {
+                emptyList()
+            } else {
+                listOf(FrnkTopAppBarAction(icon = Lucide.Crown, contentDescription = "Upgrade to Pro", key = "upgrade"))
+            },
+    )
+
+/** Routes the Home tab's [HomeEffect]s — the crown "Upgrade" action opens the paywall via the VM. */
+fun demoHandleHomeEffect(
+    vm: DemoViewModel,
+    effect: HomeEffect,
+) {
+    when (effect) {
+        is HomeEffect.ActionInvoked -> if (effect.key == "upgrade") vm.send(DemoIntent.RequestUpgrade)
+        HomeEffect.NavigationInvoked -> Unit
+    }
+}
+
+/**
+ * The single central collector for the shared [DemoViewModel]'s one-shot effects (the channel is
+ * single-consumer, so this must be composed in exactly one place per host): navigation effects push onto
+ * the current tab's back stack via [scope], everything else forwards to [onEffect]. Shared by both
+ * scaffold hosts' `effects` slot.
+ */
+@Composable
+fun DemoEffectCollector(
+    vm: DemoViewModel,
+    scope: FrnkAppScope,
+    onEffect: (DemoEffect) -> Unit,
+) {
+    EffectCollector(vm.effects) { effect ->
+        routeDemoEffect(effect, { route -> scope.navigateTo(route) }, onEffect)
     }
 }
 
@@ -309,7 +330,7 @@ fun DemoScreen(
  * ambient theme and the [FrnkAppScope] exist.
  */
 @Composable
-private fun demoSettingsHandler(
+fun demoSettingsHandler(
     scope: FrnkAppScope,
     onEffect: (DemoEffect) -> Unit,
 ): (SettingsEffect) -> Unit {
@@ -350,7 +371,7 @@ private fun demoSettingsHandler(
  * `onHomeEffect`.
  */
 @Composable
-private fun HomeTabContent(
+fun DemoHomeContent(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
 ) {
@@ -545,7 +566,7 @@ private fun HomeTabContent(
  * open search field, otherwise it falls through to the `FrnkNavDisplay` (which pops the tab back to Home).
  */
 @Composable
-private fun ComponentsListScreen(
+internal fun ComponentsListScreen(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
     onOpenComponent: (String) -> Unit,
@@ -642,7 +663,7 @@ private fun ComponentRow(
  * bar's back arrow calls [onBack].
  */
 @Composable
-private fun ComponentDetailScreen(
+internal fun ComponentDetailScreen(
     name: String,
     onBack: () -> Unit,
     content: @Composable () -> Unit,
@@ -698,7 +719,7 @@ private val componentNames =
  * so the atoms stay live. Unknown names render a fallback rather than crash.
  */
 @Composable
-private fun ComponentContent(
+internal fun ComponentContent(
     name: String,
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
@@ -1197,7 +1218,7 @@ private fun ComponentContent(
  * on tall devices (otherwise it fits and the collapsing bars never engage).
  */
 @Composable
-private fun demoSettingsState(
+fun rememberDemoSettingsState(
     appearance: dev.jdgarita.frnk.ui.theme.Appearance,
     isPro: Boolean,
     isGodMode: Boolean,
@@ -1274,7 +1295,7 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
  * Lucide icons directly (it's constructed outside the theme, so token lookups aren't available; a
  * host that wants token-driven icons builds the pages inside its own themed composable instead).
  */
-private val demoOnboardingPages: List<OnboardingPageState> =
+val demoOnboardingPages: List<OnboardingPageState> =
     listOf(
         OnboardingPageState(
             title = FrnkTextState.Title(text = "Welcome to Frnk"),

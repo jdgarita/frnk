@@ -17,11 +17,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- FrnkAppScaffold device smoke (no launcher icon):
-             adb shell am start -n dev.jdgarita.frnk.demo/.AppScaffoldSmokeActivity -->
-        <activity
-            android:name=".AppScaffoldSmokeActivity"
-            android:exported="true"
-            android:theme="@style/Theme.FrnkDemo" />
     </application>
 </manifest>

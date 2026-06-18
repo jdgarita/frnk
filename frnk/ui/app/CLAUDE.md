@@ -21,4 +21,4 @@ The apex of the ui column (`dev.jdgarita.frnk.ui.app`) — the batteries-include
 
 ## Demo
 
-`demo-android`'s `AppScaffoldSmokeActivity` is the device smoke (`adb shell am start -n dev.jdgarita.frnk.demo/.AppScaffoldSmokeActivity`); `:demo-shared` can't exercise this module (it composes `FrnkTabbedNavScaffold` directly).
+`demo-android`'s `MainActivity` (the launcher) is the device home for `FrnkAppScaffold` — it feeds `:demo-shared`'s scaffold-agnostic content builders into the scaffold, injecting the demo's custom Settings via the `settingsState`/`settingsEffects` overrides. `:demo-shared` itself can't exercise this module (iOS composes `FrnkTabbedNavScaffold` directly via `DemoScreen` — the deliberate `DemoKit`-clean boundary).
