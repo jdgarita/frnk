@@ -62,7 +62,7 @@ sealed class FrnkTextState(
     open val singleLine: Boolean = false,
     open val fontWeight: FontWeight? = null,
     open val style: ThemeToken<TextStyle>? = null,
-    open val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+    open val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
 ) {
     /**
      * Text whose copy comes from a [FrnkStringSource] (token / raw / composite), resolved against the
@@ -82,7 +82,7 @@ sealed class FrnkTextState(
         singleLine: Boolean,
         fontWeight: FontWeight?,
         style: ThemeToken<TextStyle>?,
-        skeleton: FrnkSkeleton,
+        skeleton: FrnkSkeleton
     ) : FrnkTextState(color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     /** Inherits from ambient `LocalTextStyle` / `LocalContentColor` unless overridden. */
@@ -95,7 +95,7 @@ sealed class FrnkTextState(
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight? = null,
         override val style: ThemeToken<TextStyle>? = null,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -106,7 +106,7 @@ sealed class FrnkTextState(
             singleLine: Boolean = false,
             fontWeight: FontWeight? = null,
             style: ThemeToken<TextStyle>? = null,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
     }
 
@@ -119,7 +119,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.SemiBold,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -130,7 +130,7 @@ sealed class FrnkTextState(
             fontSize: TextUnit = TextUnit.Unspecified,
             singleLine: Boolean = false,
             fontWeight: FontWeight = FontWeight.SemiBold,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), textAlign, style, color, colorAlpha, fontSize, singleLine, fontWeight, skeleton)
     }
 
@@ -143,7 +143,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Medium,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -154,7 +154,7 @@ sealed class FrnkTextState(
             fontSize: TextUnit = TextUnit.Unspecified,
             singleLine: Boolean = false,
             fontWeight: FontWeight = FontWeight.Medium,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), textAlign, style, color, colorAlpha, fontSize, singleLine, fontWeight, skeleton)
     }
 
@@ -167,7 +167,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.SemiBold,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -178,7 +178,7 @@ sealed class FrnkTextState(
             fontSize: TextUnit = TextUnit.Unspecified,
             singleLine: Boolean = false,
             fontWeight: FontWeight = FontWeight.SemiBold,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), textAlign, style, color, colorAlpha, fontSize, singleLine, fontWeight, skeleton)
     }
 
@@ -191,7 +191,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Normal,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -202,7 +202,7 @@ sealed class FrnkTextState(
             fontSize: TextUnit = TextUnit.Unspecified,
             singleLine: Boolean = false,
             fontWeight: FontWeight = FontWeight.Normal,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), textAlign, style, color, colorAlpha, fontSize, singleLine, fontWeight, skeleton)
     }
 
@@ -215,7 +215,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Normal,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -226,7 +226,7 @@ sealed class FrnkTextState(
             fontSize: TextUnit = TextUnit.Unspecified,
             singleLine: Boolean = false,
             fontWeight: FontWeight = FontWeight.Normal,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), textAlign, style, color, colorAlpha, fontSize, singleLine, fontWeight, skeleton)
     }
 
@@ -239,7 +239,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = false,
         override val fontWeight: FontWeight = FontWeight.Normal,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : Resolvable(content, color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton) {
         constructor(
             text: String,
@@ -250,7 +250,7 @@ sealed class FrnkTextState(
             fontSize: TextUnit = TextUnit.Unspecified,
             singleLine: Boolean = false,
             fontWeight: FontWeight = FontWeight.Normal,
-            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+            skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
         ) : this(FrnkStringSource.Raw(text), textAlign, style, color, colorAlpha, fontSize, singleLine, fontWeight, skeleton)
     }
 
@@ -263,7 +263,7 @@ sealed class FrnkTextState(
         override val fontSize: TextUnit = TextUnit.Unspecified,
         override val singleLine: Boolean = true,
         override val fontWeight: FontWeight = FontWeight.Bold,
-        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton,
+        override val skeleton: FrnkSkeleton = FrnkTextDefaultSkeleton
     ) : FrnkTextState(color, colorAlpha, fontSize, textAlign, singleLine, fontWeight, style, skeleton)
 
     /**
@@ -278,7 +278,7 @@ sealed class FrnkTextState(
 @Composable
 fun FrnkText(
     state: FrnkTextState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     // Skeleton is the loading/initial state — handle it first, before any token resolution.
     when (state) {
@@ -298,7 +298,7 @@ fun FrnkText(
 private fun FrnkStyledText(
     state: FrnkTextState,
     text: AnnotatedString,
-    modifier: Modifier,
+    modifier: Modifier
 ) {
     val styleToken = state.style
     val colorToken = state.color
@@ -319,6 +319,6 @@ private fun FrnkStyledText(
         fontSize = resolvedFontSize,
         textAlign = state.textAlign,
         singleLine = state.singleLine,
-        fontWeight = resolvedFontWeight,
+        fontWeight = resolvedFontWeight
     )
 }

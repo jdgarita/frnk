@@ -55,5 +55,5 @@ data class FrnkSwipeAction(
     val contentColor: ThemeToken<Color> = colorOnError,
     val autoClose: Boolean = true,
     val label: String? = null,
-    val key: String = label ?: icon.contentDescription.orEmpty(),
+    val key: String = label ?: icon.contentDescription.orEmpty()
 )

@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.map
 class FeatureGate(
     private val entitlements: EntitlementManager,
     private val analytics: AnalyticsTracker,
-    private val freeFeatures: Set<Feature> = emptySet(),
+    private val freeFeatures: Set<Feature> = emptySet()
 ) {
     val isPro: StateFlow<Boolean> get() = entitlements.isPro
 

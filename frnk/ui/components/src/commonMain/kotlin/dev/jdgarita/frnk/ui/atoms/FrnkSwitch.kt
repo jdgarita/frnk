@@ -34,7 +34,7 @@ sealed interface FrnkSwitchState {
     @Immutable
     data class Content(
         val checked: Boolean,
-        val enabled: Boolean = true,
+        val enabled: Boolean = true
     ) : FrnkSwitchState
 
     data object Skeleton : FrnkSwitchState
@@ -55,7 +55,7 @@ private val ThumbPadding = 3.dp
 fun FrnkSwitch(
     state: FrnkSwitchState,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val content =
         when (state) {
@@ -69,11 +69,11 @@ fun FrnkSwitch(
     val haptics = LocalFrnkHaptics.current
     val trackColor by animateColorAsState(
         targetValue = Theme[colors][if (content.checked) colorPrimary else colorOutline],
-        label = "switch_track",
+        label = "switch_track"
     )
     val thumbOffset by animateDpAsState(
         targetValue = if (content.checked) TrackWidth - ThumbSize - ThumbPadding else ThumbPadding,
-        label = "switch_thumb",
+        label = "switch_thumb"
     )
 
     Box(
@@ -93,9 +93,9 @@ fun FrnkSwitch(
                         // FrnkSegmentedControl guard on `index != selected`).
                         haptics.perform(HapticType.Selection)
                         onCheckedChange(it)
-                    },
+                    }
                 ),
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = Alignment.CenterStart
     ) {
         Box(
             modifier =
@@ -103,7 +103,7 @@ fun FrnkSwitch(
                     .offset(x = thumbOffset)
                     .size(ThumbSize)
                     .clip(Theme[shapes][shapeFull])
-                    .background(Theme[colors][colorSurface]),
+                    .background(Theme[colors][colorSurface])
         )
     }
 }

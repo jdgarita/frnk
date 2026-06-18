@@ -17,7 +17,7 @@ data class PaywallModelState(
     val products: List<ProProduct> = emptyList(),
     val selectedProductId: String? = null,
     val isLoading: Boolean = true,
-    val isPurchasing: Boolean = false,
+    val isPurchasing: Boolean = false
 ) : ModelState
 
 /** Seeds the paywall's initial model: empty + loading (offerings are fetched on first composition). */
@@ -31,7 +31,7 @@ object PaywallModelStateFactory : ModelStateFactory<PaywallModelState> {
  * constructor.
  */
 data class PaywallArguments(
-    val source: String,
+    val source: String
 ) : Arguments
 
 /**
@@ -45,14 +45,14 @@ data class PaywallScreenState(
     val products: List<ProProduct> = emptyList(),
     val selectedProductId: String? = null,
     val isLoading: Boolean = true,
-    val isPurchasing: Boolean = false,
+    val isPurchasing: Boolean = false
 ) : UiState {
     val selectedProduct: ProProduct? get() = products.firstOrNull { it.id == selectedProductId }
 }
 
 sealed interface PaywallIntent : UiIntent {
     data class ProductSelected(
-        val id: String,
+        val id: String
     ) : PaywallIntent
 
     data object Purchase : PaywallIntent
@@ -68,6 +68,6 @@ sealed interface PaywallEffect : UiEffect {
 
     /** Show a transient message (purchase failed/cancelled, nothing to restore). */
     data class Message(
-        val text: String,
+        val text: String
     ) : PaywallEffect
 }

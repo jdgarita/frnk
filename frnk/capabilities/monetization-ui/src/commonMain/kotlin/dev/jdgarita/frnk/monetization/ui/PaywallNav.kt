@@ -24,7 +24,7 @@ fun FrnkPaywallDestination(
     features: List<String> = emptyList(),
     source: String = "paywall",
     onMessage: (String) -> Unit = {},
-    onClose: () -> Unit,
+    onClose: () -> Unit
 ) {
     PaywallScreen(source = source, features = features) { effect ->
         when (effect) {
@@ -48,7 +48,7 @@ fun Module.frnkPaywallNavigation(
     features: List<String> = emptyList(),
     source: String = "paywall",
     onMessage: (String) -> Unit = {},
-    onClose: () -> Unit,
+    onClose: () -> Unit
 ) {
     navigation<ToolkitRoute.Paywall> {
         FrnkPaywallDestination(features = features, source = source, onMessage = onMessage, onClose = onClose)

@@ -13,7 +13,7 @@ import kotlinx.datetime.Instant
 data class Note(
     val id: Long,
     val content: String,
-    val createdAt: Instant,
+    val createdAt: Instant
 )
 
 /**

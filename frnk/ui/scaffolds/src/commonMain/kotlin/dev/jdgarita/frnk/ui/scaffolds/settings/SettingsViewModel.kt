@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 class SettingsViewModel(
     initial: SettingsScreenState,
-    observeProStatus: ObserveProStatusUseCase,
+    observeProStatus: ObserveProStatusUseCase
 ) : MviViewModel<SettingsScreenState, SettingsIntent, SettingsEffect>(initial) {
     /** Reactive Free/Pro status. */
     val isPro: StateFlow<Boolean> = observeProStatus.invoke()
@@ -46,7 +46,7 @@ class SettingsViewModel(
                         val taps = versionTapCount + 1
                         copy(
                             versionTapCount = taps,
-                            developerRevealed = taps >= SettingsScreenState.DEVELOPER_REVEAL_TAPS,
+                            developerRevealed = taps >= SettingsScreenState.DEVELOPER_REVEAL_TAPS
                         )
                     }
                 }

@@ -68,5 +68,5 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconNotifications to Lucide.Bell,
         iconOnboarding to Lucide.BookOpen,
         iconHaptics to Lucide.Vibrate,
-        iconNavHome to Lucide.House,
+        iconNavHome to Lucide.House
     )

@@ -22,19 +22,19 @@ private fun FullScreenSample() {
     FrnkFullScreenScaffold(
         onCloseClick = {},
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(Theme[spacing][spacingLg]),
+        contentPadding = PaddingValues(Theme[spacing][spacingLg])
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding),
             verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg], Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             FrnkText(state = FrnkTextState.Title(text = "Full-screen content"))
             FrnkText(
                 state =
                     FrnkTextState.Body(
-                        text = "Edge-to-edge body drawn under the close button, which sits inside the safe-drawing inset.",
-                    ),
+                        text = "Edge-to-edge body drawn under the close button, which sits inside the safe-drawing inset."
+                    )
             )
         }
     }

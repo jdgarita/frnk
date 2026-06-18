@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * unconfigured `Purchases.sharedInstance` degrades to a safe failure/no-op instead of throwing.
  */
 internal class RevenueCatEntitlementProvider(
-    private val config: RevenueCatConfig,
+    private val config: RevenueCatConfig
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
@@ -58,7 +58,7 @@ internal class RevenueCatEntitlementProvider(
                 packagesById = packages.associateBy { it.identifier }
                 AppResult.Success(mapProducts(packages))
             },
-            onFailure = { AppResult.Failure(MonetizationError.NoOfferings) },
+            onFailure = { AppResult.Failure(MonetizationError.NoOfferings) }
         )
     }
 
@@ -81,7 +81,7 @@ internal class RevenueCatEntitlementProvider(
                 updateFrom(success.customerInfo)
                 AppResult.Success(_isPro.value)
             },
-            onFailure = { AppResult.Failure(it.toMonetizationError()) },
+            onFailure = { AppResult.Failure(it.toMonetizationError()) }
         )
     }
 
@@ -95,7 +95,7 @@ internal class RevenueCatEntitlementProvider(
                 updateFrom(info)
                 AppResult.Success(_isPro.value)
             },
-            onFailure = { AppResult.Failure(MonetizationError.Unknown) },
+            onFailure = { AppResult.Failure(MonetizationError.Unknown) }
         )
     }
 
@@ -106,7 +106,7 @@ internal class RevenueCatEntitlementProvider(
                 ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
         return result.fold(
             onSuccess = { AppResult.Success(it.managementUrlString) },
-            onFailure = { AppResult.Failure(MonetizationError.Unknown) },
+            onFailure = { AppResult.Failure(MonetizationError.Unknown) }
         )
     }
 
@@ -129,7 +129,7 @@ internal class RevenueCatEntitlementProvider(
 
 /** Minimal [PurchasesDelegate] that forwards customer-info updates; ignores App Store promo purchases. */
 private class EntitlementDelegate(
-    private val onUpdate: (CustomerInfo) -> Unit,
+    private val onUpdate: (CustomerInfo) -> Unit
 ) : PurchasesDelegate {
     override fun onCustomerInfoUpdated(customerInfo: CustomerInfo) = onUpdate(customerInfo)
 
@@ -137,8 +137,8 @@ private class EntitlementDelegate(
         product: StoreProduct,
         startPurchase: (
             onError: (error: PurchasesError, userCancelled: Boolean) -> Unit,
-            onSuccess: (storeTransaction: StoreTransaction, customerInfo: CustomerInfo) -> Unit,
-        ) -> Unit,
+            onSuccess: (storeTransaction: StoreTransaction, customerInfo: CustomerInfo) -> Unit
+        ) -> Unit
     ) = Unit
 }
 
@@ -161,7 +161,7 @@ private fun mapProducts(packages: List<Package>): List<ProProduct> {
             priceFormatted = product.price.formatted,
             pricePerMonthFormatted = product.pricePerMonth?.formatted,
             hasFreeTrial = product.introductoryDiscount != null,
-            badge = savingsBadge(plan, monthlyMicros, perMonthMicros),
+            badge = savingsBadge(plan, monthlyMicros, perMonthMicros)
         )
     }
 }
@@ -169,7 +169,7 @@ private fun mapProducts(packages: List<Package>): List<ProProduct> {
 private fun savingsBadge(
     plan: ProPlan,
     monthlyMicros: Long?,
-    perMonthMicros: Long?,
+    perMonthMicros: Long?
 ): String? {
     if (plan != ProPlan.Yearly || monthlyMicros == null || perMonthMicros == null || monthlyMicros <= 0L) return null
     val savings = ((1.0 - perMonthMicros.toDouble() / monthlyMicros.toDouble()) * 100).toInt()
@@ -197,5 +197,5 @@ private fun Throwable.toMonetizationError(): MonetizationError =
  */
 internal fun isProFor(
     activeEntitlementIds: Set<String>,
-    proEntitlementId: String,
+    proEntitlementId: String
 ): Boolean = proEntitlementId in activeEntitlementIds

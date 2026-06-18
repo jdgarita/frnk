@@ -18,5 +18,5 @@ data class FrnkNavBarItem(
     val key: String,
     val icon: ImageVector,
     val iosSystemIcon: String,
-    val label: String,
+    val label: String
 )

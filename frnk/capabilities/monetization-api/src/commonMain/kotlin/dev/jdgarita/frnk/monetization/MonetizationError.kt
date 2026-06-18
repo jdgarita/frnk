@@ -4,12 +4,12 @@ import dev.jdgarita.frnk.utils.AppError
 
 /** Typed failures for offerings / purchase / restore — never thrown, always returned in an [dev.jdgarita.frnk.utils.AppResult.Failure]. */
 enum class MonetizationError(
-    override val message: String,
+    override val message: String
 ) : AppError {
     UserCancelled("Purchase cancelled"),
     StoreUnavailable("Store unavailable"),
     NetworkUnavailable("Network unavailable"),
     NoOfferings("No products available"),
     PurchaseNotAllowed("Purchases are not allowed on this device"),
-    Unknown("Something went wrong"),
+    Unknown("Something went wrong")
 }

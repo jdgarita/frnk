@@ -29,7 +29,7 @@ import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
 data class FrnkListSectionState(
     val rows: List<FrnkListRowState>,
     val title: String? = null,
-    val footnote: String? = null,
+    val footnote: String? = null
 )
 
 /**
@@ -44,18 +44,18 @@ fun FrnkListSection(
     state: FrnkListSectionState,
     modifier: Modifier = Modifier,
     onRowClick: ((index: Int) -> Unit)? = null,
-    trailing: (@Composable (index: Int) -> Unit)? = null,
+    trailing: (@Composable (index: Int) -> Unit)? = null
 ) {
     FrnkSectionCard(
         rows = state.rows,
         modifier = modifier,
         title = state.title,
-        footnote = state.footnote,
+        footnote = state.footnote
     ) { index, row ->
         FrnkListRow(
             state = row,
             onClick = onRowClick?.let { { it(index) } },
-            trailing = trailing?.let { { it(index) } },
+            trailing = trailing?.let { { it(index) } }
         )
     }
 }

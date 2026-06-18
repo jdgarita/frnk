@@ -17,7 +17,7 @@ private fun FrnkSegmentedControl_Skeleton_Light() {
         FrnkSegmentedControl(
             state = FrnkSegmentedControlState.Skeleton,
             onOptionSelected = {},
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -29,17 +29,17 @@ private fun FrnkSegmentedControl_Light() {
         FrnkSegmentedControl(
             state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 0),
             onOptionSelected = {},
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
         FrnkSegmentedControl(
             state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 1),
             onOptionSelected = {},
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
         FrnkSegmentedControl(
             state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 2),
             onOptionSelected = {},
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -51,7 +51,7 @@ private fun FrnkSegmentedControl_Dark() {
         FrnkSegmentedControl(
             state = FrnkSegmentedControlState.Content(options = themeOptions, selectedIndex = 1),
             onOptionSelected = {},
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

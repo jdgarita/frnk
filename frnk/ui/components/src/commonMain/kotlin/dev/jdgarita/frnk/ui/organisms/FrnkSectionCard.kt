@@ -49,11 +49,11 @@ fun <T> FrnkSectionCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     footnote: String? = null,
-    row: @Composable (index: Int, item: T) -> Unit,
+    row: @Composable (index: Int, item: T) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs])
     ) {
         title?.let {
             FrnkText(
@@ -61,8 +61,8 @@ fun <T> FrnkSectionCard(
                     FrnkTextState.Raw(
                         text = it.uppercase(),
                         style = labelMedium,
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
         }
         Column(
@@ -73,7 +73,7 @@ fun <T> FrnkSectionCard(
                     .background(Theme[colors][colorSurface])
                     // Animate height when rows are added/removed (e.g. the Subscription section
                     // swapping Free → Pro) so the change settles smoothly instead of popping.
-                    .animateContentSize(),
+                    .animateContentSize()
         ) {
             rows.forEachIndexed { index, item ->
                 if (index > 0) FrnkDivider(state = FrnkDividerState.Horizontal())
@@ -86,8 +86,8 @@ fun <T> FrnkSectionCard(
                     FrnkTextState.Raw(
                         text = it,
                         style = labelSmall,
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
         }
     }

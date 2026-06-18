@@ -74,13 +74,13 @@ fun FrnkFullScreenScaffold(
     containerColor: Color = Theme[colors][colorBackground],
     closeContentDescription: String = Theme[strings][stringClose],
     contentPadding: PaddingValues = PaddingValues(),
-    content: @Composable BoxScope.(contentPadding: PaddingValues) -> Unit,
+    content: @Composable BoxScope.(contentPadding: PaddingValues) -> Unit
 ) {
     Box(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(containerColor),
+                .background(containerColor)
     ) {
         val layoutDirection = LocalLayoutDirection.current
         val safe = WindowInsets.safeDrawing.asPaddingValues()
@@ -94,7 +94,7 @@ fun FrnkFullScreenScaffold(
                         FrnkFullScreenScaffoldDefaults.CloseButtonHeight +
                         contentPadding.calculateTopPadding(),
                 end = safe.calculateEndPadding(layoutDirection) + contentPadding.calculateEndPadding(layoutDirection),
-                bottom = safe.calculateBottomPadding() + contentPadding.calculateBottomPadding(),
+                bottom = safe.calculateBottomPadding() + contentPadding.calculateBottomPadding()
             )
 
         content(merged)
@@ -108,9 +108,9 @@ fun FrnkFullScreenScaffold(
                 FrnkIconButtonState.Content(
                     imageVector = Theme[icons][iconClose],
                     contentDescription = closeContentDescription,
-                    tint = colorOnSurfaceVariant,
+                    tint = colorOnSurfaceVariant
                 ),
-            onClick = onCloseClick,
+            onClick = onCloseClick
         )
     }
 }

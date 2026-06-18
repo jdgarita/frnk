@@ -23,21 +23,21 @@ interface RemoteConfigService {
 
     fun getString(
         key: String,
-        default: String,
+        default: String
     ): String
 
     fun getBoolean(
         key: String,
-        default: Boolean,
+        default: Boolean
     ): Boolean
 
     fun getLong(
         key: String,
-        default: Long,
+        default: Long
     ): Long
 
     fun getDouble(
         key: String,
-        default: Double,
+        default: Double
     ): Double
 }

@@ -77,7 +77,7 @@ fun OnboardingScreen(
     arguments: OnboardingArguments,
     modifier: Modifier = Modifier,
     vmKey: String? = null,
-    onEffect: (OnboardingEffect) -> Unit = {},
+    onEffect: (OnboardingEffect) -> Unit = {}
 ) {
     val vm: OnboardingViewModel = koinViewModel(key = vmKey)
     FrnkScreen(viewModel = vm, arguments = arguments) {
@@ -88,7 +88,7 @@ fun OnboardingScreen(
         OnboardingScreenContent(
             state = state,
             onIntent = vm::send,
-            modifier = modifier,
+            modifier = modifier
         )
     }
 }
@@ -112,7 +112,7 @@ fun OnboardingScreen(
 internal fun OnboardingScreenContent(
     state: OnboardingScreenState,
     onIntent: (OnboardingIntent) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val pageCount = state.pages.size
     val pagerState = rememberPagerState(initialPage = state.currentPageIndex) { pageCount }
@@ -131,18 +131,18 @@ internal fun OnboardingScreenContent(
     FrnkFullScreenScaffold(
         onCloseClick = { onIntent(OnboardingIntent.CloseClicked) },
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = Theme[spacing][spacingLg], vertical = Theme[spacing][spacingMd]),
+        contentPadding = PaddingValues(horizontal = Theme[spacing][spacingLg], vertical = Theme[spacing][spacingMd])
     ) { padding ->
         Column(
             modifier =
                 Modifier
                     .fillMaxSize()
                     .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd])
         ) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth().weight(1f),
+                modifier = Modifier.fillMaxWidth().weight(1f)
             ) { page ->
                 OnboardingPageContent(state = state.pages[page])
             }
@@ -150,14 +150,14 @@ internal fun OnboardingScreenContent(
             OnboardingPips(
                 pageCount = pageCount,
                 currentPage = state.currentPageIndex,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             OnboardingNavigationRow(
                 isFirstPage = state.isFirstPage,
                 isLastPage = state.isLastPage,
                 onPrevious = { onIntent(OnboardingIntent.PreviousClicked) },
-                onNext = { onIntent(OnboardingIntent.NextClicked) },
+                onNext = { onIntent(OnboardingIntent.NextClicked) }
             )
         }
     }
@@ -168,7 +168,7 @@ private fun OnboardingPageContent(state: OnboardingPageState) {
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = Theme[spacing][spacingMd]),
         verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd], Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         state.icon?.let { FrnkIcon(state = it) }
         FrnkText(state = state.title.centered(), modifier = Modifier.fillMaxWidth())
@@ -181,12 +181,12 @@ private fun OnboardingNavigationRow(
     isFirstPage: Boolean,
     isLastPage: Boolean,
     onPrevious: () -> Unit,
-    onNext: () -> Unit,
+    onNext: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (isFirstPage) {
             Spacer(modifier = Modifier.weight(1f))
@@ -195,10 +195,10 @@ private fun OnboardingNavigationRow(
                 state =
                     FrnkButtonState.Content(
                         text = Theme[strings][stringBack],
-                        variant = FrnkButtonVariant.Outlined,
+                        variant = FrnkButtonVariant.Outlined
                     ),
                 onClick = onPrevious,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
         }
 
@@ -206,7 +206,7 @@ private fun OnboardingNavigationRow(
         FrnkButton(
             state = FrnkButtonState.Content(text = nextLabel),
             onClick = onNext,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -215,31 +215,31 @@ private fun OnboardingNavigationRow(
 private fun OnboardingPips(
     pageCount: Int,
     currentPage: Int,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val activeColor = Theme[colors][colorPrimary]
     val inactiveColor = Theme[colors][colorOutline]
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(pageCount) { index ->
             val isActive = index == currentPage
             val color by animateColorAsState(
                 targetValue = if (isActive) activeColor else inactiveColor,
-                label = "pip_color",
+                label = "pip_color"
             )
             val pipSize by animateDpAsState(
                 targetValue = if (isActive) 10.dp else 8.dp,
-                label = "pip_size",
+                label = "pip_size"
             )
             Box(
                 modifier =
                     Modifier
                         .size(pipSize)
                         .clip(Theme[shapes][shapeFull])
-                        .background(color),
+                        .background(color)
             )
         }
     }

@@ -170,7 +170,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun FrnkDemoApp(
     appearanceController: AppearanceController? = null,
-    onEffect: (DemoEffect) -> Unit = {},
+    onEffect: (DemoEffect) -> Unit = {}
 ) {
     val vm: DemoViewModel = koinViewModel()
     val state by vm.state.collectAsState()
@@ -199,7 +199,7 @@ fun FrnkDemoApp(
                 home = FrnkHomeConfig(topBar = homeTopBar),
                 settings = FrnkSettingsConfig(),
                 onboarding = FrnkOnboardingConfig(pages = demoOnboardingPages),
-                monetization = FrnkMonetizationConfig(paywallFeatures = demoPaywallFeatures),
+                monetization = FrnkMonetizationConfig(paywallFeatures = demoPaywallFeatures)
             )
         }
 
@@ -227,7 +227,7 @@ fun FrnkDemoApp(
         // first-launch onboarding effect) for us.
         entries = { scope ->
             demoFeatureEntries(scope = scope, state = state, onIntent = vm::send, onEffect = onEffect)
-        },
+        }
     ) {
         DemoHomeContent(state = state, onIntent = vm::send)
     }
@@ -243,7 +243,7 @@ val demoFeatureItem: FrnkFeatureItem =
         route = DemoRoute.Components,
         label = "Components",
         icon = Lucide.Component,
-        iosSystemIcon = "square.grid.2x2",
+        iosSystemIcon = "square.grid.2x2"
     )
 
 /**
@@ -280,13 +280,13 @@ fun demoHomeTopBar(isPro: Boolean): FrnkTopAppBarState =
                 emptyList()
             } else {
                 listOf(FrnkTopAppBarAction(icon = Lucide.Crown, contentDescription = "Upgrade to Pro", key = "upgrade"))
-            },
+            }
     )
 
 /** Routes the Home tab's [HomeEffect]s — the crown "Upgrade" action opens the paywall via the VM. */
 fun demoHandleHomeEffect(
     vm: DemoViewModel,
-    effect: HomeEffect,
+    effect: HomeEffect
 ) {
     when (effect) {
         is HomeEffect.ActionInvoked -> if (effect.key == "upgrade") vm.send(DemoIntent.RequestUpgrade)
@@ -304,7 +304,7 @@ fun demoHandleHomeEffect(
 fun DemoEffectCollector(
     vm: DemoViewModel,
     scope: FrnkAppScope,
-    onEffect: (DemoEffect) -> Unit,
+    onEffect: (DemoEffect) -> Unit
 ) {
     EffectCollector(vm.effects) { effect ->
         routeDemoEffect(effect, { route -> scope.navigateTo(route) }, onEffect)
@@ -321,7 +321,7 @@ fun DemoEffectCollector(
 @Composable
 fun demoSettingsHandler(
     scope: FrnkAppScope,
-    onEffect: (DemoEffect) -> Unit,
+    onEffect: (DemoEffect) -> Unit
 ): (SettingsEffect) -> Unit {
     val appearanceController = LocalAppearanceController.current
     val entitlements: EntitlementManager = koinInject()
@@ -331,7 +331,7 @@ fun demoSettingsHandler(
     val sendFeedback =
         rememberFeedbackEmailLauncher(
             appName = "frnk",
-            appVersion = "v${Frnk.VERSION}",
+            appVersion = "v${Frnk.VERSION}"
         )
     return rememberFrnkSettingsHandler(
         backStack = scope.tabbed.current,
@@ -349,7 +349,7 @@ fun demoSettingsHandler(
                     }
                 is SettingsEffect.ToggleChanged -> onEffect(DemoEffect.Toast("${effect.id} = ${effect.checked}"))
             }
-        },
+        }
     )
 }
 
@@ -362,7 +362,7 @@ fun demoSettingsHandler(
 @Composable
 fun DemoHomeContent(
     state: DemoState,
-    onIntent: (DemoIntent) -> Unit,
+    onIntent: (DemoIntent) -> Unit
 ) {
     Section(title = "1. FeatureGate (Pro = ${state.isPro} via ${state.proSource})") {
         Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
@@ -371,15 +371,15 @@ fun DemoHomeContent(
                 // top-right crown action and from Settings).
                 FrnkButton(
                     state = FrnkButtonState.Content(text = "Open Paywall"),
-                    onClick = { onIntent(DemoIntent.RequestUpgrade) },
+                    onClick = { onIntent(DemoIntent.RequestUpgrade) }
                 )
                 FrnkButton(
                     state =
                         FrnkButtonState.Content(
                             text = "Restore",
-                            variant = FrnkButtonVariant.Outlined,
+                            variant = FrnkButtonVariant.Outlined
                         ),
-                    onClick = { onIntent(DemoIntent.RestorePurchases) },
+                    onClick = { onIntent(DemoIntent.RestorePurchases) }
                 )
             }
             // God mode: a frnk-level Pro override (independent of RevenueCat), normally reached
@@ -388,9 +388,9 @@ fun DemoHomeContent(
                 state =
                     FrnkButtonState.Content(
                         text = if (state.isGodMode) "God mode: ON" else "God mode: OFF",
-                        variant = FrnkButtonVariant.Outlined,
+                        variant = FrnkButtonVariant.Outlined
                     ),
-                onClick = { onIntent(DemoIntent.ToggleGodMode) },
+                onClick = { onIntent(DemoIntent.ToggleGodMode) }
             )
         }
     }
@@ -406,22 +406,22 @@ fun DemoHomeContent(
                             ":data-db-api's SqlDriverFactory like a real host schema. Android runs the " +
                             "real driver (databaseModule + demoNotesModule); DemoKit/iOS binds an " +
                             "in-memory fake so the framework stays cinterop-free.",
-                    color = colorOnSurfaceVariant,
-                ),
+                    color = colorOnSurfaceVariant
+                )
         )
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Add note"),
-                onClick = { onIntent(DemoIntent.AddNote) },
+                onClick = { onIntent(DemoIntent.AddNote) }
             )
             FrnkButton(
                 state =
                     FrnkButtonState.Content(
                         text = "Clear",
                         variant = FrnkButtonVariant.Outlined,
-                        enabled = state.notes.isNotEmpty(),
+                        enabled = state.notes.isNotEmpty()
                     ),
-                onClick = { onIntent(DemoIntent.ClearNotes) },
+                onClick = { onIntent(DemoIntent.ClearNotes) }
             )
         }
         if (state.notes.isEmpty()) {
@@ -429,8 +429,8 @@ fun DemoHomeContent(
                 state =
                     FrnkTextState.BodySmall(
                         text = "No notes yet — tap Add note to persist one.",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
         } else {
             state.notes.forEach { note ->
@@ -449,27 +449,27 @@ fun DemoHomeContent(
                         "AnalyticsTracker + CrashReporter (:shared:backend:api), a backend-independent " +
                             "axis (ObservabilityChoice). The demo binds logging fakes so DemoKit stays " +
                             "SDK-free; androidDemoApp installs the real firebaseObservabilityModule.",
-                    color = colorOnSurfaceVariant,
-                ),
+                    color = colorOnSurfaceVariant
+                )
         )
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Track event"),
-                onClick = { onIntent(DemoIntent.TrackEvent) },
+                onClick = { onIntent(DemoIntent.TrackEvent) }
             )
             FrnkButton(
                 state = FrnkButtonState.Content(text = "User property", variant = FrnkButtonVariant.Outlined),
-                onClick = { onIntent(DemoIntent.SetUserProperty) },
+                onClick = { onIntent(DemoIntent.SetUserProperty) }
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Log breadcrumb", variant = FrnkButtonVariant.Outlined),
-                onClick = { onIntent(DemoIntent.LogBreadcrumb) },
+                onClick = { onIntent(DemoIntent.LogBreadcrumb) }
             )
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Record non-fatal", variant = FrnkButtonVariant.Outlined),
-                onClick = { onIntent(DemoIntent.RecordTestCrash) },
+                onClick = { onIntent(DemoIntent.RecordTestCrash) }
             )
         }
         FrnkText(
@@ -479,12 +479,12 @@ fun DemoHomeContent(
                         "Force crash throws an UNHANDLED Kotlin exception — on iOS the CrashKiOS hook " +
                             "(installed with firebaseObservabilityModule) reports it symbolicated; on Android " +
                             "the Crashlytics SDK catches it. This terminates the app.",
-                    color = colorOnSurfaceVariant,
-                ),
+                    color = colorOnSurfaceVariant
+                )
         )
         FrnkButton(
             state = FrnkButtonState.Content(text = "Force crash (unhandled)", variant = FrnkButtonVariant.Outlined),
-            onClick = { onIntent(DemoIntent.ForceUnhandledCrash) },
+            onClick = { onIntent(DemoIntent.ForceUnhandledCrash) }
         )
     }
 
@@ -499,8 +499,8 @@ fun DemoHomeContent(
                             "Every interaction above flows: Composable → send(Intent) → reducer → State → " +
                             "recomposition. Navigation is a one-shot effect routed into the toolkit's " +
                             "FrnkNavDisplay — Request Upgrade pushes the Paywall; the bottom bar switches tabs.",
-                    color = colorOnSurfaceVariant,
-                ),
+                    color = colorOnSurfaceVariant
+                )
         )
     }
 
@@ -516,33 +516,33 @@ fun DemoHomeContent(
                             "(shows the bundled fallback), androidDemoApp overrides it with the real " +
                             "Firebase remoteConfigModule. :camera and :permissions are api-only scaffolds " +
                             "(no impl yet) — their no-op defaults surface the honest 'not wired' outcome.",
-                    color = colorOnSurfaceVariant,
-                ),
+                    color = colorOnSurfaceVariant
+                )
         )
         FrnkLabeledValue(
             state =
                 FrnkLabeledValueState.Content(
                     label = "Remote welcome",
                     value = state.remoteWelcome,
-                    orientation = FrnkLabeledValueOrientation.Stacked,
-                ),
+                    orientation = FrnkLabeledValueOrientation.Stacked
+                )
         )
         FrnkButton(
             state = FrnkButtonState.Content(text = "Fetch Remote Config", variant = FrnkButtonVariant.Outlined),
-            onClick = { onIntent(DemoIntent.FetchRemoteConfig) },
+            onClick = { onIntent(DemoIntent.FetchRemoteConfig) }
         )
         FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Camera", value = state.cameraResult))
         FrnkLabeledValue(
-            state = FrnkLabeledValueState.Content(label = "Camera permission", value = state.cameraPermission),
+            state = FrnkLabeledValueState.Content(label = "Camera permission", value = state.cameraPermission)
         )
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Capture photo", variant = FrnkButtonVariant.Outlined),
-                onClick = { onIntent(DemoIntent.CapturePhoto) },
+                onClick = { onIntent(DemoIntent.CapturePhoto) }
             )
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Request camera", variant = FrnkButtonVariant.Outlined),
-                onClick = { onIntent(DemoIntent.RequestCameraPermission) },
+                onClick = { onIntent(DemoIntent.RequestCameraPermission) }
             )
         }
     }
@@ -558,7 +558,7 @@ fun DemoHomeContent(
 internal fun ComponentsListScreen(
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    onOpenComponent: (String) -> Unit,
+    onOpenComponent: (String) -> Unit
 ) {
     val searchActive = state.searchActive
     val query = state.searchQuery
@@ -575,30 +575,30 @@ internal fun ComponentsListScreen(
                 title = "Components",
                 actions =
                     listOf(
-                        FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search"),
+                        FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search")
                     ),
                 isSearchActive = searchActive,
                 searchQuery = query,
-                searchPlaceholder = "Search components",
+                searchPlaceholder = "Search components"
             ),
         onActionClick = { onIntent(DemoIntent.SearchOpened) },
         onSearchQueryChange = { onIntent(DemoIntent.SearchQueryChanged(it)) },
-        onSearchClose = { onIntent(DemoIntent.SearchClosed) },
+        onSearchClose = { onIntent(DemoIntent.SearchClosed) }
     ) { padding ->
         Column(
             modifier =
                 Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(padding),
+                    .padding(padding)
         ) {
             if (matches.isEmpty()) {
                 FrnkText(
                     state =
                         FrnkTextState.Body(
                             text = "No components match \"$trimmedQuery\".",
-                            color = colorOnSurfaceVariant,
-                        ),
+                            color = colorOnSurfaceVariant
+                        )
                 )
             }
 
@@ -619,7 +619,7 @@ internal fun ComponentsListScreen(
 @Composable
 private fun ComponentRow(
     name: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Row(
         modifier =
@@ -627,11 +627,11 @@ private fun ComponentRow(
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .padding(vertical = FrnkSpacing.md),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         FrnkText(
             state = FrnkTextState.TitleMedium(text = name),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
         FrnkIcon(
             state =
@@ -639,8 +639,8 @@ private fun ComponentRow(
                     imageVector = Theme[icons][iconChevronRight],
                     contentDescription = null,
                     size = FrnkIconSize.md,
-                    tint = colorOnSurfaceVariant,
-                ),
+                    tint = colorOnSurfaceVariant
+                )
         )
     }
 }
@@ -655,16 +655,16 @@ private fun ComponentRow(
 internal fun ComponentDetailScreen(
     name: String,
     onBack: () -> Unit,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     FrnkScreenScaffold(
         topBar =
             FrnkTopAppBarState(
                 title = name,
                 navigationIcon = Theme[icons][iconBack],
-                navigationContentDescription = "Back",
+                navigationContentDescription = "Back"
             ),
-        onNavigationClick = onBack,
+        onNavigationClick = onBack
     ) { padding ->
         Column(
             modifier =
@@ -672,7 +672,7 @@ internal fun ComponentDetailScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.md)
         ) {
             content()
         }
@@ -698,7 +698,7 @@ private val componentNames =
         "FrnkLabeledValue",
         "FrnkEmptyState",
         "FrnkListSection",
-        "FrnkProfileHeader",
+        "FrnkProfileHeader"
     )
 
 /**
@@ -712,7 +712,7 @@ internal fun ComponentContent(
     name: String,
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    onEffect: (DemoEffect) -> Unit,
+    onEffect: (DemoEffect) -> Unit
 ) {
     when (name) {
         "FrnkText" -> {
@@ -722,19 +722,19 @@ internal fun ComponentContent(
             FrnkText(state = FrnkTextState.Body(text = "Body"))
             FrnkText(state = FrnkTextState.BodyMedium(text = "BodyMedium"))
             FrnkText(
-                state = FrnkTextState.BodySmall(text = "BodySmall", color = colorOnSurfaceVariant),
+                state = FrnkTextState.BodySmall(text = "BodySmall", color = colorOnSurfaceVariant)
             )
             FrnkText(state = FrnkTextState.AppName(annotated = buildAnnotatedString { append("FrnkKit") }))
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkText(
-                state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true)),
+                state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true))
             )
             FrnkText(
                 state =
                     FrnkTextState.Body(
                         text = "Loading a longer body line of text",
-                        skeleton = FrnkSkeleton(enabled = true),
-                    ),
+                        skeleton = FrnkSkeleton(enabled = true)
+                    )
             )
         }
         "FrnkButton" -> {
@@ -742,45 +742,45 @@ internal fun ComponentContent(
                 FrnkButton(state = FrnkButtonState.Content(text = "Filled"), onClick = {})
                 FrnkButton(
                     state = FrnkButtonState.Content(text = "Outlined", variant = FrnkButtonVariant.Outlined),
-                    onClick = {},
+                    onClick = {}
                 )
                 FrnkButton(
                     state = FrnkButtonState.Content(text = "Ghost", variant = FrnkButtonVariant.Ghost),
-                    onClick = {},
+                    onClick = {}
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                 FrnkButton(
                     state = FrnkButtonState.Content(text = "Filled", enabled = false),
-                    onClick = {},
+                    onClick = {}
                 )
                 FrnkButton(
                     state =
                         FrnkButtonState.Content(
                             text = "Outlined",
                             variant = FrnkButtonVariant.Outlined,
-                            enabled = false,
+                            enabled = false
                         ),
-                    onClick = {},
+                    onClick = {}
                 )
             }
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
                 FrnkButton(
                     state = FrnkButtonState.Skeleton,
-                    onClick = {},
+                    onClick = {}
                 )
                 FrnkButton(
                     state =
                         FrnkButtonState.Skeleton,
-                    onClick = {},
+                    onClick = {}
                 )
             }
         }
         "FrnkIcon / FrnkIconButton" -> {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 FrnkIcon(
                     state =
@@ -788,8 +788,8 @@ internal fun ComponentContent(
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = "Search",
                             size = FrnkIconSize.md,
-                            tint = colorPrimary,
-                        ),
+                            tint = colorPrimary
+                        )
                 )
                 FrnkIcon(
                     state =
@@ -797,32 +797,32 @@ internal fun ComponentContent(
                             imageVector = Theme[icons][iconCheck],
                             contentDescription = "Check",
                             size = FrnkIconSize.lg,
-                            tint = colorPrimary,
-                        ),
+                            tint = colorPrimary
+                        )
                 )
                 FrnkIconButton(
                     state =
                         FrnkIconButtonState.Content(
                             imageVector = Theme[icons][iconSettings],
                             contentDescription = "Settings",
-                            tint = colorOnBackground,
+                            tint = colorOnBackground
                         ),
-                    onClick = { onEffect(DemoEffect.Toast("Icon button tapped")) },
+                    onClick = { onEffect(DemoEffect.Toast("Icon button tapped")) }
                 )
             }
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 FrnkIcon(
                     state =
-                        FrnkIconState.Skeleton(),
+                        FrnkIconState.Skeleton()
                 )
                 FrnkIconButton(
                     state =
                         FrnkIconButtonState.Skeleton,
-                    onClick = {},
+                    onClick = {}
                 )
             }
         }
@@ -831,7 +831,7 @@ internal fun ComponentContent(
             Row(
                 modifier = Modifier.height(24.dp),
                 horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 FrnkText(state = FrnkTextState.BodySmall(text = "Left"))
                 FrnkDivider(state = FrnkDividerState.Vertical())
@@ -841,23 +841,23 @@ internal fun ComponentContent(
         "FrnkSwitch" -> {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.md),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 FrnkSwitch(
                     state = FrnkSwitchState.Content(checked = state.gallerySwitchOn),
-                    onCheckedChange = { onIntent(DemoIntent.GallerySwitchChanged(it)) },
+                    onCheckedChange = { onIntent(DemoIntent.GallerySwitchChanged(it)) }
                 )
                 FrnkText(state = FrnkTextState.BodySmall(text = if (state.gallerySwitchOn) "On" else "Off"))
                 FrnkSwitch(
                     state = FrnkSwitchState.Content(checked = true, enabled = false),
-                    onCheckedChange = {},
+                    onCheckedChange = {}
                 )
                 FrnkText(state = FrnkTextState.BodySmall(text = "Disabled"))
             }
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkSwitch(
                 state = FrnkSwitchState.Skeleton,
-                onCheckedChange = {},
+                onCheckedChange = {}
             )
         }
         "FrnkSegmentedControl" -> {
@@ -865,15 +865,15 @@ internal fun ComponentContent(
                 state =
                     FrnkSegmentedControlState.Content(
                         options = listOf("One", "Two", "Three"),
-                        selectedIndex = state.gallerySegmentIndex,
+                        selectedIndex = state.gallerySegmentIndex
                     ),
-                onOptionSelected = { onIntent(DemoIntent.GallerySegmentChanged(it)) },
+                onOptionSelected = { onIntent(DemoIntent.GallerySegmentChanged(it)) }
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkSegmentedControl(
                 state =
                     FrnkSegmentedControlState.Skeleton,
-                onOptionSelected = {},
+                onOptionSelected = {}
             )
         }
         "FrnkBottomFloatingBar" -> {
@@ -883,19 +883,19 @@ internal fun ComponentContent(
                         text =
                             "The real adaptive bar — the very same component shown at the foot of every screen " +
                                 "(a Material3 floating pill on Android, a native glassy UITabBar on iOS).",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             FrnkBottomFloatingBar(
                 items =
                     listOf(
                         FrnkNavBarItem("a", Theme[icons][iconSearch], "magnifyingglass", "Search"),
                         FrnkNavBarItem("b", Theme[icons][iconCheck], "checkmark", "Check"),
-                        FrnkNavBarItem("c", Theme[icons][iconSettings], "gearshape", "Settings"),
+                        FrnkNavBarItem("c", Theme[icons][iconSettings], "gearshape", "Settings")
                     ),
                 selectedIndex = state.galleryNavIndex,
                 onItemSelected = { onIntent(DemoIntent.GalleryNavChanged(it)) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             )
         }
         "Ripple" -> {
@@ -906,8 +906,8 @@ internal fun ComponentContent(
                             "Every interactive atom above ripples on press by default — FrnkTheme installs " +
                                 "the ripple as LocalIndication. Host apps apply the same ripple to their own " +
                                 "components with rememberFrnkRipple().",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             val boundedRipple = remember { MutableInteractionSource() }
             Box(
@@ -918,9 +918,9 @@ internal fun ComponentContent(
                         .background(Theme[colors][colorSurfaceVariant])
                         .clickable(
                             interactionSource = boundedRipple,
-                            indication = rememberFrnkRipple(),
+                            indication = rememberFrnkRipple()
                         ) { onEffect(DemoEffect.Toast("Bounded ripple")) }
-                        .padding(FrnkSpacing.md),
+                        .padding(FrnkSpacing.md)
             ) {
                 FrnkText(state = FrnkTextState.Body(text = "Custom card — bounded ripple (content color)"))
             }
@@ -931,9 +931,9 @@ internal fun ComponentContent(
                         .clip(Theme[shapes][shapeCard])
                         .clickable(
                             interactionSource = unboundedRipple,
-                            indication = rememberFrnkRipple(color = Theme[colors][colorPrimary], bounded = false),
+                            indication = rememberFrnkRipple(color = Theme[colors][colorPrimary], bounded = false)
                         ) { onEffect(DemoEffect.Toast("Unbounded ripple")) }
-                        .padding(FrnkSpacing.md),
+                        .padding(FrnkSpacing.md)
             ) {
                 FrnkText(state = FrnkTextState.Body(text = "Tap for an unbounded, primary-colored ripple"))
             }
@@ -945,15 +945,15 @@ internal fun ComponentContent(
                         text =
                             "Molecule: leading icon + title/subtitle + trailing slot. Tap a row for a " +
                                 "ripple + haptic; the whole row collapses to a skeleton while loading.",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             FrnkListRow(
                 state =
                     FrnkListRowState.Content(
                         title = "Notifications",
                         subtitle = "Push, email and in-app alerts",
-                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                     ),
                 onClick = { onEffect(DemoEffect.Toast("Tapped Notifications")) },
                 trailing = {
@@ -962,19 +962,19 @@ internal fun ComponentContent(
                             FrnkIconState.Content(
                                 imageVector = Theme[icons][iconChevronRight],
                                 contentDescription = null,
-                                tint = colorOnSurfaceVariant,
-                            ),
+                                tint = colorOnSurfaceVariant
+                            )
                     )
-                },
+                }
             )
             FrnkListRow(
-                state = FrnkListRowState.Content(title = "Title only, non-interactive"),
+                state = FrnkListRowState.Content(title = "Title only, non-interactive")
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkListRow(
                 state =
                     FrnkListRowState.Skeleton,
-                onClick = {},
+                onClick = {}
             )
         }
         "FrnkSwipeable" -> {
@@ -985,20 +985,20 @@ internal fun ComponentContent(
                             "Optional swipe-to-action on any row. Reveal holds open a row of buttons " +
                                 "(tap one, or tap the row to close); Dismiss fires on release past the " +
                                 "threshold then snaps back. Headless — no Material3.",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             val deleteAction =
                 FrnkSwipeAction(
                     icon = FrnkIconState.Content(Theme[icons][iconError], contentDescription = "Delete"),
-                    label = "Delete",
+                    label = "Delete"
                 )
             val archiveAction =
                 FrnkSwipeAction(
                     icon = FrnkIconState.Content(Theme[icons][iconRestore], contentDescription = "Archive"),
                     containerColor = colorSuccess,
                     contentColor = colorOnSuccess,
-                    label = "Archive",
+                    label = "Archive"
                 )
             FrnkText(state = FrnkTextState.BodySmall(text = "Reveal (drag left)", color = colorOnSurfaceVariant))
             FrnkListRow(
@@ -1006,16 +1006,16 @@ internal fun ComponentContent(
                     FrnkListRowState.Content(
                         title = "Project Apollo",
                         subtitle = "Swipe left to reveal actions",
-                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                     ),
                 onClick = { onEffect(DemoEffect.Toast("Tapped Project Apollo")) },
                 swipe =
                     FrnkSwipeableState(
                         behavior = FrnkSwipeBehavior.Reveal,
                         direction = FrnkSwipeDirection.Right,
-                        rightActions = listOf(archiveAction, deleteAction),
+                        rightActions = listOf(archiveAction, deleteAction)
                     ),
-                onSwipeAction = { onEffect(DemoEffect.Toast("${it.key} (reveal)")) },
+                onSwipeAction = { onEffect(DemoEffect.Toast("${it.key} (reveal)")) }
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Dismiss (drag left)", color = colorOnSurfaceVariant))
             FrnkListRow(
@@ -1023,15 +1023,15 @@ internal fun ComponentContent(
                     FrnkListRowState.Content(
                         title = "Swipe-to-delete",
                         subtitle = "Release past the threshold to fire",
-                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                     ),
                 swipe =
                     FrnkSwipeableState(
                         behavior = FrnkSwipeBehavior.Dismiss,
                         direction = FrnkSwipeDirection.Right,
-                        rightActions = listOf(deleteAction),
+                        rightActions = listOf(deleteAction)
                     ),
-                onSwipeAction = { onEffect(DemoEffect.Toast("${it.key} (dismiss)")) },
+                onSwipeAction = { onEffect(DemoEffect.Toast("${it.key} (dismiss)")) }
             )
         }
         "FrnkLabeledValue" -> {
@@ -1041,8 +1041,8 @@ internal fun ComponentContent(
                         text =
                             "Molecule: a muted label paired with a value. Inline pushes the value to the " +
                                 "end; Stacked sits it below. The value carries the skeleton while loading.",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Plan", value = "Pro"))
             FrnkDivider(state = FrnkDividerState.Horizontal())
@@ -1053,13 +1053,13 @@ internal fun ComponentContent(
                     FrnkLabeledValueState.Content(
                         label = "Storage used",
                         value = "4.2 GB",
-                        orientation = FrnkLabeledValueOrientation.Stacked,
-                    ),
+                        orientation = FrnkLabeledValueOrientation.Stacked
+                    )
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkLabeledValue(
                 state =
-                    FrnkLabeledValueState.Skeleton,
+                    FrnkLabeledValueState.Skeleton
             )
         }
         "FrnkEmptyState" -> {
@@ -1070,8 +1070,8 @@ internal fun ComponentContent(
                             "Molecule: centered icon + title + subtitle + optional action button. A terminal " +
                                 "zero-content state, so it has no skeleton (you'd skeletonize the eventual content " +
                                 "instead). The action button brings its own ripple + haptic.",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             FrnkEmptyState(
                 state =
@@ -1081,13 +1081,13 @@ internal fun ComponentContent(
                                 imageVector = Theme[icons][iconSearch],
                                 contentDescription = null,
                                 size = FrnkIconSize.emptyState,
-                                tint = colorOnSurfaceVariant,
+                                tint = colorOnSurfaceVariant
                             ),
                         title = "No results",
                         subtitle = "Try adjusting your search to find what you're looking for.",
-                        actionLabel = "Clear search",
+                        actionLabel = "Clear search"
                     ),
-                onActionClick = { onEffect(DemoEffect.Toast("Cleared search")) },
+                onActionClick = { onEffect(DemoEffect.Toast("Cleared search")) }
             )
         }
         "FrnkListSection" -> {
@@ -1098,28 +1098,28 @@ internal fun ComponentContent(
                             "Organism: an optional title + a surface card stacking FrnkListRow molecules " +
                                 "separated by dividers, animating its height as rows change. Tap a row for a " +
                                 "ripple + haptic; per-row skeletons collapse each row independently.",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             val sectionRows =
                 listOf(
                     FrnkListRowState.Content(
                         title = "Notifications",
                         subtitle = "Push, email and in-app alerts",
-                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                        icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                     ),
                     FrnkListRowState.Content(
                         title = "Preferences",
                         subtitle = "Theme, language and units",
-                        icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null),
-                    ),
+                        icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null)
+                    )
                 )
             FrnkListSection(
                 state =
                     FrnkListSectionState(
                         title = "Account",
                         rows = sectionRows,
-                        footnote = "Manage how you're notified across devices.",
+                        footnote = "Manage how you're notified across devices."
                     ),
                 onRowClick = { index -> onEffect(DemoEffect.Toast("Tapped row $index")) },
                 trailing = {
@@ -1128,18 +1128,18 @@ internal fun ComponentContent(
                             FrnkIconState.Content(
                                 imageVector = Theme[icons][iconChevronRight],
                                 contentDescription = null,
-                                tint = colorOnSurfaceVariant,
-                            ),
+                                tint = colorOnSurfaceVariant
+                            )
                     )
-                },
+                }
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkListSection(
                 state =
                     FrnkListSectionState(
                         title = "Account",
-                        rows = List(3) { FrnkListRowState.Skeleton },
-                    ),
+                        rows = List(3) { FrnkListRowState.Skeleton }
+                    )
             )
         }
         "FrnkProfileHeader" -> {
@@ -1150,21 +1150,21 @@ internal fun ComponentContent(
                             "Organism: a circular avatar + name/subtitle, with an even row of " +
                                 "FrnkLabeledValue stat tiles below. The skeleton flag passes through to every " +
                                 "child (avatar, name, subtitle, each stat value).",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
             val avatar =
                 FrnkIconState.Content(
                     imageVector = Theme[icons][iconSettings],
                     contentDescription = null,
                     size = FrnkIconSize.lg,
-                    tint = colorOnPrimaryContainer,
+                    tint = colorOnPrimaryContainer
                 )
             val stats =
                 listOf(
                     FrnkLabeledValueState.Content(label = "Projects", value = "12"),
                     FrnkLabeledValueState.Content(label = "Streak", value = "48d"),
-                    FrnkLabeledValueState.Content(label = "Plan", value = "Pro"),
+                    FrnkLabeledValueState.Content(label = "Plan", value = "Pro")
                 )
             FrnkProfileHeader(
                 state =
@@ -1172,8 +1172,8 @@ internal fun ComponentContent(
                         name = "Juan Diego",
                         subtitle = "juandiego@example.com",
                         avatar = avatar,
-                        stats = stats,
-                    ),
+                        stats = stats
+                    )
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "No stats", color = colorOnSurfaceVariant))
             FrnkProfileHeader(
@@ -1181,13 +1181,13 @@ internal fun ComponentContent(
                     FrnkProfileHeaderState.Content(
                         name = "Juan Diego",
                         subtitle = "Free plan",
-                        avatar = avatar,
-                    ),
+                        avatar = avatar
+                    )
             )
             FrnkText(state = FrnkTextState.BodySmall(text = "Skeleton", color = colorOnSurfaceVariant))
             FrnkProfileHeader(
                 state =
-                    FrnkProfileHeaderState.Skeleton,
+                    FrnkProfileHeaderState.Skeleton
             )
         }
         else ->
@@ -1195,8 +1195,8 @@ internal fun ComponentContent(
                 state =
                     FrnkTextState.Body(
                         text = "Unknown component \"$name\".",
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
     }
 }
@@ -1210,7 +1210,7 @@ internal fun ComponentContent(
 fun rememberDemoSettingsState(
     appearance: dev.jdgarita.frnk.ui.theme.Appearance,
     isPro: Boolean,
-    isGodMode: Boolean,
+    isGodMode: Boolean
 ): SettingsScreenState {
     val baseSettings =
         rememberDefaultSettingsState(
@@ -1219,7 +1219,7 @@ fun rememberDemoSettingsState(
             isPro = isPro,
             title = FrnkStringSource.Raw(""),
             // Exercises the extraSections injection API (default placement: before the Legal section).
-            extraSections = demoExtraSettingsSections(),
+            extraSections = demoExtraSettingsSections()
         )
     // "Developer" section holding the god-mode toggle. The demo always shows it (showDeveloperSection =
     // true). Toggling god mode flips isPro, which recomputes this state; the single settings VM merges
@@ -1236,15 +1236,15 @@ fun rememberDemoSettingsState(
                             icon = FrnkIconSource.Token(iconUpgrade),
                             title = FrnkStringSource.Raw("God mode"),
                             subtitle = FrnkStringSource.Raw("Force Pro on this device (testing)"),
-                            checked = isGodMode,
-                        ),
-                    ),
+                            checked = isGodMode
+                        )
+                    )
             )
         }
     return remember(baseSettings, developerSection) {
         baseSettings.copy(
             developerSection = developerSection,
-            showDeveloperSection = true,
+            showDeveloperSection = true
         )
     }
 }
@@ -1271,10 +1271,10 @@ private fun demoExtraSettingsSections(): List<SettingsSectionState> {
                             icon = FrnkIconSource.Token(iconPrivacy),
                             title = FrnkStringSource.Raw("Share analytics"),
                             subtitle = FrnkStringSource.Raw("Help improve the app"),
-                            checked = true,
-                        ),
-                    ),
-            ),
+                            checked = true
+                        )
+                    )
+            )
         )
     }
 }
@@ -1290,29 +1290,29 @@ val demoOnboardingPages: List<OnboardingPageState> =
             title = FrnkTextState.Title(text = "Welcome to Frnk"),
             description =
                 FrnkTextState.Body(
-                    text = "A Kotlin Multiplatform toolkit to ship polished apps in days, not weeks.",
+                    text = "A Kotlin Multiplatform toolkit to ship polished apps in days, not weeks."
                 ),
             icon =
                 FrnkIconState.Content(
                     imageVector = Lucide.Check,
                     contentDescription = null,
                     size = FrnkIconSize.xxl,
-                    tint = colorPrimary,
-                ),
+                    tint = colorPrimary
+                )
         ),
         OnboardingPageState(
             title = FrnkTextState.Title(text = "Search everything"),
             description =
                 FrnkTextState.Body(
-                    text = "Typed, paginated, offline-ready data access across every source.",
+                    text = "Typed, paginated, offline-ready data access across every source."
                 ),
             icon =
                 FrnkIconState.Content(
                     imageVector = Lucide.Search,
                     contentDescription = null,
                     size = FrnkIconSize.xxl,
-                    tint = colorPrimary,
-                ),
+                    tint = colorPrimary
+                )
         ),
         OnboardingPageState(
             title = FrnkTextState.Title(text = "Ready when you are"),
@@ -1323,15 +1323,15 @@ val demoOnboardingPages: List<OnboardingPageState> =
                     imageVector = Lucide.Settings,
                     contentDescription = null,
                     size = FrnkIconSize.xxl,
-                    tint = colorPrimary,
-                ),
-        ),
+                    tint = colorPrimary
+                )
+        )
     )
 
 @Composable
 private fun Section(
     title: String,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
         FrnkText(state = FrnkTextState.Title(text = title))
@@ -1354,7 +1354,7 @@ private fun Section(
 @Composable
 private fun DemoBackHandler(
     enabled: Boolean = true,
-    onBack: () -> Unit,
+    onBack: () -> Unit
 ) {
     BackHandler(enabled = enabled, onBack = onBack)
 }

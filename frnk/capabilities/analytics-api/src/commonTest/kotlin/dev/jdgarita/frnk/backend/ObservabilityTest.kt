@@ -35,7 +35,7 @@ class ObservabilityTest {
 
         assertEquals(
             listOf("App_Opened", "custom_event"),
-            analytics.tracked.map { it.name },
+            analytics.tracked.map { it.name }
         )
         assertEquals(3, analytics.tracked[1].params["count"])
         assertEquals("pro", analytics.userProperties["tier"])

@@ -27,7 +27,7 @@ class PaywallViewModelTest {
     private val products =
         listOf(
             ProProduct("monthly", ProPlan.Monthly, "Monthly", "$4.99", "$4.99"),
-            ProProduct("yearly", ProPlan.Yearly, "Yearly", "$39.99", "$3.33", hasFreeTrial = true, badge = "Save 33%"),
+            ProProduct("yearly", ProPlan.Yearly, "Yearly", "$39.99", "$3.33", hasFreeTrial = true, badge = "Save 33%")
         )
 
     @BeforeTest fun setUp() = Dispatchers.setMain(dispatcher)
@@ -61,7 +61,7 @@ class PaywallViewModelTest {
             val vm =
                 PaywallViewModel(
                     FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), purchase = AppResult.Success(true)),
-                    FakeAnalytics(),
+                    FakeAnalytics()
                 )
             vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
@@ -83,9 +83,9 @@ class PaywallViewModelTest {
                 PaywallViewModel(
                     FakePaywallPurchaseUseCase(
                         offerings = AppResult.Success(products),
-                        purchase = AppResult.Failure(MonetizationError.StoreUnavailable),
+                        purchase = AppResult.Failure(MonetizationError.StoreUnavailable)
                     ),
-                    FakeAnalytics(),
+                    FakeAnalytics()
                 )
             vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
@@ -107,7 +107,7 @@ class PaywallViewModelTest {
             val vm =
                 PaywallViewModel(
                     FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), restore = AppResult.Success(true)),
-                    FakeAnalytics(),
+                    FakeAnalytics()
                 )
             vm.attach(PaywallArguments("settings"))
             runCurrent()
@@ -126,7 +126,7 @@ class PaywallViewModelTest {
 private class FakePaywallPurchaseUseCase(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true)
 ) : PaywallPurchaseUseCase {
     override suspend fun offerings() = offerings
 
@@ -140,20 +140,20 @@ private class FakeAnalytics : AnalyticsTracker {
 
     override fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         tracked += event.key
     }
 
     override fun trackCustom(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         tracked += name
     }
 
     override fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     ) = Unit
 }

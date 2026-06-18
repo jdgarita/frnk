@@ -61,7 +61,7 @@ internal data class Placeholder(
     private val highlight: PlaceholderHighlight? = null,
     private val coordinator: PlaceholderCoordinator? = null,
     private val placeholderFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() },
-    private val contentFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() },
+    private val contentFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() }
 ) {
     private var lastSize: Size? = null
     private var lastLayoutDirection: LayoutDirection? = null
@@ -80,11 +80,11 @@ internal data class Placeholder(
     internal suspend fun startAnimation() {
         placeholderAlpha.animateTo(
             targetValue = if (visible) 1f else 0f,
-            animationSpec = placeholderFadeTransitionSpec(),
+            animationSpec = placeholderFadeTransitionSpec()
         )
         contentAlpha.animateTo(
             targetValue = if (visible) 0f else 1f,
-            animationSpec = contentFadeTransitionSpec(),
+            animationSpec = contentFadeTransitionSpec()
         )
 
         // Coroutine for the infinite highlight (shimmer) animation. Skipped when a
@@ -95,7 +95,7 @@ internal data class Placeholder(
         if (shouldAnimateHighlight) {
             highlightProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = highlight.animationSpec!!,
+                animationSpec = highlight.animationSpec!!
             )
         } else {
             highlightProgress.snapTo(0f)
@@ -136,7 +136,7 @@ internal data class Placeholder(
                         progress = highlightProgressValue,
                         lastOutline = lastOutline,
                         lastLayoutDirection = lastLayoutDirection,
-                        lastSize = lastSize,
+                        lastSize = lastSize
                     )
             }
         }
@@ -148,7 +148,7 @@ internal data class Placeholder(
 }
 
 internal class PlaceholderNode(
-    var placeholder: Placeholder,
+    var placeholder: Placeholder
 ) : Modifier.Node(),
     DrawModifierNode {
     override fun ContentDrawScope.draw() {
@@ -160,7 +160,7 @@ internal class PlaceholderNode(
 
 // The factory for our PlaceholderNode
 internal data class PlaceholderElement(
-    var placeholder: Placeholder,
+    var placeholder: Placeholder
 ) : ModifierNodeElement<PlaceholderNode>() {
     override fun create(): PlaceholderNode = PlaceholderNode(placeholder = placeholder)
 
@@ -182,14 +182,14 @@ private fun DrawScope.drawPlaceholder(
     progress: Float,
     lastOutline: Outline?,
     lastLayoutDirection: LayoutDirection?,
-    lastSize: Size?,
+    lastSize: Size?
 ): Outline? {
     if (shape === RectangleShape) {
         drawRect(color = color)
         if (highlight != null) {
             drawRect(
                 brush = highlight.brush(progress, size),
-                alpha = highlight.alpha(progress),
+                alpha = highlight.alpha(progress)
             )
         }
         return null
@@ -205,7 +205,7 @@ private fun DrawScope.drawPlaceholder(
         drawOutline(
             outline = outline,
             brush = highlight.brush(progress, size),
-            alpha = highlight.alpha(progress),
+            alpha = highlight.alpha(progress)
         )
     }
     return outline
@@ -213,7 +213,7 @@ private fun DrawScope.drawPlaceholder(
 
 private inline fun DrawScope.withLayer(
     paint: Paint,
-    drawBlock: DrawScope.() -> Unit,
+    drawBlock: DrawScope.() -> Unit
 ) = drawIntoCanvas { canvas ->
     canvas.saveLayer(size.toRect(), paint)
     drawBlock()

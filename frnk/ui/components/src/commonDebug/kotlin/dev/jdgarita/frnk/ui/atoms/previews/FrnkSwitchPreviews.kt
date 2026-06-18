@@ -15,7 +15,7 @@ private fun FrnkSwitch_Skeleton_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkSwitch(
             state = FrnkSwitchState.Skeleton,
-            onCheckedChange = {},
+            onCheckedChange = {}
         )
     }
 }

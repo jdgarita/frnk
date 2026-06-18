@@ -34,9 +34,9 @@ class SettingsDefaultsTest {
                         id = "host_row",
                         icon = FrnkIconSource.Vector(Lucide.Plus),
                         title = FrnkStringSource.Raw("Host Row"),
-                        action = SettingsAction.Custom("host_row"),
-                    ),
-                ),
+                        action = SettingsAction.Custom("host_row")
+                    )
+                )
         )
 
     private fun buildState(placement: SettingsExtraSectionsPlacement): SettingsScreenState =
@@ -44,7 +44,7 @@ class SettingsDefaultsTest {
             version = "v1.0",
             appearance = Appearance.System,
             extraSections = listOf(extra),
-            extraSectionsPlacement = placement,
+            extraSectionsPlacement = placement
         )
 
     // Default catalogue order: [0] Appearance, [1] Preferences, [2] Subscription, [3] Support, [4] Legal.

@@ -33,6 +33,6 @@ sealed interface ToolkitRoute : NavKey {
 
     @Serializable
     data class Custom(
-        val id: String,
+        val id: String
     ) : ToolkitRoute
 }

@@ -28,7 +28,7 @@ class ToolkitRouteTest {
     fun sealed_route_resolves_a_serializer() {
         assertEquals(
             "dev.jdgarita.frnk.ui.nav.ToolkitRoute",
-            serializer<ToolkitRoute>().descriptor.serialName,
+            serializer<ToolkitRoute>().descriptor.serialName
         )
     }
 
@@ -40,7 +40,7 @@ class ToolkitRouteTest {
                 serializer<ToolkitRoute.Onboarding>().descriptor.serialName,
                 serializer<ToolkitRoute.Settings>().descriptor.serialName,
                 serializer<ToolkitRoute.Paywall>().descriptor.serialName,
-                serializer<ToolkitRoute.Custom>().descriptor.serialName,
+                serializer<ToolkitRoute.Custom>().descriptor.serialName
             )
 
         assertEquals(names.size, names.toSet().size, "route serial names must be distinct")

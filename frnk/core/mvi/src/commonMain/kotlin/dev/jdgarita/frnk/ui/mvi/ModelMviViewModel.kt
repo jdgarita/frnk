@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
  * read subclass properties that are initialized after the super constructor runs.
  */
 abstract class ModelMviViewModel<A : Arguments, M : ModelState, S : UiState, I : UiIntent, E : UiEffect>(
-    factory: ModelStateFactory<M>,
+    factory: ModelStateFactory<M>
 ) : ViewModel() {
     // The data-only layer. Mutate via [updateModel]; the UI never reads it (it collects [state]).
     private val modelState = MutableStateFlow(factory.initialModelState())

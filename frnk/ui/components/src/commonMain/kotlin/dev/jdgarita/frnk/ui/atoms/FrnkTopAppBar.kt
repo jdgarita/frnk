@@ -50,7 +50,7 @@ data class FrnkTopAppBarAction(
     /** Doubles as the icon button's accessibility label. */
     val contentDescription: String,
     /** Stable identifier the host switches on in `onActionClick`. Defaults to [contentDescription]. */
-    val key: String = contentDescription,
+    val key: String = contentDescription
 )
 
 @Immutable
@@ -75,7 +75,7 @@ data class FrnkTopAppBarState(
     val isSearchActive: Boolean = false,
     val searchQuery: String = "",
     /** Placeholder shown in the search field while [searchQuery] is empty. */
-    val searchPlaceholder: String = "Search",
+    val searchPlaceholder: String = "Search"
 )
 
 /** Shared layout metrics for [FrnkTopAppBar]. */
@@ -110,7 +110,7 @@ fun FrnkTopAppBar(
     onActionClick: (FrnkTopAppBarAction) -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClose: () -> Unit = {},
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier =
@@ -122,8 +122,8 @@ fun FrnkTopAppBar(
                         Modifier.windowInsetsPadding(WindowInsets.statusBars)
                     } else {
                         Modifier
-                    },
-                ),
+                    }
+                )
     ) {
         Row(
             modifier =
@@ -132,14 +132,14 @@ fun FrnkTopAppBar(
                     .height(FrnkTopAppBarDefaults.BarHeight)
                     .padding(horizontal = Theme[spacing][spacingXs]),
             horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXs]),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (state.isSearchActive) {
                 SearchRow(
                     query = state.searchQuery,
                     placeholder = state.searchPlaceholder,
                     onQueryChange = onSearchQueryChange,
-                    onClose = onSearchClose,
+                    onClose = onSearchClose
                 )
             } else {
                 state.navigationIcon?.let { icon ->
@@ -148,9 +148,9 @@ fun FrnkTopAppBar(
                             FrnkIconButtonState.Content(
                                 imageVector = icon,
                                 contentDescription = state.navigationContentDescription ?: "Back",
-                                tint = colorOnBackground,
+                                tint = colorOnBackground
                             ),
-                        onClick = onNavigationClick,
+                        onClick = onNavigationClick
                     )
                 }
 
@@ -159,13 +159,13 @@ fun FrnkTopAppBar(
                         FrnkTextState.Title(
                             text = state.title,
                             color = colorOnBackground,
-                            singleLine = true,
+                            singleLine = true
                         ),
                     // Material-style leading inset when there's no nav icon to provide it.
                     modifier =
                         Modifier
                             .weight(1f)
-                            .padding(start = if (state.navigationIcon == null) Theme[spacing][spacingSm] else Theme[spacing][spacingXxs]),
+                            .padding(start = if (state.navigationIcon == null) Theme[spacing][spacingSm] else Theme[spacing][spacingXxs])
                 )
 
                 state.actions.forEach { action ->
@@ -174,9 +174,9 @@ fun FrnkTopAppBar(
                             FrnkIconButtonState.Content(
                                 imageVector = action.icon,
                                 contentDescription = action.contentDescription,
-                                tint = colorOnBackground,
+                                tint = colorOnBackground
                             ),
-                        onClick = { onActionClick(action) },
+                        onClick = { onActionClick(action) }
                     )
                 }
             }
@@ -194,16 +194,16 @@ private fun RowScope.SearchRow(
     query: String,
     placeholder: String,
     onQueryChange: (String) -> Unit,
-    onClose: () -> Unit,
+    onClose: () -> Unit
 ) {
     FrnkIconButton(
         state =
             FrnkIconButtonState.Content(
                 imageVector = Theme[icons][iconBack],
                 contentDescription = "Close search",
-                tint = colorOnBackground,
+                tint = colorOnBackground
             ),
-        onClick = onClose,
+        onClick = onClose
     )
 
     val focusRequester = remember { FocusRequester() }
@@ -228,13 +228,13 @@ private fun RowScope.SearchRow(
                             FrnkTextState.Body(
                                 text = placeholder,
                                 color = colorOnSurfaceVariant,
-                                singleLine = true,
-                            ),
+                                singleLine = true
+                            )
                     )
                 }
                 innerTextField()
             }
-        },
+        }
     )
 
     if (query.isNotEmpty()) {
@@ -243,9 +243,9 @@ private fun RowScope.SearchRow(
                 FrnkIconButtonState.Content(
                     imageVector = Theme[icons][iconClose],
                     contentDescription = "Clear search",
-                    tint = colorOnSurfaceVariant,
+                    tint = colorOnSurfaceVariant
                 ),
-            onClick = { onQueryChange("") },
+            onClick = { onQueryChange("") }
         )
     }
 }

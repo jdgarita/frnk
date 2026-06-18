@@ -33,7 +33,7 @@ private fun samplePages(): List<OnboardingPageState> {
             listOf(
                 "Welcome to Frnk" to "A Kotlin Multiplatform toolkit for building polished, opinionated apps in days, not weeks.",
                 "Search everything" to "One unified surface across your data sources — typed, paginated, and offline-ready.",
-                "Ready when you are" to "Tap Get Started to begin your first session.",
+                "Ready when you are" to "Tap Get Started to begin your first session."
             )
         titles.mapIndexed { i, (title, body) ->
             OnboardingPageState(
@@ -44,8 +44,8 @@ private fun samplePages(): List<OnboardingPageState> {
                         imageVector = pageIcons[i],
                         contentDescription = null,
                         size = FrnkIconSize.xxl,
-                        tint = colorPrimary,
-                    ),
+                        tint = colorPrimary
+                    )
             )
         }
     }

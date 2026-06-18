@@ -26,7 +26,7 @@ expect fun FrnkBottomFloatingBar(
     items: List<FrnkNavBarItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 )
 
 /** Shared layout metrics for the toolkit's adaptive bottom bar ([FrnkBottomFloatingBar]). */

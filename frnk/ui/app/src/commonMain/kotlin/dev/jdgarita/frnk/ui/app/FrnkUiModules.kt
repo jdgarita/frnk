@@ -30,5 +30,5 @@ fun frnkUiModules(): List<Module> =
     listOf(
         homeScaffoldModule,
         settingsScaffoldModule,
-        onboardingScaffoldModule,
+        onboardingScaffoldModule
     )

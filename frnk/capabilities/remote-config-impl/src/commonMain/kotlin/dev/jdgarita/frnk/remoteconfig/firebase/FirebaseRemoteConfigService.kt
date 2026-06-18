@@ -20,7 +20,7 @@ import dev.gitlive.firebase.remoteconfig.FirebaseRemoteConfig as GitliveRemoteCo
  * resolved through Koin, exactly like `:analytics-impl`.
  */
 internal class FirebaseRemoteConfigService(
-    private val remoteConfig: GitliveRemoteConfig = Firebase.remoteConfig,
+    private val remoteConfig: GitliveRemoteConfig = Firebase.remoteConfig
 ) : RemoteConfigService {
     override suspend fun fetchAndActivate(): AppResult<Unit, CommonError> =
         try {
@@ -34,7 +34,7 @@ internal class FirebaseRemoteConfigService(
 
     override fun getString(
         key: String,
-        default: String,
+        default: String
     ): String {
         val value = remoteConfig.getValue(key)
         return if (value.getSource() == ValueSource.Static) default else value.asString().ifBlank { default }
@@ -42,7 +42,7 @@ internal class FirebaseRemoteConfigService(
 
     override fun getBoolean(
         key: String,
-        default: Boolean,
+        default: Boolean
     ): Boolean {
         val value = remoteConfig.getValue(key)
         return if (value.getSource() == ValueSource.Static) default else value.asBoolean()
@@ -50,7 +50,7 @@ internal class FirebaseRemoteConfigService(
 
     override fun getLong(
         key: String,
-        default: Long,
+        default: Long
     ): Long {
         val value = remoteConfig.getValue(key)
         return if (value.getSource() == ValueSource.Static) default else value.asLong()
@@ -58,7 +58,7 @@ internal class FirebaseRemoteConfigService(
 
     override fun getDouble(
         key: String,
-        default: Double,
+        default: Double
     ): Double {
         val value = remoteConfig.getValue(key)
         return if (value.getSource() == ValueSource.Static) default else value.asDouble()

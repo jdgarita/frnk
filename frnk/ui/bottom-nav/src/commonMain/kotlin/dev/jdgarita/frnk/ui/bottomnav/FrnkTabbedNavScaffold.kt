@@ -119,7 +119,7 @@ fun FrnkTabbedNavScaffold(
     settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)? = null,
     effects: @Composable (FrnkAppScope) -> Unit = {},
     entries: EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit = {},
-    homeContent: @Composable ColumnScope.() -> Unit,
+    homeContent: @Composable ColumnScope.() -> Unit
 ) {
     val controller = appearanceController ?: remember { AppearanceController() }
     FrnkTheme(config = config.theme, appearanceController = controller) {
@@ -128,7 +128,7 @@ fun FrnkTabbedNavScaffold(
             rememberFrnkBottomNavState(
                 homeRoot = config.nav.homeRoot,
                 settingsRoot = config.nav.settingsRoot,
-                feature = config.nav.feature,
+                feature = config.nav.feature
             )
         val backStackTabs = remember(navState) { navState.tabs.map { FrnkTab(key = it.key, root = it.root) } }
         val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = backStackTabs)
@@ -166,7 +166,7 @@ fun FrnkTabbedNavScaffold(
                             initialState = homeState,
                             vmKey = config.home.vmKey,
                             onEffect = { effect -> scope.onHomeEffect(effect) },
-                            content = homeContent,
+                            content = homeContent
                         )
                     }
                     entry(config.nav.settingsRoot) {
@@ -177,7 +177,7 @@ fun FrnkTabbedNavScaffold(
                             extraSections = config.settings.extraSections,
                             vmKey = config.settings.vmKey,
                             settingsEffects = settingsEffects,
-                            onboardingAvailable = config.onboarding.pages.isNotEmpty(),
+                            onboardingAvailable = config.onboarding.pages.isNotEmpty()
                         )
                     }
                     if (config.onboarding.pages.isNotEmpty()) {
@@ -191,15 +191,15 @@ fun FrnkTabbedNavScaffold(
                                 onEffect = { effect ->
                                     when (effect) {
                                         OnboardingEffect.CloseRequested,
-                                        OnboardingEffect.Completed,
+                                        OnboardingEffect.Completed
                                         -> scope.back()
                                     }
-                                },
+                                }
                             )
                         }
                     }
                     entries(scope)
-                },
+                }
         )
     }
 }
@@ -223,7 +223,7 @@ private fun TabbedNavHost(
     tabs: List<FrnkBottomNavTab>,
     modifier: Modifier = Modifier,
     hideBarFor: (NavKey) -> Boolean,
-    entryProvider: (NavKey) -> NavEntry<NavKey>,
+    entryProvider: (NavKey) -> NavEntry<NavKey>
 ) {
     // Back from a non-home tab's root returns to the home tab (rather than exiting the app); within-tab
     // pops and the home-root exit are handled by FrnkNavDisplay / the system.
@@ -239,7 +239,7 @@ private fun TabbedNavHost(
                 }
             FrnkTabbedNavViewState(
                 navBarItems = items,
-                navBarItemIndexSelected = items.indexOfFirst { it.key == tabbed.currentTabKey },
+                navBarItemIndexSelected = items.indexOfFirst { it.key == tabbed.currentTabKey }
             )
         }
 
@@ -261,12 +261,12 @@ private fun TabbedNavHost(
 
     Box(modifier = modifier.fillMaxSize()) {
         CompositionLocalProvider(
-            LocalFrnkBottomBarInset provides contentInset,
+            LocalFrnkBottomBarInset provides contentInset
         ) {
             FrnkNavDisplay(
                 backStack = tabbed.current,
                 modifier = Modifier.fillMaxSize(),
-                entryProvider = entryProvider,
+                entryProvider = entryProvider
             )
         }
 
@@ -275,7 +275,7 @@ private fun TabbedNavHost(
                 items = viewState.navBarItems,
                 selectedIndex = viewState.navBarItemIndexSelected,
                 onItemSelected = onItemSelected,
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
             )
         }
     }
@@ -294,7 +294,7 @@ private fun TabbedNavSettingsTab(
     extraSections: List<SettingsSectionState>,
     vmKey: String?,
     settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)?,
-    onboardingAvailable: Boolean,
+    onboardingAvailable: Boolean
 ) {
     val state =
         settingsState?.invoke(scope)
@@ -303,7 +303,7 @@ private fun TabbedNavSettingsTab(
                 appearance = LocalAppearanceController.current.appearance,
                 // Blank in-content title — the top bar below already shows the heading.
                 title = FrnkStringSource.Raw(""),
-                extraSections = extraSections,
+                extraSections = extraSections
             )
     val onEffect = settingsEffects?.invoke(scope) ?: rememberDefaultSettingsHandler(scope, onboardingAvailable)
 
@@ -317,15 +317,15 @@ private fun TabbedNavSettingsTab(
                 start = Theme[spacing][spacingLg],
                 top = Theme[spacing][spacingLg],
                 end = Theme[spacing][spacingLg],
-                bottom = Theme[spacing][spacingXl],
-            ),
+                bottom = Theme[spacing][spacingXl]
+            )
     ) { padding ->
         SettingsScreen(
             initialState = state,
             modifier = Modifier.fillMaxSize(),
             vmKey = vmKey,
             contentPadding = padding,
-            onEffect = onEffect,
+            onEffect = onEffect
         )
     }
 }
@@ -338,7 +338,7 @@ private fun TabbedNavSettingsTab(
 @Composable
 private fun rememberDefaultSettingsHandler(
     scope: FrnkAppScope,
-    onboardingAvailable: Boolean,
+    onboardingAvailable: Boolean
 ): (SettingsEffect) -> Unit {
     val controller = LocalAppearanceController.current
     return remember(scope, controller, onboardingAvailable) {

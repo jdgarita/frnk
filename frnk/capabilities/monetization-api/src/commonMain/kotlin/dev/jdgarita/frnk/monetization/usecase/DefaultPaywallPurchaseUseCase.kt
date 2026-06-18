@@ -8,7 +8,7 @@ import dev.jdgarita.frnk.monetization.EntitlementManager
  * [monetizationModule][dev.jdgarita.frnk.monetization.monetizationModule] when monetization is installed.
  */
 internal class DefaultPaywallPurchaseUseCase(
-    private val entitlements: EntitlementManager,
+    private val entitlements: EntitlementManager
 ) : PaywallPurchaseUseCase {
     override suspend fun offerings() = entitlements.offerings()
 

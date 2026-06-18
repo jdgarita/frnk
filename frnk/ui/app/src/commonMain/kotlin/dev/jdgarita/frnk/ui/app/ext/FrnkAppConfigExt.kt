@@ -11,5 +11,5 @@ internal fun FrnkAppConfig.toTabbedNavConfig(): FrnkTabbedNavConfig =
         theme = theme,
         home = home,
         settings = settings,
-        onboarding = onboarding,
+        onboarding = onboarding
     )

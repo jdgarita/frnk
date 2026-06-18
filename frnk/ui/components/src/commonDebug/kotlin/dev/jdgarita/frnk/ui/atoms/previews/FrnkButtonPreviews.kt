@@ -17,11 +17,11 @@ private fun FrnkButton_Skeleton_Light() {
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkButton(
                 state = FrnkButtonState.Skeleton,
-                onClick = {},
+                onClick = {}
             )
             FrnkButton(
                 state = FrnkButtonState.Skeleton,
-                onClick = {},
+                onClick = {}
             )
         }
     }
@@ -35,11 +35,11 @@ private fun FrnkButton_Variants_Light() {
             FrnkButton(state = FrnkButtonState.Content(text = "Filled"), onClick = {})
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Outlined", variant = FrnkButtonVariant.Outlined),
-                onClick = {},
+                onClick = {}
             )
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Ghost", variant = FrnkButtonVariant.Ghost),
-                onClick = {},
+                onClick = {}
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
@@ -49,9 +49,9 @@ private fun FrnkButton_Variants_Light() {
                     FrnkButtonState.Content(
                         text = "Disabled Outlined",
                         variant = FrnkButtonVariant.Outlined,
-                        enabled = false,
+                        enabled = false
                     ),
-                onClick = {},
+                onClick = {}
             )
         }
     }
@@ -65,7 +65,7 @@ private fun FrnkButton_Variants_Dark() {
             FrnkButton(state = FrnkButtonState.Content(text = "Filled"), onClick = {})
             FrnkButton(
                 state = FrnkButtonState.Content(text = "Outlined", variant = FrnkButtonVariant.Outlined),
-                onClick = {},
+                onClick = {}
             )
         }
     }

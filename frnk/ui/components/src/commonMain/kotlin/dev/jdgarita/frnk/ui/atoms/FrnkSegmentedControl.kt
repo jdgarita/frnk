@@ -42,7 +42,7 @@ sealed interface FrnkSegmentedControlState {
     data class Content(
         val options: List<String>,
         val selectedIndex: Int,
-        val enabled: Boolean = true,
+        val enabled: Boolean = true
     ) : FrnkSegmentedControlState
 
     data object Skeleton : FrnkSegmentedControlState
@@ -60,7 +60,7 @@ sealed interface FrnkSegmentedControlState {
 fun FrnkSegmentedControl(
     state: FrnkSegmentedControlState,
     onOptionSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val content =
         when (state) {
@@ -81,7 +81,7 @@ fun FrnkSegmentedControl(
                 .background(Theme[colors][colorSurfaceVariant])
                 .padding(Theme[spacing][spacingXxs]),
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         content.options.forEachIndexed { index, label ->
             val isSelected = index == selected
@@ -92,7 +92,7 @@ fun FrnkSegmentedControl(
             // track is `colorSurfaceVariant`-filled the idle segment looks identical at rest.
             val segmentColor by animateColorAsState(
                 targetValue = if (isSelected) Theme[colors][colorSurface] else Theme[colors][colorSurfaceVariant],
-                label = "segment_bg",
+                label = "segment_bg"
             )
             Row(
                 modifier =
@@ -104,7 +104,7 @@ fun FrnkSegmentedControl(
                             if (index != selected) haptics.perform(HapticType.Selection)
                             onOptionSelected(index)
                         }.padding(vertical = Theme[spacing][spacingXs]),
-                horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.Center
             ) {
                 FrnkText(
                     state =
@@ -113,9 +113,9 @@ fun FrnkSegmentedControl(
                             style = labelLarge,
                             color = if (isSelected) colorOnSurface else colorOnSurfaceVariant,
                             textAlign = TextAlign.Center,
-                            singleLine = true,
+                            singleLine = true
                         ),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

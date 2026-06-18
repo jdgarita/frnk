@@ -18,7 +18,7 @@ import dev.jdgarita.frnk.ui.mvi.UiState
 data class OnboardingPageState(
     val title: FrnkTextState,
     val description: FrnkTextState? = null,
-    val icon: FrnkIconState? = null,
+    val icon: FrnkIconState? = null
 )
 
 /**
@@ -33,7 +33,7 @@ data class OnboardingPageState(
  */
 @Immutable
 data class OnboardingArguments(
-    val pages: List<OnboardingPageState>,
+    val pages: List<OnboardingPageState>
 ) : Arguments {
     init {
         require(pages.isNotEmpty()) { "OnboardingArguments requires at least one page." }
@@ -48,7 +48,7 @@ data class OnboardingArguments(
 @Immutable
 data class OnboardingModelState(
     val pages: List<OnboardingPageState> = emptyList(),
-    val currentPageIndex: Int = 0,
+    val currentPageIndex: Int = 0
 ) : ModelState
 
 object OnboardingModelStateFactory : ModelStateFactory<OnboardingModelState> {
@@ -64,7 +64,7 @@ object OnboardingModelStateFactory : ModelStateFactory<OnboardingModelState> {
 @Immutable
 data class OnboardingScreenState(
     val pages: List<OnboardingPageState>,
-    val currentPageIndex: Int = 0,
+    val currentPageIndex: Int = 0
 ) : UiState {
     val isFirstPage: Boolean get() = currentPageIndex == 0
     val isLastPage: Boolean get() = currentPageIndex == pages.lastIndex
@@ -72,7 +72,7 @@ data class OnboardingScreenState(
 
 sealed interface OnboardingIntent : UiIntent {
     data class PageSelected(
-        val index: Int,
+        val index: Int
     ) : OnboardingIntent
 
     data object NextClicked : OnboardingIntent

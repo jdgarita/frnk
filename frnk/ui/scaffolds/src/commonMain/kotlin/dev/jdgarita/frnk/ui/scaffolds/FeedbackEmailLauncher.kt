@@ -29,7 +29,7 @@ fun rememberFeedbackEmailLauncher(
     appVersion: String,
     recipient: String = FeedbackEmail.DEFAULT_RECIPIENT,
     subject: String = "$appName ${Theme[strings][stringFeedbackSubject]}",
-    bodyHint: String = Theme[strings][stringFeedbackBodyHint],
+    bodyHint: String = Theme[strings][stringFeedbackBodyHint]
 ): () -> Unit {
     val uriHandler = LocalUriHandler.current
     return remember(appName, appVersion, recipient, subject, bodyHint, uriHandler) {
@@ -40,7 +40,7 @@ fun rememberFeedbackEmailLauncher(
                     appVersion = appVersion,
                     recipient = recipient,
                     subject = subject,
-                    bodyHint = bodyHint,
+                    bodyHint = bodyHint
                 )
             // openUri throws if no app can handle mailto: (e.g. a bare emulator with no mail
             // client). Swallow it so a missing mail app can never crash the host.

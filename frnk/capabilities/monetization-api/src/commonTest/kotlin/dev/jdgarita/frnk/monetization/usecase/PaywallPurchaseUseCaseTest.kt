@@ -16,7 +16,7 @@ import kotlin.test.assertSame
 class PaywallPurchaseUseCaseTest {
     private val products =
         listOf(
-            ProProduct("yearly", ProPlan.Yearly, "Yearly", "$39.99", "$3.33", hasFreeTrial = true),
+            ProProduct("yearly", ProPlan.Yearly, "Yearly", "$39.99", "$3.33", hasFreeTrial = true)
         )
 
     @Test
@@ -71,7 +71,7 @@ class PaywallPurchaseUseCaseTest {
 private class FakeManager(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true)
 ) : EntitlementManager {
     var purchasedId: String? = null
         private set

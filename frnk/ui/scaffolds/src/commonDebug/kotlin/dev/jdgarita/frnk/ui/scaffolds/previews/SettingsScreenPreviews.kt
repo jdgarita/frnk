@@ -15,7 +15,7 @@ private fun SettingsScreen_Light() {
         SettingsScreenContent(
             state = rememberDefaultSettingsState(version = "v0.1.0", appearance = Appearance.Light),
             onIntent = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
@@ -27,7 +27,7 @@ private fun SettingsScreen_Dark() {
         SettingsScreenContent(
             state = rememberDefaultSettingsState(version = "v0.1.0", appearance = Appearance.Dark),
             onIntent = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
         )
     }
 }
@@ -41,10 +41,10 @@ private fun SettingsScreen_Pro_Light() {
                 rememberDefaultSettingsState(
                     version = "v0.1.0",
                     appearance = Appearance.System,
-                    isPro = true,
+                    isPro = true
                 ),
             onIntent = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
         )
     }
 }

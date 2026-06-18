@@ -38,7 +38,7 @@ internal fun SettingsScreenState.mergedWith(incoming: SettingsScreenState): Sett
             rows =
                 section.rows.map { row ->
                     if (row is SettingsToggleRowState) checkedById[row.id]?.let { row.copy(checked = it) } ?: row else row
-                },
+                }
         )
 
     // VM-owned interaction state carried across a config swap: toggle `checked` (reconciled above) and
@@ -49,7 +49,7 @@ internal fun SettingsScreenState.mergedWith(incoming: SettingsScreenState): Sett
         sections = incoming.sections.map(::reconcile),
         developerSection = incoming.developerSection?.let(::reconcile),
         versionTapCount = versionTapCount,
-        developerRevealed = developerRevealed,
+        developerRevealed = developerRevealed
     )
 }
 
@@ -62,7 +62,7 @@ internal fun SettingsScreenState.withTheme(appearance: Appearance): SettingsScre
 /** Reduce the checked value of the [SettingsToggleRowState] whose id matches [id]. */
 internal fun SettingsScreenState.withToggle(
     id: String,
-    checked: Boolean,
+    checked: Boolean
 ): SettingsScreenState =
     mapRows { row ->
         if (row is SettingsToggleRowState && row.id == id) row.copy(checked = checked) else row
@@ -73,5 +73,5 @@ internal fun SettingsScreenState.mapRows(transform: (SettingsRowState) -> Settin
         sections = sections.map { section -> section.copy(rows = section.rows.map(transform)) },
         // The hidden developer section carries real interactive rows too (e.g. a god-mode toggle), so
         // its rows must reduce alongside the visible ones — otherwise ToggleChanged never updates them.
-        developerSection = developerSection?.let { section -> section.copy(rows = section.rows.map(transform)) },
+        developerSection = developerSection?.let { section -> section.copy(rows = section.rows.map(transform)) }
     )

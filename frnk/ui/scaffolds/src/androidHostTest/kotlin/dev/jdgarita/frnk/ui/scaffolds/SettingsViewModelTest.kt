@@ -60,14 +60,14 @@ class SettingsViewModelTest {
                 id = "upgrade_to_pro",
                 icon = icon,
                 title = FrnkStringSource.Raw("Upgrade"),
-                action = SettingsAction.UpgradeToPro,
+                action = SettingsAction.UpgradeToPro
             ),
             SettingsClickableRowState(
                 id = "restore_purchases",
                 icon = icon,
                 title = FrnkStringSource.Raw("Restore"),
-                action = SettingsAction.RestorePurchases,
-            ),
+                action = SettingsAction.RestorePurchases
+            )
         )
 
     private fun proSubscriptionRows() =
@@ -76,20 +76,20 @@ class SettingsViewModelTest {
                 id = "pro_member",
                 icon = icon,
                 title = FrnkStringSource.Raw("Pro Member"),
-                badge = FrnkStringSource.Raw("PRO"),
+                badge = FrnkStringSource.Raw("PRO")
             ),
             SettingsClickableRowState(
                 id = "manage_subscription",
                 icon = icon,
                 title = FrnkStringSource.Raw("Manage"),
-                action = SettingsAction.ManageSubscription,
-            ),
+                action = SettingsAction.ManageSubscription
+            )
         )
 
     private fun state(
         subscriptionRows: List<SettingsRowState>,
         notificationsChecked: Boolean = true,
-        theme: Appearance = Appearance.System,
+        theme: Appearance = Appearance.System
     ) = SettingsScreenState(
         title = FrnkStringSource.Raw(""),
         sections =
@@ -104,10 +104,10 @@ class SettingsViewModelTest {
                                     listOf(
                                         FrnkStringSource.Raw("System"),
                                         FrnkStringSource.Raw("Light"),
-                                        FrnkStringSource.Raw("Dark"),
-                                    ),
-                            ),
-                        ),
+                                        FrnkStringSource.Raw("Dark")
+                                    )
+                            )
+                        )
                 ),
                 SettingsSectionState(
                     title = FrnkStringSource.Raw("Preferences"),
@@ -117,12 +117,12 @@ class SettingsViewModelTest {
                                 id = "notifications",
                                 icon = icon,
                                 title = FrnkStringSource.Raw("Notifications"),
-                                checked = notificationsChecked,
-                            ),
-                        ),
+                                checked = notificationsChecked
+                            )
+                        )
                 ),
-                SettingsSectionState(title = FrnkStringSource.Raw("Subscription"), rows = subscriptionRows),
-            ),
+                SettingsSectionState(title = FrnkStringSource.Raw("Subscription"), rows = subscriptionRows)
+            )
     )
 
     private fun SettingsScreenState.row(id: String): SettingsRowState? = sections.flatMap { it.rows }.firstOrNull { it.id == id }
@@ -178,18 +178,18 @@ class SettingsViewModelTest {
                                 id = "god_mode",
                                 icon = icon,
                                 title = FrnkStringSource.Raw("God mode"),
-                                checked = checked,
-                            ),
-                        ),
+                                checked = checked
+                            )
+                        )
                 )
             }
             val vm =
                 SettingsViewModel(
                     state(freeSubscriptionRows()).copy(
                         developerSection = devSection(false),
-                        showDeveloperSection = true,
+                        showDeveloperSection = true
                     ),
-                    proStatus(),
+                    proStatus()
                 )
 
             // Tapping the dev-section toggle must flip it in state (regression: mapRows skipped developerSection).
@@ -200,14 +200,14 @@ class SettingsViewModelTest {
                     vm.state.value.developerSection
                         ?.rows
                         ?.first() as SettingsToggleRowState
-                ).checked,
+                ).checked
             )
 
             // The round-trip then re-supplies the catalogue (god mode → Pro). The merge keeps the toggle on.
             vm.send(
                 SettingsIntent.ConfigChanged(
-                    state(proSubscriptionRows()).copy(developerSection = devSection(true), showDeveloperSection = true),
-                ),
+                    state(proSubscriptionRows()).copy(developerSection = devSection(true), showDeveloperSection = true)
+                )
             )
             runCurrent()
             assertTrue(
@@ -215,7 +215,7 @@ class SettingsViewModelTest {
                     vm.state.value.developerSection
                         ?.rows
                         ?.first() as SettingsToggleRowState
-                ).checked,
+                ).checked
             )
             assertTrue(vm.state.value.row("pro_member") is SettingsStatusRowState)
         }

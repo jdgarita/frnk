@@ -18,7 +18,7 @@ class DefaultEntitlementManagerTest {
     private fun manager(
         provider: FakeProvider = FakeProvider(),
         kv: FakeKeyValueStore = FakeKeyValueStore(),
-        analytics: FakeAnalytics = FakeAnalytics(),
+        analytics: FakeAnalytics = FakeAnalytics()
     ) = DefaultEntitlementManager(provider, kv, analytics, CoroutineScope(Dispatchers.Unconfined))
 
     @Test
@@ -103,7 +103,7 @@ class DefaultEntitlementManagerTest {
         val mgr =
             manager(
                 provider = FakeProvider(purchaseResult = AppResult.Failure(MonetizationError.UserCancelled)),
-                analytics = analytics,
+                analytics = analytics
             )
         kotlinx.coroutines.test.runTest { mgr.purchase("yearly") }
         assertTrue(analytics.tracked.contains(ToolkitEvent.PurchaseStarted.key))
@@ -112,7 +112,7 @@ class DefaultEntitlementManagerTest {
 }
 
 private class FakeProvider(
-    private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true)
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
@@ -141,26 +141,26 @@ private class FakeKeyValueStore : KeyValueStore {
 
     override fun putString(
         key: String,
-        value: String,
+        value: String
     ) {
         strings[key] = value
     }
 
     override fun getString(
         key: String,
-        default: String?,
+        default: String?
     ): String? = strings[key] ?: default
 
     override fun putBoolean(
         key: String,
-        value: Boolean,
+        value: Boolean
     ) {
         booleans[key] = value
     }
 
     override fun getBoolean(
         key: String,
-        default: Boolean,
+        default: Boolean
     ): Boolean = booleans[key] ?: default
 
     override fun remove(key: String) {
@@ -176,21 +176,21 @@ private class FakeAnalytics : AnalyticsTracker {
 
     override fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         tracked += event.key
     }
 
     override fun trackCustom(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         customEvents += name
     }
 
     override fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     ) {
         userProperties[key] = value
     }

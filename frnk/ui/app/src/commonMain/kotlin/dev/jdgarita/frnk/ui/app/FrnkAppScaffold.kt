@@ -95,7 +95,7 @@ fun FrnkAppScaffold(
     settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)? = null,
     effects: @Composable (FrnkAppScope) -> Unit = {},
     entries: EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit = {},
-    homeContent: @Composable ColumnScope.() -> Unit,
+    homeContent: @Composable ColumnScope.() -> Unit
 ) {
     val koin = remember { requireFrnkKoin() }
     // Monetization is optional (a host that installs no monetization modules has no
@@ -120,7 +120,7 @@ fun FrnkAppScaffold(
                         config.home.copy(topBar = FrnkTopAppBarState(title = config.app.name))
                     } else {
                         config.home
-                    },
+                    }
             )
         }
 
@@ -142,7 +142,7 @@ fun FrnkAppScaffold(
                     isPro = isPro,
                     // Blank in-content title — the shell's Settings top bar already shows the heading.
                     title = FrnkStringSource.Raw(""),
-                    extraSections = config.settings.extraSections,
+                    extraSections = config.settings.extraSections
                 )
             },
         settingsEffects =
@@ -153,7 +153,7 @@ fun FrnkAppScaffold(
                     appVersion = config.app.version,
                     entitlements = entitlements,
                     onboardingAvailable = config.onboarding.pages.isNotEmpty(),
-                    onMessage = onMessage,
+                    onMessage = onMessage
                 )
             },
         effects = { scope ->
@@ -162,7 +162,7 @@ fun FrnkAppScaffold(
             FrnkFirstLaunchOnboardingEffect(
                 scope = scope,
                 gate = onboardingGate,
-                enabled = config.onboarding.showOnFirstLaunch && config.onboarding.pages.isNotEmpty(),
+                enabled = config.onboarding.showOnFirstLaunch && config.onboarding.pages.isNotEmpty()
             )
             effects(scope)
         },
@@ -175,13 +175,13 @@ fun FrnkAppScaffold(
                         features = config.monetization.paywallFeatures,
                         source = "settings",
                         onMessage = onMessage,
-                        onClose = { scope.back() },
+                        onClose = { scope.back() }
                     )
                 }
             }
             entries(scope)
         },
-        homeContent = homeContent,
+        homeContent = homeContent
     )
 }
 
@@ -198,7 +198,7 @@ private fun rememberFrnkAppSettingsHandler(
     appVersion: String,
     entitlements: EntitlementManager?,
     onboardingAvailable: Boolean,
-    onMessage: (String) -> Unit,
+    onMessage: (String) -> Unit
 ): (SettingsEffect) -> Unit {
     val controller = LocalAppearanceController.current
     val sendFeedback = rememberFeedbackEmailLauncher(appName = appName, appVersion = appVersion)
@@ -226,6 +226,6 @@ private fun rememberFrnkAppSettingsHandler(
         entitlements = entitlements,
         analytics = analytics,
         onMessage = onMessage,
-        fallback = fallback,
+        fallback = fallback
     )
 }

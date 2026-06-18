@@ -50,7 +50,7 @@ data class FrnkSkeleton(
     val color: ThemeToken<Color> = colorSurfaceVariant,
     val highlightColor: ThemeToken<Color> = colorSurface,
     val shape: ThemeToken<Shape>? = null,
-    val highlight: FrnkSkeletonHighlight = FrnkSkeletonHighlight.Shimmer,
+    val highlight: FrnkSkeletonHighlight = FrnkSkeletonHighlight.Shimmer
 )
 
 /**
@@ -63,7 +63,7 @@ data class FrnkSkeleton(
 @Composable
 internal fun Modifier.frnkSkeleton(
     skeleton: FrnkSkeleton,
-    shape: ThemeToken<Shape> = shapeFull,
+    shape: ThemeToken<Shape> = shapeFull
 ): Modifier =
     if (!skeleton.enabled) {
         this
@@ -72,7 +72,7 @@ internal fun Modifier.frnkSkeleton(
             enabled = true,
             color = Theme[colors][skeleton.color],
             shape = Theme[shapes][skeleton.shape ?: shape],
-            highlight = resolveHighlight(skeleton),
+            highlight = resolveHighlight(skeleton)
         )
     }
 
@@ -85,7 +85,7 @@ internal fun Modifier.frnkSkeleton(
 @Composable
 internal fun FrnkSkeletonBox(
     modifier: Modifier = Modifier,
-    shape: ThemeToken<Shape> = shapeFull,
+    shape: ThemeToken<Shape> = shapeFull
 ) {
     Box(modifier.frnkSkeleton(FrnkSkeleton(enabled = true), shape = shape))
 }
@@ -103,5 +103,5 @@ private fun resolveHighlight(skeleton: FrnkSkeleton): PlaceholderHighlight? {
 private val FadeSpec =
     infiniteRepeatable<Float>(
         animation = tween(durationMillis = 600, delayMillis = 200),
-        repeatMode = RepeatMode.Reverse,
+        repeatMode = RepeatMode.Reverse
     )

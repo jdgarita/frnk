@@ -12,7 +12,7 @@ class AppResultTest {
         val folded =
             result.fold(
                 onSuccess = { "ok:$it" },
-                onFailure = { "err:${it.message}" },
+                onFailure = { "err:${it.message}" }
             )
 
         assertEquals("ok:42", folded)
@@ -25,7 +25,7 @@ class AppResultTest {
         val folded =
             result.fold(
                 onSuccess = { "ok:$it" },
-                onFailure = { "err:${it.message}" },
+                onFailure = { "err:${it.message}" }
             )
 
         assertEquals("err:Authentication required", folded)

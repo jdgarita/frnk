@@ -35,7 +35,7 @@ import dev.jdgarita.frnk.ui.theme.spacingSm
 enum class FrnkButtonVariant {
     Filled,
     Outlined,
-    Ghost,
+    Ghost
 }
 
 /**
@@ -50,7 +50,7 @@ sealed interface FrnkButtonState {
         val variant: FrnkButtonVariant = FrnkButtonVariant.Filled,
         /** Optional glyph rendered before the label at the small icon-size token, inheriting the
          *  button's content color. `null` (default) = label only. */
-        val leadingIcon: ImageVector? = null,
+        val leadingIcon: ImageVector? = null
     ) : FrnkButtonState
 
     data object Skeleton : FrnkButtonState
@@ -60,7 +60,7 @@ sealed interface FrnkButtonState {
 fun FrnkButton(
     state: FrnkButtonState,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val content =
         when (state) {
@@ -68,7 +68,7 @@ fun FrnkButton(
             FrnkButtonState.Skeleton -> {
                 FrnkSkeletonBox(
                     modifier.defaultMinSize(minWidth = 96.dp, minHeight = 48.dp),
-                    shape = shapeButton,
+                    shape = shapeButton
                 )
                 return
             }
@@ -114,7 +114,7 @@ fun FrnkButton(
         },
         enabled = content.enabled,
         modifier = shapedModifier,
-        contentPadding = PaddingValues(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
+        contentPadding = PaddingValues(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm])
     ) {
         ProvideContentColor(contentColor) {
             // labelLarge (14sp / Medium) matches the M3 button-label convention. Inherits color
@@ -126,7 +126,7 @@ fun FrnkButton(
             } else {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
+                    horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])
                 ) {
                     // tint = null → inherits LocalContentColor (the ProvideContentColor above).
                     FrnkIcon(
@@ -134,8 +134,8 @@ fun FrnkButton(
                             FrnkIconState.Content(
                                 imageVector = leading,
                                 contentDescription = null,
-                                size = Theme[iconSizes][iconSizeSm],
-                            ),
+                                size = Theme[iconSizes][iconSizeSm]
+                            )
                     )
                     label()
                 }

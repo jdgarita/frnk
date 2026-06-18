@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * cues and short two-primitive sequences for the notification-style ones.
  */
 class MultiHapticEngine(
-    private val vibrator: () -> Vibrator,
+    private val vibrator: () -> Vibrator
 ) : HapticEngine {
     /** Convenience for a fixed vibrator (hosts that don't need foreground-driven rebuilds). */
     constructor(vibrator: Vibrator) : this({ vibrator })

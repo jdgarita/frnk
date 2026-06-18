@@ -7,7 +7,7 @@ package dev.jdgarita.frnk.utils
 data class EmailDraft(
     val recipient: String,
     val subject: String,
-    val body: String,
+    val body: String
 ) {
     /** RFC-6068 `mailto:` URI with percent-encoded subject and body. */
     fun toMailtoUri(): String =
@@ -41,7 +41,7 @@ object FeedbackEmail {
         appVersion: String,
         recipient: String = DEFAULT_RECIPIENT,
         subject: String = "$appName Feedback",
-        bodyHint: String = "Tell us what you think:",
+        bodyHint: String = "Tell us what you think:"
     ): EmailDraft {
         val body =
             buildString {

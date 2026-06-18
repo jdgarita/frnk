@@ -28,19 +28,19 @@ fun EntryProviderScope<NavKey>.demoFeatureEntries(
     scope: FrnkAppScope,
     state: DemoState,
     onIntent: (DemoIntent) -> Unit,
-    onEffect: (DemoEffect) -> Unit,
+    onEffect: (DemoEffect) -> Unit
 ) {
     entry<DemoRoute.Components> {
         ComponentsListScreen(
             state = state,
             onIntent = onIntent,
-            onOpenComponent = { name -> scope.navigateTo(DemoRoute.ComponentDetail(name)) },
+            onOpenComponent = { name -> scope.navigateTo(DemoRoute.ComponentDetail(name)) }
         )
     }
     entry<DemoRoute.ComponentDetail> { route ->
         ComponentDetailScreen(
             name = route.name,
-            onBack = { scope.back() },
+            onBack = { scope.back() }
         ) {
             ComponentContent(route.name, state, onIntent, onEffect)
         }

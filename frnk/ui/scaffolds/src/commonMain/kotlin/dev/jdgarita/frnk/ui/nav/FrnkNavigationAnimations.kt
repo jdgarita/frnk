@@ -15,11 +15,11 @@ private const val ANIMATION_DURATION_IN_MILLIS = 250
 fun frnkEnterTransition(): ContentTransform =
     slideInHorizontally(
         initialOffsetX = { it },
-        animationSpec = tween(ANIMATION_DURATION_IN_MILLIS),
+        animationSpec = tween(ANIMATION_DURATION_IN_MILLIS)
     ) togetherWith
         slideOutHorizontally(
             targetOffsetX = { -it },
-            animationSpec = tween(ANIMATION_DURATION_IN_MILLIS),
+            animationSpec = tween(ANIMATION_DURATION_IN_MILLIS)
         )
 
 /**
@@ -29,9 +29,9 @@ fun frnkEnterTransition(): ContentTransform =
 fun frnkExitTransition(): ContentTransform =
     slideInHorizontally(
         initialOffsetX = { -it },
-        animationSpec = tween(ANIMATION_DURATION_IN_MILLIS),
+        animationSpec = tween(ANIMATION_DURATION_IN_MILLIS)
     ) togetherWith
         slideOutHorizontally(
             targetOffsetX = { it },
-            animationSpec = tween(ANIMATION_DURATION_IN_MILLIS),
+            animationSpec = tween(ANIMATION_DURATION_IN_MILLIS)
         )

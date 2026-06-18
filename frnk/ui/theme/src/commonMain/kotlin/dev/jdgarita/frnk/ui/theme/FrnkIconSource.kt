@@ -18,12 +18,12 @@ sealed interface FrnkIconSource {
     /** A theme icon token (e.g. `iconUpgrade`), resolved via `Theme[icons][token]`. */
     @Immutable
     data class Token(
-        val token: ThemeToken<ImageVector>,
+        val token: ThemeToken<ImageVector>
     ) : FrnkIconSource
 
     /** An arbitrary, host-supplied vector the theme registry doesn't own. */
     @Immutable
     data class Vector(
-        val imageVector: ImageVector,
+        val imageVector: ImageVector
     ) : FrnkIconSource
 }

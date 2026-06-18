@@ -70,7 +70,7 @@ data class FrnkSwipeableState(
     val leftActions: List<FrnkSwipeAction> = emptyList(),
     val rightActions: List<FrnkSwipeAction> = emptyList(),
     val threshold: Float = 0.5f,
-    val enabled: Boolean = true,
+    val enabled: Boolean = true
 )
 
 /** Reveal-mode action button edge length. */
@@ -111,7 +111,7 @@ fun FrnkSwipeable(
     controller: FrnkSwipeController = rememberFrnkSwipeController(),
     contentBackground: ThemeToken<Color>? = null,
     onSwipeProgress: ((Float) -> Unit)? = null,
-    content: @Composable BoxScope.() -> Unit,
+    content: @Composable BoxScope.() -> Unit
 ) {
     val haptics = LocalFrnkHaptics.current
     val scope = rememberCoroutineScope()
@@ -146,7 +146,7 @@ fun FrnkSwipeable(
                 shape = shape,
                 haptics = haptics,
                 onAction = onAction,
-                onAutoClose = { scope.launch { controller.settleClosed() } },
+                onAutoClose = { scope.launch { controller.settleClosed() } }
             )
 
             // Foreground content layer — translated by the drag offset (read deferred to layout).
@@ -186,9 +186,9 @@ fun FrnkSwipeable(
                                                 state = state,
                                                 maxDragPx = maxDragPx,
                                                 haptics = haptics,
-                                                onAction = onAction,
+                                                onAction = onAction
                                             )
-                                        },
+                                        }
                                     ) { change, dragAmount ->
                                         change.consume()
                                         // Accumulate synchronously into dragTarget (the suspend snapTo
@@ -203,7 +203,7 @@ fun FrnkSwipeable(
                                     }
                                 }
                             }
-                        },
+                        }
             ) {
                 content()
 
@@ -215,8 +215,8 @@ fun FrnkSwipeable(
                                 .matchParentSize()
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) { scope.launch { controller.settleClosed() } },
+                                    indication = null
+                                ) { scope.launch { controller.settleClosed() } }
                     )
                 }
             }
@@ -236,7 +236,7 @@ private fun BoxScope.FrnkSwipeBackground(
     shape: Shape,
     haptics: HapticFeedback,
     onAction: (FrnkSwipeAction) -> Unit,
-    onAutoClose: () -> Unit,
+    onAutoClose: () -> Unit
 ) {
     val offsetValue = controller.offsetX.value
     Box(modifier = Modifier.matchParentSize()) {
@@ -250,7 +250,7 @@ private fun BoxScope.FrnkSwipeBackground(
                     interactive = controller.revealedSide == FrnkSwipeDirection.Left,
                     haptics = haptics,
                     onAction = onAction,
-                    onAutoClose = onAutoClose,
+                    onAutoClose = onAutoClose
                 )
 
             offsetValue < 0f && state.rightActions.isNotEmpty() ->
@@ -262,7 +262,7 @@ private fun BoxScope.FrnkSwipeBackground(
                     interactive = controller.revealedSide == FrnkSwipeDirection.Right,
                     haptics = haptics,
                     onAction = onAction,
-                    onAutoClose = onAutoClose,
+                    onAutoClose = onAutoClose
                 )
         }
     }
@@ -274,7 +274,7 @@ private fun maybeFireThresholdHaptic(
     state: FrnkSwipeableState,
     maxDragPx: Float,
     newOffset: Float,
-    haptics: HapticFeedback,
+    haptics: HapticFeedback
 ) {
     val fraction =
         if (state.behavior == FrnkSwipeBehavior.Dismiss) DISMISS_TRIGGER_FRACTION else REVEAL_SETTLE_FRACTION
@@ -295,7 +295,7 @@ private fun settleAfterDrag(
     state: FrnkSwipeableState,
     maxDragPx: Float,
     haptics: HapticFeedback,
-    onAction: (FrnkSwipeAction) -> Unit,
+    onAction: (FrnkSwipeAction) -> Unit
 ) {
     val offset = controller.dragTarget
     scope.launch {
@@ -346,7 +346,7 @@ private fun FrnkSwipeActionPanel(
     interactive: Boolean,
     haptics: HapticFeedback,
     onAction: (FrnkSwipeAction) -> Unit,
-    onAutoClose: () -> Unit,
+    onAutoClose: () -> Unit
 ) {
     when (behavior) {
         FrnkSwipeBehavior.Dismiss -> {
@@ -357,7 +357,7 @@ private fun FrnkSwipeActionPanel(
                         .fillMaxSize()
                         .clip(shape)
                         .background(Theme[colors][action.containerColor]),
-                contentAlignment = alignment,
+                contentAlignment = alignment
             ) {
                 Box(modifier = Modifier.padding(horizontal = Theme[spacing][spacingXl])) {
                     FrnkIcon(state = action.icon.copy(tint = action.contentColor))
@@ -371,7 +371,7 @@ private fun FrnkSwipeActionPanel(
                     Modifier
                         .fillMaxSize()
                         .clip(shape)
-                        .background(Theme[colors][colorSurfaceVariant]),
+                        .background(Theme[colors][colorSurfaceVariant])
             ) {
                 Row(
                     modifier =
@@ -380,7 +380,7 @@ private fun FrnkSwipeActionPanel(
                             .align(alignment)
                             .padding(horizontal = Theme[spacing][spacingMd]),
                     horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     actions.forEach { action ->
                         Box(
@@ -400,7 +400,7 @@ private fun FrnkSwipeActionPanel(
                                             it
                                         }
                                     },
-                            contentAlignment = Alignment.Center,
+                            contentAlignment = Alignment.Center
                         ) {
                             FrnkIcon(state = action.icon.copy(tint = action.contentColor))
                         }

@@ -37,7 +37,7 @@ sealed interface SettingsAction {
     data object TermsOfService : SettingsAction
 
     data class Custom(
-        val id: String,
+        val id: String
     ) : SettingsAction
 }
 
@@ -59,7 +59,7 @@ data class SettingsThemeRowState(
     val icon: FrnkIconSource? = null,
     val selected: Appearance,
     val options: List<Appearance> = listOf(Appearance.System, Appearance.Light, Appearance.Dark),
-    val optionLabels: List<FrnkStringSource>,
+    val optionLabels: List<FrnkStringSource>
 ) : SettingsRowState
 
 /** Row style 2 — icon + title + optional subtitle + chevron. Fires [action] on click. */
@@ -69,7 +69,7 @@ data class SettingsClickableRowState(
     val icon: FrnkIconSource,
     val title: FrnkStringSource,
     val subtitle: FrnkStringSource? = null,
-    val action: SettingsAction,
+    val action: SettingsAction
 ) : SettingsRowState
 
 /** Row style 3 — icon + title + optional subtitle + switch. */
@@ -79,7 +79,7 @@ data class SettingsToggleRowState(
     val icon: FrnkIconSource,
     val title: FrnkStringSource,
     val subtitle: FrnkStringSource? = null,
-    val checked: Boolean,
+    val checked: Boolean
 ) : SettingsRowState
 
 /**
@@ -93,7 +93,7 @@ data class SettingsStatusRowState(
     val icon: FrnkIconSource,
     val title: FrnkStringSource,
     val subtitle: FrnkStringSource? = null,
-    val badge: FrnkStringSource? = null,
+    val badge: FrnkStringSource? = null
 ) : SettingsRowState
 
 /** A card grouping related rows, with an optional header [title] and trailing [footnote] help text. */
@@ -101,7 +101,7 @@ data class SettingsStatusRowState(
 data class SettingsSectionState(
     val title: FrnkStringSource? = null,
     val rows: List<SettingsRowState>,
-    val footnote: FrnkStringSource? = null,
+    val footnote: FrnkStringSource? = null
 )
 
 /**
@@ -112,7 +112,7 @@ data class SettingsSectionState(
 @Immutable
 data class SettingsFooterState(
     val text: FrnkStringSource,
-    val version: FrnkStringSource.Raw,
+    val version: FrnkStringSource.Raw
 )
 
 /**
@@ -138,11 +138,11 @@ data class SettingsScreenState(
                                 listOf(
                                     FrnkStringSource.Token(stringThemeSystem),
                                     FrnkStringSource.Token(stringThemeLight),
-                                    FrnkStringSource.Token(stringThemeDark),
-                                ),
-                        ),
-                    ),
-            ),
+                                    FrnkStringSource.Token(stringThemeDark)
+                                )
+                        )
+                    )
+            )
         ),
     val footer: SettingsFooterState? = null,
     /**
@@ -153,7 +153,7 @@ data class SettingsScreenState(
     val developerSection: SettingsSectionState? = null,
     val showDeveloperSection: Boolean = false,
     val developerRevealed: Boolean = false,
-    val versionTapCount: Int = 0,
+    val versionTapCount: Int = 0
 ) : UiState {
     val developerVisible: Boolean get() = developerSection != null && (showDeveloperSection || developerRevealed)
 
@@ -164,16 +164,16 @@ data class SettingsScreenState(
 
 sealed interface SettingsIntent : UiIntent {
     data class ThemeSelected(
-        val appearance: Appearance,
+        val appearance: Appearance
     ) : SettingsIntent
 
     data class ToggleChanged(
         val id: String,
-        val checked: Boolean,
+        val checked: Boolean
     ) : SettingsIntent
 
     data class RowClicked(
-        val action: SettingsAction,
+        val action: SettingsAction
     ) : SettingsIntent
 
     /** The version footer was tapped; enough taps reveal the hidden developer section. */
@@ -188,24 +188,24 @@ sealed interface SettingsIntent : UiIntent {
      * choices. This replaces the old "re-key the ViewModel to re-seed it" approach.
      */
     data class ConfigChanged(
-        val newState: SettingsScreenState,
+        val newState: SettingsScreenState
     ) : SettingsIntent
 }
 
 sealed interface SettingsEffect : UiEffect {
     /** The user picked a theme. The host applies it to its [Appearance] controller (and persists). */
     data class AppearanceChanged(
-        val appearance: Appearance,
+        val appearance: Appearance
     ) : SettingsEffect
 
     /** A toggle row flipped. The host persists the new value for [id]. */
     data class ToggleChanged(
         val id: String,
-        val checked: Boolean,
+        val checked: Boolean
     ) : SettingsEffect
 
     /** A clickable row was tapped. The host performs the [action] (open URL, paywall, restore, …). */
     data class ActionInvoked(
-        val action: SettingsAction,
+        val action: SettingsAction
     ) : SettingsEffect
 }

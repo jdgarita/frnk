@@ -54,7 +54,7 @@ internal interface PlaceholderHighlight {
      */
     fun brush(
         progress: Float,
-        size: Size,
+        size: Size
     ): Brush
 
     /**

@@ -35,7 +35,7 @@ import androidx.compose.ui.graphics.SolidColor
  */
 internal data class Fade(
     private val highlightColor: Color,
-    override val animationSpec: InfiniteRepeatableSpec<Float>,
+    override val animationSpec: InfiniteRepeatableSpec<Float>
 ) : PlaceholderHighlight {
     private val brush = SolidColor(highlightColor)
 
@@ -47,7 +47,7 @@ internal data class Fade(
      */
     override fun brush(
         progress: Float,
-        size: Size,
+        size: Size
     ): Brush = brush
 
     /**

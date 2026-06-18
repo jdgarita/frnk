@@ -38,14 +38,14 @@ sealed interface FrnkIconState {
         val contentDescription: String?,
         val size: Dp? = null,
         val tint: ThemeToken<Color>? = null,
-        val tintAlpha: Float = 1f,
+        val tintAlpha: Float = 1f
     ) : FrnkIconState {
         constructor(
             imageVector: ImageVector,
             contentDescription: String?,
             size: Dp? = null,
             tint: ThemeToken<Color>? = null,
-            tintAlpha: Float = 1f,
+            tintAlpha: Float = 1f
         ) : this(FrnkIconSource.Vector(imageVector), contentDescription, size, tint, tintAlpha)
     }
 
@@ -54,14 +54,14 @@ sealed interface FrnkIconState {
      * size** so the placeholder matches its footprint and the layout doesn't jump when content loads.
      */
     data class Skeleton(
-        val size: Dp? = null,
+        val size: Dp? = null
     ) : FrnkIconState
 }
 
 @Composable
 fun FrnkIcon(
     state: FrnkIconState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     when (state) {
         is FrnkIconState.Content -> {
@@ -74,7 +74,7 @@ fun FrnkIcon(
                 imageVector = vector,
                 contentDescription = state.contentDescription,
                 tint = resolvedTint,
-                modifier = modifier.size(state.size ?: Theme[iconSizes][iconSizeMd]),
+                modifier = modifier.size(state.size ?: Theme[iconSizes][iconSizeMd])
             )
         }
 

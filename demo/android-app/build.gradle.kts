@@ -27,13 +27,13 @@ if (rootProject.file("demo/android-app/google-services.json").exists()) {
         plugin =
             libs.plugins.google.services
                 .get()
-                .pluginId,
+                .pluginId
     )
     apply(
         plugin =
             libs.plugins.firebase.crashlytics
                 .get()
-                .pluginId,
+                .pluginId
     )
 }
 

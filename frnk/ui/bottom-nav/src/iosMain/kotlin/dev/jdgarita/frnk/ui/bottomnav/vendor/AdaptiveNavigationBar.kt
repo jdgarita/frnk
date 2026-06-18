@@ -70,7 +70,7 @@ fun AdaptiveNavigationBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     windowInsets: WindowInsets = NavigationBarDefaults.windowInsets,
-    colors: AdaptiveNavigationBarColors,
+    colors: AdaptiveNavigationBarColors
 ) {
     val isiOS26OrAbove =
         NSProcessInfo.processInfo
@@ -84,7 +84,7 @@ fun AdaptiveNavigationBar(
             items = items,
             selectedIndex = selectedIndex,
             colors = colors,
-            onItemSelected = onItemSelected,
+            onItemSelected = onItemSelected
         )
     } else {
         ComposeNavigationBar(
@@ -92,7 +92,7 @@ fun AdaptiveNavigationBar(
             colors = colors,
             items = items,
             selectedIndex = selectedIndex,
-            onItemSelected = onItemSelected,
+            onItemSelected = onItemSelected
         )
     }
 }
@@ -106,14 +106,14 @@ private class IosBarState {
 
 @OptIn(
     ExperimentalForeignApi::class,
-    ExperimentalComposeUiApi::class,
+    ExperimentalComposeUiApi::class
 )
 @Composable
 private fun IosNavBarVersion26(
     items: List<NavigationItem>,
     selectedIndex: Int,
     colors: AdaptiveNavigationBarColors,
-    onItemSelected: (Int) -> Unit,
+    onItemSelected: (Int) -> Unit
 ) {
     // Recreate the native bar only when the *items* change — the `UIKitView` factory runs once, so a changed
     // item set can't otherwise reach it. Theme changes leave `items` unchanged, so they fall through to the
@@ -137,7 +137,7 @@ private fun IosNavBarVersion26(
             properties =
                 UIKitInteropProperties(
                     placedAsOverlay = true,
-                    interactionMode = UIKitInteropInteractionMode.NonCooperative,
+                    interactionMode = UIKitInteropInteractionMode.NonCooperative
                 ),
             factory = {
                 val rootView =
@@ -171,7 +171,7 @@ private fun IosNavBarVersion26(
                     barState.lastColors = colors
                     applyTabBarColors(tabBar, colors)
                 }
-            },
+            }
         )
     }
 }
@@ -181,7 +181,7 @@ private class IosBarMetrics(
     val screenWidth: Double,
     val rootHeightPx: Double,
     val tabBarHeight: Double,
-    val tabBarY: Double,
+    val tabBarY: Double
 )
 
 @OptIn(ExperimentalForeignApi::class)
@@ -195,7 +195,7 @@ private fun computeMetrics(): IosBarMetrics {
         screenWidth = screenWidth,
         rootHeightPx = rootHeightPx,
         tabBarHeight = tabBarHeight,
-        tabBarY = tabBarY,
+        tabBarY = tabBarY
     )
 }
 
@@ -206,7 +206,7 @@ private fun tabBarFrame(metrics: IosBarMetrics) =
         x = 0.0,
         y = metrics.tabBarY,
         width = metrics.screenWidth,
-        height = metrics.tabBarHeight,
+        height = metrics.tabBarHeight
     )
 
 @OptIn(ExperimentalForeignApi::class)
@@ -214,7 +214,7 @@ private fun buildTabBar(
     items: List<NavigationItem>,
     colors: AdaptiveNavigationBarColors,
     selectedIndex: Int,
-    onItemSelected: (Int) -> Unit,
+    onItemSelected: (Int) -> Unit
 ): UITabBar =
     UITabBar().apply {
         translucent = true
@@ -236,7 +236,7 @@ private fun buildTabBar(
                         UIImage.systemImageNamed(item.systemIcon)
                             ?: UIImage.imageNamed(item.systemIcon)
                     )?.imageWithRenderingMode(
-                        UIImageRenderingMode.UIImageRenderingModeAlwaysTemplate,
+                        UIImageRenderingMode.UIImageRenderingModeAlwaysTemplate
                     )
 
                 val selectedImage =
@@ -245,13 +245,13 @@ private fun buildTabBar(
                             UIImage.systemImageNamed(it) ?: UIImage.imageNamed(it)
                         } ?: normalImage
                     )?.imageWithRenderingMode(
-                        UIImageRenderingMode.UIImageRenderingModeAlwaysTemplate,
+                        UIImageRenderingMode.UIImageRenderingModeAlwaysTemplate
                     )
 
                 UITabBarItem(
                     title = if (item.showLabel) item.title else null,
                     image = normalImage,
-                    selectedImage = selectedImage,
+                    selectedImage = selectedImage
                 ).apply {
                     tag = index.toLong()
                     // No fixed `itemWidth`: the bar uses Fill positioning (see applyTabBarColors) so items
@@ -261,9 +261,9 @@ private fun buildTabBar(
                     badgeColor = colors.badgeContainerColor.toUIColor()
                     setBadgeTextAttributes(
                         mapOf(
-                            NSForegroundColorAttributeName to colors.badgeContentColor.toUIColor(),
+                            NSForegroundColorAttributeName to colors.badgeContentColor.toUIColor()
                         ),
-                        UIControlStateNormal,
+                        UIControlStateNormal
                     )
                 }
             }
@@ -280,7 +280,7 @@ private fun buildTabBar(
 @OptIn(ExperimentalForeignApi::class)
 private fun applyTabBarColors(
     tabBar: UITabBar,
-    colors: AdaptiveNavigationBarColors,
+    colors: AdaptiveNavigationBarColors
 ) {
     val appearance =
         UITabBarAppearance().apply {
@@ -288,7 +288,7 @@ private fun applyTabBarColors(
 
             backgroundEffect =
                 UIBlurEffect.effectWithStyle(
-                    UIBlurEffectStyle.UIBlurEffectStyleSystemUltraThinMaterial,
+                    UIBlurEffectStyle.UIBlurEffectStyleSystemUltraThinMaterial
                 )
 
             backgroundColor =
@@ -300,7 +300,7 @@ private fun applyTabBarColors(
 
             stackedLayoutAppearance.selected.titleTextAttributes =
                 mapOf(
-                    NSForegroundColorAttributeName to colors.selectedTextColor.toUIColor(),
+                    NSForegroundColorAttributeName to colors.selectedTextColor.toUIColor()
                 )
             stackedLayoutAppearance.selected.iconColor = colors.selectedIconColor.toUIColor()
             stackedLayoutAppearance.normal.iconColor = colors.unselectedIconColor.toUIColor()
@@ -318,16 +318,16 @@ internal fun Color.toUIColor(): UIColor =
         red = red.toDouble(),
         green = green.toDouble(),
         blue = blue.toDouble(),
-        alpha = alpha.toDouble(),
+        alpha = alpha.toDouble()
     )
 
 private class TabBarDelegate(
-    val onItemSelected: (Int) -> Unit,
+    val onItemSelected: (Int) -> Unit
 ) : NSObject(),
     UITabBarDelegateProtocol {
     override fun tabBar(
         tabBar: UITabBar,
-        didSelectItem: UITabBarItem,
+        didSelectItem: UITabBarItem
     ) {
         onItemSelected(didSelectItem.tag.toInt())
     }
@@ -344,11 +344,11 @@ private fun ComposeNavigationBar(
     colors: AdaptiveNavigationBarColors,
     items: List<NavigationItem>,
     selectedIndex: Int,
-    onItemSelected: (Int) -> Unit,
+    onItemSelected: (Int) -> Unit
 ) {
     NavigationBar(
         windowInsets = windowInsets,
-        containerColor = colors.containerColor,
+        containerColor = colors.containerColor
     ) {
         items.forEachIndexed { index, item ->
             val selected = selectedIndex == index
@@ -359,7 +359,7 @@ private fun ComposeNavigationBar(
                         selectedTextColor = colors.selectedTextColor,
                         unselectedIconColor = colors.unselectedIconColor,
                         unselectedTextColor = colors.unselectedTextColor,
-                        indicatorColor = colors.indicatorColor,
+                        indicatorColor = colors.indicatorColor
                     ),
                 selected = selected,
                 enabled = item.enabled,
@@ -375,10 +375,10 @@ private fun ComposeNavigationBar(
                                         modifier =
                                             Modifier.offset(
                                                 x = 8.dp,
-                                                y = (-2).dp,
+                                                y = (-2).dp
                                             ),
                                         containerColor = colors.badgeContainerColor,
-                                        contentColor = colors.badgeContentColor,
+                                        contentColor = colors.badgeContentColor
                                     ) {
                                         Text(item.badge)
                                     }
@@ -389,13 +389,13 @@ private fun ComposeNavigationBar(
                                         modifier =
                                             Modifier.offset(
                                                 x = 4.dp,
-                                                y = (-2).dp,
+                                                y = (-2).dp
                                             ),
-                                        containerColor = colors.badgeContainerColor,
+                                        containerColor = colors.badgeContainerColor
                                     )
                                 }
                             }
-                        },
+                        }
                     ) {
                         Icon(
                             painter =
@@ -406,10 +406,10 @@ private fun ComposeNavigationBar(
 
                                         else ->
                                             item.icon
-                                    },
+                                    }
                                 ),
                             contentDescription =
-                                item.contentDescription ?: item.title,
+                                item.contentDescription ?: item.title
                         )
                     }
                 },
@@ -418,7 +418,7 @@ private fun ComposeNavigationBar(
                         Text(item.title)
                     }
                 },
-                alwaysShowLabel = item.showLabel,
+                alwaysShowLabel = item.showLabel
             )
         }
     }

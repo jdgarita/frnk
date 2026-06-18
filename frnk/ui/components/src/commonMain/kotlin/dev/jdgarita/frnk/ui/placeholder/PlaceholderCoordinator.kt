@@ -45,7 +45,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
  */
 @Stable
 internal class PlaceholderCoordinator internal constructor(
-    internal val animationSpec: InfiniteRepeatableSpec<Float>,
+    internal val animationSpec: InfiniteRepeatableSpec<Float>
 ) {
     internal val progress: Animatable<Float, AnimationVector1D> = Animatable(0f)
 
@@ -62,7 +62,7 @@ internal class PlaceholderCoordinator internal constructor(
 internal val DefaultPlaceholderCoordinatorSpec: InfiniteRepeatableSpec<Float> =
     infiniteRepeatable(
         animation = tween(durationMillis = 1700, easing = LinearEasing),
-        repeatMode = RepeatMode.Restart,
+        repeatMode = RepeatMode.Restart
     )
 
 /**
@@ -76,7 +76,7 @@ internal val DefaultPlaceholderCoordinatorSpec: InfiniteRepeatableSpec<Float> =
 @Composable
 internal fun PlaceholderSurface(
     animationSpec: InfiniteRepeatableSpec<Float> = DefaultPlaceholderCoordinatorSpec,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     val coordinator = remember(animationSpec) { PlaceholderCoordinator(animationSpec) }
     val inPreview = LocalInspectionMode.current

@@ -38,7 +38,7 @@ actual fun FrnkBottomFloatingBar(
     items: List<FrnkNavBarItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier
 ) {
     val selectedColor = Theme[colors][colorPrimary]
     val unselectedColor = Theme[colors][colorOnSurfaceVariant]
@@ -59,7 +59,7 @@ actual fun FrnkBottomFloatingBar(
                     // UITabBar's stacked icon+label overlapping when the bar is in a custom narrow frame.
                     // `title`/`contentDescription` stay for accessibility.
                     showLabel = false,
-                    contentDescription = item.label,
+                    contentDescription = item.label
                 )
             }
         }
@@ -78,9 +78,9 @@ actual fun FrnkBottomFloatingBar(
                     selectedIconColor = selectedColor,
                     selectedTextColor = selectedColor,
                     unselectedIconColor = unselectedColor,
-                    unselectedTextColor = unselectedColor,
+                    unselectedTextColor = unselectedColor
                 ),
-            onItemSelected = onItemSelected,
+            onItemSelected = onItemSelected
         )
     }
 }

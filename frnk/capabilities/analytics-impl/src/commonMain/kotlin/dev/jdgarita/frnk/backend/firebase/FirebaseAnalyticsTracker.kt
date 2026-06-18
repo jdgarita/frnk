@@ -16,17 +16,17 @@ import dev.jdgarita.frnk.utils.PrintLogger
 internal class FirebaseAnalyticsTracker : AnalyticsTracker {
     override fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) = logEvent(event.key, params)
 
     override fun trackCustom(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) = logEvent(name, params)
 
     override fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     ) {
         runCatching { Firebase.analytics.setUserProperty(key, value.orEmpty()) }
             .onFailure { PrintLogger.w(TAG, "setUserProperty($key) skipped: ${it.message}") }
@@ -34,7 +34,7 @@ internal class FirebaseAnalyticsTracker : AnalyticsTracker {
 
     private fun logEvent(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         runCatching { Firebase.analytics.logEvent(name, params.toFirebaseParams()) }
             .onFailure { PrintLogger.w(TAG, "logEvent($name) skipped: ${it.message}") }

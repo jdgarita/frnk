@@ -44,7 +44,7 @@ data class FrnkEmptyStateState(
     val icon: FrnkIconState,
     val title: String,
     val subtitle: String? = null,
-    val actionLabel: String? = null,
+    val actionLabel: String? = null
 )
 
 /**
@@ -55,12 +55,12 @@ data class FrnkEmptyStateState(
 fun FrnkEmptyState(
     state: FrnkEmptyStateState,
     onActionClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth().padding(Theme[spacing][spacingLg]),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])
     ) {
         FrnkIcon(state = state.icon)
         FrnkText(state = FrnkTextState.Title(text = state.title, textAlign = TextAlign.Center))
@@ -70,15 +70,15 @@ fun FrnkEmptyState(
                     FrnkTextState.Body(
                         text = it,
                         textAlign = TextAlign.Center,
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
         }
         if (state.actionLabel != null && onActionClick != null) {
             FrnkButton(
                 state = FrnkButtonState.Content(text = state.actionLabel, variant = FrnkButtonVariant.Filled),
                 onClick = onActionClick,
-                modifier = Modifier.padding(top = Theme[spacing][spacingXs]),
+                modifier = Modifier.padding(top = Theme[spacing][spacingXs])
             )
         }
     }

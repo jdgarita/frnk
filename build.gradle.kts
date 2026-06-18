@@ -16,7 +16,7 @@ allprojects {
         plugin =
             rootProject.libs.plugins.ktlint
                 .get()
-                .pluginId,
+                .pluginId
     )
     extensions.configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         // NB: this is the ktlint *engine* version, distinct from `libs.plugins.ktlint` (14.2.0), which

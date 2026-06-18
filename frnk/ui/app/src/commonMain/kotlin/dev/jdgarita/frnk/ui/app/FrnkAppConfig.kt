@@ -41,7 +41,7 @@ data class FrnkAppConfig(
     val home: FrnkHomeConfig = FrnkHomeConfig(),
     val settings: FrnkSettingsConfig = FrnkSettingsConfig(),
     val onboarding: FrnkOnboardingConfig = FrnkOnboardingConfig(),
-    val monetization: FrnkMonetizationConfig = FrnkMonetizationConfig(),
+    val monetization: FrnkMonetizationConfig = FrnkMonetizationConfig()
 )
 
 /**
@@ -51,5 +51,5 @@ data class FrnkAppConfig(
  */
 @Immutable
 data class FrnkMonetizationConfig(
-    val paywallFeatures: List<String> = emptyList(),
+    val paywallFeatures: List<String> = emptyList()
 )

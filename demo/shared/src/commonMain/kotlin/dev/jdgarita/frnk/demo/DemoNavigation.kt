@@ -21,7 +21,7 @@ import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 fun routeDemoEffect(
     effect: DemoEffect,
     navigate: (NavKey) -> Unit,
-    onForward: (DemoEffect) -> Unit,
+    onForward: (DemoEffect) -> Unit
 ) {
     when (effect) {
         is DemoEffect.Navigate ->

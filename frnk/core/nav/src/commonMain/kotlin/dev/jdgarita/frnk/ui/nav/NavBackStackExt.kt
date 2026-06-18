@@ -28,7 +28,7 @@ import androidx.navigation3.runtime.NavKey
 fun NavBackStack<NavKey>.navigateTo(
     screen: NavKey,
     popScreen: NavKey? = null,
-    singleTop: Boolean = true,
+    singleTop: Boolean = true
 ) {
     popScreen?.let { remove(it) }
     if (singleTop && lastOrNull() == screen) return

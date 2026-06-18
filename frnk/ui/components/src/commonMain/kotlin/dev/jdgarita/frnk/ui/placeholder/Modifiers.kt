@@ -54,7 +54,7 @@ internal fun Modifier.placeholder(
     shape: Shape = RectangleShape,
     highlight: PlaceholderHighlight? = PlaceholderDefaults.fade,
     placeholderFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() },
-    contentFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() },
+    contentFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() }
 ): Modifier {
     val coordinator = LocalPlaceholderCoordinator.current
     val placeholder =
@@ -65,7 +65,7 @@ internal fun Modifier.placeholder(
             highlight = highlight,
             coordinator = coordinator,
             placeholderFadeTransitionSpec = placeholderFadeTransitionSpec,
-            contentFadeTransitionSpec = contentFadeTransitionSpec,
+            contentFadeTransitionSpec = contentFadeTransitionSpec
         )
 
     return this then PlaceholderElement(placeholder = placeholder)
@@ -91,7 +91,7 @@ internal fun rememberPlaceholder(
     highlight: PlaceholderHighlight? = null,
     coordinator: PlaceholderCoordinator? = null,
     placeholderFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() },
-    contentFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() },
+    contentFadeTransitionSpec: () -> FiniteAnimationSpec<Float> = { spring() }
 ): Placeholder {
     val placeholder: Placeholder =
         remember(
@@ -103,8 +103,8 @@ internal fun rememberPlaceholder(
                     highlight,
                     coordinator,
                     placeholderFadeTransitionSpec,
-                    contentFadeTransitionSpec,
-                ),
+                    contentFadeTransitionSpec
+                )
         ) {
             Placeholder(
                 visible = visible,
@@ -113,7 +113,7 @@ internal fun rememberPlaceholder(
                 highlight = highlight,
                 coordinator = coordinator,
                 placeholderFadeTransitionSpec = placeholderFadeTransitionSpec,
-                contentFadeTransitionSpec = contentFadeTransitionSpec,
+                contentFadeTransitionSpec = contentFadeTransitionSpec
             )
         }
 

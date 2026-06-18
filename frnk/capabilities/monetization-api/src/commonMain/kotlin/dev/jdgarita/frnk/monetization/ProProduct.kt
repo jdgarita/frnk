@@ -20,5 +20,5 @@ data class ProProduct(
     val priceFormatted: String,
     val pricePerMonthFormatted: String? = null,
     val hasFreeTrial: Boolean = false,
-    val badge: String? = null,
+    val badge: String? = null
 )

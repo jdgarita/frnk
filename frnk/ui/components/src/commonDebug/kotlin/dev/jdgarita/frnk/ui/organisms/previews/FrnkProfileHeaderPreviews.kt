@@ -18,7 +18,7 @@ private val sampleStats =
     listOf(
         FrnkLabeledValueState.Content(label = "Projects", value = "12"),
         FrnkLabeledValueState.Content(label = "Streak", value = "48d"),
-        FrnkLabeledValueState.Content(label = "Plan", value = "Pro"),
+        FrnkLabeledValueState.Content(label = "Plan", value = "Pro")
     )
 
 @Composable
@@ -27,7 +27,7 @@ private fun avatar() =
         imageVector = Theme[icons][iconSettings],
         contentDescription = null,
         size = FrnkIconSize.lg,
-        tint = colorOnPrimaryContainer,
+        tint = colorOnPrimaryContainer
     )
 
 @Preview
@@ -40,8 +40,8 @@ private fun FrnkProfileHeader_WithStats_Light() {
                     name = "Juan Diego",
                     subtitle = "juandiego@example.com",
                     avatar = avatar(),
-                    stats = sampleStats,
-                ),
+                    stats = sampleStats
+                )
         )
     }
 }
@@ -55,8 +55,8 @@ private fun FrnkProfileHeader_NoStats_Dark() {
                 FrnkProfileHeaderState.Content(
                     name = "Juan Diego",
                     subtitle = "Free plan",
-                    avatar = avatar(),
-                ),
+                    avatar = avatar()
+                )
         )
     }
 }

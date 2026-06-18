@@ -19,26 +19,26 @@ class OnboardingGateTest {
 
         override fun putString(
             key: String,
-            value: String,
+            value: String
         ) {
             strings[key] = value
         }
 
         override fun getString(
             key: String,
-            default: String?,
+            default: String?
         ): String? = strings[key] ?: default
 
         override fun putBoolean(
             key: String,
-            value: Boolean,
+            value: Boolean
         ) {
             booleans[key] = value
         }
 
         override fun getBoolean(
             key: String,
-            default: Boolean,
+            default: Boolean
         ): Boolean = booleans[key] ?: default
 
         override fun remove(key: String) {

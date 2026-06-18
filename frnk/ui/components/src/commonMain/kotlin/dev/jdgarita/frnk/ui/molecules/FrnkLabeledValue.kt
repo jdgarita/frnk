@@ -23,7 +23,7 @@ enum class FrnkLabeledValueOrientation {
     Inline,
 
     /** Label sits above the value (caption + figure). */
-    Stacked,
+    Stacked
 }
 
 /**
@@ -37,7 +37,7 @@ sealed interface FrnkLabeledValueState {
     data class Content(
         val label: String,
         val value: String,
-        val orientation: FrnkLabeledValueOrientation = FrnkLabeledValueOrientation.Inline,
+        val orientation: FrnkLabeledValueOrientation = FrnkLabeledValueOrientation.Inline
     ) : FrnkLabeledValueState
 
     data object Skeleton : FrnkLabeledValueState
@@ -47,7 +47,7 @@ sealed interface FrnkLabeledValueState {
 @Composable
 fun FrnkLabeledValue(
     state: FrnkLabeledValueState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val content =
         when (state) {
@@ -56,7 +56,7 @@ fun FrnkLabeledValue(
                 Row(
                     modifier = modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     FrnkText(state = FrnkTextState.Skeleton, modifier = Modifier.weight(1f))
                     FrnkText(state = FrnkTextState.Skeleton)
@@ -75,7 +75,7 @@ fun FrnkLabeledValue(
             Row(
                 modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 FrnkText(state = label, modifier = Modifier.weight(1f))
                 FrnkText(state = value.copy(textAlign = TextAlign.End))
@@ -84,7 +84,7 @@ fun FrnkLabeledValue(
         FrnkLabeledValueOrientation.Stacked ->
             Column(
                 modifier = modifier,
-                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
+                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
             ) {
                 FrnkText(state = label)
                 FrnkText(state = value)

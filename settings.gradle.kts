@@ -57,7 +57,7 @@ include(
     ":shared-monetization-ui",
     ":ui-app",
     ":demo-shared",
-    ":demo-android",
+    ":demo-android"
 )
 
 // Restructure Stage 3: modules physically live at their final layered locations under frnk/
@@ -95,7 +95,7 @@ mapOf(
     "monetization-impl" to "frnk/capabilities/monetization-impl",
     "shared-monetization-ui" to "frnk/capabilities/monetization-ui",
     "demo-shared" to "demo/shared",
-    "demo-android" to "demo/android-app",
+    "demo-android" to "demo/android-app"
 ).forEach { (name, dir) ->
     project(":$name").projectDir = file(dir)
 }

@@ -52,7 +52,7 @@ fun FrnkScreenScaffold(
     onActionClick: (FrnkTopAppBarAction) -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClose: () -> Unit = {},
-    content: @Composable (contentPadding: PaddingValues) -> Unit,
+    content: @Composable (contentPadding: PaddingValues) -> Unit
 ) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
@@ -67,14 +67,14 @@ fun FrnkScreenScaffold(
             start = contentPadding.calculateLeftPadding(layoutDirection),
             top = contentPadding.calculateTopPadding() + barHeightDp,
             end = contentPadding.calculateRightPadding(layoutDirection),
-            bottom = contentPadding.calculateBottomPadding() + bottomInset,
+            bottom = contentPadding.calculateBottomPadding() + bottomInset
         )
 
     Box(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(containerColor),
+                .background(containerColor)
     ) {
         content(mergedPadding)
 
@@ -84,7 +84,7 @@ fun FrnkScreenScaffold(
             onActionClick = onActionClick,
             onSearchQueryChange = onSearchQueryChange,
             onSearchClose = onSearchClose,
-            modifier = Modifier.align(Alignment.TopCenter),
+            modifier = Modifier.align(Alignment.TopCenter)
         )
     }
 }

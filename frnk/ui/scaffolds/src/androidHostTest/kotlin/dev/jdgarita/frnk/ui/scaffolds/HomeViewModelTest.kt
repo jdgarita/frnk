@@ -48,8 +48,8 @@ class HomeViewModelTest {
 
             vm.send(
                 HomeIntent.TopBarActionClicked(
-                    FrnkTopAppBarAction(icon = Lucide.Plus, contentDescription = "Upgrade", key = "upgrade"),
-                ),
+                    FrnkTopAppBarAction(icon = Lucide.Plus, contentDescription = "Upgrade", key = "upgrade")
+                )
             )
 
             assertEquals(HomeEffect.ActionInvoked("upgrade"), effect.await())

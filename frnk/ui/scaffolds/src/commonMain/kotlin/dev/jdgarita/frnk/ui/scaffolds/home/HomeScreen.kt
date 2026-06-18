@@ -53,7 +53,7 @@ fun HomeScreen(
     vmKey: String? = null,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
     onEffect: (HomeEffect) -> Unit = {},
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit
 ) {
     val vm: HomeViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
     val state by vm.state.collectAsStateWithLifecycle()
@@ -68,7 +68,7 @@ fun HomeScreen(
         onIntent = vm::send,
         modifier = modifier,
         contentPadding = contentPadding,
-        content = content,
+        content = content
     )
 }
 
@@ -83,14 +83,14 @@ internal fun HomeScreenContent(
     onIntent: (HomeIntent) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit
 ) {
     FrnkScreenScaffold(
         topBar = state.topBar,
         modifier = modifier,
         contentPadding = contentPadding,
         onNavigationClick = { onIntent(HomeIntent.NavigationClicked) },
-        onActionClick = { onIntent(HomeIntent.TopBarActionClicked(it)) },
+        onActionClick = { onIntent(HomeIntent.TopBarActionClicked(it)) }
     ) { mergedPadding ->
         Column(
             modifier =
@@ -99,7 +99,7 @@ internal fun HomeScreenContent(
                     .verticalScroll(rememberScrollState())
                     .padding(mergedPadding),
             verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-            content = content,
+            content = content
         )
     }
 }

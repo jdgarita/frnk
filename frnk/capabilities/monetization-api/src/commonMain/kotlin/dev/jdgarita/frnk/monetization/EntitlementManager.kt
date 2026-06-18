@@ -43,7 +43,7 @@ interface EntitlementManager {
 
 /** Stable, opaque feature identifiers. Host apps add their own as enum-like constants. */
 data class Feature(
-    val id: String,
+    val id: String
 ) {
     companion object {
         val Premium = Feature("premium")

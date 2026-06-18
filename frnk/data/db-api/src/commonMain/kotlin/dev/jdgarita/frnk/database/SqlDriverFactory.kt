@@ -11,6 +11,6 @@ import app.cash.sqldelight.db.SqlSchema
 fun interface SqlDriverFactory {
     fun create(
         schema: SqlSchema<QueryResult.Value<Unit>>,
-        name: String,
+        name: String
     ): SqlDriver
 }

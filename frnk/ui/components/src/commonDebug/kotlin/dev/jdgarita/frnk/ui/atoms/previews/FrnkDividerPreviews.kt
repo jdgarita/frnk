@@ -25,7 +25,7 @@ private fun FrnkDivider_Light() {
         FrnkDivider(state = FrnkDividerState.Horizontal(thickness = 2.dp, color = colorPrimary))
         Row(
             modifier = Modifier.height(40.dp),
-            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)
         ) {
             FrnkText(state = FrnkTextState.Body(text = "Left"))
             FrnkDivider(state = FrnkDividerState.Vertical())

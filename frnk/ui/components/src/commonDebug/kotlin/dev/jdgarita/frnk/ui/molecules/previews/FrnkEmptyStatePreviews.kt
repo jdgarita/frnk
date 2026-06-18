@@ -25,13 +25,13 @@ private fun FrnkEmptyState_WithAction_Light() {
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = null,
                             size = FrnkIconSize.emptyState,
-                            tint = colorOnSurfaceVariant,
+                            tint = colorOnSurfaceVariant
                         ),
                     title = "No results",
                     subtitle = "Try adjusting your search to find what you're looking for.",
-                    actionLabel = "Clear search",
+                    actionLabel = "Clear search"
                 ),
-            onActionClick = {},
+            onActionClick = {}
         )
     }
 }
@@ -48,10 +48,10 @@ private fun FrnkEmptyState_NoAction_Light() {
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = null,
                             size = FrnkIconSize.emptyState,
-                            tint = colorOnSurfaceVariant,
+                            tint = colorOnSurfaceVariant
                         ),
-                    title = "Nothing here yet",
-                ),
+                    title = "Nothing here yet"
+                )
         )
     }
 }
@@ -68,13 +68,13 @@ private fun FrnkEmptyState_WithAction_Dark() {
                             imageVector = Theme[icons][iconSearch],
                             contentDescription = null,
                             size = FrnkIconSize.emptyState,
-                            tint = colorOnSurfaceVariant,
+                            tint = colorOnSurfaceVariant
                         ),
                     title = "No results",
                     subtitle = "Try adjusting your search.",
-                    actionLabel = "Clear search",
+                    actionLabel = "Clear search"
                 ),
-            onActionClick = {},
+            onActionClick = {}
         )
     }
 }

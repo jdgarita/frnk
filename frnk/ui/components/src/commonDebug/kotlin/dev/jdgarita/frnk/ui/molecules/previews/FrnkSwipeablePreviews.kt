@@ -37,7 +37,7 @@ private fun sampleCard(text: String) {
 private fun deleteAction() =
     FrnkSwipeAction(
         icon = FrnkIconState.Content(Theme[icons][iconError], contentDescription = "Delete"),
-        label = "Delete",
+        label = "Delete"
     )
 
 @Composable
@@ -46,7 +46,7 @@ private fun archiveAction() =
         icon = FrnkIconState.Content(Theme[icons][iconRestore], contentDescription = "Archive"),
         containerColor = colorSuccess,
         contentColor = colorOnSuccess,
-        label = "Archive",
+        label = "Archive"
     )
 
 @Preview
@@ -58,14 +58,14 @@ private fun FrnkSwipeable_Reveal_Open_Light() {
             state =
                 FrnkSwipeableState(
                     behavior = FrnkSwipeBehavior.Reveal,
-                    rightActions = listOf(deleteAction(), archiveAction()),
+                    rightActions = listOf(deleteAction(), archiveAction())
                 ),
             onAction = {},
-            controller = rememberFrnkSwipeController(initialRevealed = FrnkSwipeDirection.Right),
+            controller = rememberFrnkSwipeController(initialRevealed = FrnkSwipeDirection.Right)
         ) {
             FrnkText(
                 modifier = Modifier.fillMaxWidth(),
-                state = FrnkTextState.TitleMedium(text = "Revealed: delete + archive"),
+                state = FrnkTextState.TitleMedium(text = "Revealed: delete + archive")
             )
         }
     }
@@ -77,7 +77,7 @@ private fun FrnkSwipeable_Resting_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkSwipeable(
             state = FrnkSwipeableState(rightActions = listOf(deleteAction())),
-            onAction = {},
+            onAction = {}
         ) {
             sampleCard("Swipe left to reveal")
         }
@@ -92,10 +92,10 @@ private fun FrnkSwipeable_Dismiss_Open_Dark() {
             state =
                 FrnkSwipeableState(
                     behavior = FrnkSwipeBehavior.Dismiss,
-                    rightActions = listOf(deleteAction()),
+                    rightActions = listOf(deleteAction())
                 ),
             onAction = {},
-            controller = rememberFrnkSwipeController(initialRevealed = FrnkSwipeDirection.Right),
+            controller = rememberFrnkSwipeController(initialRevealed = FrnkSwipeDirection.Right)
         ) {
             FrnkText(
                 modifier =
@@ -103,7 +103,7 @@ private fun FrnkSwipeable_Dismiss_Open_Dark() {
                         .fillMaxWidth()
                         .background(Theme[colors][colorBackground])
                         .padding(FrnkSpacing.md),
-                state = FrnkTextState.TitleMedium(text = "Swipe-to-delete (dismiss)"),
+                state = FrnkTextState.TitleMedium(text = "Swipe-to-delete (dismiss)")
             )
         }
     }

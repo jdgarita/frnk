@@ -56,7 +56,7 @@ enum class SettingsExtraSectionsPlacement {
     BeforeLegal,
 
     /** After every default section (below Legal, above the footer). */
-    End,
+    End
 }
 
 /**
@@ -104,7 +104,7 @@ fun defaultSettingsState(
     showHaptics: Boolean = true,
     title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
     extraSections: List<SettingsSectionState> = emptyList(),
-    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal,
+    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal
 ): SettingsScreenState {
     val sections =
         buildList {
@@ -122,11 +122,11 @@ fun defaultSettingsState(
                                     listOf(
                                         FrnkStringSource.Token(stringThemeSystem),
                                         FrnkStringSource.Token(stringThemeLight),
-                                        FrnkStringSource.Token(stringThemeDark),
-                                    ),
-                            ),
-                        ),
-                ),
+                                        FrnkStringSource.Token(stringThemeDark)
+                                    )
+                            )
+                        )
+                )
             )
             addExtrasAt(SettingsExtraSectionsPlacement.AfterAppearance)
             if (showNotifications || showHaptics) {
@@ -141,8 +141,8 @@ fun defaultSettingsState(
                                             id = "notifications",
                                             icon = FrnkIconSource.Token(iconNotifications),
                                             title = FrnkStringSource.Token(stringNotifications),
-                                            checked = notificationsEnabled,
-                                        ),
+                                            checked = notificationsEnabled
+                                        )
                                     )
                                 }
                                 if (showHaptics) {
@@ -152,12 +152,12 @@ fun defaultSettingsState(
                                             icon = FrnkIconSource.Token(iconHaptics),
                                             title = FrnkStringSource.Token(stringHaptics),
                                             subtitle = FrnkStringSource.Token(stringHapticsSubtitle),
-                                            checked = hapticsEnabled,
-                                        ),
+                                            checked = hapticsEnabled
+                                        )
                                     )
                                 }
-                            },
-                    ),
+                            }
+                    )
                 )
             }
             addExtrasAt(SettingsExtraSectionsPlacement.BeforeSubscription)
@@ -175,14 +175,14 @@ fun defaultSettingsState(
                                     id = "pro_member",
                                     icon = FrnkIconSource.Token(iconUpgrade),
                                     title = FrnkStringSource.Token(stringProMember),
-                                    badge = FrnkStringSource.Token(stringProBadge),
+                                    badge = FrnkStringSource.Token(stringProBadge)
                                 ),
                                 SettingsClickableRowState(
                                     id = "manage_subscription",
                                     icon = FrnkIconSource.Token(iconManageSubscription),
                                     title = FrnkStringSource.Token(stringManageSubscription),
-                                    action = SettingsAction.ManageSubscription,
-                                ),
+                                    action = SettingsAction.ManageSubscription
+                                )
                             )
                         } else {
                             listOf(
@@ -190,17 +190,17 @@ fun defaultSettingsState(
                                     id = "upgrade_to_pro",
                                     icon = FrnkIconSource.Token(iconUpgrade),
                                     title = FrnkStringSource.Token(stringUpgradeToPro),
-                                    action = SettingsAction.UpgradeToPro,
+                                    action = SettingsAction.UpgradeToPro
                                 ),
                                 SettingsClickableRowState(
                                     id = "restore_purchases",
                                     icon = FrnkIconSource.Token(iconRestore),
                                     title = FrnkStringSource.Token(stringRestorePurchases),
-                                    action = SettingsAction.RestorePurchases,
-                                ),
+                                    action = SettingsAction.RestorePurchases
+                                )
                             )
-                        },
-                ),
+                        }
+                )
             )
             add(
                 SettingsSectionState(
@@ -211,22 +211,22 @@ fun defaultSettingsState(
                                 id = "send_feedback",
                                 icon = FrnkIconSource.Token(iconFeedback),
                                 title = FrnkStringSource.Token(stringSendFeedback),
-                                action = SettingsAction.SendFeedback,
+                                action = SettingsAction.SendFeedback
                             ),
                             SettingsClickableRowState(
                                 id = "rate_app",
                                 icon = FrnkIconSource.Token(iconRate),
                                 title = FrnkStringSource.Token(stringRateApp),
-                                action = SettingsAction.RateApp,
+                                action = SettingsAction.RateApp
                             ),
                             SettingsClickableRowState(
                                 id = "show_onboarding",
                                 icon = FrnkIconSource.Token(iconOnboarding),
                                 title = FrnkStringSource.Token(stringShowOnboarding),
-                                action = SettingsAction.ShowOnboarding,
-                            ),
-                        ),
-                ),
+                                action = SettingsAction.ShowOnboarding
+                            )
+                        )
+                )
             )
             addExtrasAt(SettingsExtraSectionsPlacement.BeforeLegal)
             add(
@@ -238,16 +238,16 @@ fun defaultSettingsState(
                                 id = "privacy_policy",
                                 icon = FrnkIconSource.Token(iconPrivacy),
                                 title = FrnkStringSource.Token(stringPrivacyPolicy),
-                                action = SettingsAction.PrivacyPolicy,
+                                action = SettingsAction.PrivacyPolicy
                             ),
                             SettingsClickableRowState(
                                 id = "terms_of_service",
                                 icon = FrnkIconSource.Token(iconTerms),
                                 title = FrnkStringSource.Token(stringTermsOfService),
-                                action = SettingsAction.TermsOfService,
-                            ),
-                        ),
-                ),
+                                action = SettingsAction.TermsOfService
+                            )
+                        )
+                )
             )
             addExtrasAt(SettingsExtraSectionsPlacement.End)
         }
@@ -255,7 +255,7 @@ fun defaultSettingsState(
     return SettingsScreenState(
         title = title,
         sections = sections,
-        footer = SettingsFooterState(text = FrnkStringSource.Token(stringSettingsFooter), version = FrnkStringSource.Raw(version)),
+        footer = SettingsFooterState(text = FrnkStringSource.Token(stringSettingsFooter), version = FrnkStringSource.Raw(version))
     )
 }
 
@@ -279,7 +279,7 @@ fun rememberDefaultSettingsState(
     showHaptics: Boolean = true,
     title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
     extraSections: List<SettingsSectionState> = emptyList(),
-    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal,
+    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal
 ): SettingsScreenState {
     // Seed from the live haptics state so the row reflects reality on first paint; runtime flips are
     // owned by SettingsViewModel + applied by rememberFrnkSettingsHandler. .value (not a lifecycle
@@ -295,7 +295,7 @@ fun rememberDefaultSettingsState(
         showHaptics,
         title,
         extraSections,
-        extraSectionsPlacement,
+        extraSectionsPlacement
     ) {
         defaultSettingsState(
             version = version,
@@ -307,7 +307,7 @@ fun rememberDefaultSettingsState(
             showHaptics = showHaptics,
             title = title,
             extraSections = extraSections,
-            extraSectionsPlacement = extraSectionsPlacement,
+            extraSectionsPlacement = extraSectionsPlacement
         )
     }
 }

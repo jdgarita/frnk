@@ -47,8 +47,8 @@ internal object PlaceholderDefaults {
             animationSpec =
                 infiniteRepeatable(
                     animation = tween(durationMillis = 1700, delayMillis = 200),
-                    repeatMode = RepeatMode.Restart,
-                ),
+                    repeatMode = RepeatMode.Restart
+                )
         )
 
     /**
@@ -65,7 +65,7 @@ internal object PlaceholderDefaults {
             animationSpec =
                 infiniteRepeatable(
                     animation = tween(delayMillis = 200, durationMillis = 600),
-                    repeatMode = RepeatMode.Reverse,
-                ),
+                    repeatMode = RepeatMode.Reverse
+                )
         )
 }

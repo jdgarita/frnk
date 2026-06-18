@@ -17,7 +17,7 @@ import kotlin.jvm.JvmName
 /** A bottom-nav tab: its stable [key] and the [root] destination its back stack starts from. */
 data class FrnkTab(
     val key: String,
-    val root: NavKey,
+    val root: NavKey
 )
 
 /**
@@ -38,7 +38,7 @@ class FrnkTabbedBackStacks internal constructor(
      * The "home" tab — the one back returns to from any other tab's root (see [FrnkTabbedBackHandler]).
      * Defaults to the first tab.
      */
-    val homeTabKey: String,
+    val homeTabKey: String
 ) {
     /** The currently selected tab's key. Drives the bottom bar's selected index. Survives process death. */
     val currentTabKey: String get() = currentTabKeyState.value
@@ -81,7 +81,7 @@ fun rememberFrnkTabbedBackStacks(
     configuration: SavedStateConfiguration,
     tabs: List<FrnkTab>,
     initialTabKey: String = tabs.first().key,
-    homeTabKey: String = tabs.first().key,
+    homeTabKey: String = tabs.first().key
 ): FrnkTabbedBackStacks {
     require(tabs.isNotEmpty()) { "FrnkTabbedBackStacks needs at least one tab" }
     // key(tab.key) gives each per-tab rememberNavBackStack a stable, distinct saveable slot.
@@ -96,7 +96,7 @@ fun rememberFrnkTabbedBackStacks(
             stacks = stacks,
             roots = roots,
             currentTabKeyState = currentTabKeyState,
-            homeTabKey = homeTabKey,
+            homeTabKey = homeTabKey
         )
     }
 }
@@ -115,14 +115,14 @@ fun rememberFrnkTabbedBackStacks(
     configuration: SavedStateConfiguration,
     navTabs: List<FrnkNavTab>,
     initialTabKey: String = navTabs.first().key,
-    homeTabKey: String = navTabs.first().key,
+    homeTabKey: String = navTabs.first().key
 ): FrnkTabbedBackStacks {
     val tabs = remember(navTabs) { navTabs.map { FrnkTab(key = it.key, root = it.root) } }
     return rememberFrnkTabbedBackStacks(
         configuration = configuration,
         tabs = tabs,
         initialTabKey = initialTabKey,
-        homeTabKey = homeTabKey,
+        homeTabKey = homeTabKey
     )
 }
 
@@ -145,7 +145,7 @@ fun rememberFrnkTabbedBackStacks(
 @Composable
 fun FrnkTabbedBackHandler(
     tabbed: FrnkTabbedBackStacks,
-    enabled: Boolean = true,
+    enabled: Boolean = true
 ) {
     BackHandler(enabled = enabled && tabbed.canReturnToHome) {
         tabbed.switchToHome()

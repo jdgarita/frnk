@@ -12,24 +12,24 @@ package dev.jdgarita.frnk.backend
 class NoopAnalyticsTracker : AnalyticsTracker {
     override fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) = Unit
 
     override fun trackCustom(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) = Unit
 
     override fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     ) = Unit
 }
 
 class NoopCrashReporter : CrashReporter {
     override fun recordException(
         throwable: Throwable,
-        extras: Map<String, String>,
+        extras: Map<String, String>
     ) = Unit
 
     override fun setUserId(id: String?) = Unit

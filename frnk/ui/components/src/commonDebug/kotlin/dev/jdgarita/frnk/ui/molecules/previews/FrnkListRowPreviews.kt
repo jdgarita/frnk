@@ -27,8 +27,8 @@ private fun chevronTrailing() {
             FrnkIconState.Content(
                 imageVector = Theme[icons][iconChevronRight],
                 contentDescription = null,
-                tint = colorOnSurfaceVariant,
-            ),
+                tint = colorOnSurfaceVariant
+            )
     )
 }
 
@@ -41,23 +41,23 @@ private fun FrnkListRow_Variants_Light() {
                 FrnkListRowState.Content(
                     title = "Notifications",
                     subtitle = "Push, email and in-app alerts",
-                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                 ),
             onClick = {},
-            trailing = { chevronTrailing() },
+            trailing = { chevronTrailing() }
         )
         FrnkListRow(
             state = FrnkListRowState.Content(title = "Title only"),
             onClick = {},
-            trailing = { chevronTrailing() },
+            trailing = { chevronTrailing() }
         )
         FrnkListRow(
             state =
                 FrnkListRowState.Content(
                     title = "Non-interactive row",
                     subtitle = "No onClick, no trailing",
-                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
-                ),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
+                )
         )
     }
 }
@@ -69,7 +69,7 @@ private fun FrnkListRow_Skeleton_Light() {
         FrnkListRow(
             state = FrnkListRowState.Skeleton,
             onClick = {},
-            trailing = { chevronTrailing() },
+            trailing = { chevronTrailing() }
         )
     }
 }
@@ -83,7 +83,7 @@ private fun FrnkListRow_Swipe_Open_Light() {
                 FrnkListRowState.Content(
                     title = "Project Apollo",
                     subtitle = "Swipe left to reveal actions",
-                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                 ),
             onClick = {},
             swipe =
@@ -92,16 +92,16 @@ private fun FrnkListRow_Swipe_Open_Light() {
                         listOf(
                             FrnkSwipeAction(
                                 icon = FrnkIconState.Content(Theme[icons][iconError], contentDescription = "Delete"),
-                                label = "Delete",
+                                label = "Delete"
                             ),
                             FrnkSwipeAction(
                                 icon = FrnkIconState.Content(Theme[icons][iconRestore], contentDescription = "Archive"),
                                 containerColor = colorSuccess,
                                 contentColor = colorOnSuccess,
-                                label = "Archive",
-                            ),
-                        ),
-                ),
+                                label = "Archive"
+                            )
+                        )
+                )
         )
     }
 }
@@ -115,10 +115,10 @@ private fun FrnkListRow_Variants_Dark() {
                 FrnkListRowState.Content(
                     title = "Notifications",
                     subtitle = "Push, email and in-app alerts",
-                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                    icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
                 ),
             onClick = {},
-            trailing = { chevronTrailing() },
+            trailing = { chevronTrailing() }
         )
     }
 }

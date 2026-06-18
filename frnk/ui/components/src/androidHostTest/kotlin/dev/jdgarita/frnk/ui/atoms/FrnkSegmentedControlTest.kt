@@ -19,7 +19,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSegmentedControl(
                     state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 0),
-                    onOptionSelected = {},
+                    onOptionSelected = {}
                 )
             }
             options.forEach { onNodeWithText(it).assertIsDisplayed() }
@@ -32,7 +32,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSegmentedControl(
                     state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 0),
-                    onOptionSelected = { selected = it },
+                    onOptionSelected = { selected = it }
                 )
             }
 
@@ -48,7 +48,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSegmentedControl(
                     state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 1),
-                    onOptionSelected = { selected = it },
+                    onOptionSelected = { selected = it }
                 )
             }
 
@@ -66,7 +66,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
                 FrnkSegmentedControl(
                     // selectedIndex is coerced into bounds; the control must still render + respond.
                     state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 99),
-                    onOptionSelected = { selected = it },
+                    onOptionSelected = { selected = it }
                 )
             }
 
@@ -82,7 +82,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSegmentedControl(
                     state = FrnkSegmentedControlState.Content(options = options, selectedIndex = 0, enabled = false),
-                    onOptionSelected = { selected = it },
+                    onOptionSelected = { selected = it }
                 )
             }
 
@@ -98,7 +98,7 @@ class FrnkSegmentedControlTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSegmentedControl(
                     state = FrnkSegmentedControlState.Skeleton,
-                    onOptionSelected = { selected = it },
+                    onOptionSelected = { selected = it }
                 )
             }
 

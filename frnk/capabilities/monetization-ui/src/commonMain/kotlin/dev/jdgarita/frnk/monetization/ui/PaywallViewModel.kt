@@ -23,9 +23,9 @@ import kotlinx.coroutines.launch
  */
 class PaywallViewModel(
     private val paywallPurchaseUseCase: PaywallPurchaseUseCase,
-    private val analytics: AnalyticsTracker,
+    private val analytics: AnalyticsTracker
 ) : ModelMviViewModel<PaywallArguments, PaywallModelState, PaywallScreenState, PaywallIntent, PaywallEffect>(
-        factory = PaywallModelStateFactory,
+        factory = PaywallModelStateFactory
     ) {
     override fun onAttached(arguments: PaywallArguments) {
         analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to arguments.source))
@@ -37,7 +37,7 @@ class PaywallViewModel(
             products = modelState.products,
             selectedProductId = modelState.selectedProductId,
             isLoading = modelState.isLoading,
-            isPurchasing = modelState.isPurchasing,
+            isPurchasing = modelState.isPurchasing
         )
 
     override suspend fun onIntent(intent: PaywallIntent) {
@@ -59,7 +59,7 @@ class PaywallViewModel(
                     copy(
                         products = result.data,
                         selectedProductId = defaultSelection(result.data),
-                        isLoading = false,
+                        isLoading = false
                     )
                 }
 

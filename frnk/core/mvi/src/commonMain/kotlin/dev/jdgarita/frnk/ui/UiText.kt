@@ -6,11 +6,11 @@ package dev.jdgarita.frnk.ui
  */
 sealed interface UiText {
     data class Raw(
-        val value: String,
+        val value: String
     ) : UiText
 
     data class Resource(
         val key: String,
-        val args: List<Any?> = emptyList(),
+        val args: List<Any?> = emptyList()
     ) : UiText
 }

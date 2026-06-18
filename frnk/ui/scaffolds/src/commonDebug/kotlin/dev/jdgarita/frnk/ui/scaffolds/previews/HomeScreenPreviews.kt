@@ -20,7 +20,7 @@ private fun HomeScreen_Light() {
         HomeScreenContent(
             state = HomeScreenState(topBar = FrnkTopAppBarState(title = "Home")),
             onIntent = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
         ) {
             FrnkText(state = FrnkTextState.Title(text = "Welcome back"))
             FrnkText(state = FrnkTextState.Body(text = "Host-provided scrollable content goes here."))
@@ -36,7 +36,7 @@ private fun HomeScreen_Dark() {
         HomeScreenContent(
             state = HomeScreenState(topBar = FrnkTopAppBarState(title = "Home")),
             onIntent = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
         ) {
             FrnkText(state = FrnkTextState.Title(text = "Welcome back"))
             FrnkText(state = FrnkTextState.Body(text = "Host-provided scrollable content goes here."))
@@ -51,7 +51,7 @@ private fun HomeScreen_SkeletonContent() {
         HomeScreenContent(
             state = HomeScreenState(topBar = FrnkTopAppBarState(title = "Home")),
             onIntent = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
         ) {
             // The template chrome has no Skeleton state (recorded decision) — loading visuals come
             // from the slot content using the atoms' own sealed Skeleton states.

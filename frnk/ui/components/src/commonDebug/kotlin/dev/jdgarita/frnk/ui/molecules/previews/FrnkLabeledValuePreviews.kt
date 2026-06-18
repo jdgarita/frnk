@@ -19,8 +19,8 @@ private fun FrnkLabeledValue_Variants_Light() {
                 FrnkLabeledValueState.Content(
                     label = "Storage used",
                     value = "4.2 GB",
-                    orientation = FrnkLabeledValueOrientation.Stacked,
-                ),
+                    orientation = FrnkLabeledValueOrientation.Stacked
+                )
         )
     }
 }
@@ -44,8 +44,8 @@ private fun FrnkLabeledValue_Variants_Dark() {
                 FrnkLabeledValueState.Content(
                     label = "Storage used",
                     value = "4.2 GB",
-                    orientation = FrnkLabeledValueOrientation.Stacked,
-                ),
+                    orientation = FrnkLabeledValueOrientation.Stacked
+                )
         )
     }
 }

@@ -45,22 +45,22 @@ internal data class Shimmer(
     private val highlightColor: Color,
     override val animationSpec: InfiniteRepeatableSpec<Float> =
         infiniteRepeatable(
-            animation = tween(durationMillis = 650, easing = LinearEasing),
+            animation = tween(durationMillis = 650, easing = LinearEasing)
         ),
     private val intensity: Float = 0f,
     private val dropOff: Float = 0.5f,
-    private val tilt: Float = 20f,
+    private val tilt: Float = 20f
 ) : PlaceholderHighlight {
     override fun brush(
         progress: Float,
-        size: Size,
+        size: Size
     ): Brush {
         val shimmerColorStops =
             arrayOf(
                 max((1f - intensity - dropOff) / 2f, 0f) to Color.Transparent,
                 max((1f - intensity - 0.001f) / 2f, 0f) to highlightColor,
                 min((1f + intensity + 0.001f) / 2f, 1f) to highlightColor,
-                min((1f + intensity + dropOff) / 2f, 1f) to Color.Transparent,
+                min((1f + intensity + dropOff) / 2f, 1f) to Color.Transparent
             )
         val tiltRad = tilt * 3.14f / 180f
         val totalWidth = size.width + tan(tiltRad) * size.height
@@ -71,7 +71,7 @@ internal data class Shimmer(
         return Brush.linearGradient(
             colorStops = shimmerColorStops,
             start = start,
-            end = Offset(start.x + totalWidth, size.height),
+            end = Offset(start.x + totalWidth, size.height)
         )
     }
 
@@ -80,6 +80,6 @@ internal data class Shimmer(
     private fun offset(
         start: Float,
         end: Float,
-        percent: Float,
+        percent: Float
     ): Float = start + (end - start) * percent
 }

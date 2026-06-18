@@ -45,7 +45,7 @@ class DemoViewModelTest {
 
     private fun viewModel(
         analytics: AnalyticsTracker,
-        crash: CrashReporter,
+        crash: CrashReporter
     ): DemoViewModel {
         // The real frnk EntitlementManager over the demo's fake provider — exactly the demo's wiring.
         val entitlements = DefaultEntitlementManager(FakeEntitlementProvider(), FakeKeyValueStore(), analytics, CoroutineScope(dispatcher))
@@ -58,7 +58,7 @@ class DemoViewModelTest {
             crash,
             NoopRemoteConfig(),
             NoopCameraController(),
-            NoopPermissionController(),
+            NoopPermissionController()
         )
     }
 
@@ -207,21 +207,21 @@ private class RecordingAnalytics : AnalyticsTracker {
 
     override fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         tracked += event.key
     }
 
     override fun trackCustom(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         tracked += name
     }
 
     override fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     ) {
         userProperties[key] = value
     }
@@ -233,7 +233,7 @@ private class RecordingCrash : CrashReporter {
 
     override fun recordException(
         throwable: Throwable,
-        extras: Map<String, String>,
+        extras: Map<String, String>
     ) {
         exceptions += throwable
     }

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
  * [monetizationModule][dev.jdgarita.frnk.monetization.monetizationModule] when monetization is installed.
  */
 internal class DefaultObserveProStatusUseCase(
-    private val entitlements: EntitlementManager,
+    private val entitlements: EntitlementManager
 ) : ObserveProStatusUseCase {
     override fun invoke(): StateFlow<Boolean> = entitlements.isPro
 }

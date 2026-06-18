@@ -20,7 +20,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 fun <A : Arguments> RememberMviLifecycle(
     viewModel: ModelMviViewModel<A, *, *, *, *>,
     arguments: A,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     DisposableEffect(lifecycleOwner, viewModel) {
         viewModel.attach(arguments)

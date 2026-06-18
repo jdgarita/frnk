@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class DefaultHapticFeedback(
     private val engine: HapticEngine,
-    initiallyEnabled: Boolean = true,
+    initiallyEnabled: Boolean = true
 ) : HapticFeedback {
     private val _isEnabled = MutableStateFlow(initiallyEnabled)
     override val isEnabled: StateFlow<Boolean> = _isEnabled.asStateFlow()

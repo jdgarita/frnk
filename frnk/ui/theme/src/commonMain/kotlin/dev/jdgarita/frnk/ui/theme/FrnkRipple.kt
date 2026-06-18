@@ -33,10 +33,10 @@ import com.composables.compose.ripple.rememberRippleIndication
 fun rememberFrnkRipple(
     color: Color = Color.Unspecified,
     bounded: Boolean = true,
-    radius: Dp = Dp.Unspecified,
+    radius: Dp = Dp.Unspecified
 ): IndicationNodeFactory =
     rememberRippleIndication(
         color = color,
         bounded = bounded,
-        radius = radius,
+        radius = radius
     )

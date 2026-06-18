@@ -40,13 +40,13 @@ sealed interface Preference<T> : ReadWriteProperty<Any?, T> {
     // ReadWriteProperty bridge — lets `var x by pref` delegate to the same backing logic.
     override fun getValue(
         thisRef: Any?,
-        property: KProperty<*>,
+        property: KProperty<*>
     ): T = value
 
     override fun setValue(
         thisRef: Any?,
         property: KProperty<*>,
-        value: T,
+        value: T
     ) {
         this.value = value
     }
@@ -58,7 +58,7 @@ internal class KeyValuePreference<T>(
     override val key: String,
     override val defaultValue: T,
     private val read: (KeyValueStore, String, T) -> T,
-    private val write: (KeyValueStore, String, T) -> Unit,
+    private val write: (KeyValueStore, String, T) -> Unit
 ) : Preference<T> {
     override var value: T
         get() = read(store, key, defaultValue)
@@ -70,27 +70,27 @@ internal class KeyValuePreference<T>(
 /** A typed [String] preference. Reads return [default] when the key is unset. */
 fun KeyValueStore.stringPreference(
     key: String,
-    default: String,
+    default: String
 ): Preference<String> =
     KeyValuePreference(
         store = this,
         key = key,
         defaultValue = default,
         read = { store, k, d -> store.getString(k, d) ?: d },
-        write = { store, k, v -> store.putString(k, v) },
+        write = { store, k, v -> store.putString(k, v) }
     )
 
 /** A typed [Boolean] preference. Reads return [default] when the key is unset. */
 fun KeyValueStore.booleanPreference(
     key: String,
-    default: Boolean,
+    default: Boolean
 ): Preference<Boolean> =
     KeyValuePreference(
         store = this,
         key = key,
         defaultValue = default,
         read = { store, k, d -> store.getBoolean(k, d) },
-        write = { store, k, v -> store.putBoolean(k, v) },
+        write = { store, k, v -> store.putBoolean(k, v) }
     )
 
 /**
@@ -99,14 +99,14 @@ fun KeyValueStore.booleanPreference(
  */
 fun KeyValueStore.intPreference(
     key: String,
-    default: Int,
+    default: Int
 ): Preference<Int> =
     KeyValuePreference(
         store = this,
         key = key,
         defaultValue = default,
         read = { store, k, d -> store.getString(k, null)?.toIntOrNull() ?: d },
-        write = { store, k, v -> store.putString(k, v.toString()) },
+        write = { store, k, v -> store.putString(k, v.toString()) }
     )
 
 /**
@@ -116,19 +116,19 @@ fun KeyValueStore.intPreference(
  */
 inline fun <reified E : Enum<E>> KeyValueStore.enumPreference(
     key: String,
-    default: E,
+    default: E
 ): Preference<E> = enumPreferenceImpl(key, default, enumValues<E>())
 
 @PublishedApi
 internal fun <E : Enum<E>> KeyValueStore.enumPreferenceImpl(
     key: String,
     default: E,
-    values: Array<E>,
+    values: Array<E>
 ): Preference<E> =
     KeyValuePreference(
         store = this,
         key = key,
         defaultValue = default,
         read = { store, k, d -> store.getString(k, null)?.let { name -> values.firstOrNull { it.name == name } } ?: d },
-        write = { store, k, v -> store.putString(k, v.name) },
+        write = { store, k, v -> store.putString(k, v.name) }
     )

@@ -8,7 +8,7 @@ import dev.jdgarita.frnk.ui.mvi.MviViewModel
  * open the paywall, create an item, …) by collecting the effects. Mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsViewModel].
  */
 class HomeViewModel(
-    initial: HomeScreenState,
+    initial: HomeScreenState
 ) : MviViewModel<HomeScreenState, HomeIntent, HomeEffect>(initial) {
     override suspend fun onIntent(intent: HomeIntent) {
         when (intent) {

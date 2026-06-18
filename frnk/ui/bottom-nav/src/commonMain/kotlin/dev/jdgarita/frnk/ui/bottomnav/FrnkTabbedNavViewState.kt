@@ -5,5 +5,5 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class FrnkTabbedNavViewState(
     val navBarItems: List<FrnkNavBarItem>,
-    val navBarItemIndexSelected: Int,
+    val navBarItemIndexSelected: Int
 )

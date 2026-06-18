@@ -39,7 +39,7 @@ fun rememberFrnkBottomNavState(
     settingsRoot: NavKey,
     feature: FrnkFeatureItem,
     homeKey: String = "home",
-    settingsKey: String = "settings",
+    settingsKey: String = "settings"
 ): FrnkBottomNavState {
     // The three tab keys back per-tab back stacks and drive selection (indexOfFirst by key) — they must
     // be distinct, or switching/selecting the feature tab would silently target the Home/Settings stack.
@@ -61,7 +61,7 @@ fun rememberFrnkBottomNavState(
         homeLabel,
         settingsLabel,
         homeIcon,
-        settingsIcon,
+        settingsIcon
     ) {
         FrnkBottomNavState(
             home =
@@ -70,7 +70,7 @@ fun rememberFrnkBottomNavState(
                     root = homeRoot,
                     label = homeLabel,
                     icon = homeIcon,
-                    iosSystemIcon = "house",
+                    iosSystemIcon = "house"
                 ),
             feature =
                 FrnkBottomNavTab.Feature(
@@ -78,7 +78,7 @@ fun rememberFrnkBottomNavState(
                     root = feature.route,
                     label = feature.label,
                     icon = feature.icon,
-                    iosSystemIcon = feature.iosSystemIcon,
+                    iosSystemIcon = feature.iosSystemIcon
                 ),
             settings =
                 FrnkBottomNavTab.Settings(
@@ -86,8 +86,8 @@ fun rememberFrnkBottomNavState(
                     root = settingsRoot,
                     label = settingsLabel,
                     icon = settingsIcon,
-                    iosSystemIcon = "gearshape",
-                ),
+                    iosSystemIcon = "gearshape"
+                )
         )
     }
 }

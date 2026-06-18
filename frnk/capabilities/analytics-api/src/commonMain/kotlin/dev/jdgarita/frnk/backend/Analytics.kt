@@ -8,22 +8,22 @@ package dev.jdgarita.frnk.backend
 interface AnalyticsTracker {
     fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?> = emptyMap(),
+        params: Map<String, Any?> = emptyMap()
     )
 
     fun trackCustom(
         name: String,
-        params: Map<String, Any?> = emptyMap(),
+        params: Map<String, Any?> = emptyMap()
     )
 
     fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     )
 }
 
 enum class ToolkitEvent(
-    val key: String,
+    val key: String
 ) {
     AppOpened("App_Opened"),
     PaywallViewed("Paywall_Viewed"),
@@ -32,13 +32,13 @@ enum class ToolkitEvent(
     PurchaseCompleted("Purchase_Completed"),
     PurchaseFailed("Purchase_Failed"),
     SignInStarted("SignIn_Started"),
-    SignInCompleted("SignIn_Completed"),
+    SignInCompleted("SignIn_Completed")
 }
 
 interface CrashReporter {
     fun recordException(
         throwable: Throwable,
-        extras: Map<String, String> = emptyMap(),
+        extras: Map<String, String> = emptyMap()
     )
 
     fun setUserId(id: String?)

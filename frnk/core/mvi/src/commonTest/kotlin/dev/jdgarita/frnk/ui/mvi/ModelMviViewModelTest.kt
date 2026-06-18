@@ -103,11 +103,11 @@ class ModelMviViewModelTest {
 // --- Test fixtures: a trivial ModelMviViewModel exercising model → UiState mapping + effects. ---
 
 private data class SampleArguments(
-    val startCount: Int,
+    val startCount: Int
 ) : Arguments
 
 private data class SampleModel(
-    val count: Int = 7,
+    val count: Int = 7
 ) : ModelState
 
 private object SampleModelFactory : ModelStateFactory<SampleModel> {
@@ -116,7 +116,7 @@ private object SampleModelFactory : ModelStateFactory<SampleModel> {
 
 private data class SampleUiState(
     val count: Int,
-    val label: String,
+    val label: String
 ) : UiState
 
 private sealed interface SampleIntent : UiIntent {

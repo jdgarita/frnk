@@ -29,7 +29,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 @Composable
 fun rememberFrnkNavBackStack(
     configuration: SavedStateConfiguration,
-    vararg start: NavKey,
+    vararg start: NavKey
 ): NavBackStack<NavKey> = rememberNavBackStack(configuration = configuration, elements = start)
 
 /**
@@ -52,7 +52,7 @@ fun FrnkNavDisplay(
     entryProvider: (NavKey) -> NavEntry<NavKey> = koinEntryProvider(),
     transitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = { frnkEnterTransition() },
     popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = { frnkExitTransition() },
-    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(Int) -> ContentTransform = { frnkExitTransition() },
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(Int) -> ContentTransform = { frnkExitTransition() }
 ) {
     NavDisplay(
         backStack = backStack,
@@ -62,10 +62,10 @@ fun FrnkNavDisplay(
         entryDecorators =
             listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
             ),
         transitionSpec = transitionSpec,
         popTransitionSpec = popTransitionSpec,
-        predictivePopTransitionSpec = predictivePopTransitionSpec,
+        predictivePopTransitionSpec = predictivePopTransitionSpec
     )
 }

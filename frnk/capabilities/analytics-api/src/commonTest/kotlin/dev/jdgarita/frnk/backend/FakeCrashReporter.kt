@@ -8,7 +8,7 @@ package dev.jdgarita.frnk.backend
 class FakeCrashReporter : CrashReporter {
     data class Recorded(
         val throwable: Throwable,
-        val extras: Map<String, String>,
+        val extras: Map<String, String>
     )
 
     val recorded = mutableListOf<Recorded>()
@@ -18,7 +18,7 @@ class FakeCrashReporter : CrashReporter {
 
     override fun recordException(
         throwable: Throwable,
-        extras: Map<String, String>,
+        extras: Map<String, String>
     ) {
         recorded += Recorded(throwable, extras)
     }

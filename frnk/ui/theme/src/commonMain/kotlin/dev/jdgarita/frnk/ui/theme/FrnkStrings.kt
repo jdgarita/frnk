@@ -118,5 +118,5 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringPerMonthSuffix to "/mo",
         stringGodMode to "God mode",
         stringGodModeSubtitle to "Force Pro on this device (testing)",
-        stringDeveloper to "Developer",
+        stringDeveloper to "Developer"
     )

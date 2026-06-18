@@ -38,7 +38,7 @@ fun rememberFrnkSettingsHandler(
     entitlements: EntitlementManager,
     analytics: AnalyticsTracker,
     onMessage: (String) -> Unit = {},
-    fallback: (SettingsEffect) -> Unit = {},
+    fallback: (SettingsEffect) -> Unit = {}
 ): (SettingsEffect) -> Unit {
     val scope: CoroutineScope = rememberCoroutineScope()
     val uriHandler: UriHandler = LocalUriHandler.current

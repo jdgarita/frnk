@@ -34,7 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 fun <S : UiState, I : UiIntent> SyncMviConfig(
     viewModel: MviViewModel<S, I, *>,
     config: S,
-    asIntent: (S) -> I,
+    asIntent: (S) -> I
 ) {
     LaunchedEffect(config) {
         if (viewModel.state.value !== config) viewModel.send(asIntent(config))

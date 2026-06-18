@@ -28,7 +28,7 @@ data class NavigationItem(
     val badge: String? = null,
     val showBadgeDot: Boolean = false,
     val enabled: Boolean = true,
-    val contentDescription: String? = null,
+    val contentDescription: String? = null
 )
 
 /** Resolved colors for the native bar (no `MaterialTheme` — the toolkit supplies `FrnkTheme` tokens). */
@@ -40,7 +40,7 @@ data class AdaptiveNavigationBarColors(
     val unselectedIconColor: Color,
     val unselectedTextColor: Color,
     val badgeContainerColor: Color,
-    val badgeContentColor: Color,
+    val badgeContentColor: Color
 )
 
 object AdaptiveNavigationBarDefaults {
@@ -57,7 +57,7 @@ object AdaptiveNavigationBarDefaults {
         unselectedIconColor: Color,
         unselectedTextColor: Color,
         badgeContainerColor: Color = selectedIconColor,
-        badgeContentColor: Color = containerColor,
+        badgeContentColor: Color = containerColor
     ) = AdaptiveNavigationBarColors(
         containerColor = containerColor,
         indicatorColor = indicatorColor,
@@ -66,6 +66,6 @@ object AdaptiveNavigationBarDefaults {
         unselectedIconColor = unselectedIconColor,
         unselectedTextColor = unselectedTextColor,
         badgeContainerColor = badgeContainerColor,
-        badgeContentColor = badgeContentColor,
+        badgeContentColor = badgeContentColor
     )
 }

@@ -14,21 +14,21 @@ class NoopRemoteConfig : RemoteConfigService {
 
     override fun getString(
         key: String,
-        default: String,
+        default: String
     ): String = default
 
     override fun getBoolean(
         key: String,
-        default: Boolean,
+        default: Boolean
     ): Boolean = default
 
     override fun getLong(
         key: String,
-        default: Long,
+        default: Long
     ): Long = default
 
     override fun getDouble(
         key: String,
-        default: Double,
+        default: Double
     ): Double = default
 }

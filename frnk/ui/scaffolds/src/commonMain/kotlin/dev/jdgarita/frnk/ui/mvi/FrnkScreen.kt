@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 fun <A : Arguments, M : ModelState, S : UiState, I : UiIntent, E : UiEffect> FrnkScreen(
     viewModel: ModelMviViewModel<A, M, S, I, E>,
     arguments: A,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     RememberMviLifecycle(viewModel = viewModel, arguments = arguments)
     content()

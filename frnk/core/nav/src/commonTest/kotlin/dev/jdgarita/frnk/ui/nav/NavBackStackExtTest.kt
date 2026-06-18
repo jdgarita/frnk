@@ -21,7 +21,7 @@ class NavBackStackExtTest {
 
     @Serializable
     private data class Detail(
-        val id: String,
+        val id: String
     ) : NavKey
 
     private fun stackOf(vararg start: NavKey) = NavBackStack(*start)

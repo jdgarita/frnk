@@ -30,7 +30,7 @@ private fun FrnkIcon_Skeleton_Light() {
             FrnkIcon(state = FrnkIconState.Skeleton())
             FrnkIconButton(
                 state = FrnkIconButtonState.Skeleton,
-                onClick = {},
+                onClick = {}
             )
         }
     }
@@ -47,8 +47,8 @@ private fun FrnkIcon_Sizes_Light() {
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "xs",
                         size = FrnkIconSize.xs,
-                        tint = colorPrimary,
-                    ),
+                        tint = colorPrimary
+                    )
             )
             FrnkIcon(
                 state =
@@ -56,8 +56,8 @@ private fun FrnkIcon_Sizes_Light() {
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "md",
                         size = FrnkIconSize.md,
-                        tint = colorPrimary,
-                    ),
+                        tint = colorPrimary
+                    )
             )
             FrnkIcon(
                 state =
@@ -65,8 +65,8 @@ private fun FrnkIcon_Sizes_Light() {
                         imageVector = Theme[icons][iconCheck],
                         contentDescription = "xl",
                         size = FrnkIconSize.xl,
-                        tint = colorPrimary,
-                    ),
+                        tint = colorPrimary
+                    )
             )
         }
     }
@@ -96,17 +96,17 @@ private fun FrnkIconButton_Light() {
                     FrnkIconButtonState.Content(
                         imageVector = Theme[icons][iconBack],
                         contentDescription = "Back",
-                        tint = colorPrimary,
+                        tint = colorPrimary
                     ),
-                onClick = {},
+                onClick = {}
             )
             FrnkIconButton(
                 state =
                     FrnkIconButtonState.Content(
                         imageVector = Theme[icons][iconSettings],
-                        contentDescription = "Settings",
+                        contentDescription = "Settings"
                     ),
-                onClick = {},
+                onClick = {}
             )
             FrnkIconButton(
                 state =
@@ -114,9 +114,9 @@ private fun FrnkIconButton_Light() {
                         imageVector = Theme[icons][iconClose],
                         contentDescription = "Disabled",
                         tint = colorPrimary,
-                        enabled = false,
+                        enabled = false
                     ),
-                onClick = {},
+                onClick = {}
             )
         }
     }

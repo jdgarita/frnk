@@ -80,10 +80,10 @@ class FakeEntitlementProvider : EntitlementProvider {
                     "$39.99",
                     pricePerMonthFormatted = "$3.33",
                     hasFreeTrial = true,
-                    badge = "Save 33%",
+                    badge = "Save 33%"
                 ),
-                ProProduct("lifetime", ProPlan.Lifetime, "Lifetime", "$99.99"),
-            ),
+                ProProduct("lifetime", ProPlan.Lifetime, "Lifetime", "$99.99")
+            )
         )
 
     override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
@@ -105,26 +105,26 @@ class FakeKeyValueStore : KeyValueStore {
 
     override fun putString(
         key: String,
-        value: String,
+        value: String
     ) {
         strings[key] = value
     }
 
     override fun getString(
         key: String,
-        default: String?,
+        default: String?
     ): String? = strings[key] ?: default
 
     override fun putBoolean(
         key: String,
-        value: Boolean,
+        value: Boolean
     ) {
         booleans[key] = value
     }
 
     override fun getBoolean(
         key: String,
-        default: Boolean,
+        default: Boolean
     ): Boolean = booleans[key] ?: default
 
     override fun remove(key: String) {
@@ -160,21 +160,21 @@ class FakeNoteStore : NoteStore {
 class LoggingAnalyticsTracker : AnalyticsTracker {
     override fun track(
         event: ToolkitEvent,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         PrintLogger.d(TAG, "${event.key} $params")
     }
 
     override fun trackCustom(
         name: String,
-        params: Map<String, Any?>,
+        params: Map<String, Any?>
     ) {
         PrintLogger.d(TAG, "$name $params")
     }
 
     override fun setUserProperty(
         key: String,
-        value: String?,
+        value: String?
     ) {
         PrintLogger.d(TAG, "user[$key] = $value")
     }
@@ -187,7 +187,7 @@ class LoggingAnalyticsTracker : AnalyticsTracker {
 class LoggingCrashReporter : CrashReporter {
     override fun recordException(
         throwable: Throwable,
-        extras: Map<String, String>,
+        extras: Map<String, String>
     ) {
         PrintLogger.e(TAG, "$extras", throwable)
     }

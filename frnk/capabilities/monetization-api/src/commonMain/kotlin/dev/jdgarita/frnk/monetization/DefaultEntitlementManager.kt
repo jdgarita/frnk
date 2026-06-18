@@ -33,7 +33,7 @@ class DefaultEntitlementManager(
     private val provider: EntitlementProvider,
     private val keyValueStore: KeyValueStore,
     private val analytics: AnalyticsTracker,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 ) : EntitlementManager {
     /** Typed view over the persisted god-mode flag — same key/representation as a raw `putBoolean`. */
     private val godModePref = keyValueStore.booleanPreference(GOD_MODE_KEY, default = false)
@@ -80,7 +80,7 @@ class DefaultEntitlementManager(
             is AppResult.Failure ->
                 analytics.track(
                     ToolkitEvent.PurchaseFailed,
-                    mapOf("product" to productId, "error" to result.error.name),
+                    mapOf("product" to productId, "error" to result.error.name)
                 )
         }
         return result
@@ -95,7 +95,7 @@ class DefaultEntitlementManager(
 
     private fun compute(
         providerPro: Boolean,
-        god: Boolean,
+        god: Boolean
     ): EntitlementStatus {
         val source =
             when {

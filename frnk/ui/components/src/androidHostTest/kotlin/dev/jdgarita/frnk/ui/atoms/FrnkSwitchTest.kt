@@ -47,7 +47,7 @@ class FrnkSwitchTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSwitch(
                     state = FrnkSwitchState.Content(checked = false, enabled = false),
-                    onCheckedChange = { received = it },
+                    onCheckedChange = { received = it }
                 )
             }
 
@@ -64,7 +64,7 @@ class FrnkSwitchTest : RobolectricComposeTest() {
             setFrnkContent {
                 FrnkSwitch(
                     state = FrnkSwitchState.Skeleton,
-                    onCheckedChange = { received = it },
+                    onCheckedChange = { received = it }
                 )
             }
 

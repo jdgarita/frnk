@@ -82,7 +82,7 @@ fun PaywallScreen(
     features: List<String>,
     modifier: Modifier = Modifier,
     vmKey: String? = null,
-    onEffect: (PaywallEffect) -> Unit = {},
+    onEffect: (PaywallEffect) -> Unit = {}
 ) {
     val vm: PaywallViewModel = koinViewModel(key = vmKey)
     FrnkScreen(viewModel = vm, arguments = PaywallArguments(source)) {
@@ -93,7 +93,7 @@ fun PaywallScreen(
         FrnkFullScreenScaffold(
             onCloseClick = { vm.send(PaywallIntent.Close) },
             modifier = modifier,
-            contentPadding = PaddingValues(Theme[spacing][spacingLg]),
+            contentPadding = PaddingValues(Theme[spacing][spacingLg])
         ) { padding ->
             // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
             // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
@@ -101,7 +101,7 @@ fun PaywallScreen(
                 state = state,
                 features = features,
                 onIntent = vm::send,
-                contentPadding = padding,
+                contentPadding = padding
             )
         }
     }
@@ -114,7 +114,7 @@ fun PaywallScreenContent(
     features: List<String>,
     onIntent: (PaywallIntent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg])
 ) {
     val title = "${Theme[strings][stringPaywallTitlePrefix]} ${Theme[strings][stringAppName]} ${Theme[strings][stringProName]}"
     Column(
@@ -123,11 +123,11 @@ fun PaywallScreenContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(contentPadding),
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg])
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             FrnkIcon(
                 state =
@@ -135,8 +135,8 @@ fun PaywallScreenContent(
                         imageVector = Theme[icons][iconUpgrade],
                         contentDescription = null,
                         size = Theme[iconSizes][iconSizeLg],
-                        tint = colorPrimary,
-                    ),
+                        tint = colorPrimary
+                    )
             )
             FrnkText(state = FrnkTextState.HeadlineSmall(text = title))
         }
@@ -157,7 +157,7 @@ fun PaywallScreenContent(
                         PaywallProductCard(
                             product = product,
                             selected = product.id == state.selectedProductId,
-                            onClick = { onIntent(PaywallIntent.ProductSelected(product.id)) },
+                            onClick = { onIntent(PaywallIntent.ProductSelected(product.id)) }
                         )
                     }
                 }
@@ -173,28 +173,28 @@ fun PaywallScreenContent(
             state =
                 FrnkButtonState.Content(
                     text = ctaText,
-                    enabled = state.selectedProductId != null && !state.isPurchasing,
+                    enabled = state.selectedProductId != null && !state.isPurchasing
                 ),
             onClick = { onIntent(PaywallIntent.Purchase) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
         ) {
             FrnkButton(
                 state = FrnkButtonState.Content(text = Theme[strings][stringRestorePurchases], variant = FrnkButtonVariant.Ghost),
-                onClick = { onIntent(PaywallIntent.Restore) },
+                onClick = { onIntent(PaywallIntent.Restore) }
             )
             FrnkText(
                 state =
                     FrnkTextState.Raw(
                         text = "${Theme[strings][stringPaywallTerms]} · ${Theme[strings][stringPaywallPrivacy]}",
                         style = labelSmall,
-                        color = colorOnSurfaceVariant,
-                    ),
+                        color = colorOnSurfaceVariant
+                    )
             )
         }
     }
@@ -204,7 +204,7 @@ fun PaywallScreenContent(
 private fun FeatureRow(text: String) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         FrnkIcon(
             state =
@@ -212,8 +212,8 @@ private fun FeatureRow(text: String) {
                     imageVector = Theme[icons][iconCheck],
                     contentDescription = null,
                     size = Theme[iconSizes][iconSizeSm],
-                    tint = colorPrimary,
-                ),
+                    tint = colorPrimary
+                )
         )
         FrnkText(state = FrnkTextState.Body(text = text))
     }
@@ -223,7 +223,7 @@ private fun FeatureRow(text: String) {
 private fun PaywallProductCard(
     product: ProProduct,
     selected: Boolean,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Row(
         modifier =
@@ -233,12 +233,12 @@ private fun PaywallProductCard(
                 .border(
                     width = if (selected) 2.dp else 1.dp,
                     color = if (selected) Theme[colors][colorPrimary] else Theme[colors][colorOutline],
-                    shape = Theme[shapes][shapeCard],
+                    shape = Theme[shapes][shapeCard]
                 ).background(Theme[colors][colorSurface])
                 .clickable { onClick() }
                 .padding(Theme[spacing][spacingMd]),
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         RadioDot(selected = selected)
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])) {
@@ -248,8 +248,8 @@ private fun PaywallProductCard(
                     state =
                         FrnkTextState.BodySmall(
                             text = "$perMonth${Theme[strings][stringPerMonthSuffix]}",
-                            color = colorOnSurfaceVariant,
-                        ),
+                            color = colorOnSurfaceVariant
+                        )
                 )
             }
         }
@@ -273,9 +273,9 @@ private fun RadioDot(selected: Boolean) {
                 .border(
                     width = 2.dp,
                     color = if (selected) Theme[colors][colorPrimary] else Theme[colors][colorOutline],
-                    shape = CircleShape,
+                    shape = CircleShape
                 ),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center
     ) {
         if (selected) {
             Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Theme[colors][colorPrimary]))
@@ -291,14 +291,14 @@ private fun SkeletonCard() {
                 .fillMaxWidth()
                 .clip(Theme[shapes][shapeCard])
                 .border(width = 1.dp, color = Theme[colors][colorOutline], shape = Theme[shapes][shapeCard])
-                .padding(Theme[spacing][spacingMd]),
+                .padding(Theme[spacing][spacingMd])
     ) {
         FrnkText(
             state =
                 FrnkTextState.TitleMedium(
                     text = "Plan placeholder",
-                    skeleton = FrnkSkeleton(enabled = true),
-                ),
+                    skeleton = FrnkSkeleton(enabled = true)
+                )
         )
     }
 }

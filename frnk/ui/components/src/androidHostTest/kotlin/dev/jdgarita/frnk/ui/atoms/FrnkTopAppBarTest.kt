@@ -31,8 +31,8 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                         FrnkTopAppBarState(
                             title = "Settings",
                             actions = listOf(searchAction),
-                            applyStatusBarPadding = false,
-                        ),
+                            applyStatusBarPadding = false
+                        )
                 )
             }
             onNodeWithText("Settings").assertIsDisplayed()
@@ -50,8 +50,8 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                             actions = listOf(searchAction),
                             isSearchActive = true,
                             searchPlaceholder = placeholder,
-                            applyStatusBarPadding = false,
-                        ),
+                            applyStatusBarPadding = false
+                        )
                 )
             }
             // Title + the trigger action are swapped out for the search field chrome.
@@ -72,8 +72,8 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                             isSearchActive = true,
                             searchQuery = "",
                             searchPlaceholder = placeholder,
-                            applyStatusBarPadding = false,
-                        ),
+                            applyStatusBarPadding = false
+                        )
                 )
             }
             // Assert we're actually in search mode (not silently fallen back to the title layout),
@@ -93,8 +93,8 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                             isSearchActive = true,
                             searchQuery = "kotlin",
                             searchPlaceholder = placeholder,
-                            applyStatusBarPadding = false,
-                        ),
+                            applyStatusBarPadding = false
+                        )
                 )
             }
             onNodeWithContentDescription("Clear search").assertIsDisplayed()
@@ -117,12 +117,12 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                             isSearchActive = true,
                             searchQuery = query,
                             searchPlaceholder = placeholder,
-                            applyStatusBarPadding = false,
+                            applyStatusBarPadding = false
                         ),
                     onSearchQueryChange = {
                         query = it
                         lastQuery = it
-                    },
+                    }
                 )
             }
 
@@ -143,9 +143,9 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                             isSearchActive = true,
                             searchQuery = "kotlin",
                             searchPlaceholder = placeholder,
-                            applyStatusBarPadding = false,
+                            applyStatusBarPadding = false
                         ),
-                    onSearchQueryChange = { lastQuery = it },
+                    onSearchQueryChange = { lastQuery = it }
                 )
             }
 
@@ -165,9 +165,9 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                             title = "Settings",
                             isSearchActive = true,
                             searchPlaceholder = placeholder,
-                            applyStatusBarPadding = false,
+                            applyStatusBarPadding = false
                         ),
-                    onSearchClose = { closed = true },
+                    onSearchClose = { closed = true }
                 )
             }
 

@@ -29,7 +29,7 @@ sealed class FrnkBottomNavTab(
     open val root: NavKey,
     open val label: String,
     open val icon: ImageVector,
-    open val iosSystemIcon: String,
+    open val iosSystemIcon: String
 ) {
     /** The fixed leading Home tab (toolkit-owned; built from theme tokens). */
     @Immutable
@@ -38,7 +38,7 @@ sealed class FrnkBottomNavTab(
         override val root: NavKey,
         override val label: String,
         override val icon: ImageVector,
-        override val iosSystemIcon: String,
+        override val iosSystemIcon: String
     ) : FrnkBottomNavTab(key, root, label, icon, iosSystemIcon)
 
     /** The host's configurable center tab (shaped by a [FrnkFeatureItem]). */
@@ -48,7 +48,7 @@ sealed class FrnkBottomNavTab(
         override val root: NavKey,
         override val label: String,
         override val icon: ImageVector,
-        override val iosSystemIcon: String,
+        override val iosSystemIcon: String
     ) : FrnkBottomNavTab(key, root, label, icon, iosSystemIcon)
 
     /** The fixed trailing Settings tab (toolkit-owned; built from theme tokens). */
@@ -58,6 +58,6 @@ sealed class FrnkBottomNavTab(
         override val root: NavKey,
         override val label: String,
         override val icon: ImageVector,
-        override val iosSystemIcon: String,
+        override val iosSystemIcon: String
     ) : FrnkBottomNavTab(key, root, label, icon, iosSystemIcon)
 }

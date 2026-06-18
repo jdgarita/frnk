@@ -19,13 +19,13 @@ import dev.jdgarita.frnk.ui.mvi.UiState
  */
 @Immutable
 data class HomeScreenState(
-    val topBar: FrnkTopAppBarState,
+    val topBar: FrnkTopAppBarState
 ) : UiState
 
 sealed interface HomeIntent : UiIntent {
     /** A trailing top-bar action was tapped. */
     data class TopBarActionClicked(
-        val action: FrnkTopAppBarAction,
+        val action: FrnkTopAppBarAction
     ) : HomeIntent
 
     /** The leading top-bar navigation icon was tapped. */
@@ -38,14 +38,14 @@ sealed interface HomeIntent : UiIntent {
      * "re-key the ViewModel to re-seed it" approach.
      */
     data class ConfigChanged(
-        val newState: HomeScreenState,
+        val newState: HomeScreenState
     ) : HomeIntent
 }
 
 sealed interface HomeEffect : UiEffect {
     /** Re-emission of [HomeIntent.TopBarActionClicked]; [key] is the action's stable key. */
     data class ActionInvoked(
-        val key: String,
+        val key: String
     ) : HomeEffect
 
     /** Re-emission of [HomeIntent.NavigationClicked]. */

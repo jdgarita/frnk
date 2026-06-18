@@ -27,7 +27,7 @@ internal const val FRNK_SWIPE_SETTLE_DURATION_MS = 300
  */
 @Stable
 class FrnkSwipeController internal constructor(
-    initialRevealed: FrnkSwipeDirection? = null,
+    initialRevealed: FrnkSwipeDirection? = null
 ) {
     val offsetX: Animatable<Float, AnimationVector1D> = Animatable(0f)
 
@@ -56,7 +56,7 @@ class FrnkSwipeController internal constructor(
     internal suspend fun settleOpen(
         side: FrnkSwipeDirection,
         targetPx: Float,
-        animationSpec: AnimationSpec<Float> = tween(FRNK_SWIPE_SETTLE_DURATION_MS),
+        animationSpec: AnimationSpec<Float> = tween(FRNK_SWIPE_SETTLE_DURATION_MS)
     ) {
         revealedSide = side
         offsetX.animateTo(targetValue = targetPx, animationSpec = animationSpec)

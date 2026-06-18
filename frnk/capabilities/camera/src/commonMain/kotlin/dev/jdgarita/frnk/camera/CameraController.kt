@@ -19,7 +19,7 @@ interface CameraController {
  */
 data class CameraImage(
     val bytes: ByteArray,
-    val mimeType: String,
+    val mimeType: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

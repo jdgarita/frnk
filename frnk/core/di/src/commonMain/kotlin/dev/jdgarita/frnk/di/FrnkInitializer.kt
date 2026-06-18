@@ -28,7 +28,7 @@ import org.koin.mp.KoinPlatformTools
  */
 fun initializeFrnk(
     modules: List<Module>,
-    extraConfig: KoinApplication.() -> Unit = {},
+    extraConfig: KoinApplication.() -> Unit = {}
 ): KoinApplication =
     startKoin {
         modules(modules)

@@ -43,7 +43,7 @@ data class DemoState(
     // Stage 11 capability scaffolds — Remote Config value + camera/permission no-op outcomes.
     val remoteWelcome: String = "",
     val cameraResult: String = "Not captured",
-    val cameraPermission: String = "",
+    val cameraPermission: String = ""
 ) : UiState
 
 sealed interface DemoIntent : UiIntent {
@@ -52,7 +52,7 @@ sealed interface DemoIntent : UiIntent {
     data object Decrement : DemoIntent
 
     data class EmailChanged(
-        val value: String,
+        val value: String
     ) : DemoIntent
 
     data object ToggleGodMode : DemoIntent
@@ -83,20 +83,20 @@ sealed interface DemoIntent : UiIntent {
     data object SearchClosed : DemoIntent
 
     data class SearchQueryChanged(
-        val value: String,
+        val value: String
     ) : DemoIntent
 
     // components gallery widget demos
     data class GallerySwitchChanged(
-        val checked: Boolean,
+        val checked: Boolean
     ) : DemoIntent
 
     data class GallerySegmentChanged(
-        val index: Int,
+        val index: Int
     ) : DemoIntent
 
     data class GalleryNavChanged(
-        val index: Int,
+        val index: Int
     ) : DemoIntent
 
     // Stage 11 capability scaffolds.
@@ -109,11 +109,11 @@ sealed interface DemoIntent : UiIntent {
 
 sealed interface DemoEffect : UiEffect {
     data class Navigate(
-        val routeKey: String,
+        val routeKey: String
     ) : DemoEffect
 
     data class Toast(
-        val message: String,
+        val message: String
     ) : DemoEffect
 }
 
@@ -125,7 +125,7 @@ class DemoViewModel(
     private val crash: CrashReporter,
     private val remoteConfig: RemoteConfigService,
     private val camera: CameraController,
-    private val permissions: PermissionController,
+    private val permissions: PermissionController
 ) : MviViewModel<DemoState, DemoIntent, DemoEffect>(DemoState()) {
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
@@ -140,7 +140,7 @@ class DemoViewModel(
         setState {
             copy(
                 remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, "Hello from the no-op default"),
-                cameraPermission = permissions.status(Permission.Camera).name,
+                cameraPermission = permissions.status(Permission.Camera).name
             )
         }
         viewModelScope.launch { loadNotes() }
@@ -175,12 +175,12 @@ class DemoViewModel(
                     .add("Note #${currentState().notes.size + 1}")
                     .fold(
                         onSuccess = { loadNotes() },
-                        onFailure = { emit(DemoEffect.Toast("Couldn't save note: ${it.message}")) },
+                        onFailure = { emit(DemoEffect.Toast("Couldn't save note: ${it.message}")) }
                     )
             DemoIntent.ClearNotes ->
                 notes.clear().fold(
                     onSuccess = { loadNotes() },
-                    onFailure = { emit(DemoEffect.Toast("Couldn't clear notes: ${it.message}")) },
+                    onFailure = { emit(DemoEffect.Toast("Couldn't clear notes: ${it.message}")) }
                 )
             DemoIntent.TrackEvent -> {
                 analytics.trackCustom("demo_button_tapped", mapOf("count" to currentState().count))
@@ -197,7 +197,7 @@ class DemoViewModel(
             DemoIntent.RecordTestCrash -> {
                 crash.recordException(
                     RuntimeException("Demo non-fatal exception"),
-                    mapOf("screen" to "demo", "count" to currentState().count.toString()),
+                    mapOf("screen" to "demo", "count" to currentState().count.toString())
                 )
                 emit(DemoEffect.Toast("Recorded non-fatal exception"))
             }
@@ -225,12 +225,12 @@ class DemoViewModel(
                         setState { copy(remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, remoteWelcome)) }
                         emit(DemoEffect.Toast("Remote Config fetched"))
                     },
-                    onFailure = { emit(DemoEffect.Toast("Fetch failed: ${it.message}")) },
+                    onFailure = { emit(DemoEffect.Toast("Fetch failed: ${it.message}")) }
                 )
             DemoIntent.CapturePhoto ->
                 camera.capturePhoto().fold(
                     onSuccess = { image -> setState { copy(cameraResult = "Captured ${image.bytes.size} bytes") } },
-                    onFailure = { setState { copy(cameraResult = "No camera (no-op scaffold)") } },
+                    onFailure = { setState { copy(cameraResult = "No camera (no-op scaffold)") } }
                 )
             DemoIntent.RequestCameraPermission -> {
                 val status = permissions.request(Permission.Camera)
@@ -246,7 +246,7 @@ class DemoViewModel(
     private suspend fun loadNotes() {
         notes.all().fold(
             onSuccess = { stored -> setState { copy(notes = stored.map { it.content }) } },
-            onFailure = { emit(DemoEffect.Toast("Couldn't load notes: ${it.message}")) },
+            onFailure = { emit(DemoEffect.Toast("Couldn't load notes: ${it.message}")) }
         )
     }
 }

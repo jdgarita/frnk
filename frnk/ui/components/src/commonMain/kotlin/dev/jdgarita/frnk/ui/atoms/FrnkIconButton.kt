@@ -34,7 +34,7 @@ sealed interface FrnkIconButtonState {
         val size: Dp? = null,
         val tint: ThemeToken<Color>? = null,
         val contentPadding: PaddingValues = PaddingValues(FrnkSpacing.sm),
-        val enabled: Boolean = true,
+        val enabled: Boolean = true
     ) : FrnkIconButtonState
 
     data object Skeleton : FrnkIconButtonState
@@ -44,7 +44,7 @@ sealed interface FrnkIconButtonState {
 fun FrnkIconButton(
     state: FrnkIconButtonState,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val content =
         when (state) {
@@ -52,7 +52,7 @@ fun FrnkIconButton(
             FrnkIconButtonState.Skeleton -> {
                 FrnkSkeletonBox(
                     modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
-                    shape = shapeFull,
+                    shape = shapeFull
                 )
                 return
             }
@@ -69,7 +69,7 @@ fun FrnkIconButton(
             modifier
                 .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                 .clip(Theme[shapes][shapeFull]),
-        contentPadding = content.contentPadding,
+        contentPadding = content.contentPadding
     ) {
         FrnkIcon(
             state =
@@ -80,8 +80,8 @@ fun FrnkIconButton(
                     tint = content.tint,
                     // Match FrnkButton's 0.4f disabled treatment so the icon visibly dims when
                     // the button is inactive.
-                    tintAlpha = if (content.enabled) 1f else 0.4f,
-                ),
+                    tintAlpha = if (content.enabled) 1f else 0.4f
+                )
         )
     }
 }

@@ -16,23 +16,23 @@ import dev.jdgarita.frnk.ui.theme.colors
 @Immutable
 sealed class FrnkDividerState(
     open val thickness: Dp,
-    open val color: ThemeToken<Color>,
+    open val color: ThemeToken<Color>
 ) {
     data class Horizontal(
         override val thickness: Dp = 1.dp,
-        override val color: ThemeToken<Color> = colorOutline,
+        override val color: ThemeToken<Color> = colorOutline
     ) : FrnkDividerState(thickness, color)
 
     data class Vertical(
         override val thickness: Dp = 1.dp,
-        override val color: ThemeToken<Color> = colorOutline,
+        override val color: ThemeToken<Color> = colorOutline
     ) : FrnkDividerState(thickness, color)
 }
 
 @Composable
 fun FrnkDivider(
     state: FrnkDividerState = FrnkDividerState.Horizontal(),
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val resolvedColor = Theme[colors][state.color]
     when (state) {
@@ -40,13 +40,13 @@ fun FrnkDivider(
             UnstyledHorizontalSeparator(
                 color = resolvedColor,
                 modifier = modifier,
-                thickness = state.thickness,
+                thickness = state.thickness
             )
         is FrnkDividerState.Vertical ->
             UnstyledVerticalSeparator(
                 color = resolvedColor,
                 modifier = modifier,
-                thickness = state.thickness,
+                thickness = state.thickness
             )
     }
 }

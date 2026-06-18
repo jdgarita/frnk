@@ -66,7 +66,7 @@ class MviViewModelTest {
 // --- Test fixtures: a trivial MviViewModel subclass exercising state + effects. ---
 
 private data class CounterState(
-    val count: Int = 0,
+    val count: Int = 0
 ) : UiState
 
 private sealed interface CounterIntent : UiIntent {

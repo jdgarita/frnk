@@ -19,7 +19,7 @@ private fun FrnkText_Skeleton_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkText(state = FrnkTextState.Title(text = "Loading title", skeleton = FrnkSkeleton(enabled = true)))
         FrnkText(
-            state = FrnkTextState.Body(text = "Loading a body line", skeleton = FrnkSkeleton(enabled = true)),
+            state = FrnkTextState.Body(text = "Loading a body line", skeleton = FrnkSkeleton(enabled = true))
         )
     }
 }

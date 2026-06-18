@@ -75,7 +75,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     vmKey: String? = null,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
-    onEffect: (SettingsEffect) -> Unit = {},
+    onEffect: (SettingsEffect) -> Unit = {}
 ) {
     val vm: SettingsViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
     val state by vm.state.collectAsStateWithLifecycle()
@@ -89,7 +89,7 @@ fun SettingsScreen(
         state = state,
         onIntent = vm::send,
         modifier = modifier,
-        contentPadding = contentPadding,
+        contentPadding = contentPadding
     )
 }
 
@@ -102,7 +102,7 @@ internal fun SettingsScreenContent(
     state: SettingsScreenState,
     onIntent: (SettingsIntent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg])
 ) {
     Column(
         modifier =
@@ -111,7 +111,7 @@ internal fun SettingsScreenContent(
                 .background(Theme[colors][colorBackground])
                 .verticalScroll(rememberScrollState())
                 .padding(contentPadding),
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg])
     ) {
         // Hosts that render their own header (e.g. a FrnkTopAppBar) pass a blank title to suppress
         // this one and avoid a duplicate heading.
@@ -137,7 +137,7 @@ internal fun SettingsScreenContent(
 @Composable
 private fun SettingsSection(
     section: SettingsSectionState,
-    onIntent: (SettingsIntent) -> Unit,
+    onIntent: (SettingsIntent) -> Unit
 ) {
     // Card chrome (title + surface + dividers + animateContentSize + footnote) is shared with the
     // FrnkListSection organism via FrnkSectionCard; only the heterogeneous row rendering differs.
@@ -146,7 +146,7 @@ private fun SettingsSection(
     FrnkSectionCard(
         rows = section.rows,
         title = section.title?.resolve(),
-        footnote = section.footnote?.resolve(),
+        footnote = section.footnote?.resolve()
     ) { _, row ->
         SettingsRow(row = row, onIntent = onIntent)
     }
@@ -155,7 +155,7 @@ private fun SettingsSection(
 @Composable
 private fun SettingsRow(
     row: SettingsRowState,
-    onIntent: (SettingsIntent) -> Unit,
+    onIntent: (SettingsIntent) -> Unit
 ) {
     when (row) {
         is SettingsThemeRowState -> {
@@ -165,16 +165,16 @@ private fun SettingsRow(
                     Modifier
                         .fillMaxWidth()
                         .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
-                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm]),
+                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     row.icon?.let {
                         FrnkIcon(
                             state =
-                                FrnkIconState.Content(icon = it, contentDescription = null, tint = colorPrimary),
+                                FrnkIconState.Content(icon = it, contentDescription = null, tint = colorPrimary)
                         )
                     }
                     FrnkText(state = FrnkTextState.TitleMedium(content = row.title))
@@ -183,12 +183,12 @@ private fun SettingsRow(
                     state =
                         FrnkSegmentedControlState.Content(
                             options = row.optionLabels.map { it.resolve() },
-                            selectedIndex = selectedIndex,
+                            selectedIndex = selectedIndex
                         ),
                     onOptionSelected = { index ->
                         onIntent(SettingsIntent.ThemeSelected(row.options[index]))
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -198,7 +198,7 @@ private fun SettingsRow(
                 icon = row.icon,
                 title = row.title,
                 subtitle = row.subtitle,
-                modifier = Modifier.clickable { onIntent(SettingsIntent.RowClicked(row.action)) },
+                modifier = Modifier.clickable { onIntent(SettingsIntent.RowClicked(row.action)) }
             ) {
                 FrnkIcon(
                     state =
@@ -206,8 +206,8 @@ private fun SettingsRow(
                             icon = FrnkIconSource.Token(iconChevronRight),
                             contentDescription = null,
                             size = Theme[iconSizes][iconSizeSm],
-                            tint = colorOnSurfaceVariant,
-                        ),
+                            tint = colorOnSurfaceVariant
+                        )
                 )
             }
 
@@ -215,11 +215,11 @@ private fun SettingsRow(
             SettingsRowScaffold(
                 icon = row.icon,
                 title = row.title,
-                subtitle = row.subtitle,
+                subtitle = row.subtitle
             ) {
                 FrnkSwitch(
                     state = FrnkSwitchState.Content(checked = row.checked),
-                    onCheckedChange = { checked -> onIntent(SettingsIntent.ToggleChanged(row.id, checked)) },
+                    onCheckedChange = { checked -> onIntent(SettingsIntent.ToggleChanged(row.id, checked)) }
                 )
             }
 
@@ -227,7 +227,7 @@ private fun SettingsRow(
             SettingsRowScaffold(
                 icon = row.icon,
                 title = row.title,
-                subtitle = row.subtitle,
+                subtitle = row.subtitle
             ) {
                 row.badge?.let { SettingsBadge(text = it) }
             }
@@ -242,13 +242,13 @@ private fun SettingsBadge(text: FrnkStringSource) {
             FrnkTextState.Raw(
                 content = text,
                 style = labelSmall,
-                color = colorOnPrimaryContainer,
+                color = colorOnPrimaryContainer
             ),
         modifier =
             Modifier
                 .clip(Theme[shapes][shapeFull])
                 .background(Theme[colors][colorPrimaryContainer])
-                .padding(horizontal = Theme[spacing][spacingSm], vertical = Theme[spacing][spacingXxs]),
+                .padding(horizontal = Theme[spacing][spacingSm], vertical = Theme[spacing][spacingXxs])
     )
 }
 
@@ -259,7 +259,7 @@ private fun SettingsRowScaffold(
     title: FrnkStringSource,
     subtitle: FrnkStringSource?,
     modifier: Modifier = Modifier,
-    trailing: @Composable () -> Unit,
+    trailing: @Composable () -> Unit
 ) {
     Row(
         modifier =
@@ -267,12 +267,12 @@ private fun SettingsRowScaffold(
                 .fillMaxWidth()
                 .padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         FrnkIcon(state = FrnkIconState.Content(icon = icon, contentDescription = null, tint = colorPrimary))
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
         ) {
             FrnkText(state = FrnkTextState.TitleMedium(content = title))
             subtitle?.let {
@@ -286,24 +286,24 @@ private fun SettingsRowScaffold(
 @Composable
 private fun SettingsFooter(
     footer: SettingsFooterState,
-    onVersionTap: () -> Unit,
+    onVersionTap: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
     ) {
         FrnkText(
-            state = FrnkTextState.BodySmall(content = footer.text, color = colorOnSurfaceVariant),
+            state = FrnkTextState.BodySmall(content = footer.text, color = colorOnSurfaceVariant)
         )
         FrnkText(
             state =
                 FrnkTextState.Raw(
                     content = footer.version,
                     style = labelSmall,
-                    color = colorOnSurfaceVariant,
+                    color = colorOnSurfaceVariant
                 ),
-            modifier = Modifier.clickable { onVersionTap() },
+            modifier = Modifier.clickable { onVersionTap() }
         )
     }
 }

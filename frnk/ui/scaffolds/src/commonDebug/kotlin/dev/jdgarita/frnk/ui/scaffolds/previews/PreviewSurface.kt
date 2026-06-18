@@ -32,13 +32,13 @@ import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 @Composable
 internal fun PreviewSurface(
     appearance: Appearance = Appearance.Light,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     val controller = remember(appearance) { AppearanceController().apply { this.appearance = appearance } }
     FrnkTheme(appearanceController = controller) {
         Column(
             modifier = Modifier.background(Theme[colors][colorBackground]).padding(FrnkSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)
         ) {
             content()
         }

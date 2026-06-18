@@ -154,7 +154,7 @@ val iconSizeEmptyState = ThemeToken<Dp>("icon_size_empty_state")
 enum class Appearance {
     Light,
     Dark,
-    System,
+    System
 }
 
 class AppearanceController {
@@ -187,7 +187,7 @@ internal val LightPalette: Map<ThemeToken<Color>, Color> =
         colorOnWarning to FrnkColors.Light.onWarning,
         colorSuccess to FrnkColors.Light.success,
         colorOnSuccess to FrnkColors.Light.onSuccess,
-        colorScrim to FrnkColors.Light.scrim,
+        colorScrim to FrnkColors.Light.scrim
     )
 
 internal val DarkPalette: Map<ThemeToken<Color>, Color> =
@@ -212,7 +212,7 @@ internal val DarkPalette: Map<ThemeToken<Color>, Color> =
         colorOnWarning to FrnkColors.Dark.onWarning,
         colorSuccess to FrnkColors.Dark.success,
         colorOnSuccess to FrnkColors.Dark.onSuccess,
-        colorScrim to FrnkColors.Dark.scrim,
+        colorScrim to FrnkColors.Dark.scrim
     )
 
 internal val DefaultTextStyles: Map<ThemeToken<TextStyle>, TextStyle> =
@@ -231,7 +231,7 @@ internal val DefaultTextStyles: Map<ThemeToken<TextStyle>, TextStyle> =
         bodySmall to FrnkTypography.bodySmall,
         labelLarge to FrnkTypography.labelLarge,
         labelMedium to FrnkTypography.labelMedium,
-        labelSmall to FrnkTypography.labelSmall,
+        labelSmall to FrnkTypography.labelSmall
     )
 
 internal val DefaultShapes: Map<ThemeToken<Shape>, Shape> =
@@ -246,7 +246,7 @@ internal val DefaultShapes: Map<ThemeToken<Shape>, Shape> =
         shapeButton to FrnkShapes.button,
         shapeCard to FrnkShapes.card,
         shapeTextField to FrnkShapes.textField,
-        shapeBottomSheet to FrnkShapes.bottomSheet,
+        shapeBottomSheet to FrnkShapes.bottomSheet
     )
 
 internal val DefaultSpacing: Map<ThemeToken<Dp>, Dp> =
@@ -262,7 +262,7 @@ internal val DefaultSpacing: Map<ThemeToken<Dp>, Dp> =
         spacingScreenPadding to FrnkSpacing.screenPadding,
         spacingIconPadding to FrnkSpacing.iconPadding,
         spacingListItemPadding to FrnkSpacing.listItemPadding,
-        spacingSectionSpacing to FrnkSpacing.sectionSpacing,
+        spacingSectionSpacing to FrnkSpacing.sectionSpacing
     )
 
 internal val DefaultIconSizes: Map<ThemeToken<Dp>, Dp> =
@@ -276,7 +276,7 @@ internal val DefaultIconSizes: Map<ThemeToken<Dp>, Dp> =
         iconSizeButton to FrnkIconSize.button,
         iconSizeFab to FrnkIconSize.fab,
         iconSizeAppBar to FrnkIconSize.appBar,
-        iconSizeEmptyState to FrnkIconSize.emptyState,
+        iconSizeEmptyState to FrnkIconSize.emptyState
     )
 
 /**
@@ -293,13 +293,13 @@ internal val DefaultIconSizes: Map<ThemeToken<Dp>, Dp> =
 @Composable
 private fun animateColorPalette(
     base: Map<ThemeToken<Color>, Color>,
-    overrides: Map<ThemeToken<Color>, Color>,
+    overrides: Map<ThemeToken<Color>, Color>
 ): Map<ThemeToken<Color>, Color> {
     val animated =
         base.mapValues { (token, baseValue) ->
             animateColorAsState(
                 targetValue = overrides[token] ?: baseValue,
-                animationSpec = tween(durationMillis = 450),
+                animationSpec = tween(durationMillis = 450)
             ).value
         }
     val extras = overrides.filterKeys { it !in base }
@@ -317,7 +317,7 @@ private val FrnkPlatformTheme =
         defaultComponentInteractiveSize =
             ComponentInteractiveSize(
                 nonTouchInteractionSize = 32.dp,
-                touchInteractionSize = 48.dp,
+                touchInteractionSize = 48.dp
             )
 
         val config = LocalFrnkThemeConfig.current
@@ -380,14 +380,14 @@ fun FrnkTheme(
     config: FrnkThemeConfig = FrnkThemeConfig.Default,
     appearanceController: AppearanceController = remember { AppearanceController() },
     haptics: HapticFeedback = rememberFrnkHaptics(),
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     val indication = config.indication ?: rememberFrnkRipple()
     CompositionLocalProvider(
         LocalFrnkThemeConfig provides config,
         LocalAppearanceController provides appearanceController,
         LocalIndication provides indication,
-        LocalFrnkHaptics provides haptics,
+        LocalFrnkHaptics provides haptics
     ) {
         FrnkPlatformTheme(content)
     }

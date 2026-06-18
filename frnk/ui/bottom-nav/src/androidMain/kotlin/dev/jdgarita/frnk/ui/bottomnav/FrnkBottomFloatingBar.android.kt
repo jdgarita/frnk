@@ -43,12 +43,12 @@ actual fun FrnkBottomFloatingBar(
     items: List<FrnkNavBarItem>,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier
 ) {
     val toolbarColors: FloatingToolbarColors =
         FloatingToolbarDefaults.standardFloatingToolbarColors(
             toolbarContainerColor = Theme[colors][colorSurface],
-            toolbarContentColor = Theme[colors][colorOnSurfaceVariant],
+            toolbarContentColor = Theme[colors][colorOnSurfaceVariant]
         )
 
     // contentAlignment on the Box (below) handles centering; this only lifts the pill off the system nav.
@@ -65,7 +65,7 @@ actual fun FrnkBottomFloatingBar(
             modifier = toolbarModifier,
             // The no-FAB overload defaults to Level0 (0.dp) — no shadow — while the WithFab overload
             // defaults to Level1. Pin it to the WithFab elevation so the pill casts the standard shadow.
-            expandedShadowElevation = FloatingToolbarDefaults.ContainerExpandedElevationWithFab,
+            expandedShadowElevation = FloatingToolbarDefaults.ContainerExpandedElevationWithFab
         ) {
             NavBarItems(items, selectedIndex, onItemSelected)
         }
@@ -76,7 +76,7 @@ actual fun FrnkBottomFloatingBar(
 private fun RowScope.NavBarItems(
     items: List<FrnkNavBarItem>,
     selectedIndex: Int,
-    onItemSelected: (Int) -> Unit,
+    onItemSelected: (Int) -> Unit
 ) {
     items.forEachIndexed { index, item ->
         val selected = index == selectedIndex
@@ -84,7 +84,7 @@ private fun RowScope.NavBarItems(
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.label,
-                tint = Theme[colors][if (selected) colorPrimary else colorOnSurfaceVariant],
+                tint = Theme[colors][if (selected) colorPrimary else colorOnSurfaceVariant]
             )
         }
     }

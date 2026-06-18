@@ -15,7 +15,7 @@ import dev.jdgarita.frnk.ui.nav.navigateTo
 @Stable
 class FrnkAppScope internal constructor(
     /** The per-tab back stacks the scaffold created — `tabbed.current` is the active tab's stack. */
-    val tabbed: FrnkTabbedBackStacks,
+    val tabbed: FrnkTabbedBackStacks
 ) {
     /** Push [route] onto the active tab's back stack (single-top, like [navigateTo]). */
     fun navigateTo(route: NavKey) {

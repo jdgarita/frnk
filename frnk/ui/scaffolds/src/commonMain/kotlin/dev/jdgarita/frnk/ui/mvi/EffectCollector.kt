@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.Flow
 fun <E> EffectCollector(
     effects: Flow<E>,
     minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
-    onEffect: (E) -> Unit,
+    onEffect: (E) -> Unit
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnEffect by rememberUpdatedState(onEffect)

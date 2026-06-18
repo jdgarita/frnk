@@ -53,7 +53,7 @@ fun <S : UiState, I : UiIntent, E : UiEffect> FrnkMviScreen(
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClose: () -> Unit = {},
     onEffect: ((E) -> Unit)? = null,
-    content: @Composable (state: S, onIntent: (I) -> Unit, contentPadding: PaddingValues) -> Unit,
+    content: @Composable (state: S, onIntent: (I) -> Unit, contentPadding: PaddingValues) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -69,7 +69,7 @@ fun <S : UiState, I : UiIntent, E : UiEffect> FrnkMviScreen(
         onNavigationClick = onNavigationClick,
         onActionClick = onActionClick,
         onSearchQueryChange = onSearchQueryChange,
-        onSearchClose = onSearchClose,
+        onSearchClose = onSearchClose
     ) { padding ->
         content(state, viewModel::send, padding)
     }

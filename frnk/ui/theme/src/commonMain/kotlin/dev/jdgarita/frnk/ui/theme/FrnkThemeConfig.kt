@@ -64,7 +64,7 @@ data class FrnkThemeConfig(
      * [Indication] to restyle it, or a no-op [Indication] to disable press feedback entirely. Hosts
      * can also scope `CompositionLocalProvider(LocalIndication provides …)` around a subtree instead.
      */
-    val indication: Indication? = null,
+    val indication: Indication? = null
 ) {
     companion object {
         val Default = FrnkThemeConfig()

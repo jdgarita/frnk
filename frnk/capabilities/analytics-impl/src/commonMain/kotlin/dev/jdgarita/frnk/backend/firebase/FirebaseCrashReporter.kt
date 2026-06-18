@@ -14,7 +14,7 @@ import dev.jdgarita.frnk.utils.PrintLogger
 internal class FirebaseCrashReporter : CrashReporter {
     override fun recordException(
         throwable: Throwable,
-        extras: Map<String, String>,
+        extras: Map<String, String>
     ) {
         runCatching {
             extras.forEach { (key, value) -> Firebase.crashlytics.setCustomKey(key, value) }

@@ -18,12 +18,12 @@ enum class Permission {
     Camera,
     Microphone,
     Notifications,
-    Location,
+    Location
 }
 
 /** Coarse permission state shared across platforms. */
 enum class PermissionStatus {
     Granted,
     Denied,
-    NotDetermined,
+    NotDetermined
 }

@@ -19,5 +19,5 @@ data class FrnkNavTab(
     val key: String,
     val root: NavKey,
     val icon: ImageVector,
-    val label: String,
+    val label: String
 )

@@ -18,7 +18,7 @@ import kotlin.time.Clock
  */
 internal class SqlDelightNoteStore(
     private val db: DemoDB,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : NoteStore {
     private val queries get() = db.noteQueries
 
@@ -43,7 +43,7 @@ internal class SqlDelightNoteStore(
     private fun toNote(
         id: Long,
         content: String,
-        createdAt: Long,
+        createdAt: Long
     ): Note = Note(id = id, content = content, createdAt = Instant.fromEpochMilliseconds(createdAt))
 
     private suspend inline fun <T> runCatchingDb(crossinline block: () -> T): AppResult<T, CommonError> =
@@ -51,7 +51,7 @@ internal class SqlDelightNoteStore(
             try {
                 AppResult.Success(block())
             } catch (
-                @Suppress("TooGenericExceptionCaught") e: Exception,
+                @Suppress("TooGenericExceptionCaught") e: Exception
             ) {
                 AppResult.Failure(CommonError.Unknown)
             }

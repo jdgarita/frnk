@@ -21,6 +21,6 @@ sealed interface DemoRoute : NavKey {
     /** Pushed detail screen for a single `Frnk*` atom, identified by its display [name]. */
     @Serializable
     data class ComponentDetail(
-        val name: String,
+        val name: String
     ) : DemoRoute
 }

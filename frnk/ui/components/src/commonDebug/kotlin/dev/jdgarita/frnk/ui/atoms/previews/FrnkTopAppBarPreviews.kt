@@ -16,7 +16,7 @@ import dev.jdgarita.frnk.ui.theme.icons
 private fun FrnkTopAppBar_TitleOnly_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         FrnkTopAppBar(
-            state = FrnkTopAppBarState(title = "Frnk Toolkit Demo", applyStatusBarPadding = false),
+            state = FrnkTopAppBarState(title = "Frnk Toolkit Demo", applyStatusBarPadding = false)
         )
     }
 }
@@ -33,10 +33,10 @@ private fun FrnkTopAppBar_BackAndAction_Light() {
                     navigationContentDescription = "Back",
                     actions =
                         listOf(
-                            FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search"),
+                            FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search")
                         ),
-                    applyStatusBarPadding = false,
-                ),
+                    applyStatusBarPadding = false
+                )
         )
     }
 }
@@ -52,8 +52,8 @@ private fun FrnkTopAppBar_SearchActive_Light() {
                     isSearchActive = true,
                     searchQuery = "Button",
                     searchPlaceholder = "Search components",
-                    applyStatusBarPadding = false,
-                ),
+                    applyStatusBarPadding = false
+                )
         )
     }
 }
@@ -70,10 +70,10 @@ private fun FrnkTopAppBar_BackAndAction_Dark() {
                     navigationContentDescription = "Back",
                     actions =
                         listOf(
-                            FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search"),
+                            FrnkTopAppBarAction(icon = Theme[icons][iconSearch], contentDescription = "Search")
                         ),
-                    applyStatusBarPadding = false,
-                ),
+                    applyStatusBarPadding = false
+                )
         )
     }
 }

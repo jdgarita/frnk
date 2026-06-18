@@ -27,7 +27,7 @@ import org.koin.compose.getKoin
  */
 class OnboardingGate internal constructor(
     store: KeyValueStore,
-    key: String = DEFAULT_KEY,
+    key: String = DEFAULT_KEY
 ) {
     private val seenPref = store.booleanPreference(key, default = false)
 

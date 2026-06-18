@@ -25,7 +25,7 @@ import org.koin.core.module.Module
 fun initializeFrnk(
     context: Context,
     modules: List<Module>,
-    extraConfig: KoinApplication.() -> Unit = {},
+    extraConfig: KoinApplication.() -> Unit = {}
 ): KoinApplication {
     val applicationContext = context.applicationContext
     DatabaseContext.application = applicationContext

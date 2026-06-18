@@ -37,7 +37,7 @@ import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingGate
 fun FrnkFirstLaunchOnboardingEffect(
     scope: FrnkAppScope,
     gate: OnboardingGate?,
-    enabled: Boolean,
+    enabled: Boolean
 ) {
     if (!enabled) return
     // Session fallback for hosts with no persistent store: survives config changes via saved state,

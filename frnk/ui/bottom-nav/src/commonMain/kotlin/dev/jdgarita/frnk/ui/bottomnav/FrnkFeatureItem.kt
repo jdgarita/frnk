@@ -27,5 +27,5 @@ data class FrnkFeatureItem(
     val label: String,
     val icon: ImageVector,
     val iosSystemIcon: String,
-    val key: String = "feature",
+    val key: String = "feature"
 )

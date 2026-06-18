@@ -21,13 +21,13 @@ sealed interface FrnkStringSource {
     /** A theme string token (e.g. `stringProBadge`), resolved via `Theme[strings][token]`. */
     @Immutable
     data class Token(
-        val token: ThemeToken<String>,
+        val token: ThemeToken<String>
     ) : FrnkStringSource
 
     /** A literal, dynamic string the theme can't supply (a version name, a user's input, a count). */
     @Immutable
     data class Raw(
-        val value: String,
+        val value: String
     ) : FrnkStringSource
 
     /**
@@ -37,6 +37,6 @@ sealed interface FrnkStringSource {
     @Immutable
     data class Composite(
         val parts: List<FrnkStringSource>,
-        val separator: String = " ",
+        val separator: String = " "
     ) : FrnkStringSource
 }

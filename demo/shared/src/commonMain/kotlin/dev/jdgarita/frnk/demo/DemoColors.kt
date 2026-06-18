@@ -18,11 +18,11 @@ fun demoPurpleThemeConfig(): FrnkThemeConfig =
         lightColorOverrides =
             mapOf(
                 colorPrimary to Color(0xFF6E56CF),
-                colorOnPrimary to Color.White,
+                colorOnPrimary to Color.White
             ),
         darkColorOverrides =
             mapOf(
                 colorPrimary to Color(0xFF9F85FF),
-                colorOnPrimary to Color(0xFF1E1145),
-            ),
+                colorOnPrimary to Color(0xFF1E1145)
+            )
     )

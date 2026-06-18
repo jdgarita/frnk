@@ -43,7 +43,7 @@ sealed interface FrnkListRowState {
     data class Content(
         val title: String,
         val subtitle: String? = null,
-        val icon: FrnkIconState? = null,
+        val icon: FrnkIconState? = null
     ) : FrnkListRowState
 
     data object Skeleton : FrnkListRowState
@@ -69,7 +69,7 @@ fun FrnkListRow(
     trailing: (@Composable () -> Unit)? = null,
     swipe: FrnkSwipeableState? = null,
     onSwipeAction: (FrnkSwipeAction) -> Unit = {},
-    surfaceColor: ThemeToken<Color> = colorBackground,
+    surfaceColor: ThemeToken<Color> = colorBackground
 ) {
     if (swipe == null || state is FrnkListRowState.Skeleton) {
         FrnkListRowContent(state = state, onClick = onClick, trailing = trailing, modifier = modifier)
@@ -78,7 +78,7 @@ fun FrnkListRow(
             state = swipe,
             onAction = onSwipeAction,
             modifier = modifier,
-            contentBackground = surfaceColor,
+            contentBackground = surfaceColor
         ) {
             FrnkListRowContent(state = state, onClick = onClick, trailing = trailing)
         }
@@ -91,7 +91,7 @@ private fun FrnkListRowContent(
     state: FrnkListRowState,
     onClick: (() -> Unit)?,
     trailing: (@Composable () -> Unit)?,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val content =
         when (state) {
@@ -121,12 +121,12 @@ private fun FrnkListRowContent(
                     }
                 }.padding(horizontal = Theme[spacing][spacingMd], vertical = Theme[spacing][spacingSm]),
         horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         content.icon?.let { FrnkIcon(state = it) }
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
+            verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
         ) {
             FrnkText(state = FrnkTextState.TitleMedium(text = content.title))
             content.subtitle?.let {

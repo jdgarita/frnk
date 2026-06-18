@@ -15,5 +15,5 @@ package dev.jdgarita.frnk.monetization.revenuecat
  * ```
  */
 data class RevenueCatConfig(
-    val proEntitlementId: String = "pro",
+    val proEntitlementId: String = "pro"
 )

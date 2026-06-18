@@ -23,5 +23,5 @@ enum class HapticType {
     Warning,
 
     /** A negative cue — a failed operation or invalid input. */
-    Error,
+    Error
 }

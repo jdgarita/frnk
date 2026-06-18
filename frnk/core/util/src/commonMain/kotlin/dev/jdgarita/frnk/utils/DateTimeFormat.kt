@@ -8,6 +8,6 @@ import kotlinx.datetime.toLocalDateTime
 object DateTimeFormat {
     fun isoDate(
         instant: Instant,
-        tz: TimeZone = TimeZone.currentSystemDefault(),
+        tz: TimeZone = TimeZone.currentSystemDefault()
     ): String = instant.toLocalDateTime(tz).date.toString()
 }

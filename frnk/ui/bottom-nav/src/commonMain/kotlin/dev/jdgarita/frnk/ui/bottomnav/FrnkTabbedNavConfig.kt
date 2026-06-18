@@ -48,7 +48,7 @@ data class FrnkTabbedNavConfig(
     val theme: FrnkThemeConfig = FrnkThemeConfig.Default,
     val home: FrnkHomeConfig = FrnkHomeConfig(),
     val settings: FrnkSettingsConfig = FrnkSettingsConfig(),
-    val onboarding: FrnkOnboardingConfig = FrnkOnboardingConfig(),
+    val onboarding: FrnkOnboardingConfig = FrnkOnboardingConfig()
 )
 
 /**
@@ -60,7 +60,7 @@ data class FrnkTabbedNavConfig(
 @Immutable
 data class FrnkAppInfo(
     val name: String,
-    val version: String,
+    val version: String
 )
 
 /**
@@ -86,7 +86,7 @@ data class FrnkNavConfig(
     val hostRoutes: SerializersModule = EmptySerializersModule(),
     val hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
     val homeRoot: NavKey = ToolkitRoute.Home,
-    val settingsRoot: NavKey = ToolkitRoute.Settings,
+    val settingsRoot: NavKey = ToolkitRoute.Settings
 )
 
 /**
@@ -99,7 +99,7 @@ data class FrnkNavConfig(
 @Immutable
 data class FrnkHomeConfig(
     val topBar: FrnkTopAppBarState? = null,
-    val vmKey: String? = null,
+    val vmKey: String? = null
 )
 
 /**
@@ -112,7 +112,7 @@ data class FrnkHomeConfig(
 @Immutable
 data class FrnkSettingsConfig(
     val extraSections: List<SettingsSectionState> = emptyList(),
-    val vmKey: String? = null,
+    val vmKey: String? = null
 )
 
 /**
@@ -127,5 +127,5 @@ data class FrnkSettingsConfig(
 @Immutable
 data class FrnkOnboardingConfig(
     val pages: List<OnboardingPageState> = emptyList(),
-    val showOnFirstLaunch: Boolean = true,
+    val showOnFirstLaunch: Boolean = true
 )

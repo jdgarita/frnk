@@ -13,12 +13,12 @@ import dev.jdgarita.frnk.ui.mvi.ModelMviViewModel
  */
 class OnboardingViewModel :
     ModelMviViewModel<OnboardingArguments, OnboardingModelState, OnboardingScreenState, OnboardingIntent, OnboardingEffect>(
-        factory = OnboardingModelStateFactory,
+        factory = OnboardingModelStateFactory
     ) {
     override fun onAttached(arguments: OnboardingArguments) {
         updateModel {
             copy(
-                pages = arguments.pages,
+                pages = arguments.pages
             )
         }
     }
@@ -26,7 +26,7 @@ class OnboardingViewModel :
     override fun mapToUiState(modelState: OnboardingModelState): OnboardingScreenState =
         OnboardingScreenState(
             pages = modelState.pages,
-            currentPageIndex = modelState.currentPageIndex,
+            currentPageIndex = modelState.currentPageIndex
         )
 
     override suspend fun onIntent(intent: OnboardingIntent) {

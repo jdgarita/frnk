@@ -49,7 +49,7 @@ sealed interface FrnkProfileHeaderState {
         val name: String,
         val avatar: FrnkIconState,
         val subtitle: String? = null,
-        val stats: List<FrnkLabeledValueState.Content> = emptyList(),
+        val stats: List<FrnkLabeledValueState.Content> = emptyList()
     ) : FrnkProfileHeaderState
 
     data object Skeleton : FrnkProfileHeaderState
@@ -62,7 +62,7 @@ private const val SKELETON_STAT_COUNT = 3
 @Composable
 fun FrnkProfileHeader(
     state: FrnkProfileHeaderState,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val loading = state is FrnkProfileHeaderState.Skeleton
 
@@ -73,12 +73,12 @@ fun FrnkProfileHeader(
                 .clip(Theme[shapes][shapeCard])
                 .background(Theme[colors][colorSurface])
                 .padding(Theme[spacing][spacingLg]),
-        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
+        verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd])
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier =
@@ -89,7 +89,7 @@ fun FrnkProfileHeader(
                         .let {
                             if (loading) it else it.background(Theme[colors][colorPrimaryContainer])
                         }.padding(Theme[spacing][spacingSm]),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 FrnkIcon(
                     state =
@@ -98,19 +98,19 @@ fun FrnkProfileHeader(
                             // Size the placeholder to the header's conventional avatar (lg) so the
                             // chip doesn't resize when the real avatar loads.
                             FrnkProfileHeaderState.Skeleton -> FrnkIconState.Skeleton(size = FrnkIconSize.lg)
-                        },
+                        }
                 )
             }
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs]),
+                verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
             ) {
                 when (state) {
                     is FrnkProfileHeaderState.Content -> {
                         FrnkText(state = FrnkTextState.Title(text = state.name))
                         state.subtitle?.let {
                             FrnkText(
-                                state = FrnkTextState.BodyMedium(text = it, color = colorOnSurfaceVariant),
+                                state = FrnkTextState.BodyMedium(text = it, color = colorOnSurfaceVariant)
                             )
                         }
                     }
@@ -131,7 +131,7 @@ fun FrnkProfileHeader(
         if (stats.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd]),
+                horizontalArrangement = Arrangement.spacedBy(Theme[spacing][spacingMd])
             ) {
                 stats.forEach { stat ->
                     FrnkLabeledValue(state = stat, modifier = Modifier.weight(1f))

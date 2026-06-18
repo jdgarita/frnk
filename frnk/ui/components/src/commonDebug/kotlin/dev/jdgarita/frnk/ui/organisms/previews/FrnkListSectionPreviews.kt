@@ -23,8 +23,8 @@ private fun chevronTrailing() {
             FrnkIconState.Content(
                 imageVector = Theme[icons][iconChevronRight],
                 contentDescription = null,
-                tint = colorOnSurfaceVariant,
-            ),
+                tint = colorOnSurfaceVariant
+            )
     )
 }
 
@@ -34,13 +34,13 @@ private val accountRows: List<FrnkListRowState>
             FrnkListRowState.Content(
                 title = "Notifications",
                 subtitle = "Push, email and in-app alerts",
-                icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null),
+                icon = FrnkIconState.Content(Theme[icons][iconNotifications], contentDescription = null)
             ),
             FrnkListRowState.Content(
                 title = "Preferences",
                 subtitle = "Theme, language and units",
-                icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null),
-            ),
+                icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null)
+            )
         )
 
 @Preview
@@ -52,10 +52,10 @@ private fun FrnkListSection_Titled_Light() {
                 FrnkListSectionState(
                     title = "Account",
                     rows = accountRows,
-                    footnote = "Manage how you're notified across devices.",
+                    footnote = "Manage how you're notified across devices."
                 ),
             onRowClick = {},
-            trailing = { chevronTrailing() },
+            trailing = { chevronTrailing() }
         )
     }
 }
@@ -67,7 +67,7 @@ private fun FrnkListSection_Untitled_Dark() {
         FrnkListSection(
             state = FrnkListSectionState(rows = accountRows),
             onRowClick = {},
-            trailing = { chevronTrailing() },
+            trailing = { chevronTrailing() }
         )
     }
 }
@@ -81,8 +81,8 @@ private fun FrnkListSection_Skeleton_Light() {
                 FrnkListSectionState(
                     title = "Account",
                     rows =
-                        List(3) { FrnkListRowState.Skeleton },
-                ),
+                        List(3) { FrnkListRowState.Skeleton }
+                )
         )
     }
 }
