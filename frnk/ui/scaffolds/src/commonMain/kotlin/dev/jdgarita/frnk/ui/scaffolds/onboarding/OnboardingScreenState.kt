@@ -9,6 +9,15 @@ import dev.jdgarita.frnk.ui.mvi.ModelStateFactory
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
+
+@Immutable
+data class OnboardingPageModel(
+    val title: FrnkStringSource,
+    val description: FrnkStringSource,
+    val icon: FrnkIconSource
+)
 
 /**
  * One page of the onboarding pager. Reuses atom state types so styling resolves through the same
@@ -33,7 +42,7 @@ data class OnboardingPageState(
  */
 @Immutable
 data class OnboardingArguments(
-    val pages: List<OnboardingPageState>
+    val pages: List<OnboardingPageModel>
 ) : Arguments {
     init {
         require(pages.isNotEmpty()) { "OnboardingArguments requires at least one page." }
@@ -47,7 +56,7 @@ data class OnboardingArguments(
  */
 @Immutable
 data class OnboardingModelState(
-    val pages: List<OnboardingPageState> = emptyList(),
+    val pages: List<OnboardingPageModel> = emptyList(),
     val currentPageIndex: Int = 0
 ) : ModelState
 

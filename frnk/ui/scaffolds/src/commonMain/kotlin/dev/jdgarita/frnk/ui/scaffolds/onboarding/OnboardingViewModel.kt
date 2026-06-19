@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
 import dev.jdgarita.frnk.ui.mvi.ModelMviViewModel
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.ext.toUiState
 
 /**
  * Thin UI-state machine for [OnboardingScreen]. Owns nothing but the current page index: the host
@@ -16,16 +17,15 @@ class OnboardingViewModel :
         factory = OnboardingModelStateFactory
     ) {
     override fun onAttached(arguments: OnboardingArguments) {
+        super.onAttached(arguments)
         updateModel {
-            copy(
-                pages = arguments.pages
-            )
+            copy(pages = arguments.pages)
         }
     }
 
     override fun mapToUiState(modelState: OnboardingModelState): OnboardingScreenState =
         OnboardingScreenState(
-            pages = modelState.pages,
+            pages = modelState.pages.map { it.toUiState() },
             currentPageIndex = modelState.currentPageIndex
         )
 
@@ -35,6 +35,7 @@ class OnboardingViewModel :
                 // `lastIndex.coerceAtLeast(0)` guards the pre-attach frame where `pages` is empty
                 // (`lastIndex == -1` would make `coerceIn(0, -1)` throw on an empty range).
                 updateModel { copy(currentPageIndex = intent.index.coerceIn(0, pages.lastIndex.coerceAtLeast(0))) }
+
             OnboardingIntent.NextClicked -> {
                 val model = currentModel()
                 if (model.currentPageIndex == model.pages.lastIndex) {
@@ -43,8 +44,10 @@ class OnboardingViewModel :
                     updateModel { copy(currentPageIndex = currentPageIndex + 1) }
                 }
             }
+
             OnboardingIntent.PreviousClicked ->
                 updateModel { copy(currentPageIndex = (currentPageIndex - 1).coerceAtLeast(0)) }
+
             OnboardingIntent.CloseClicked -> emit(OnboardingEffect.CloseRequested)
         }
     }

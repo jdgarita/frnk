@@ -1,11 +1,13 @@
 package dev.jdgarita.frnk.ui.scaffolds
 
-import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingArguments
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingIntent
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageModel
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingViewModel
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
+import dev.jdgarita.frnk.ui.theme.iconCheck
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
@@ -30,8 +32,14 @@ import kotlin.test.assertTrue
 class OnboardingViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
 
-    private fun pages(count: Int): List<OnboardingPageState> =
-        List(count) { OnboardingPageState(title = FrnkTextState.Title(text = "Page $it")) }
+    private fun pages(count: Int): List<OnboardingPageModel> =
+        List(count) {
+            OnboardingPageModel(
+                title = FrnkStringSource.Raw("Page $it"),
+                description = FrnkStringSource.Raw("Description $it"),
+                icon = FrnkIconSource.Token(iconCheck)
+            )
+        }
 
     private fun attachedVm(pageCount: Int = 3): OnboardingViewModel =
         OnboardingViewModel().also { it.attach(OnboardingArguments(pages = pages(pageCount))) }

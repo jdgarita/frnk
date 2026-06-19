@@ -1,15 +1,13 @@
 package dev.jdgarita.frnk.ui.scaffolds.previews
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenContent
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -63,7 +61,7 @@ private fun sampleState(pageIndex: Int): OnboardingScreenState {
 @Composable
 private fun OnboardingScreen_FirstPage_Light() {
     PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreenContent(state = sampleState(0), onIntent = {}, modifier = Modifier.fillMaxSize())
+        OnboardingScreen(state = sampleState(0), onIntent = {})
     }
 }
 
@@ -71,7 +69,7 @@ private fun OnboardingScreen_FirstPage_Light() {
 @Composable
 private fun OnboardingScreen_MiddlePage_Light() {
     PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreenContent(state = sampleState(1), onIntent = {}, modifier = Modifier.fillMaxSize())
+        OnboardingScreen(state = sampleState(1), onIntent = {})
     }
 }
 
@@ -79,7 +77,7 @@ private fun OnboardingScreen_MiddlePage_Light() {
 @Composable
 private fun OnboardingScreen_LastPage_Light() {
     PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreenContent(state = sampleState(2), onIntent = {}, modifier = Modifier.fillMaxSize())
+        OnboardingScreen(state = sampleState(2), onIntent = {})
     }
 }
 
@@ -87,7 +85,7 @@ private fun OnboardingScreen_LastPage_Light() {
 @Composable
 private fun OnboardingScreen_FirstPage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
-        OnboardingScreenContent(state = sampleState(0), onIntent = {}, modifier = Modifier.fillMaxSize())
+        OnboardingScreen(state = sampleState(0), onIntent = {})
     }
 }
 
@@ -95,7 +93,7 @@ private fun OnboardingScreen_FirstPage_Dark() {
 @Composable
 private fun OnboardingScreen_MiddlePage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
-        OnboardingScreenContent(state = sampleState(1), onIntent = {}, modifier = Modifier.fillMaxSize())
+        OnboardingScreen(state = sampleState(1), onIntent = {})
     }
 }
 
@@ -103,6 +101,6 @@ private fun OnboardingScreen_MiddlePage_Dark() {
 @Composable
 private fun OnboardingScreen_LastPage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
-        OnboardingScreenContent(state = sampleState(2), onIntent = {}, modifier = Modifier.fillMaxSize())
+        OnboardingScreen(state = sampleState(2), onIntent = {})
     }
 }
