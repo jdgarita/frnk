@@ -15,6 +15,7 @@ class FrnkUiModulesTest {
     @Test
     fun contains_every_scaffold_view_model_module() {
         val modules = frnkUiModules()
+        assertTrue(appearanceModule in modules, "appearance controller module")
         assertTrue(homeScaffoldModule in modules, "home scaffold VM module")
         assertTrue(settingsScaffoldModule in modules, "settings scaffold VM module")
         assertTrue(onboardingScaffoldModule in modules, "onboarding scaffold VM module")

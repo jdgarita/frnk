@@ -28,6 +28,7 @@ import org.koin.core.module.Module
  */
 fun frnkUiModules(): List<Module> =
     listOf(
+        appearanceModule,
         homeScaffoldModule,
         settingsScaffoldModule,
         onboardingScaffoldModule
