@@ -16,7 +16,7 @@ kotlin {
             // The atoms/molecules/organisms design system (and, transitively, :ui-theme + :haptics).
             api(projects.uiComponents)
             // The MVI engine (MviViewModel/UiState/…) + the Compose-free Nav3 contract (NavKey/NavBackStack/
-            // ToolkitRoute) these Compose bindings bind. api so the facade re-exports them for still.
+            // FrnkRoute) these Compose bindings bind. api so the facade re-exports them for still.
             api(projects.coreMvi)
             api(projects.coreNav)
             // FeedbackEmail (mailto draft) behind FeedbackEmailLauncher; available transitively via coreMvi

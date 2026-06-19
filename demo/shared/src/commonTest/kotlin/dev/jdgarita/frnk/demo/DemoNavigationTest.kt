@@ -2,7 +2,7 @@ package dev.jdgarita.frnk.demo
 
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.monetization.FeatureGate
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -19,11 +19,11 @@ class DemoNavigationTest {
         val forwarded = mutableListOf<DemoEffect>()
 
         // The key the demo's FeatureGate actually emits — assert it resolves to the toolkit-owned
-        // ToolkitRoute.Paywall (the route registered via frnkPaywallNavigation) rather than the router
+        // FrnkRoute.Paywall (the route registered via frnkPaywallNavigation) rather than the router
         // hardcoding a route regardless of payload.
         routeDemoEffect(DemoEffect.Navigate(FeatureGate.PAYWALL_ROUTE_KEY), navigated::add, forwarded::add)
 
-        assertEquals(listOf<NavKey>(ToolkitRoute.Paywall), navigated)
+        assertEquals(listOf<NavKey>(FrnkRoute.Paywall), navigated)
         assertTrue(forwarded.isEmpty(), "recognized navigation effects must not be forwarded to the host")
     }
 

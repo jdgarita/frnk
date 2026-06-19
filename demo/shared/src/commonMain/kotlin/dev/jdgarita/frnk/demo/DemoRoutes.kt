@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 /**
  * Type-safe Navigation3 destinations the demo still owns. The Home / Settings tab roots and the
- * Onboarding flow moved to the toolkit defaults (`ToolkitRoute.Home` / `ToolkitRoute.Settings` /
- * `ToolkitRoute.Onboarding`) when `FrnkDemoApp` adopted `FrnkAppScaffold`, and the paywall is the
- * toolkit-owned `ToolkitRoute.Paywall` — so all that's left here is the middle "Components" tab:
+ * Onboarding flow moved to the toolkit defaults (`FrnkRoute.Home` / `FrnkRoute.Settings` /
+ * `FrnkRoute.Onboarding`) when `FrnkDemoApp` adopted `FrnkAppScaffold`, and the paywall is the
+ * toolkit-owned `FrnkRoute.Paywall` — so all that's left here is the middle "Components" tab:
  * its root, and the detail screen pushed onto it ([ComponentDetail]).
  *
  * Each member is a `@Serializable` [NavKey] so it can key a `NavBackStack` (and restore via

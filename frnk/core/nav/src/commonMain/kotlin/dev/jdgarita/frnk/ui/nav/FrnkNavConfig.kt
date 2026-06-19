@@ -11,7 +11,7 @@ import kotlinx.serialization.modules.polymorphic
  * configuration change and process death. nav3 serializes back-stack keys polymorphically over [NavKey],
  * so every concrete route type must be registered.
  *
- * The toolkit's own [ToolkitRoute] members are registered here; a host merges its own routes by passing a
+ * The toolkit's own [FrnkRoute] members are registered here; a host merges its own routes by passing a
  * [hostRoutes] module with its `polymorphic(NavKey::class) { subclass(...) }` block:
  *
  * ```
@@ -32,11 +32,11 @@ fun frnkNavConfiguration(hostRoutes: SerializersModule = EmptySerializersModule(
         serializersModule =
             SerializersModule {
                 polymorphic(NavKey::class) {
-                    subclass(ToolkitRoute.Home::class, ToolkitRoute.Home.serializer())
-                    subclass(ToolkitRoute.Onboarding::class, ToolkitRoute.Onboarding.serializer())
-                    subclass(ToolkitRoute.Settings::class, ToolkitRoute.Settings.serializer())
-                    subclass(ToolkitRoute.Paywall::class, ToolkitRoute.Paywall.serializer())
-                    subclass(ToolkitRoute.Custom::class, ToolkitRoute.Custom.serializer())
+                    subclass(FrnkRoute.Home::class, FrnkRoute.Home.serializer())
+                    subclass(FrnkRoute.Onboarding::class, FrnkRoute.Onboarding.serializer())
+                    subclass(FrnkRoute.Settings::class, FrnkRoute.Settings.serializer())
+                    subclass(FrnkRoute.Paywall::class, FrnkRoute.Paywall.serializer())
+                    subclass(FrnkRoute.Custom::class, FrnkRoute.Custom.serializer())
                 }
                 include(hostRoutes)
             }

@@ -2,11 +2,11 @@ package dev.jdgarita.frnk.demo
 
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.monetization.FeatureGate
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 
 /**
  * Compose-free routing of the demo's one-shot [DemoEffect]s. A [DemoEffect.Navigate] carrying
- * [FeatureGate.PAYWALL_ROUTE_KEY] is pushed via [navigate] as the toolkit-owned [ToolkitRoute.Paywall]
+ * [FeatureGate.PAYWALL_ROUTE_KEY] is pushed via [navigate] as the toolkit-owned [FrnkRoute.Paywall]
  * (the same route `rememberFrnkSettingsHandler` and `frnkPaywallNavigation` use, so every paywall entry
  * point — Home crown, Settings, feature gates — lands on one destination); any other key (or a
  * non-navigation effect) is forwarded to the host via [onForward].
@@ -26,7 +26,7 @@ fun routeDemoEffect(
     when (effect) {
         is DemoEffect.Navigate ->
             when (effect.routeKey) {
-                FeatureGate.PAYWALL_ROUTE_KEY -> navigate(ToolkitRoute.Paywall)
+                FeatureGate.PAYWALL_ROUTE_KEY -> navigate(FrnkRoute.Paywall)
                 else -> onForward(effect)
             }
         is DemoEffect.Toast -> onForward(effect)

@@ -19,7 +19,7 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:core-di` | `core-di` | `projects.coreDi` | Bootstrap: `initializeFrnk(modules)` + `requireFrnkKoin()`. |
 | `:shared-utils` | `shared-utils` | `projects.sharedUtils` | Root utils: coroutines, datetime, `AppResult`, `PlatformInfo`, `Frnk.VERSION`. |
 | `:core-mvi` | `core-mvi` | `projects.coreMvi` | MVI engine (`MviViewModel`, `UiText`); no Compose. |
-| `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`ToolkitRoute`, back-stack helpers); no Compose. |
+| `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`FrnkRoute`, back-stack helpers); no Compose. |
 | `:haptics` | `haptics` | `projects.haptics` | `HapticFeedback`/`HapticType` contract + multihaptic engine. |
 | `:ui-theme` | `ui-theme` | `projects.uiTheme` | `FrnkTheme` + tokens (compose-unstyled). |
 | `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
@@ -113,9 +113,9 @@ FrnkThemeConfig(
 )
 ```
 
-## 3. Map ToolkitRoute to Compose screens
+## 3. Map FrnkRoute to Compose screens
 
-The toolkit's `ToolkitRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
+The toolkit's `FrnkRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
 default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). When using `FrnkTabbedNavScaffold` /
 `FrnkAppScaffold` (§8), those routes are already wired — you don't map them. For a hand-wired nav3
 host, register them on your `FrnkNavDisplay` `entryProvider` and drive navigation through the MVI
@@ -125,7 +125,7 @@ effect channel, mutating the host-owned `NavBackStack`:
 EffectCollector(viewModel.effects) { effect ->
     when (effect) {
         is MyEffect.Navigate -> backStack.navigateTo(effect.route)   // route: NavKey
-        MyEffect.Upgrade     -> backStack.navigateTo(ToolkitRoute.Paywall)
+        MyEffect.Upgrade     -> backStack.navigateTo(FrnkRoute.Paywall)
         MyEffect.Back        -> backStack.back()
     }
 }
@@ -350,7 +350,7 @@ setContent {
   library) and **register its `route` in `entries`** — the shell owns only Home/Settings/Onboarding.
 - Every extension point receives a **`FrnkAppScope`** (`navigateTo` / `back` / `clearAndNavigateTo`) so a
   single `EffectCollector` drives navigation.
-- Don't re-register the built-in routes (`ToolkitRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
+- Don't re-register the built-in routes (`FrnkRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
   `entries` — nav3 throws on duplicate entry registrations.
 - When `onboarding.pages` is supplied, onboarding is **auto-presented once on first launch** and
   persisted through a `KeyValueStore`-backed gate (install `prefsModule` for cross-launch persistence;

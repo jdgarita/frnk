@@ -18,21 +18,21 @@ import kotlinx.serialization.Serializable
  * single Compose-side collector mutates the host-owned `NavBackStack` (see [navigateTo] / [back]).
  */
 @Serializable
-sealed interface ToolkitRoute : NavKey {
+sealed interface FrnkRoute : NavKey {
     @Serializable
-    data object Home : ToolkitRoute
+    data object Home : FrnkRoute
 
     @Serializable
-    data object Onboarding : ToolkitRoute, FrnkFullScreenRoute
+    data object Onboarding : FrnkRoute, FrnkFullScreenRoute
 
     @Serializable
-    data object Settings : ToolkitRoute
+    data object Settings : FrnkRoute
 
     @Serializable
-    data object Paywall : ToolkitRoute, FrnkFullScreenRoute
+    data object Paywall : FrnkRoute, FrnkFullScreenRoute
 
     @Serializable
     data class Custom(
         val id: String
-    ) : ToolkitRoute
+    ) : FrnkRoute
 }

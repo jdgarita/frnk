@@ -47,7 +47,7 @@ data class FrnkAppConfig(
 /**
  * The paywall configuration surfaced when monetization modules are installed.
  *
- * @property paywallFeatures the bullet-point feature list shown on the auto-mounted `ToolkitRoute.Paywall`.
+ * @property paywallFeatures the bullet-point feature list shown on the auto-mounted `FrnkRoute.Paywall`.
  */
 @Immutable
 data class FrnkMonetizationConfig(

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
 import dev.jdgarita.frnk.ui.theme.FrnkThemeConfig
@@ -85,8 +85,8 @@ data class FrnkNavConfig(
     val feature: FrnkFeatureItem,
     val hostRoutes: SerializersModule = EmptySerializersModule(),
     val hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute },
-    val homeRoot: NavKey = ToolkitRoute.Home,
-    val settingsRoot: NavKey = ToolkitRoute.Settings
+    val homeRoot: NavKey = FrnkRoute.Home,
+    val settingsRoot: NavKey = FrnkRoute.Settings
 )
 
 /**

@@ -23,10 +23,10 @@ import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.FrnkTab
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
 import dev.jdgarita.frnk.ui.nav.frnkNavConfiguration
 import dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
@@ -101,7 +101,7 @@ import dev.jdgarita.frnk.ui.theme.strings
  *  - [homeContent] — the Home tab's body; items in a scaffold-owned scrolling column ([HomeScreen]).
  *  - [entries] — additional destinations (the feature tab's root, pushed details), registered on the
  *    `entryProvider`. **Do not** re-register [FrnkNavConfig.homeRoot], [FrnkNavConfig.settingsRoot],
- *    `ToolkitRoute.Onboarding` (when [FrnkOnboardingConfig.pages] is non-empty) — nav3 throws on duplicates.
+ *    `FrnkRoute.Onboarding` (when [FrnkOnboardingConfig.pages] is non-empty) — nav3 throws on duplicates.
  *  - [effects] — composed inside the theme above the nav host; put the host's single `EffectCollector`
  *    here and drive navigation via `scope.navigateTo(route)`.
  *  - [onHomeEffect] / [settingsEffects] — the built-in tabs' effect handlers. The default Settings handler
@@ -181,7 +181,7 @@ fun FrnkTabbedNavScaffold(
                         )
                     }
                     if (config.onboarding.pages.isNotEmpty()) {
-                        entry(ToolkitRoute.Onboarding) {
+                        entry(FrnkRoute.Onboarding) {
                             OnboardingScreen(
                                 arguments =
                                     remember(config.onboarding.pages) {
@@ -348,7 +348,7 @@ private fun rememberDefaultSettingsHandler(
                 is SettingsEffect.ActionInvoked ->
                     when (effect.action) {
                         SettingsAction.ShowOnboarding ->
-                            if (onboardingAvailable) scope.navigateTo(ToolkitRoute.Onboarding)
+                            if (onboardingAvailable) scope.navigateTo(FrnkRoute.Onboarding)
                         else -> Unit
                     }
                 else -> Unit

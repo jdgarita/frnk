@@ -17,7 +17,7 @@ import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
  * unified [dev.jdgarita.frnk.demo.FrnkDemoApp] entry point (which both platform hosts share), so there
  * is one source of truth for the demo's screens.
  *
- * It deliberately does **not** register `ToolkitRoute.Paywall`: `FrnkAppScaffold` auto-mounts that, so
+ * It deliberately does **not** register `FrnkRoute.Paywall`: `FrnkAppScaffold` auto-mounts that, so
  * leaving it out avoids a duplicate route registration (nav3 throws on duplicates).
  *
  * All screens share the one host-scoped [dev.jdgarita.frnk.demo.DemoViewModel] (passed in as [state] +

@@ -12,7 +12,7 @@ import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
@@ -26,7 +26,7 @@ const val GOD_MODE_TOGGLE_ID = "god_mode"
 /**
  * Centralizes the toolkit's Settings wiring so every host gets paywall navigation, restore,
  * manage-subscription, the god-mode toggle, and the haptic-feedback toggle for free. Handles
- * `UpgradeToPro` (→ navigate to the toolkit [ToolkitRoute.Paywall]), `RestorePurchases`,
+ * `UpgradeToPro` (→ navigate to the toolkit [FrnkRoute.Paywall]), `RestorePurchases`,
  * `ManageSubscription` (→ open the provider's customer-specific management URL, falling back to the
  * platform's native subscriptions deep link via [platformManageSubscriptionsUrl]), and the god-mode and
  * `HAPTICS_TOGGLE_ID` [SettingsEffect.ToggleChanged]s (the latter drives the ambient [LocalFrnkHaptics]);
@@ -50,7 +50,7 @@ fun rememberFrnkSettingsHandler(
                     when (effect.action) {
                         SettingsAction.UpgradeToPro -> {
                             analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to "settings"))
-                            backStack.navigateTo(ToolkitRoute.Paywall)
+                            backStack.navigateTo(FrnkRoute.Paywall)
                         }
                         SettingsAction.RestorePurchases ->
                             scope.launch {

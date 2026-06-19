@@ -19,7 +19,7 @@ import dev.jdgarita.frnk.ui.bottomnav.FrnkAppScope
 import dev.jdgarita.frnk.ui.bottomnav.FrnkFirstLaunchOnboardingEffect
 import dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavScaffold
 import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.rememberOnboardingGate
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
@@ -40,7 +40,7 @@ import org.koin.compose.koinInject
  * [EntitlementManager] (the Subscription section flips Free↔Pro as entitlements change), the
  * monetization-aware Settings handler ([rememberFrnkSettingsHandler]: Upgrade → paywall, Restore,
  * god mode, Manage Subscription) with appearance / onboarding / feedback fallbacks, the
- * auto-mounted [ToolkitRoute.Paywall] destination ([FrnkMonetizationConfig.paywallFeatures]), and
+ * auto-mounted [FrnkRoute.Paywall] destination ([FrnkMonetizationConfig.paywallFeatures]), and
  * **first-launch onboarding** — when [FrnkOnboardingConfig.pages][dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig.pages]
  * are supplied and [FrnkOnboardingConfig.showOnFirstLaunch][dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig.showOnFirstLaunch]
  * is true, the onboarding flow is presented once on first open (persisted via a `KeyValueStore`-backed
@@ -168,9 +168,9 @@ fun FrnkAppScaffold(
         },
         entries = { scope ->
             // The paywall ships with the toolkit — mounted automatically when monetization is in the
-            // graph (the same ToolkitRoute.Paywall the settings handler targets on UpgradeToPro).
+            // graph (the same FrnkRoute.Paywall the settings handler targets on UpgradeToPro).
             if (entitlements != null) {
-                entry(ToolkitRoute.Paywall) {
+                entry(FrnkRoute.Paywall) {
                     FrnkPaywallDestination(
                         features = config.monetization.paywallFeatures,
                         source = "settings",
@@ -210,7 +210,7 @@ private fun rememberFrnkAppSettingsHandler(
                     is SettingsEffect.ActionInvoked ->
                         when (effect.action) {
                             SettingsAction.ShowOnboarding ->
-                                if (onboardingAvailable) scope.navigateTo(ToolkitRoute.Onboarding)
+                                if (onboardingAvailable) scope.navigateTo(FrnkRoute.Onboarding)
                             SettingsAction.SendFeedback -> sendFeedback()
                             else -> Unit
                         }

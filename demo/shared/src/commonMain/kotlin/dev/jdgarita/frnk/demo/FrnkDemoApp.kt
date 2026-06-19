@@ -79,7 +79,7 @@ import dev.jdgarita.frnk.ui.molecules.FrnkSwipeBehavior
 import dev.jdgarita.frnk.ui.molecules.FrnkSwipeDirection
 import dev.jdgarita.frnk.ui.molecules.FrnkSwipeableState
 import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.nav.ToolkitRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.organisms.FrnkListSection
 import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
@@ -140,14 +140,14 @@ import org.koin.compose.viewmodel.koinViewModel
  * `FrnkAppScaffold` owns the theme wrap, the nav3 saved-state config, the fixed Home · Components ·
  * Settings adaptive tabs with per-tab back stacks, the persistent bottom bar, the built-in
  * Home/Settings/Onboarding destinations, **plus the runtime batteries** — a Koin fail-fast check, the
- * live `EntitlementManager`-driven Settings, the **auto-mounted** `ToolkitRoute.Paywall`, and
+ * live `EntitlementManager`-driven Settings, the **auto-mounted** `FrnkRoute.Paywall`, and
  * **first-launch onboarding** (so this composable no longer hand-wires either). The demo supplies only
  * its content:
- *  - **Home** (`ToolkitRoute.Home`, the built-in `HomeScreen`) — the toolkit showcase via
+ *  - **Home** (`FrnkRoute.Home`, the built-in `HomeScreen`) — the toolkit showcase via
  *    [DemoHomeContent] in the `homeContent` slot; the crown Upgrade action arrives as a `HomeEffect`.
  *  - **Components** ([DemoRoute.Components], the demo's center `feature` tab) — a gallery of every
  *    `Frnk*` atom; tapping a row pushes [DemoRoute.ComponentDetail] (a type-safe `name` argument).
- *  - **Settings** (`ToolkitRoute.Settings`, the built-in tab) — the default catalogue plus the demo's
+ *  - **Settings** (`FrnkRoute.Settings`, the built-in tab) — the default catalogue plus the demo's
  *    god-mode Developer section, injected via [FrnkAppScaffold]'s `settingsState`/`settingsEffects`
  *    overrides ([rememberDemoSettingsState] / [demoSettingsHandler]).
  *
@@ -223,7 +223,7 @@ fun FrnkDemoApp(
         effects = { scope -> DemoEffectCollector(vm, scope, onEffect) },
         // Host destinations, registered on the scaffold's entryProvider. The demo's screens share the
         // one host-scoped DemoViewModel rather than per-entry Koin VMs (see [demoFeatureEntries]). The
-        // paywall is NOT registered here — FrnkAppScaffold auto-mounts ToolkitRoute.Paywall (and the
+        // paywall is NOT registered here — FrnkAppScaffold auto-mounts FrnkRoute.Paywall (and the
         // first-launch onboarding effect) for us.
         entries = { scope ->
             demoFeatureEntries(scope = scope, state = state, onIntent = vm::send, onEffect = onEffect)
@@ -248,7 +248,7 @@ val demoFeatureItem: FrnkFeatureItem =
 
 /**
  * The demo's only host routes: the middle "Components" tab root + its pushed detail. Home / Settings /
- * Onboarding / Paywall are the toolkit-owned `ToolkitRoute` defaults. Returns a fresh `SerializersModule`
+ * Onboarding / Paywall are the toolkit-owned `FrnkRoute` defaults. Returns a fresh `SerializersModule`
  * (no value equality) — callers must `remember` it once and hold it stable.
  */
 fun demoHostRoutes(): SerializersModule =
@@ -260,7 +260,7 @@ fun demoHostRoutes(): SerializersModule =
     }
 
 /**
- * The paywall feature bullets shown on `ToolkitRoute.Paywall`, fed to
+ * The paywall feature bullets shown on `FrnkRoute.Paywall`, fed to
  * `FrnkMonetizationConfig.paywallFeatures` so `FrnkAppScaffold` advertises them on the auto-mounted
  * paywall. A stable top-level val shared by both platform hosts via [FrnkDemoApp].
  */
@@ -343,7 +343,7 @@ fun demoSettingsHandler(
                 is SettingsEffect.AppearanceChanged -> appearanceController.appearance = effect.appearance
                 is SettingsEffect.ActionInvoked ->
                     when (effect.action) {
-                        SettingsAction.ShowOnboarding -> scope.navigateTo(ToolkitRoute.Onboarding)
+                        SettingsAction.ShowOnboarding -> scope.navigateTo(FrnkRoute.Onboarding)
                         SettingsAction.SendFeedback -> sendFeedback()
                         else -> onEffect(DemoEffect.Toast("${effect.action} tapped"))
                     }
