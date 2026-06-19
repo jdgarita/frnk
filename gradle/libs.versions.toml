@@ -112,6 +112,17 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 multihaptic-core = { module = "top.ltfan.multihaptic:multihaptic-core", version.ref = "multihaptic" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihaptic" }
 
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-ui" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
+
+
 # Material3 Expressive (HorizontalFloatingToolbar) — :ui-bottom-nav androidMain only. Overrides the
 # compose.material3 (1.9.0) the CMP plugin would otherwise resolve. See the version comment above.
 compose-material3-expressive = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3-expressive" }
@@ -125,18 +136,6 @@ compose-unstyled-button = { module = "com.composables:composeunstyled-button", v
 compose-unstyled-icon = { module = "com.composables:composeunstyled-icon", version.ref = "compose-unstyled" }
 compose-unstyled-separators = { module = "com.composables:composeunstyled-separators", version.ref = "compose-unstyled" }
 compose-ripple-indication = { module = "com.composables:ripple-indication", version.ref = "ripple-indication" }
-
-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
-compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
-# Compose Multiplatform UI-test runtime (runComposeUiTest). Referenced via the direct coordinate
-# rather than the `compose.uiTest` Gradle accessor, which is gated behind an @ExperimentalComposeLibrary
-# opt-in. Test-only, androidHostTest source set (runs under Robolectric).
-compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
-# Contributes the androidx.activity.ComponentActivity declaration to the (host) test manifest so the
-# Compose test host can launch it under Robolectric. Pinned to the AndroidX Compose version CMP resolves to.
-androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-ui" }
-
 
 [plugins]
 kotlin-multiplatform               = { id = "org.jetbrains.kotlin.multiplatform",       version.ref = "kotlin" }

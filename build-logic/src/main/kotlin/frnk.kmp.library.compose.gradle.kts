@@ -1,4 +1,4 @@
-import org.jetbrains.compose.ComposeExtension
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.getByType
 
 // frnk KMP-library + Compose convention plugin.
@@ -16,17 +16,19 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// The Compose dependency notations (`compose.runtime`, …) come from the just-applied compose plugin's
-// extension; expose them as `api` so they're on every Compose module's public surface uniformly (rather
-// than each module re-declaring them, or relying on a transitive export from a sibling).
-private val compose = extensions.getByType<ComposeExtension>().dependencies
+// The Compose deps are pinned from the shared catalog (the `compose-multiplatform` version) and exposed
+// as `api` so they're on every Compose module's public surface uniformly (rather than each module
+// re-declaring them, or relying on a transitive export from a sibling). Catalog lookup by dashed alias
+// mirrors the sibling plugins (`frnk.kmp.library.hosttest`, `…composehosttest`) — precompiled script
+// plugins don't get type-safe `libs.*` accessors, so the catalog is resolved manually.
+private val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(compose.runtime)
-            api(compose.foundation)
-            api(compose.ui)
+            api(libs.findLibrary("compose-runtime").get())
+            api(libs.findLibrary("compose-foundation").get())
+            api(libs.findLibrary("compose-ui").get())
         }
     }
 }
