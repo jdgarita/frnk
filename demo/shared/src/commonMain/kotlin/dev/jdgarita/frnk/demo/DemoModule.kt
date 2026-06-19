@@ -15,6 +15,7 @@ import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
+import dev.jdgarita.frnk.ui.app.appearanceModule
 import dev.jdgarita.frnk.ui.scaffolds.home.homeScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule
@@ -34,6 +35,7 @@ import kotlin.time.Clock
  */
 val demoModule =
     module {
+        includes(appearanceModule)
         includes(homeScaffoldModule)
         includes(onboardingScaffoldModule)
         includes(settingsScaffoldModule)
