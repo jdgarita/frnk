@@ -7,17 +7,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.backhandler.BackHandler
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute
+import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
 import dev.jdgarita.frnk.ui.nav.FrnkNavTab
+import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks
-import dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks
+import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.iconNavHome
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
@@ -57,66 +64,102 @@ import org.koin.core.module.Module
  * @param initialTabKey the tab shown first; defaults to the first [tabs] entry.
  * @param homeTabKey the tab back returns to from any other tab's root; defaults to the first [tabs] entry.
  */
-@OptIn(KoinExperimentalAPI::class)
+@OptIn(KoinExperimentalAPI::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FrnkNestedNavScaffold(
+    modifier: Modifier = Modifier,
     tabs: List<FrnkNavTab>,
     onSavedStateConfiguration: () -> SavedStateConfiguration,
-    onNestedNavigationModule: (tabbed: FrnkTabbedBackStacks) -> Module,
-    modifier: Modifier = Modifier,
-    initialTabKey: String = tabs.first().key,
-    homeTabKey: String = tabs.first().key,
-    hideBarFor: (NavKey) -> Boolean = { it is FrnkFullScreenRoute }
+    onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
-    // The scaffold owns the per-tab back stacks + loads the host's nested module against them, so the
-    // host supplies only the saved-state config + a module factory (and never touches the back stacks).
-    val tabbed =
-        rememberFrnkTabbedBackStacks(
+    val viewModel: FrnkNestedNavViewModel = koinViewModel()
+
+    val backStack =
+        rememberNavBackStack(
             configuration = onSavedStateConfiguration(),
-            navTabs = tabs,
-            initialTabKey = initialTabKey,
-            homeTabKey = homeTabKey
+            elements = arrayOf(FrnkRoute.Home)
         )
-    remember(tabbed) {
-        loadKoinModules(onNestedNavigationModule(tabbed))
+
+    remember(backStack) {
+        loadKoinModules(
+            modules =
+                listOf(
+                    onNestedNavigationModule(backStack)
+                )
+        )
     }
 
-    // Back from a non-home tab's root returns to the home tab; within-tab pops and the home-root exit are
-    // handled by FrnkNavDisplay / the system.
-    FrnkTabbedBackHandler(tabbed)
-
-    val navBarItems =
-        remember(tabs) {
-            tabs.map { FrnkNavBarItem(key = it.key, icon = it.icon, iosSystemIcon = it.iosSystemIcon, label = it.label) }
-        }
-    // Derived from the active tab key (a snapshot read), so the highlight follows tab swaps.
-    val selectedIndex = navBarItems.indexOfFirst { it.key == tabbed.currentTabKey }
-
-    val onItemSelected: (Int) -> Unit = { index ->
-        val key = navBarItems[index].key
-        if (key == tabbed.currentTabKey) tabbed.resetCurrentToRoot() else tabbed.switchTo(key)
+    BackHandler(enabled = true) {
+        // tabbed.switchToHome()
     }
 
-    // Hide the bar on full-screen routes (paywall, onboarding, …); also guard against an unknown tab.
-    val topRoute = tabbed.current.lastOrNull()
-    val barVisible = selectedIndex >= 0 && (topRoute == null || !hideBarFor(topRoute))
-
-    val reservedHeight = FrnkNavBarDefaults.reservedHeight
-    val contentInset = if (barVisible) reservedHeight else 0.dp
-
-    Box(modifier = modifier.fillMaxSize()) {
-        CompositionLocalProvider(LocalFrnkBottomBarInset provides contentInset) {
-            FrnkNavDisplay(
-                backStack = tabbed.current,
-                modifier = Modifier.fillMaxSize()
-            )
+    FrnkScreen(
+        arguments =
+            FrnkNestedNavArguments(
+                items =
+                    listOf(
+                        FrnkNavBarItemModel(
+                            key = "Home",
+                            icon = FrnkIconSource.Token(iconNavHome),
+                            iosSystemIcon = "house",
+                            label = "Home"
+                        ),
+                        FrnkNavBarItemModel(
+                            key = "Components",
+                            icon = FrnkIconSource.Token(iconNavHome),
+                            iosSystemIcon = "square.grid.2x2",
+                            label = "Component"
+                        ),
+                        FrnkNavBarItemModel(
+                            key = "Settings",
+                            icon = FrnkIconSource.Token(iconNavHome),
+                            iosSystemIcon = "gearshape",
+                            label = "Settings"
+                        )
+                    )
+            ),
+        viewModel = viewModel,
+        onEffect = { uiEffect ->
+            when (uiEffect) {
+                is FrnkNestedNavEffect.Navigate -> {
+                    if (uiEffect.index == 0) {
+                        backStack.navigateTo(FrnkRoute.Home)
+                    }
+                    if (uiEffect.index == 1) {
+                        backStack.navigateTo(FrnkRoute.Custom("Components"))
+                    }
+                    if (uiEffect.index == 2) {
+                        backStack.navigateTo(FrnkRoute.Settings)
+                    }
+                }
+            }
         }
+    ) { state ->
 
-        if (barVisible) {
+        // The scaffold owns the per-tab back stacks + loads the host's nested module against them, so the
+        // host supplies only the saved-state config + a module factory (and never touches the back stacks).
+
+        val reservedHeight = FrnkNavBarDefaults.reservedHeight
+
+        Box(modifier = modifier.fillMaxSize()) {
+            CompositionLocalProvider(LocalFrnkBottomBarInset provides reservedHeight) {
+                FrnkNavDisplay(
+                    backStack = backStack,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
             FrnkBottomFloatingBar(
-                items = navBarItems,
-                selectedIndex = selectedIndex,
-                onItemSelected = onItemSelected,
+                items = state.items,
+                selectedIndex = state.selectedIndex,
+                onItemSelected = { index ->
+                    viewModel.send(
+                        intent =
+                            FrnkNestedNavIntent.Tap(
+                                index = index
+                            )
+                    )
+                },
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
             )
         }
