@@ -29,7 +29,8 @@ kotlin {
             // Runtime for the generated `Res` accessor (the iOS placeholder drawable). Must be commonMain:
             // the Compose-resources plugin generates the accessor into commonMain even for the single
             // placeholder, so the generated `Res` won't compile if the runtime lives only in iosMain.
-            implementation(compose.components.resources)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.ui.backhandler)
         }
         androidMain.dependencies {
             // Android bar = a Material3 *Expressive* HorizontalFloatingToolbar (floating pill) over
