@@ -8,9 +8,8 @@ import org.koin.compose.getKoin
 
 /**
  * The toolkit's **first-launch gate**: a tiny wrapper over a persisted `Boolean` preference that
- * records whether the user has been shown onboarding. Hosts use it to present onboarding exactly once
- * — see `FrnkFirstLaunchOnboardingEffect` (`:ui-bottom-nav`), which `FrnkAppScaffold` wires
- * automatically and lower-level shells opt into.
+ * records whether the user has been shown onboarding. Hosts use it to present onboarding exactly once,
+ * wiring it into their own onboarding presentation.
  *
  * Backed by [KeyValueStore.booleanPreference], so it persists across launches through whichever
  * `KeyValueStore` the host installed (`prefsModule` on a real host; an in-memory fake in the demo).
@@ -48,7 +47,7 @@ class OnboardingGate internal constructor(
 /**
  * Resolves an [OnboardingGate] from the Koin graph's [KeyValueStore], or `null` when no store is bound
  * (a host that installs no `prefsModule` simply has no first-launch persistence — gating no-ops rather
- * than crashing, matching how `FrnkAppScaffold` resolves `EntitlementManager` leniently).
+ * than crashing, matching how `FrnkApp` resolves `EntitlementManager` leniently).
  */
 @Composable
 fun rememberOnboardingGate(key: String = OnboardingGate.DEFAULT_KEY): OnboardingGate? {

@@ -84,7 +84,7 @@ descriptions.
 
 - There is **no aggregator** (restructure Stage 1, OQ-7): hosts depend on the
   individual modules they use. `:core-di` owns the bootstrap; `:ui-app` owns the
-  batteries-included app root (`FrnkAppScaffold`) + `frnkUiModules()`.
+  app root (`FrnkApp`) + `frnkUiModules()`.
 - The one-shot bootstrap:
   ```kotlin
   // dev.jdgarita.frnk.di (:core-di)

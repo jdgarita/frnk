@@ -8,7 +8,7 @@ import org.koin.core.module.Module
 
 /**
  * The toolkit's SDK-free scaffold ViewModel modules — tiny factories every VM-backed scaffold
- * (Home/Settings/Onboarding, and the [FrnkAppScaffold] shell built on them) resolves from.
+ * (Home/Settings/Onboarding) resolves from.
  *
  * Hosts prepend this to their explicit Koin module list:
  *

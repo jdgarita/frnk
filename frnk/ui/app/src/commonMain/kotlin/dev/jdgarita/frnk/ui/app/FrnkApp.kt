@@ -24,10 +24,9 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
 
 /**
- * The toolkit's **lower-level** app root — owns only the app chrome and hands the navigation graph to
- * the host. It **coexists below** [FrnkAppScaffold]: reach for [FrnkAppScaffold] when you want the
- * batteries (live-entitlement Settings, auto-paywall, first-launch onboarding) from a declarative
- * `FrnkAppConfig`; reach for [FrnkApp] when you want full control over the nav graph.
+ * The toolkit's app root — owns only the app chrome and hands the navigation graph to the host. The host
+ * registers its own root destinations (onboarding / tab shell / paywall) and wires the nested tab
+ * navigation itself, keeping full control over the nav graph (nothing is auto-mounted).
  *
  * It provides the [AppearanceController]-driven light/dark [FrnkTheme], system-bar appearance, the
  * `AppScaffold` window chrome, and a single **root** [androidx.navigation3.ui.NavDisplay] seeded at

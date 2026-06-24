@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
  * it* (the mapper) — the engine owns the wiring.
  *
  * Runtime inputs arrive as [Arguments] (`A`) at **attach time**, not via the constructor: the Compose
- * lifecycle helper (`RememberMviLifecycle`) calls [attach] when the view first appears, which retains the
+ * lifecycle helper (`FrnkScreen`) calls [attach] when the view first appears, which retains the
  * [arguments] and runs the [onAttached] hook once. Override [onAttached] to seed the model from the
  * arguments and start loads — that work runs when the screen is actually shown, not at construction.
  * Service dependencies (managers, trackers) stay as ordinary constructor params, separate from [Arguments].

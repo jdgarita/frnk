@@ -7,8 +7,8 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
 /**
- * The `SavedStateConfiguration` for a **nested/tab** back stack — the one a tabbed shell (e.g. the
- * [FrnkRootRoute.Tab] destination, or `FrnkTabbedNavScaffold`) drives. It registers the toolkit's
+ * The `SavedStateConfiguration` for a **nested/tab** back stack — the one a tabbed shell
+ * (`FrnkNestedNavScaffold`, at the [FrnkRootRoute.Tab] destination) drives. It registers the toolkit's
  * tab-level [FrnkRoute] members ([FrnkRoute.Home] / [FrnkRoute.Custom] / [FrnkRoute.Settings]) and
  * `include`s the host's own routes, passed as a [hostRoutes] `SerializersModule` with a
  * `polymorphic(NavKey::class) { subclass(...) }` block.

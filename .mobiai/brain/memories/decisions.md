@@ -1121,3 +1121,18 @@ Fixed: back from a non-Home tab root (e.g. Settings) exited the app instead of r
 ### Files
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt
+
+## Public-API improvement backlog (docs/api-improvements/) + Tier 1 landed
+
+- id: public-api-improvement-backlog-docs-api-improvements-tier-1-20260624-224123
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: architecture
+- date: 2026-06-24
+
+Tiered backlog of frnk public-API improvements (host ergonomics) lives at docs/api-improvements/ (README.md has a reusable evaluation prompt + tier-1.md..tier-4.md). It's a backlog, NOT canonical API reference (canonical stays in per-module CLAUDE.md + docs/). Tiers: 1 hygiene; 2 host ergonomics (nav-wiring simplification, bootstrap presets/XOR validation, Settings<->monetization decoupling, db Koin helper, iOS/Crashlytics consolidation, implement EffectCollector/SyncMviConfig); 3 consistency/type-safety; 4 capability maturity. TIER 1 LANDED: (a) removed phantom MVI-binding symbols from all live docs/KDoc — FrnkMviScreen/EffectCollector/SyncMviConfig/RememberMviLifecycle NEVER existed in code (only FrnkScreen does; the SyncMviConfig mechanism survives as SettingsIntent/HomeIntent.ConfigChanged). (b) git rm'd the dead legacy config cluster (7 unused files): :ui-app FrnkAppConfig.kt + ext/FrnkAppConfigExt.kt; :ui-bottom-nav FrnkTabbedNavConfig.kt/FrnkTabbedNavViewState.kt/FrnkBottomNavState.kt/FrnkBottomNavTab.kt/FrnkFeatureItem.kt. (c) fixed requireFrnkKoin error message FrnkAppScaffold->FrnkApp + removed two stale 'pending removal' doc notes. Compile gate green. Remaining tracked (tier-1.md item 1.4): FrnkAppScaffold/FrnkTabbedNavScaffold still referenced in some KDoc (REQUIREMENTS.md, demo KDoc, OnboardingGate, FrnkUiModules(+Test), FrnkRootRoute). NOT committed yet (user reviews).
+
+### Files
+- docs/api-improvements/README.md
+- docs/api-improvements/tier-1.md

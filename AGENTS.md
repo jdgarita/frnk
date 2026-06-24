@@ -20,7 +20,7 @@ in full.
 - Make the smallest safe change; preserve module boundaries, naming, and style; avoid unrelated edits.
 - `*-api` modules stay SDK-free; impls bind via Koin; every `*-api` interface returns `AppResult` (never throws).
 - **No Material3 outside `:ui-bottom-nav`** — the design-system modules (`:ui-theme`/`:ui-components`/`:ui-scaffolds`) stay `compose-unstyled`-based.
-- Hoist screen/nav/business state into `MviViewModel`; prefer `FrnkMviScreen`/`EffectCollector`/Navigation3 helpers over hand-rolled plumbing.
+- Hoist screen/nav/business state into `MviViewModel`; prefer `FrnkScreen`/Navigation3 helpers over hand-rolled plumbing.
 - New screens/features are exercised in `:demo-shared`, `demo-android`, and `iosDemoApp` (or a written justification).
 
 ## Validation (CI is paused on the private repo — validate locally before pushing)

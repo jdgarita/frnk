@@ -1,0 +1,48 @@
+# Tier 3 — Consistency & type-safety
+
+Polish: tighten naming, state-shape conventions, and type safety. Lower urgency than Tiers 1–2; some items are
+churny, so weigh against blast radius.
+
+---
+
+## 3.1 — Type-safe feature gating
+
+- **Problem:** `Feature` is a `data class` with companion constants (`Feature.Premium`, …). A host can call the
+  gate with `Feature("typo")` and silently get `false` — no compile-time safety. (`:monetization-api`.)
+- **Proposed change:** offer a typed registry / sealed or enum-backed feature pattern (or a host-extensible
+  `sealed` hierarchy) so gates are checked at compile time.
+- **Host benefit:** premium gating can't silently misfire on a typo.
+- **Effort:** M · **Risk:** medium (touches the monetization contract) · **Doc-only vs API:** API ·
+  **Status:** Proposed
+
+## 3.2 — Unify / clearly document the component `*State` convention
+
+- **Problem:** the mandated shape is `sealed interface FrnkXState { data class Content; data object Skeleton }`,
+  but there are divergences: `FrnkTextState` is a `sealed class` with per-variant `skeleton` fields,
+  `FrnkEmptyState` is a plain `data class` with no skeleton, and several atoms carry secondary constructors
+  (`ImageVector` → `FrnkIconSource.Vector`, `String` → `FrnkStringSource.Raw`) that double the surface.
+  (`:ui-components` `ui/atoms/`, `ui/molecules/`, `ui/organisms/`.)
+- **Proposed change:** either align the outliers or document the exceptions crisply in the component style
+  guide (`HOST_INTEGRATION.md` §9 + `frnk/ui/components/CLAUDE.md`) with the rationale for each.
+- **Host benefit:** faster to learn; fewer "why is this one different?" moments when authoring components.
+- **Effort:** M (align) or S (document) · **Risk:** medium if aligning (touches many atoms) ·
+  **Doc-only vs API:** doc-only or API · **Status:** Proposed
+
+## 3.3 — Tighten `FrnkRoute` / `FrnkRootRoute` naming + config asymmetry
+
+- **Problem:** two parallel route catalogues — `FrnkRoute` (tab-level) and `FrnkRootRoute` (app-root) — both
+  with a `Custom(id)`, confuse first-time hosts. The config builders are asymmetric too: `frnkRootNavConfig`
+  is a `val`, `frnkNestedNavConfig(hostRoutes)` is a function. (`:core-nav`.)
+- **Proposed change:** clarify naming/docs (which catalogue keys which stack) and consider symmetric config
+  builders (or document the asymmetry's reason: root is fixed, nested is host-extensible).
+- **Host benefit:** less mental overhead at the most error-prone layer.
+- **Effort:** S–M · **Risk:** medium if renaming public types · **Doc-only vs API:** doc-only (or API if
+  renaming) · **Status:** Proposed
+
+## 3.4 — `Preference<T>` coverage
+
+- **Problem:** the typed `Preference<T>` layer (`:data-prefs-api`) supports only `String`/`Boolean`/`Int`/
+  `Enum`; `Long`, `Double`, and nullable-string are deferred, so hosts drop to raw `KeyValueStore`.
+- **Proposed change:** add `longPreference` / `doublePreference` / nullable-string support.
+- **Host benefit:** hosts stay on the typed delegate layer.
+- **Effort:** S · **Risk:** low (additive) · **Doc-only vs API:** API (additive) · **Status:** Proposed

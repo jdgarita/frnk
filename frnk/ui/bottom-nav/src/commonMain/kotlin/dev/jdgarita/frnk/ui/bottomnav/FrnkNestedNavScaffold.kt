@@ -33,7 +33,7 @@ import org.koin.core.module.Module
  *  - a [FrnkNavDisplay] driven by the active tab's back stack,
  *  - the platform-adaptive [FrnkBottomFloatingBar] overlaid above it (so it persists across tab swaps),
  *  - the bottom-inset bookkeeping ([LocalFrnkBottomBarInset]) so screens on
- *    `FrnkScreenScaffold` / `FrnkMviScreen` reserve the bar's footprint automatically.
+ *    `FrnkScreenScaffold` reserves the bar's footprint automatically.
  *
  * **Per-tab back stacks** live in [FrnkNestedNavViewModel] (not in a `remember*` holder): each tab keeps
  * its own nested-navigation history, swapped in/out of the single live `backStack` on tab change. A tap →

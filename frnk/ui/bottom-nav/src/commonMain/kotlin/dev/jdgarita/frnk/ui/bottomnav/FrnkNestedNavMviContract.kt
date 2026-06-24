@@ -54,7 +54,7 @@ sealed interface FrnkNestedNavIntent : UiIntent {
 
 /**
  * The host's middle [FrnkCustomTab], delivered to [FrnkNestedNavViewModel] at attach time (via the
- * scaffold's `RememberMviLifecycle`). Home + Settings are toolkit-fixed; only the middle tab is supplied.
+ * scaffold's `FrnkScreen`). Home + Settings are toolkit-fixed; only the middle tab is supplied.
  */
 @Immutable
 data class FrnkNestedNavArguments(

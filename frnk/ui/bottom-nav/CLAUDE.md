@@ -3,7 +3,7 @@
 The toolkit's **platform-adaptive bottom navigation** module: a Material3 *Expressive*
 `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3
 bar (older) on iOS, plus the MVI-backed tabbed scaffold (`FrnkNestedNavScaffold`) that wires it up. Depends
-on `:ui-scaffolds` (tokens, theme, `EffectCollector`).
+on `:ui-scaffolds` (tokens, theme, `FrnkScreen`, `FrnkNavDisplay`).
 
 ## The adaptive bar (`FrnkBottomFloatingBar`)
 
@@ -136,10 +136,6 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   Most hosts use `FrnkNestedNavScaffold`; call the bar directly only when wiring your own selected-tab state /
   navigation. This is the toolkit's sole bottom-nav bar.
 
-> **Legacy remnants pending removal.** `FrnkBottomNavState.kt`, `FrnkFeatureItem.kt`, `FrnkBottomNavTab.kt`,
-> and `FrnkTabbedNavConfig.kt` (+ `FrnkTabbedNavViewState.kt`) physical files still exist but are **orphaned** —
-> their only consumer (the removed `FrnkTabbedNavScaffold`) is gone. Don't treat them as live API.
-
 ## Override model
 
 The tab shape is **fixed at three** — `Home · <custom> · Settings` — with Home and Settings toolkit-owned. The
@@ -154,7 +150,7 @@ inside the `FrnkRootRoute.Tab` destination, under `:ui-app`'s `FrnkApp` root.
 
 ## Dependencies
 
-- `api(projects.uiScaffolds)` — tokens, theme, `EffectCollector`, `LocalFrnkBottomBarInset`,
+- `api(projects.uiScaffolds)` — tokens, theme, `FrnkScreen`, `LocalFrnkBottomBarInset`,
   `FrnkNavDisplay`.
 - `api(compose.runtime / foundation / ui)`.
 - `commonMain`: `implementation(compose.components.resources)` — runtime for the generated `Res` accessor

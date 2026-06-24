@@ -10,7 +10,8 @@ import androidx.navigation3.runtime.NavKey
  * intent-first instead of poking the list, and stay Compose-free (callable from MVI effect handlers).
  *
  * Drive them from a single Compose-side collector of the ViewModel's one-shot effect channel (the
- * channel is single-consumer) — typically inside each `navigation<Route> { … }` block or `EffectCollector`.
+ * channel is single-consumer) — typically inside each `navigation<Route> { … }` block or a single effect
+ * collector (e.g. `FrnkScreen`'s `onEffect`).
  */
 
 /**

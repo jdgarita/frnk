@@ -14,11 +14,11 @@ import dev.jdgarita.frnk.ui.atoms.frnkBottomSystemBarInset
  *  - **iOS** — narendraanjana09's adaptive-nav-bar: a native glassy `UITabBar` (iOS 26+) / Material3
  *    Compose bar (older), driven by each item's [FrnkNavBarItem.iosSystemIcon] SF-Symbol.
  *
- * [onItemSelected] receives the tapped index. The bar renders the items only — the toolkit's primary action
- * is a permanent **centered bar item** injected by [FrnkTabbedNavScaffold] (Mode B), not a separate FAB, so
- * the bar has no FAB slot. Both actuals theme from `FrnkTheme` tokens, not the platform/Material defaults.
+ * [onItemSelected] receives the tapped index. The bar renders the items only — no FAB slot (the old dynamic
+ * primary-action / FAB mechanism was removed). Both actuals theme from `FrnkTheme` tokens, not the
+ * platform/Material defaults.
  *
- * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkTabbedNavScaffold]
+ * This is the toolkit's sole bottom-bar engine. Most hosts reach it through [FrnkNestedNavScaffold]
  * rather than calling it directly.
  */
 @Composable
@@ -41,7 +41,7 @@ object FrnkNavBarDefaults {
 
     /**
      * The bar's **full** reserved height = [BarHeight] + the bottom system-bar inset the bar floats above.
-     * Hosts that overlay the bar over scrollable content (as `FrnkTabbedNavScaffold` does) reserve this much
+     * Hosts that overlay the bar over scrollable content (as `FrnkNestedNavScaffold` does) reserve this much
      * as the content's bottom inset so the last item clears the bar.
      */
     val reservedHeight: Dp

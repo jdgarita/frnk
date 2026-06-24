@@ -37,12 +37,12 @@ fun initializeFrnk(
 
 /**
  * Fail-fast accessor for the global Koin started by [initializeFrnk] — used by entry-point
- * composables (e.g. `FrnkAppScaffold`) to turn a missing bootstrap into an immediate, explained
+ * composables (e.g. `FrnkApp`) to turn a missing bootstrap into an immediate, explained
  * crash instead of a deep `NoDefinitionFound` later.
  */
 fun requireFrnkKoin(): Koin =
     checkNotNull(KoinPlatformTools.defaultContext().getOrNull()) {
-        "Koin is not started. Call initializeFrnk(...) before composing FrnkAppScaffold — " +
+        "Koin is not started. Call initializeFrnk(...) before composing FrnkApp — " +
             "from Application.onCreate (initializeFrnk(context = this, modules = …)) on Android, " +
             "or before creating the ComposeUIViewController on iOS."
     }

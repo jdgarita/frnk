@@ -85,7 +85,7 @@ up a fresh framework — no manual gradle invocation needed.
   `UIViewControllerRepresentable` (`ComposeViewController.swift`).
 - MVI effects (`DemoEffect.Toast`, `DemoEffect.Navigate`) routed from Compose
   back to a SwiftUI toast overlay (`ContentView.swift`).
-- Theming via `FrnkTabbedNavScaffold`'s `themeConfig` (a `FrnkThemeConfig` demo palette) —
+- Theming via a `FrnkThemeConfig` demo palette (applied through `:ui-app`'s `FrnkApp`/`FrnkTheme`) —
   the same palette Android uses, defined once in `:demo-shared` commonMain.
 - `FeatureGate` exercised against the **real** RevenueCat Test Store provider (offerings,
   sandbox purchase, restore) — plus the frnk-owned **god mode** override (Settings → tap the

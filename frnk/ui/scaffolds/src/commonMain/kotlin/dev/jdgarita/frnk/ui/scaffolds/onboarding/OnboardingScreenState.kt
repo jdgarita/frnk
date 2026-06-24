@@ -32,7 +32,7 @@ data class OnboardingPageState(
 
 /**
  * The data-only runtime input for [OnboardingViewModel], supplied at **attach time** (see
- * [dev.jdgarita.frnk.ui.mvi.RememberMviLifecycle] / [dev.jdgarita.frnk.ui.mvi.FrnkScreen]) rather than
+ * [dev.jdgarita.frnk.ui.mvi.FrnkScreen]) rather than
  * through the constructor. Carries the onboarding configuration — the immutable page list — which
  * `onAttached` seeds into [OnboardingModelState].
  *

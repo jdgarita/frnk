@@ -13,8 +13,8 @@ import dev.jdgarita.frnk.ui.app.FrnkApp
  * so both platforms render one demo from one composable.
  *
  * Boots over the Koin graph `DemoApplication` already started (`bootstrapDemoKoin()`), which satisfies
- * `FrnkAppScaffold`'s `requireFrnkKoin()` assertion and binds the fake `EntitlementManager` that drives
- * the live Free↔Pro Settings + auto-mounted paywall. It does **not** call `initializeFrnk(context)` —
+ * `FrnkApp`'s `requireFrnkKoin()` assertion and binds the fake `EntitlementManager` that drives
+ * the live Free↔Pro Settings + host-wired paywall. It does **not** call `initializeFrnk(context)` —
  * that fresh-host overload is documented in `docs/HOST_INTEGRATION.md` §4.
  */
 class MainActivity : ComponentActivity() {

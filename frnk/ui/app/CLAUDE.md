@@ -7,8 +7,6 @@ The apex of the ui column (`dev.jdgarita.frnk.ui.app`) — the app root relocate
 - `FrnkApp(onSavedStateConfiguration, onNavigationModule)` (`FrnkApp.kt`) — the **app-root entry point**. It owns only the app chrome — `FrnkTheme` + `AppearanceController`-driven dark/light + system-bar appearance + a single root `NavDisplay` seeded at `FrnkRootRoute.Onboarding` — and hands the navigation graph to the host: `onSavedStateConfiguration` supplies the root config (`frnkRootNavConfig`) and `onNavigationModule(backStack)` returns a **Koin navigation module** (`org.koin.dsl.navigation3.navigation<Route> { … }`), loaded via `loadKoinModules`. No batteries auto-wired: the host registers its own root destinations (onboarding/tab-shell/paywall) and wires the nested tab navigation itself (the tabbed surface at `FrnkRootRoute.Tab` is `:ui-bottom-nav`'s `FrnkNestedNavScaffold`). Live-entitlement Settings, first-launch onboarding, and the paywall are wired by the host, not auto-presented.
 - `frnkUiModules(): List<Module>` — the SDK-free scaffold VM modules (home/settings/onboarding, plus `frnkNestedNavModule`) every host prepends to its `initializeFrnk(...)` list. Only scaffold VMs belong here; anything touching a third-party SDK is a separate module the host installs explicitly.
 
-> `FrnkAppConfig`/`FrnkMonetizationConfig` (`FrnkAppConfig.kt`) and `ext/FrnkAppConfigExt.kt` are legacy remnants of the removed `FrnkAppScaffold` path, pending removal — not part of the live surface.
-
 ## Rules
 
 - **No `*-impl` compile deps — ever.** `EntitlementManager`/`AnalyticsTracker` resolve from Koin at runtime; the compile surface is `:ui-bottom-nav` + `:shared-monetization-ui` + `:analytics-api` + `:core-di`.

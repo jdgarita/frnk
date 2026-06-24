@@ -123,13 +123,18 @@ your `FrnkNavDisplay` `entryProvider` (or, with `FrnkApp` / `FrnkNestedNavScaffo
 mutating the host-owned `NavBackStack`:
 
 ```kotlin
-EffectCollector(viewModel.effects) { effect ->
-    when (effect) {
-        is MyEffect.Navigate -> backStack.navigateTo(effect.route)   // route: NavKey
-        MyEffect.Upgrade     -> backStack.navigateTo(FrnkRoute.Paywall)
-        MyEffect.Back        -> backStack.back()
+// FrnkScreen consumes the VM's one-shot effects via its single-consumer onEffect:
+FrnkScreen(
+    viewModel = viewModel,
+    arguments = MyArgs,
+    onEffect = { effect ->
+        when (effect) {
+            is MyEffect.Navigate -> backStack.navigateTo(effect.route)   // route: NavKey
+            MyEffect.Upgrade     -> backStack.navigateTo(FrnkRoute.Paywall)
+            MyEffect.Back        -> backStack.back()
+        }
     }
-}
+) { state -> /* render with Frnk* atoms */ }
 ```
 
 See `docs/ARCHITECTURE.md` → Navigation for `frnkRootNavConfig` / `frnkNestedNavConfig` /
@@ -344,8 +349,8 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
   back stack currently drives every tab; per-tab back stacks and the back-from-a-non-home-tab-root → home
   convention are a planned follow-up.
 - Drive navigation through the MVI effect channel: a ViewModel emits a navigation `UiEffect`, a single
-  `EffectCollector` mutates the host-owned `NavBackStack` (`backStack.navigateTo` / `back` /
-  `clearAndNavigateTo`) — collect it in exactly one place (single-consumer channel).
+  effect collector (e.g. `FrnkScreen`'s `onEffect`) mutates the host-owned `NavBackStack`
+  (`backStack.navigateTo` / `back` / `clearAndNavigateTo`) — collect it in exactly one place (single-consumer channel).
 - The **batteries are yours to wire** — paywall (`FrnkPaywallDestination` from `:shared-monetization-ui`),
   onboarding, and the entitlement-driven Settings are registered by your navigation module, not auto-mounted.
 - `:demo-shared`'s `FrnkDemoApp` is the reference integration — the single shared composable both
