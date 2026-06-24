@@ -10,7 +10,7 @@ import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
-import dev.jdgarita.frnk.ui.theme.iconSettings
+import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 
@@ -24,7 +24,7 @@ private val sampleStats =
 @Composable
 private fun avatar() =
     FrnkIconState.Content(
-        imageVector = Theme[icons][iconSettings],
+        imageVector = Theme[icons][iconNavSettings],
         contentDescription = null,
         size = FrnkIconSize.lg,
         tint = colorOnPrimaryContainer
