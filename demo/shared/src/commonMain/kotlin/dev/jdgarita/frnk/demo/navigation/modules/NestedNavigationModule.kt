@@ -7,7 +7,6 @@ import dev.jdgarita.frnk.demo.ui.component.ComponentScreen
 import dev.jdgarita.frnk.demo.ui.component.ComponentsListScreen
 import dev.jdgarita.frnk.demo.ui.home.HomeScreen
 import dev.jdgarita.frnk.demo.ui.settings.SettingsScreen
-import dev.jdgarita.frnk.ui.mvi.CommonUiEffect
 import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.back
@@ -31,8 +30,6 @@ fun nestedNavigationModule(
 
                 HomeEffect.NavigationInvoked -> {
                 }
-
-                CommonUiEffect.DidPressBack() -> backStack.back()
             }
         }
     }
@@ -51,7 +48,6 @@ fun nestedNavigationModule(
 
     navigation<FrnkRoute.Settings> {
         SettingsScreen(
-            onNavigateAway = { backStack.back() },
             onNavigateToOnboarding = { onRootNavigate(FrnkRootRoute.Onboarding) }
         )
     }

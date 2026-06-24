@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.demo.ui.settings
 
 import androidx.compose.runtime.Composable
-import dev.jdgarita.frnk.ui.mvi.CommonUiEffect
 import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.scaffolds.settings.FrnkSettingsScreen
@@ -13,10 +12,7 @@ import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SettingsScreen(
-    onNavigateToOnboarding: () -> Unit,
-    onNavigateAway: () -> Unit
-) {
+fun SettingsScreen(onNavigateToOnboarding: () -> Unit) {
     val controller = LocalAppearanceController.current
 
     val viewModel: SettingsViewModel = koinViewModel()
@@ -35,7 +31,6 @@ fun SettingsScreen(
                         else -> Unit
                     }
 
-                CommonUiEffect.DidPressBack() -> onNavigateAway()
                 else -> Unit
             }
         }
