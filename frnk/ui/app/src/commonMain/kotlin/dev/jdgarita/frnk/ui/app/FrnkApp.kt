@@ -11,7 +11,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
@@ -45,7 +45,7 @@ fun FrnkApp(
 
         FrnkTheme {
             AppScaffold {
-                val initialRoute = FrnkRoute.Onboarding
+                val initialRoute = FrnkRootRoute.Onboarding
 
                 val backStack =
                     rememberNavBackStack(
@@ -53,7 +53,11 @@ fun FrnkApp(
                         elements = arrayOf(initialRoute)
                     )
 
-                remember(backStack) { loadKoinModules(module = onNavigationModule(backStack)) }
+                remember(backStack) {
+                    loadKoinModules(
+                        module = onNavigationModule(backStack)
+                    )
+                }
 
                 NavDisplay(
                     backStack = backStack,
