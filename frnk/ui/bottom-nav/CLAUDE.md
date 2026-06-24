@@ -3,7 +3,7 @@
 The toolkit's **platform-adaptive bottom navigation** module: a Material3 *Expressive*
 `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3
 bar (older) on iOS, plus the MVI-backed tabbed scaffold (`FrnkNestedNavScaffold`) that wires it up. Depends
-on `:ui-scaffolds` (tokens, theme, `EffectCollector`, `FrnkNavTab`).
+on `:ui-scaffolds` (tokens, theme, `EffectCollector`).
 
 ## The adaptive bar (`FrnkBottomFloatingBar`)
 
@@ -19,13 +19,10 @@ Material3 never leaves Android:
   the items only — no FAB. Vendored so the toolkit owns the bar's `UIKitView` update block (the upstream
   artifact exposed no Compose-driven hook), which re-applies theme changes in place instead of recreating.
 
-The bar renders **whatever tabs the host supplies** — there is no fixed shape and no FAB. The host hands
-`FrnkNestedNavScaffold` (below) a `tabs: List<FrnkNavTab>` (any count, any roots, all destinations
-host-supplied), and the scaffold derives one bar item per tab. There are **no toolkit-owned built-in
-tabs** — Home/Settings are not baked in; a host that wants them declares them as `FrnkNavTab`s like any
-other. Each tab is a **real navigable tab** (selection highlight, re-tap-to-root). The old dynamic
-primary-action / FAB / Mode-B mechanism (`FrnkNavPrimaryAction`, `FrnkPrimaryActionRegistry`,
-`FrnkPrimaryActionHandler`, `onPrimaryAction`) was removed — see
+The bar renders a **fixed three-tab** shape — `Home · Components · Settings` — defined inside
+`FrnkNestedNavScaffold` (below), with no FAB. Each tab is a **real navigable tab** (selection highlight,
+re-tap-to-root). The old dynamic primary-action / FAB / Mode-B mechanism (`FrnkNavPrimaryAction`,
+`FrnkPrimaryActionRegistry`, `FrnkPrimaryActionHandler`, `onPrimaryAction`) was removed — see
 `mobiai brain search "fixed three-tab bottom bar"`.
 
 > **History.** Originally one of *two* engines: [Calf](https://github.com/MohamedRejeb/Calf) and
@@ -41,12 +38,14 @@ primary-action / FAB / Mode-B mechanism (`FrnkNavPrimaryAction`, `FrnkPrimaryAct
 
 The common bar item carries **two** icon forms because the engines consume different things. The item is
 `FrnkNavBarItem` (`key`, `icon: FrnkIconSource`, `iosSystemIcon`, `label`); `FrnkNestedNavScaffold`'s VM
-builds one per `FrnkNavTab` (icon via `FrnkIconSource.Vector(tab.icon)`):
+builds the three fixed items with theme icon tokens (`FrnkIconSource.Token(iconNavHome)` /
+`FrnkIconSource.Token(iconNavComponent)` / `FrnkIconSource.Token(iconNavSettings)`):
 - `icon: FrnkIconSource` — resolved to a Compose `ImageVector` on Android (via `.resolve()`), rendered
   directly by the Android floating toolbar. **No `DrawableResource` anywhere on Android** — so there is
   **no host-side asset-packaging step** (the old AGP-9 wart is gone).
 - `iosSystemIcon: String` — an SF-Symbol name. The native iOS 26+ `UITabBar` renders a UIKit symbol, not a
-  Compose vector, so this identifier stays explicit. The host supplies it per tab (via `FrnkNavTab.iosSystemIcon`).
+  Compose vector, so this identifier stays explicit. The three SF-Symbols (`"house"` / `"square.grid.2x2"` /
+  `"gearshape"`) are defined in the scaffold.
 
 The vendored bar's `NavigationItem.icon` is a non-null `DrawableResource` (used only on the older-iOS Compose
 fallback bar), but the API no longer carries one — so the **iOS** actual feeds the
@@ -78,12 +77,12 @@ links under the consumer's existing `-undefined dynamic_lookup`.
 
 ## Contents (`ui/bottomnav/`)
 
-- `FrnkNestedNavScaffold.kt` — **the flexible tabbed scaffold** (replaced the removed `FrnkTabbedNavScaffold`);
+- `FrnkNestedNavScaffold.kt` — **the fixed three-tab tabbed scaffold** (replaced the removed `FrnkTabbedNavScaffold`);
   the public composable a host calls to get a multiple-back-stack tabbed surface.
-  `FrnkNestedNavScaffold(modifier, tabs: List<FrnkNavTab>, onSavedStateConfiguration: () -> SavedStateConfiguration, onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module)`
-  takes the host's **own** `tabs` (any count, any roots, **all** destinations host-supplied — no built-in
-  Home/Settings, no fixed shape), derives the bar items + routes from them (mapping each `FrnkNavTab` →
-  `FrnkNavBarItemModel`, icon via `FrnkIconSource.Vector(tab.icon)`, `route = tab.root`), and renders
+  `FrnkNestedNavScaffold(modifier, onSavedStateConfiguration: () -> SavedStateConfiguration, onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module)`
+  defines the three fixed bar items (Home/Components/Settings) inline — each a
+  `FrnkNavBarItemModel(key, icon = FrnkIconSource.Token(...), iosSystemIcon, label, route)`; the host supplies
+  only the saved-state config + the nested-nav module behind those routes. It renders
   `FrnkNavDisplay(backStack)` + the persistent `FrnkBottomFloatingBar` overlay + a `BackHandler { backStack.back() }`,
   providing `LocalFrnkBottomBarInset`. It is backed by the MVI `FrnkNestedNavViewModel` (below), which **owns
   the bar's view state** (`items` + `selectedIndex`) — selection lives in the VM, **not** in `remember`. A
@@ -129,17 +128,18 @@ links under the consumer's existing `-undefined dynamic_lookup`.
 
 ## Override model
 
-Configure the tabs by passing a `tabs: List<FrnkNavTab>` to `FrnkNestedNavScaffold` (any count, any roots).
-The host owns the saved-state config (`onSavedStateConfiguration`, e.g. `{ frnkNestedNavConfig() }`) and the
-nested-nav Koin module (`onNestedNavigationModule`, handed the created back stack — register destinations
-there); frnk owns the `FrnkNavDisplay` + persistent bar + selection state (in `FrnkNestedNavViewModel`) +
-bar-inset. The reference integration is `:demo-shared`, which mounts
-`FrnkNestedNavScaffold(tabs = demoNestedTabs, onSavedStateConfiguration = { frnkNestedNavConfig() }, onNestedNavigationModule = { nestedBackStack -> nestedNavigationModule(nestedBackStack) { … } })`
+The tab set is **fixed** — `Home · Components · Settings`. The host customizes only the destinations behind
+those routes via the nested-nav Koin module (`onNestedNavigationModule`, handed the created back stack —
+register destinations there) plus the saved-state config (`onSavedStateConfiguration`, e.g.
+`{ frnkNestedNavConfig() }`); the icon tokens themselves are overridable via `FrnkThemeConfig.iconOverrides`.
+frnk owns the `FrnkNavDisplay` + persistent bar + selection state (in `FrnkNestedNavViewModel`) + bar-inset.
+The reference integration is `:demo-shared`, which mounts
+`FrnkNestedNavScaffold(onSavedStateConfiguration = { frnkNestedNavConfig() }, onNestedNavigationModule = { nestedBackStack -> nestedNavigationModule(nestedBackStack) { … } })`
 inside the `FrnkRootRoute.Tab` destination, under `:ui-app`'s `FrnkApp` root.
 
 ## Dependencies
 
-- `api(projects.uiScaffolds)` — tokens, theme, `EffectCollector`, `LocalFrnkBottomBarInset`, `FrnkNavTab`,
+- `api(projects.uiScaffolds)` — tokens, theme, `EffectCollector`, `LocalFrnkBottomBarInset`,
   `FrnkNavDisplay`.
 - `api(compose.runtime / foundation / ui)`.
 - `commonMain`: `implementation(compose.components.resources)` — runtime for the generated `Res` accessor

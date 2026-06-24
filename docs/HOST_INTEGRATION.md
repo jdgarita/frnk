@@ -322,7 +322,6 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
 
     navigation<FrnkRootRoute.Tab> {
         FrnkNestedNavScaffold(
-            tabs = myTabs,                                          // List<FrnkNavTab> — any count, any roots
             onSavedStateConfiguration = { frnkNestedNavConfig(myHostRoutes) },
             onNestedNavigationModule = { nestedBackStack -> myNestedModule(nestedBackStack) },
         )
@@ -334,15 +333,16 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
 }
 ```
 
-- **`FrnkNestedNavScaffold(tabs, onSavedStateConfiguration, onNestedNavigationModule)`** is the
-  multiple-back-stack tabbed scaffold. You declare the `tabs` (`FrnkNavTab(key, root, icon, label,
-  iosSystemIcon)` — any number, any roots; there is no fixed `Home · feature · Settings` shape and no
-  built-in destinations), and the nested navigation module registers every tab's destinations. The scaffold
-  derives the bar items + routes from `tabs`, owns the `FrnkNavDisplay` + the persistent adaptive bottom bar,
-  and reserves the bottom inset via `LocalFrnkBottomBarInset`. Selection lives in the MVI
-  `FrnkNestedNavViewModel` (registered by `frnkNestedNavModule`, which `frnkUiModules()` carries), not in
-  `remember`. **Interim:** a single shared back stack currently drives every tab; per-tab back stacks and the
-  back-from-a-non-home-tab-root → home convention are a planned follow-up.
+- **`FrnkNestedNavScaffold(onSavedStateConfiguration, onNestedNavigationModule)`** is a **fixed three-tab**
+  (`Home · Components · Settings`) multiple-back-stack tabbed scaffold. The bar items (labels, theme icon
+  tokens, SF-Symbols, and the routes `FrnkRoute.Home` / `FrnkRoute.Custom("Components")` /
+  `FrnkRoute.Settings`) are defined **inside** the scaffold; you supply only the saved-state config and a
+  nested navigation module that registers the destinations behind those three routes. The scaffold owns the
+  `FrnkNavDisplay` + the persistent adaptive bottom bar, and reserves the bottom inset via
+  `LocalFrnkBottomBarInset`. Selection lives in the MVI `FrnkNestedNavViewModel` (registered by
+  `frnkNestedNavModule`, which `frnkUiModules()` carries), not in `remember`. **Interim:** a single shared
+  back stack currently drives every tab; per-tab back stacks and the back-from-a-non-home-tab-root → home
+  convention are a planned follow-up.
 - Drive navigation through the MVI effect channel: a ViewModel emits a navigation `UiEffect`, a single
   `EffectCollector` mutates the host-owned `NavBackStack` (`backStack.navigateTo` / `back` /
   `clearAndNavigateTo`) — collect it in exactly one place (single-consumer channel).
@@ -353,18 +353,17 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
   are the canonical example of this shape: a Home / Components / Settings tabbed surface, with the demo wiring
   its own paywall and onboarding.
 
-### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
+### 8.1 Bottom-nav icons — fixed, theme-token driven, no host asset step
 
-You declare each tab with **`FrnkNavTab(key, root, icon, label, iosSystemIcon)`** — an **`ImageVector`** `icon`
-for the Android bar plus an `iosSystemIcon` SF-Symbol string for the native iOS bar (`FrnkNestedNavScaffold`
-derives the bar items from these). On **Android** the bar is a Material3 Expressive `HorizontalFloatingToolbar`
-that renders the `ImageVector` directly — it never touches `DrawableResource`, so **there is no host-side
-asset-bundling step** (the old `MissingResourceException` / `assets/composeResources/…` workaround is gone).
-
-Supply each tab's icon as a plain `ImageVector` (e.g. a Lucide vector, or your own), the same way the demo's
-"Components" tab uses `Lucide.Component`. iOS-only: the library's older-iOS Compose fallback needs a
-`DrawableResource`, which the toolkit supplies internally via a single bundled placeholder — nothing for the
-host to do.
+`FrnkNestedNavScaffold`'s three items are fixed and defined inside the scaffold — `Home`
+(`FrnkIconSource.Token(iconNavHome)`, SF-Symbol `"house"`), `Components`
+(`FrnkIconSource.Token(iconNavComponent)`, SF-Symbol `"square.grid.2x2"`), and `Settings`
+(`FrnkIconSource.Token(iconNavSettings)`, SF-Symbol `"gearshape"`) — so there is **nothing for the host to
+declare** here. On **Android** the bar is a Material3 Expressive `HorizontalFloatingToolbar` that resolves each
+`FrnkIconSource.Token` to an `ImageVector` and renders it directly — it never touches `DrawableResource`, so
+**there is no host-side asset-bundling step** (the old `MissingResourceException` / `assets/composeResources/…`
+workaround is gone). iOS-only: the library's older-iOS Compose fallback needs a `DrawableResource`, which the
+toolkit supplies internally via a single bundled placeholder — again nothing for the host to do.
 
 ## 9. Component style guide — sealed state + `Skeleton` object
 

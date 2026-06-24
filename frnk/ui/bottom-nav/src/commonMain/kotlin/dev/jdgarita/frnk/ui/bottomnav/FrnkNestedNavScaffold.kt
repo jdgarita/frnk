@@ -16,27 +16,28 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
-import dev.jdgarita.frnk.ui.nav.FrnkNavTab
 import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.iconNavComponent
+import dev.jdgarita.frnk.ui.theme.iconNavHome
+import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
 
 /**
- * A **flexible multiple-back-stack tabbed scaffold** — the toolkit's bottom-bar navigation for a host
- * that wants its **own** set of tabs (any count, any roots, all destinations host-supplied) rather than
- * the fixed `Home · feature · Settings` shape + built-in Home/Settings destinations of
- * [FrnkTabbedNavScaffold].
+ * The toolkit's **fixed three-tab** bottom-nav scaffold — a `Home · Components · Settings` bar over a
+ * multiple-back-stack tabbed surface. The three tabs (labels, theme icon tokens, SF-Symbols, and routes —
+ * [FrnkRoute.Home], [FrnkRoute.Custom] `"Components"`, [FrnkRoute.Settings]) are defined **inside the
+ * scaffold**; the host supplies only the destinations behind those routes.
  *
- * **The scaffold owns the navigation plumbing**, so the host stays declarative: it supplies the [tabs],
- * the saved-state config via [onSavedStateConfiguration], and a Koin nav module via
- * [onNestedNavigationModule]; the scaffold derives the bar items + their target routes from [tabs], loads
- * the module against the back stack (`loadKoinModules`), and renders the core:
+ * **The scaffold owns the navigation plumbing**, so the host stays declarative: it supplies the saved-state
+ * config via [onSavedStateConfiguration] and a Koin nav module via [onNestedNavigationModule]; the scaffold
+ * loads the module against the back stack (`loadKoinModules`) and renders the core:
  *  - a [FrnkNavDisplay] driven by the back stack,
  *  - the platform-adaptive [FrnkBottomFloatingBar] overlaid above it (so it persists across tab swaps),
  *  - tab switching driven by [FrnkNestedNavViewModel] (the selected tab is VM-owned state, not `remember`),
@@ -45,27 +46,22 @@ import org.koin.core.module.Module
  *
  * Selection state (`items` + `selectedIndex`) lives in [FrnkNestedNavViewModel], not in a `remember*`
  * holder: a tap updates the model's `selectedIndex` and emits a [FrnkNestedNavEffect.Navigate] carrying the
- * tapped tab's root route, which this scaffold applies to the back stack.
+ * tapped tab's route, which this scaffold applies to the back stack.
  *
  * **Interim:** a single shared back stack drives every tab. True per-tab back stacks (so a tab never loses
  * its nested navigation) and the back-from-a-non-home-tab-root → home convention are the planned follow-up,
  * where the back stacks move into the ViewModel too.
  *
- * [FrnkTabbedNavScaffold] is the batteries-included fixed-three-tab app; reach for this lower-level
- * scaffold when you need a different tab shape and supply every destination yourself.
- *
- * @param tabs the bar tabs, each declared once ([FrnkNavTab]: key + root + icon + label + SF-Symbol);
- *   the bar items and their target routes are derived from this list.
  * @param onSavedStateConfiguration the saved-state config for the back stack (e.g.
  *   `frnkNestedNavConfig(hostRoutes)`).
- * @param onNestedNavigationModule builds the Koin nav module registering the tabs' destinations,
- *   bound to the scaffold-owned back stack.
+ * @param onNestedNavigationModule builds the Koin nav module registering the tabs' destinations
+ *   ([FrnkRoute.Home] / [FrnkRoute.Custom] `"Components"` / [FrnkRoute.Settings]), bound to the
+ *   scaffold-owned back stack.
  */
 @OptIn(KoinExperimentalAPI::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FrnkNestedNavScaffold(
     modifier: Modifier = Modifier,
-    tabs: List<FrnkNavTab>,
     onSavedStateConfiguration: () -> SavedStateConfiguration,
     onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
@@ -92,23 +88,34 @@ fun FrnkNestedNavScaffold(
         backStack.back()
     }
 
-    // The bar items + their target routes are derived once from the host's [tabs], so a host describes each
-    // tab exactly once and the bar/routing stay in lockstep (no hardcoded item or index→route lists).
-    val navBarItems =
-        remember(tabs) {
-            tabs.map { tab ->
-                FrnkNavBarItemModel(
-                    key = tab.key,
-                    icon = FrnkIconSource.Vector(tab.icon),
-                    iosSystemIcon = tab.iosSystemIcon,
-                    label = tab.label,
-                    route = tab.root
-                )
-            }
-        }
-
     FrnkScreen(
-        arguments = FrnkNestedNavArguments(items = navBarItems),
+        arguments =
+            FrnkNestedNavArguments(
+                items =
+                    listOf(
+                        FrnkNavBarItemModel(
+                            key = "Home",
+                            icon = FrnkIconSource.Token(iconNavHome),
+                            iosSystemIcon = "house",
+                            label = "Home",
+                            route = FrnkRoute.Home
+                        ),
+                        FrnkNavBarItemModel(
+                            key = "Components",
+                            icon = FrnkIconSource.Token(iconNavComponent),
+                            iosSystemIcon = "square.grid.2x2",
+                            label = "Components",
+                            route = FrnkRoute.Custom("Components")
+                        ),
+                        FrnkNavBarItemModel(
+                            key = "Settings",
+                            icon = FrnkIconSource.Token(iconNavSettings),
+                            iosSystemIcon = "gearshape",
+                            label = "Settings",
+                            route = FrnkRoute.Settings
+                        )
+                    )
+            ),
         viewModel = viewModel,
         onEffect = { uiEffect ->
             when (uiEffect) {

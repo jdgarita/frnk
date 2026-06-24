@@ -44,8 +44,8 @@ val iconNotifications = ThemeToken<ImageVector>("icon_notifications")
 val iconOnboarding = ThemeToken<ImageVector>("icon_onboarding")
 val iconHaptics = ThemeToken<ImageVector>("icon_haptics")
 
-// Bottom-nav scaffold icons. The Home tab uses [iconNavHome]; the Settings tab reuses
-// [iconSettings]; the configurable center "feature" tab supplies its own ImageVector at the call site.
+// Bottom-nav scaffold icons for `FrnkNestedNavScaffold`'s fixed `Home · Components · Settings` bar.
+// Hosts re-skin any of them via `FrnkThemeConfig.iconOverrides`.
 val iconNavHome = ThemeToken<ImageVector>("icon_nav_home")
 
 val iconNavComponent = ThemeToken<ImageVector>("icon_nav_component")

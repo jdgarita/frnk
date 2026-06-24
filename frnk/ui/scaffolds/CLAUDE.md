@@ -28,7 +28,6 @@ re-export it was deleted at Stage 9; consumers depend on `:ui-scaffolds` directl
 - `ui/nav/` — the **Compose binding for the Navigation3 engine** (the Compose-free route + back-stack contract lives in `:core-nav`). The **host owns the back stack** (`NavBackStack<NavKey>`); navigation integrates with the MVI effect channel (a VM emits a nav `UiEffect`, a single collector mutates the back stack).
   - `FrnkNavDisplay.kt` — `rememberFrnkNavBackStack(...)` + `FrnkNavDisplay(backStack, …)` over nav3's `NavDisplay`, baking in the saveable-state + ViewModel-store entry decorators + toolkit slide transitions. `entryProvider` defaults to Koin's `koinEntryProvider()`.
   - `FrnkNavigationAnimations.kt` — `frnkEnterTransition()` / `frnkExitTransition()` (250ms horizontal slide).
-  - `FrnkNavTab.kt` — `@Immutable FrnkNavTab(key, root, icon, label, iosSystemIcon)`, consumed by `:ui-bottom-nav`'s `FrnkNestedNavScaffold`.
 
 ## Source sets
 
