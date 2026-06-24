@@ -2,9 +2,9 @@ package dev.jdgarita.frnk.demo.navigation.modules
 
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import com.composeunstyled.Text
 import dev.jdgarita.frnk.demo.navigation.NestedNavScaffold
 import dev.jdgarita.frnk.demo.ui.onboarding.OnboardingScreen
+import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
 import dev.jdgarita.frnk.ui.mvi.CommonUiEffect
 import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.nav.back
@@ -46,9 +46,15 @@ fun rootNavigationModule(backStack: NavBackStack<NavKey>) =
         }
 
         navigation<FrnkRootRoute.Paywall> {
-            // TODO: mount the real paywall here (FrnkPaywallDestination / PaywallScreen) — placeholder Text.
-            Text(
-                text = "Paywall"
+            FrnkPaywallDestination(
+                features =
+                    listOf(
+                        "Unlimited everything",
+                        "No ads",
+                        "Priority support"
+                    ),
+                source = "demo",
+                onClose = { backStack.back() }
             )
         }
     }

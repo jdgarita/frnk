@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.demo.ui.home.DemoHomeIntent
+import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
+import dev.jdgarita.frnk.ui.atoms.FrnkDivider
+import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
@@ -27,6 +33,7 @@ import dev.jdgarita.frnk.ui.theme.iconSearch
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import org.koin.compose.viewmodel.koinViewModel
 
 private val componentNames =
     listOf(
@@ -47,18 +54,11 @@ private val componentNames =
     )
 
 @Composable
-internal fun ComponentsListScreen(
-    // state: DemoState,
-    // onIntent: (DemoIntent) -> Unit,
-    onOpenComponent: (String) -> Unit
-) {
-    // TODO: restore search/filter — the DemoState-driven search (searchActive/query) + detail nav are
-    //  stubbed pending the demo's MVI rewrite. Currently the list renders without filtering.
-    //   val searchActive = state.searchActive
-    // val query = state.searchQuery
-
-    //  val trimmedQuery = query.trim()
-    // val matches = componentNames.filter { it.contains(trimmedQuery, ignoreCase = true) }
+internal fun ComponentsListScreen(onOpenComponent: (String) -> Unit) {
+    val viewModel: DemoHomeViewModel = koinViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val trimmedQuery = state.searchQuery.trim()
+    val matches = componentNames.filter { it.contains(trimmedQuery, ignoreCase = true) }
 
     FrnkScreenScaffold(
         topBar =
@@ -68,13 +68,13 @@ internal fun ComponentsListScreen(
                     listOf(
                         FrnkTopAppBarAction(icon = FrnkIconSource.Token(iconSearch), contentDescription = "Search")
                     ),
-                isSearchActive = false,
-                searchQuery = "",
+                isSearchActive = state.searchActive,
+                searchQuery = state.searchQuery,
                 searchPlaceholder = "Search components"
             ),
-        onActionClick = { /*onIntent(DemoIntent.SearchOpened)*/ },
-        onSearchQueryChange = { /*onIntent(DemoIntent.SearchQueryChanged(it))*/ },
-        onSearchClose = { /*onIntent(DemoIntent.SearchClosed)*/ }
+        onActionClick = { viewModel.send(DemoHomeIntent.SearchOpened) },
+        onSearchQueryChange = { viewModel.send(DemoHomeIntent.SearchQueryChanged(it)) },
+        onSearchClose = { viewModel.send(DemoHomeIntent.SearchClosed) }
     ) { padding ->
         Column(
             modifier =
@@ -83,21 +83,22 @@ internal fun ComponentsListScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(padding)
         ) {
-            // if (matches.isEmpty()) {
-            FrnkText(
-                state =
-                    FrnkTextState.Body(
-                        text = "No components match \"$\".",
-                        color = colorOnSurfaceVariant
-                    )
-            )
-            // }
-
-            // matches.forEachIndexed { index, name ->
-            //   if (index > 0) {
-            //     FrnkDivider(state = FrnkDividerState.Horizontal())
-            // }
-            // ComponentRow(name = name, onClick = { onOpenComponent(name) })
+            if (matches.isEmpty()) {
+                FrnkText(
+                    state =
+                        FrnkTextState.Body(
+                            text = "No components match \"${state.searchQuery}\".",
+                            color = colorOnSurfaceVariant
+                        )
+                )
+            } else {
+                matches.forEachIndexed { index, name ->
+                    if (index > 0) {
+                        FrnkDivider(state = FrnkDividerState.Horizontal())
+                    }
+                    ComponentRow(name = name, onClick = { onOpenComponent(name) })
+                }
+            }
         }
     }
 }

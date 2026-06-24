@@ -83,25 +83,24 @@ fun NestedNavScaffold(
         }
 
         FrnkBottomFloatingBar(
-            // TODO: set real iOS SF-Symbol names — iosSystemIcon is "" on every item below (placeholder).
             items =
                 listOf(
                     FrnkNavBarItem(
                         key = "Home",
                         icon = Lucide.House,
-                        iosSystemIcon = "",
+                        iosSystemIcon = "house",
                         label = "Home"
                     ),
                     FrnkNavBarItem(
                         key = "Components",
                         icon = Lucide.Component,
-                        iosSystemIcon = "",
+                        iosSystemIcon = "square.grid.2x2",
                         label = "Component"
                     ),
                     FrnkNavBarItem(
                         key = "Settings",
                         icon = Lucide.Settings,
-                        iosSystemIcon = "",
+                        iosSystemIcon = "gearshape",
                         label = "Settings"
                     )
                 ),

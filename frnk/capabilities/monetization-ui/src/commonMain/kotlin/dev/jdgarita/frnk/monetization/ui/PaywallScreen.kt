@@ -30,6 +30,9 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.mvi.CommonUiEffect
+import dev.jdgarita.frnk.ui.mvi.FrnkScreen
+import dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -80,29 +83,34 @@ fun PaywallScreen(
     onEffect: (PaywallEffect) -> Unit = {}
 ) {
     val vm: PaywallViewModel = koinViewModel(key = vmKey)
-    // TODO: restore PaywallScreen — body commented out during the model-first MVI + two-level nav
-    //  refactor (FrnkScreen/FrnkFullScreenScaffold wiring below). Currently renders nothing.
-    Box(Modifier)
-//    FrnkScreen(viewModel = vm, arguments = PaywallArguments(source)) {
-//        val state by vm.state.collectAsStateWithLifecycle()
-//
-//        EffectCollector(vm.effects, onEffect = onEffect)
-//
-//        FrnkFullScreenScaffold(
-//            onCloseClick = { vm.send(PaywallIntent.Close) },
-//            modifier = modifier,
-//            contentPadding = PaddingValues(Theme[spacing][spacingLg])
-//        ) { padding ->
-//            // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
-//            // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
-//            PaywallScreenContent(
-//                state = state,
-//                features = features,
-//                onIntent = vm::send,
-//                contentPadding = padding
-//            )
-//        }
-//    }
+    FrnkScreen(
+        viewModel = vm,
+        arguments = PaywallArguments(source),
+        onEffect = { effect ->
+            when (effect) {
+                is PaywallEffect -> onEffect(effect)
+                // FrnkScreen installs a BackHandler that routes system back to CommonUiEffect.DidPressBack;
+                // treat it as a close so the paywall dismisses on back, mirroring the ✕.
+                is CommonUiEffect.DidPressBack -> vm.send(PaywallIntent.Close)
+                else -> Unit
+            }
+        }
+    ) { state ->
+        FrnkFullScreenScaffold(
+            onCloseClick = { vm.send(PaywallIntent.Close) },
+            modifier = modifier,
+            contentPadding = PaddingValues(Theme[spacing][spacingLg])
+        ) { padding ->
+            // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
+            // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
+            PaywallScreenContent(
+                state = state,
+                features = features,
+                onIntent = vm::send,
+                contentPadding = padding
+            )
+        }
+    }
 }
 
 /** Stateless paywall body — header, feature checklist, plan cards, CTA, restore + legal. */
