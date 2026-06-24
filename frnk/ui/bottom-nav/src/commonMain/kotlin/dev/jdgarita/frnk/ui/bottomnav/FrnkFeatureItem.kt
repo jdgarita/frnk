@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.bottomnav
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 
 /**
  * The host-facing config for the bottom bar's **center "feature" tab** — the one tab a host configures
@@ -25,7 +26,7 @@ import androidx.navigation3.runtime.NavKey
 data class FrnkFeatureItem(
     val route: NavKey,
     val label: String,
-    val icon: ImageVector,
+    val icon: FrnkIconSource,
     val iosSystemIcon: String,
     val key: String = "feature"
 )
