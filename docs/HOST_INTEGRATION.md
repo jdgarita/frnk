@@ -131,8 +131,8 @@ EffectCollector(viewModel.effects) { effect ->
 }
 ```
 
-See `docs/ARCHITECTURE.md` → Navigation for `frnkNavConfiguration` / `rememberFrnkNavBackStack` /
-`FrnkNavDisplay` and the multiple-back-stack `FrnkTabbedNavScaffold`.
+See `docs/ARCHITECTURE.md` → Navigation for `frnkRootNavConfig` / `frnkNestedNavConfig` /
+`rememberFrnkNavBackStack` / `FrnkNavDisplay` and the multiple-back-stack `FrnkTabbedNavScaffold`.
 
 ## 4. Bootstrap Koin with an explicit module list
 

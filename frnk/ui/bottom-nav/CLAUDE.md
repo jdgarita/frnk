@@ -114,7 +114,7 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   navigation. This is the toolkit's sole bottom-nav bar.
 - `FrnkTabbedNavScaffold.kt` — **the one-call tabbed app** (host-enablement); the single public composable a
   host calls to get a complete tabbed app. `FrnkTabbedNavScaffold(config: FrnkTabbedNavConfig, …) { homeContent }`
-  stands it all up: `FrnkTheme(config.theme)` wrap, `frnkNavConfiguration(config.nav.hostRoutes)`,
+  stands it all up: `FrnkTheme(config.theme)` wrap, `frnkNestedNavConfig(config.nav.hostRoutes)`,
   `rememberFrnkBottomNavState` (the fixed `Home · feature · Settings` tabs; the center tab supplied as
   `config.nav.feature: FrnkFeatureItem`), `rememberFrnkTabbedBackStacks`, built-in **Home** (`HomeScreen` with
   the host's `homeContent` `ColumnScope` slot; `config.home.topBar`/`config.home.vmKey`/`onHomeEffect`),
