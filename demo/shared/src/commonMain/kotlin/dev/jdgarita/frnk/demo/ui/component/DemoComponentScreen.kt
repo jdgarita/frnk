@@ -56,6 +56,7 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSection
 import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorOnSuccess
@@ -67,10 +68,10 @@ import dev.jdgarita.frnk.ui.theme.colors
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
 import dev.jdgarita.frnk.ui.theme.iconError
+import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import dev.jdgarita.frnk.ui.theme.iconNotifications
 import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.iconSearch
-import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
 import dev.jdgarita.frnk.ui.theme.shapeCard
@@ -188,7 +189,7 @@ private fun ComponentGallery(
                 FrnkIconButton(
                     state =
                         FrnkIconButtonState.Content(
-                            imageVector = Theme[icons][iconSettings],
+                            imageVector = Theme[icons][iconNavSettings],
                             contentDescription = "Settings",
                             tint = colorOnBackground
                         ),
@@ -267,9 +268,9 @@ private fun ComponentGallery(
             FrnkBottomFloatingBar(
                 items =
                     listOf(
-                        FrnkNavBarItem("a", Theme[icons][iconSearch], "magnifyingglass", "Search"),
-                        FrnkNavBarItem("b", Theme[icons][iconCheck], "checkmark", "Check"),
-                        FrnkNavBarItem("c", Theme[icons][iconSettings], "gearshape", "Settings")
+                        FrnkNavBarItem("a", FrnkIconSource.Token(iconSearch), "magnifyingglass", "Search"),
+                        FrnkNavBarItem("b", FrnkIconSource.Token(iconCheck), "checkmark", "Check"),
+                        FrnkNavBarItem("c", FrnkIconSource.Token(iconNavSettings), "gearshape", "Settings")
                     ),
                 selectedIndex = state.galleryNavIndex,
                 onItemSelected = { onIntent(DemoHomeIntent.GalleryNavChanged(it)) },
@@ -488,7 +489,7 @@ private fun ComponentGallery(
                     FrnkListRowState.Content(
                         title = "Preferences",
                         subtitle = "Theme, language and units",
-                        icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null)
+                        icon = FrnkIconState.Content(Theme[icons][iconNavSettings], contentDescription = null)
                     )
                 )
             FrnkListSection(
@@ -533,7 +534,7 @@ private fun ComponentGallery(
             )
             val avatar =
                 FrnkIconState.Content(
-                    imageVector = Theme[icons][iconSettings],
+                    imageVector = Theme[icons][iconNavSettings],
                     contentDescription = null,
                     size = FrnkIconSize.lg,
                     tint = colorOnPrimaryContainer
