@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.nav
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -13,6 +14,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.jdgarita.frnk.ui.mvi.LocalFrnkBackHandledByHost
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
 
@@ -54,18 +56,23 @@ fun FrnkNavDisplay(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = { frnkExitTransition() },
     predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(Int) -> ContentTransform = { frnkExitTransition() }
 ) {
-    NavDisplay(
-        backStack = backStack,
-        modifier = modifier,
-        onBack = { onBack() },
-        entryProvider = entryProvider,
-        entryDecorators =
-            listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-        transitionSpec = transitionSpec,
-        popTransitionSpec = popTransitionSpec,
-        predictivePopTransitionSpec = predictivePopTransitionSpec
-    )
+    // NavDisplay owns system back for this stack (within-stack pops), so a FrnkScreen rendered as one of
+    // its entries shouldn't install its own back handler — it would swallow the event before NavDisplay (or
+    // an enclosing tabbed scaffold) can act. Signal that to the entries.
+    CompositionLocalProvider(LocalFrnkBackHandledByHost provides true) {
+        NavDisplay(
+            backStack = backStack,
+            modifier = modifier,
+            onBack = { onBack() },
+            entryProvider = entryProvider,
+            entryDecorators =
+                listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator()
+                ),
+            transitionSpec = transitionSpec,
+            popTransitionSpec = popTransitionSpec,
+            predictivePopTransitionSpec = predictivePopTransitionSpec
+        )
+    }
 }

@@ -1106,3 +1106,18 @@ FOLLOW-UP LANDED (replaces the interim single-shared-stack note in 'bottom-nav-n
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavMviContract.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkCustomTab.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavModule.kt
+
+## NavDisplay is the single owner of system back (LocalFrnkBackHandledByHost)
+
+- id: navdisplay-is-the-single-owner-of-system-back-localfrnkbackh-20260624-215822
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: navigation
+- date: 2026-06-24
+
+Fixed: back from a non-Home tab root (e.g. Settings) exited the app instead of returning to Home, because the tab-root screen's own FrnkScreen installed an always-on BackHandler (DidPressBack -> backStack.back()) that popped the shared nested stack before FrnkNestedNavScaffold's tab-root->Home handler could run. Components worked only because ComponentsListScreen has no back handler. ROOT CAUSE / INVARIANT: nav3's NavDisplay already owns system back (within-stack pops) — a FrnkScreen rendered as a NavDisplay entry must NOT also install its own. SOLUTION (Option B3): new CompositionLocal LocalFrnkBackHandledByHost (declared in :ui-scaffolds FrnkScreen.kt, compositionLocalOf{false}); FrnkScreen's new param handleBackPressed defaults to !LocalFrnkBackHandledByHost.current (so standalone screens keep the handler, NavDisplay entries drop it; escape hatch handleBackPressed=true). FrnkNavDisplay provides LocalFrnkBackHandledByHost=true around its entries. So leaf FrnkScreens defer system back to NavDisplay (pops) + the enclosing tabbed scaffold (tab-root->Home). SCOPE: :ui-app's FrnkApp root uses a RAW NavDisplay (not FrnkNavDisplay), so root screens (onboarding/paywall) are unaffected — handleBackPressed resolves to !false=true there, unchanged. So B3 today only affects the nested tab nav (FrnkNestedNavScaffold's FrnkNavDisplay), but is principled for any future FrnkNavDisplay. Demo Home/Settings DidPressBack->backStack.back() branches are now dead-but-harmless (no back handler -> no DidPressBack); left as-is (optional cleanup). Verified on device: Settings root->Home, Components root->Home, Home root->exit, within-tab detail->list pop, onboarding completes. Files: FrnkScreen.kt, FrnkNavDisplay.kt.
+
+### Files
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt

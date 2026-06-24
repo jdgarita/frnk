@@ -85,10 +85,13 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   the public composable a host calls to get a **multiple-back-stack** tabbed surface.
   `FrnkNestedNavScaffold(customTab: FrnkCustomTab, modifier, onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module)`.
   Home + Settings are toolkit-fixed; the host supplies only the middle `customTab` and the nested-nav module
-  behind the three routes. It resolves the VM with `koinViewModel { parametersOf(customTab) }`, renders
-  `FrnkNavDisplay(viewModel.backStack)` + the persistent `FrnkBottomFloatingBar` overlay, provides
-  `LocalFrnkBottomBarInset`, and installs a **conditional** `BackHandler` (enabled only at a single-entry tab
-  stack on a non-Home tab — within-tab pops are left to `FrnkNavDisplay`/`NavDisplay`'s own back). It is backed
+  behind the three routes. It resolves the VM with `koinViewModel()` and drives it through `FrnkScreen`
+  (`handleBackPressed = false`), which `attach`es the host's `customTab` via `FrnkNestedNavArguments` and
+  collects state; inside it renders `FrnkNavDisplay(viewModel.backStack)` + the persistent
+  `FrnkBottomFloatingBar` overlay, provides `LocalFrnkBottomBarInset`, and installs a **conditional**
+  `BackHandler` (enabled only at a single-entry tab stack on a non-Home tab — within-tab pops are left to
+  `FrnkNavDisplay`/`NavDisplay`'s own back; tab-root screens that use `FrnkScreen` auto-defer their own back
+  via `LocalFrnkBackHandledByHost`, so they don't swallow the tab-root → Home press). It is backed
   by the MVI `FrnkNestedNavViewModel` (below), which **owns the bar's view state** (`items` + `selectedIndex`)
   **and the per-tab back stacks**. A tap → `FrnkNestedNavIntent.Tap(index)` → the VM switches the active tab
   (re-tap pops to root); system/predictive back at a tab root from a non-Home tab → `FrnkNestedNavIntent.Back`
