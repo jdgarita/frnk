@@ -29,7 +29,12 @@ class FrnkNestedNavViewModel :
 
     override suspend fun onIntent(intent: FrnkNestedNavIntent) {
         when (intent) {
-            is FrnkNestedNavIntent.Tap -> emit(FrnkNestedNavEffect.Navigate(intent.index))
+            is FrnkNestedNavIntent.Tap -> {
+                updateModel { copy(selectedIndex = intent.index) }
+                currentModel().items.getOrNull(intent.index)?.let { item ->
+                    emit(FrnkNestedNavEffect.Navigate(item.route))
+                }
+            }
         }
     }
 }

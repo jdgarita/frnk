@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.ui.bottomnav
 
 import androidx.compose.runtime.Immutable
+import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.mvi.Arguments
 import dev.jdgarita.frnk.ui.mvi.ModelState
 import dev.jdgarita.frnk.ui.mvi.ModelStateFactory
@@ -20,7 +21,8 @@ data class FrnkNavBarItemModel(
     val key: String,
     val icon: FrnkIconSource,
     val iosSystemIcon: String,
-    val label: String
+    val label: String,
+    val route: NavKey
 )
 
 @Immutable
@@ -42,7 +44,7 @@ data class FrnkNestedNavArguments(
 
 sealed interface FrnkNestedNavEffect : UiEffect {
     data class Navigate(
-        val index: Int
+        val route: NavKey
     ) : FrnkNestedNavEffect
 }
 

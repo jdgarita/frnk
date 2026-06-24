@@ -24,8 +24,8 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:ui-theme` | `ui-theme` | `projects.uiTheme` | `FrnkTheme` + tokens (compose-unstyled). |
 | `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
 | `:ui-scaffolds` | `ui-scaffolds` | `projects.uiScaffolds` | Page templates + Compose MVI/nav bindings. |
-| `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkTabbedNavScaffold` (the one-call tabbed app). **Sole Material3 module.** |
-| `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkAppScaffold` + `frnkUiModules()`. The batteries-included apex. |
+| `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkNestedNavScaffold` (the multiple-back-stack tabbed scaffold). **Sole Material3 module.** |
+| `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkApp` + `frnkUiModules()`. The app-root apex. |
 | `:data-db-api` | `data-db-api` | `projects.dataDbApi` | `SqlDriverFactory` SPI (toolkit owns no schema). |
 | `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform SQLDelight drivers → `databaseModule`. |
 | `:data-prefs-api` | `data-prefs-api` | `projects.dataPrefsApi` | `KeyValueStore` + typed `Preference<T>`. |
@@ -94,8 +94,9 @@ FrnkTheme(
 }
 ```
 
-`FrnkAppScaffold` / `FrnkTabbedNavScaffold` take the theme override as `config.theme` (a `FrnkThemeConfig`)
-and wrap `FrnkTheme` for you.
+`FrnkApp` wraps `FrnkTheme` for you, with the `AppearanceController`-driven light/dark palette. For host
+token overrides (`FrnkThemeConfig`), wrap your own `FrnkTheme(config) { … }` around the screens you render
+from the navigation module.
 
 **Custom icon pack.** The toolkit ships a default Lucide-backed icon registry (`iconBack`, `iconClose`,
 `iconSearch`, `iconSettings`, …). A host overrides any or all of them — **or adds brand-specific icons** —
@@ -116,10 +117,10 @@ FrnkThemeConfig(
 ## 3. Map FrnkRoute to Compose screens
 
 The toolkit's `FrnkRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
-default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). When using `FrnkTabbedNavScaffold` /
-`FrnkAppScaffold` (§8), those routes are already wired — you don't map them. For a hand-wired nav3
-host, register them on your `FrnkNavDisplay` `entryProvider` and drive navigation through the MVI
-effect channel, mutating the host-owned `NavBackStack`:
+default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). The host wires them itself: register them on
+your `FrnkNavDisplay` `entryProvider` (or, with `FrnkApp` / `FrnkNestedNavScaffold` (§8), in the Koin
+`navigation<Route> { … }` module you hand the scaffold) and drive navigation through the MVI effect channel,
+mutating the host-owned `NavBackStack`:
 
 ```kotlin
 EffectCollector(viewModel.effects) { effect ->
@@ -132,7 +133,7 @@ EffectCollector(viewModel.effects) { effect ->
 ```
 
 See `docs/ARCHITECTURE.md` → Navigation for `frnkRootNavConfig` / `frnkNestedNavConfig` /
-`rememberFrnkNavBackStack` / `FrnkNavDisplay` and the multiple-back-stack `FrnkTabbedNavScaffold`.
+`rememberFrnkNavBackStack` / `FrnkNavDisplay` and the multiple-back-stack `FrnkNestedNavScaffold`.
 
 ## 4. Bootstrap Koin with an explicit module list
 
@@ -182,8 +183,8 @@ fun bootstrapMyAppKit(): KoinApplication =
     initializeFrnk(modules = frnkUiModules() + databaseModule + prefsModule + /* … */ myAppModules)
 ```
 
-After bootstrap, `FrnkAppScaffold(config = FrnkAppConfig(...)) { /* home items */ }` (§8) is the
-batteries-included app root; it fails fast with an explanation if `initializeFrnk` didn't run.
+After bootstrap, `FrnkApp(onSavedStateConfiguration, onNavigationModule)` (§8) is the app root; it fails
+fast with an explanation if `initializeFrnk` didn't run.
 
 ## 5. Custom analytics
 
@@ -291,94 +292,79 @@ plugin from its `build-logic` included build (jvmToolchain 17 + Android SDK + ba
 A host that adds its own KMP library modules can apply the same plugin by adding
 `includeBuild("frnk/build-logic")` to its `pluginManagement` and `plugins { id("frnk.kmp.library") }`.
 
-## 8. Spin up the whole app with `FrnkAppScaffold`
+## 8. Spin up the whole app with `FrnkApp`
 
-After `initializeFrnk(...)` (§4), the **batteries-included app root** stands up a complete tabbed app —
-theme, type-safe nav3 with per-tab back stacks, the adaptive bottom bar (the fixed `Home · feature ·
-Settings` three-tab shape), a Home template you fill with content, the default Settings catalogue driven
-by the live `EntitlementManager` (Upgrade → paywall, Restore, Manage Subscription, appearance, feedback),
-an optional onboarding flow, and the auto-mounted paywall — in one call:
-
-The host's declarative input is one `@Immutable` **`FrnkAppConfig`** bundle, grouped into a sub-config
-per feature area (`*Config` = host input declared once; the toolkit's runtime state stays in `*State` /
-`*ViewState`). The composable keeps only *behaviour* as parameters — the `@Composable` slots
-(`homeContent`/`entries`/`effects`), the event callbacks (`onMessage`/`onHomeEffect`), and the runtime
-controllers (`appearanceController`/`pendingRoutes`):
+After `initializeFrnk(...)` (§4), **`FrnkApp`** (`:ui-app`) is the app root. It owns only the app chrome —
+`FrnkTheme` + the `AppearanceController`-driven light/dark + system-bar appearance + a single root
+`NavDisplay` over `FrnkRootRoute` (seeded at `Onboarding`) — and hands the navigation graph to you. You
+supply two lambdas: `onSavedStateConfiguration` (the root saved-state config, normally `frnkRootNavConfig`)
+and `onNavigationModule(backStack)`, which returns a Koin `navigation<Route> { … }` module registering your
+root destinations (it's loaded via `loadKoinModules`):
 
 ```kotlin
 setContent {
-    val config = remember {
-        FrnkAppConfig(
-            app = FrnkAppInfo(name = "MyApp", version = "v1.0.0"),
-            nav = FrnkNavConfig(
-                feature = FrnkFeatureItem(                     // the bar's one host-configurable tab
-                    route = SessionsRoute,                     //   register it in `entries` below
-                    label = "Sessions",
-                    icon = Lucide.CalendarClock,               //   ImageVector (Android)
-                    iosSystemIcon = "calendar",                //   SF-Symbol (iOS)
-                ),
-                hostRoutes = SerializersModule { /* your @Serializable routes */ },
-            ),
-            theme = myThemeConfig(),                           // §2 token overrides
-            settings = FrnkSettingsConfig(
-                extraSections = listOf(myPrefsSection),        // injected before Legal by default
-            ),
-            onboarding = FrnkOnboardingConfig(
-                pages = myOnboardingPages,                     // empty → no onboarding entry
-                showOnFirstLaunch = true,                      // auto-present once on first launch (default)
-            ),
-            monetization = FrnkMonetizationConfig(
-                paywallFeatures = listOf("Unlimited everything", "No ads"),
-            ),
+    FrnkApp(
+        onSavedStateConfiguration = { frnkRootNavConfig },
+        onNavigationModule = { backStack -> myRootNavigationModule(backStack) },
+    )
+}
+```
+
+The root module registers the `FrnkRootRoute` destinations (`Onboarding` / `Tab` / `Paywall`) and mounts the
+tabbed surface — **`FrnkNestedNavScaffold`** — at the `Tab` destination. Nothing is auto-mounted: you wire the
+paywall, onboarding, and tab navigation yourself:
+
+```kotlin
+fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
+    navigation<FrnkRootRoute.Onboarding> {
+        MyOnboardingScreen(onDone = { backStack.clearAndNavigateTo(FrnkRootRoute.Tab) })
+    }
+
+    navigation<FrnkRootRoute.Tab> {
+        FrnkNestedNavScaffold(
+            tabs = myTabs,                                          // List<FrnkNavTab> — any count, any roots
+            onSavedStateConfiguration = { frnkNestedNavConfig(myHostRoutes) },
+            onNestedNavigationModule = { nestedBackStack -> myNestedModule(nestedBackStack) },
         )
     }
-    FrnkAppScaffold(
-        config = config,
-        onHomeEffect = { effect -> /* HomeEffect.ActionInvoked(key) / NavigationInvoked */ },
-        entries = { scope -> entry<SessionsRoute> { … } },     // the feature tab's root + your pushes
-        effects = { scope -> EffectCollector(vm.effects) { scope.navigateTo(it.route) } },
-    ) {
-        // Home tab body — the scaffold owns the scrolling column + bar insets.
-        MyHomeCards()
+
+    navigation<FrnkRootRoute.Paywall> {
+        FrnkPaywallDestination(features = listOf("Unlimited everything", "No ads"), onClose = { backStack.back() })
     }
 }
 ```
 
-- The bar always shows exactly three tabs — `Home · feature · Settings`. The center **`feature`** tab is
-  the only one you configure (`FrnkFeatureItem`); it's a real navigable tab (own back stack,
-  re-tap-to-root). Point it at your app's signature surface (a "New X" flow, a capture screen, the main
-  library) and **register its `route` in `entries`** — the shell owns only Home/Settings/Onboarding.
-- Every extension point receives a **`FrnkAppScope`** (`navigateTo` / `back` / `clearAndNavigateTo`) so a
-  single `EffectCollector` drives navigation.
-- Don't re-register the built-in routes (`FrnkRoute.Home`/`Settings`/`Onboarding`/`Paywall`) in
-  `entries` — nav3 throws on duplicate entry registrations.
-- When `onboarding.pages` is supplied, onboarding is **auto-presented once on first launch** and
-  persisted through a `KeyValueStore`-backed gate (install `prefsModule` for cross-launch persistence;
-  with no store bound it falls back to once-per-session). Set `onboarding.showOnFirstLaunch = false` to
-  present it only on demand (Settings → Show onboarding). Full-window screens (onboarding, paywall) use
-  **`FrnkFullScreenScaffold`** — an immersive template with an always-on ✕ that reserves the safe-area
-  insets + close-button band for you; reuse it for your own full-screen surfaces.
-- `FrnkAppScaffold` (`:ui-app`) layers the monetization batteries over **`FrnkTabbedNavScaffold`**
-  (`:ui-bottom-nav`). `:demo-shared`'s `FrnkDemoApp` is the reference integration of `FrnkAppScaffold` —
-  the single shared composable both `demo-android` and `iosDemoApp` call. A module that genuinely can't
-  depend on `:ui-app` (e.g. one that must avoid Material3, or a custom tab shape) composes
-  `FrnkTabbedNavScaffold` directly — the same one-call tabbed app minus the monetization batteries
-  (auto paywall + first-launch onboarding + live entitlement Settings), wiring those itself.
+- **`FrnkNestedNavScaffold(tabs, onSavedStateConfiguration, onNestedNavigationModule)`** is the
+  multiple-back-stack tabbed scaffold. You declare the `tabs` (`FrnkNavTab(key, root, icon, label,
+  iosSystemIcon)` — any number, any roots; there is no fixed `Home · feature · Settings` shape and no
+  built-in destinations), and the nested navigation module registers every tab's destinations. The scaffold
+  derives the bar items + routes from `tabs`, owns the `FrnkNavDisplay` + the persistent adaptive bottom bar,
+  and reserves the bottom inset via `LocalFrnkBottomBarInset`. Selection lives in the MVI
+  `FrnkNestedNavViewModel` (registered by `frnkNestedNavModule`, which `frnkUiModules()` carries), not in
+  `remember`. **Interim:** a single shared back stack currently drives every tab; per-tab back stacks and the
+  back-from-a-non-home-tab-root → home convention are a planned follow-up.
+- Drive navigation through the MVI effect channel: a ViewModel emits a navigation `UiEffect`, a single
+  `EffectCollector` mutates the host-owned `NavBackStack` (`backStack.navigateTo` / `back` /
+  `clearAndNavigateTo`) — collect it in exactly one place (single-consumer channel).
+- The **batteries are yours to wire** — paywall (`FrnkPaywallDestination` from `:shared-monetization-ui`),
+  onboarding, and the entitlement-driven Settings are registered by your navigation module, not auto-mounted.
+- `:demo-shared`'s `FrnkDemoApp` is the reference integration — the single shared composable both
+  `demo-android` and `iosDemoApp` call. Its `RootNavigationModule` (root) + `NestedNavigationModule` (tabs)
+  are the canonical example of this shape: a Home / Components / Settings tabbed surface, with the demo wiring
+  its own paywall and onboarding.
 
 ### 8.1 Bottom-nav icons — `ImageVector`, no host asset step
 
-The adaptive bottom bar (`FrnkBottomFloatingBar`, `:ui-bottom-nav`) takes **`ImageVector`** icons in the common
-API (`FrnkNavBarItem.icon` / `FrnkBottomNavTab.icon` / `FrnkFeatureItem.icon`), plus an `iosSystemIcon`
-SF-Symbol string for the native iOS bar. On **Android** the bar is a Material3 Expressive
-`HorizontalFloatingToolbar` that renders the `ImageVector` directly — it never touches `DrawableResource`, so
-**there is no host-side asset-bundling step** (the old `MissingResourceException` /
-`assets/composeResources/…` workaround is gone).
+You declare each tab with **`FrnkNavTab(key, root, icon, label, iosSystemIcon)`** — an **`ImageVector`** `icon`
+for the Android bar plus an `iosSystemIcon` SF-Symbol string for the native iOS bar (`FrnkNestedNavScaffold`
+derives the bar items from these). On **Android** the bar is a Material3 Expressive `HorizontalFloatingToolbar`
+that renders the `ImageVector` directly — it never touches `DrawableResource`, so **there is no host-side
+asset-bundling step** (the old `MissingResourceException` / `assets/composeResources/…` workaround is gone).
 
-Supply the `feature` tab's icon as a plain `ImageVector` (e.g. a Lucide vector, or your own), the same way the
-demo's "Components" tab uses `Lucide.Component`. Defaults for the Home/Settings bookends come from theme icon
-tokens (`iconNavHome` / `iconSettings`), overridable via `FrnkThemeConfig.iconOverrides`. iOS-only: the
-library's older-iOS Compose fallback needs a `DrawableResource`, which the toolkit supplies internally via a
-single bundled placeholder — nothing for the host to do.
+Supply each tab's icon as a plain `ImageVector` (e.g. a Lucide vector, or your own), the same way the demo's
+"Components" tab uses `Lucide.Component`. iOS-only: the library's older-iOS Compose fallback needs a
+`DrawableResource`, which the toolkit supplies internally via a single bundled placeholder — nothing for the
+host to do.
 
 ## 9. Component style guide — sealed state + `Skeleton` object
 

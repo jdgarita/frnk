@@ -1072,3 +1072,19 @@ The demo Android host's transient-feedback one-liner is the internal Context.toa
 
 ### Files
 - demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/ext/ContextExt.kt
+
+## Bottom-nav nav state moved into MVI ViewModel (FrnkNestedNavScaffold)
+
+- id: bottom-nav-nav-state-moved-into-mvi-viewmodel-frnknestednavs-20260624-183537
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: navigation
+- date: 2026-06-24
+
+FrnkNestedNavScaffold (backed by FrnkNestedNavViewModel) replaced the removed FrnkTabbedNavScaffold/FrnkAppScaffold as the toolkit's tabbed-nav path. The bar's view state (items + selectedIndex) lives in the MviViewModel, NOT in rememberXYZ() — this is the standard going forward: hoist UI/selection/nav state into the VM. onIntent(Tap) updates selectedIndex via updateModel AND emits FrnkNestedNavEffect.Navigate(route: NavKey) — data-driven routing where the route is derived from the host's tabs: List<FrnkNavTab> (FrnkNavBarItemModel gained route: NavKey), not a hardcoded index->route if-chain. The scaffold derives bar items + routes from tabs (icon via FrnkIconSource.Vector(tab.icon)). Interim: a single shared rememberNavBackStack drives every tab; true per-tab back stacks (so a tab keeps its nested nav) + the back-from-a-non-home-tab-root->home convention are a planned follow-up, where the back stacks also move into the VM. Deleted with this change: FrnkAppScope, FrnkTabbedBackStacks/rememberFrnkTabbedBackStacks/FrnkTabbedBackHandler/FrnkTab. App apex is now :ui-app's FrnkApp(onSavedStateConfiguration, onNavigationModule); demo FrnkDemoApp calls it and wires its own root nav module (FrnkRootRoute Onboarding/Tab/Paywall), mounting FrnkNestedNavScaffold at Tab. Orphaned/pending removal: FrnkBottomNavState, FrnkFeatureItem, FrnkBottomNavTab, FrnkTabbedNavConfig/FrnkTabbedNavViewState, FrnkAppConfig/FrnkAppConfigExt.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavScaffold.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavViewModel.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavMviContract.kt
