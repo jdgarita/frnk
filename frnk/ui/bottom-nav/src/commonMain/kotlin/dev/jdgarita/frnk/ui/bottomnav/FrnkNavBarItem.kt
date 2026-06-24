@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.ui.bottomnav
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 
 /**
  * A single item rendered by [FrnkBottomFloatingBar]. Icons are split by what each platform's engine can
@@ -16,7 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 @Immutable
 data class FrnkNavBarItem(
     val key: String,
-    val icon: ImageVector,
+    val icon: FrnkIconSource,
     val iosSystemIcon: String,
     val label: String
 )
