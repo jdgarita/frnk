@@ -16,8 +16,8 @@ import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconCheck
 import dev.jdgarita.frnk.ui.theme.iconClose
 import dev.jdgarita.frnk.ui.theme.iconError
+import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import dev.jdgarita.frnk.ui.theme.iconSearch
-import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
@@ -80,7 +80,7 @@ private fun FrnkIcon_Registry_Dark() {
             FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconBack], "back"))
             FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconClose], "close"))
             FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconSearch], "search"))
-            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconSettings], "settings"))
+            FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconNavSettings], "settings"))
             FrnkIcon(state = FrnkIconState.Content(Theme[icons][iconError], "error", tint = colorError))
         }
     }
@@ -103,7 +103,7 @@ private fun FrnkIconButton_Light() {
             FrnkIconButton(
                 state =
                     FrnkIconButtonState.Content(
-                        imageVector = Theme[icons][iconSettings],
+                        imageVector = Theme[icons][iconNavSettings],
                         contentDescription = "Settings"
                     ),
                 onClick = {}
