@@ -65,7 +65,7 @@ object OnboardingModelStateFactory : ModelStateFactory<OnboardingModelState> {
 }
 
 /**
- * The rendered state [OnboardingScreen] collects — derived from [OnboardingModelState] via the VM's
+ * The rendered state [FrnkOnboardingScreen] collects — derived from [OnboardingModelState] via the VM's
  * `mapToUiState`. Tolerates an empty [pages] list: the engine maps the empty initial model into a
  * UiState once at VM construction, before `onAttached` seeds the pages. The non-empty guarantee lives on
  * [OnboardingArguments] (the input), not here.

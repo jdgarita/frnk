@@ -1,10 +1,10 @@
 package dev.jdgarita.frnk.ui.scaffolds.onboarding
 
-import dev.jdgarita.frnk.ui.mvi.ModelMviViewModel
+import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.ext.toUiState
 
 /**
- * Thin UI-state machine for [OnboardingScreen]. Owns nothing but the current page index: the host
+ * Thin UI-state machine for [FrnkOnboardingScreen]. Owns nothing but the current page index: the host
  * decides what "Completed" and "CloseRequested" mean (mark onboarding done, navigate away, log
  * analytics, …) by collecting effects.
  *
@@ -13,7 +13,7 @@ import dev.jdgarita.frnk.ui.scaffolds.onboarding.ext.toUiState
  * derives [OnboardingScreenState] through [mapToUiState].
  */
 class OnboardingViewModel :
-    ModelMviViewModel<OnboardingArguments, OnboardingModelState, OnboardingScreenState, OnboardingIntent, OnboardingEffect>(
+    MviViewModel<OnboardingArguments, OnboardingModelState, OnboardingScreenState, OnboardingIntent, OnboardingEffect>(
         factory = OnboardingModelStateFactory
     ) {
     override fun onAttached(arguments: OnboardingArguments) {

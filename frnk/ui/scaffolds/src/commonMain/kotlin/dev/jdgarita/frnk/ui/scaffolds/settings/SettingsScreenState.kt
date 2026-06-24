@@ -1,17 +1,195 @@
 package dev.jdgarita.frnk.ui.scaffolds.settings
 
 import androidx.compose.runtime.Immutable
+import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
+import dev.jdgarita.frnk.ui.mvi.Arguments
+import dev.jdgarita.frnk.ui.mvi.ModelState
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
+import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState.Companion.DEVELOPER_REVEAL_TAPS
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
+import dev.jdgarita.frnk.ui.theme.iconFeedback
+import dev.jdgarita.frnk.ui.theme.iconHaptics
+import dev.jdgarita.frnk.ui.theme.iconNotifications
+import dev.jdgarita.frnk.ui.theme.iconOnboarding
+import dev.jdgarita.frnk.ui.theme.iconPrivacy
+import dev.jdgarita.frnk.ui.theme.iconRate
+import dev.jdgarita.frnk.ui.theme.iconRestore
+import dev.jdgarita.frnk.ui.theme.iconTerms
+import dev.jdgarita.frnk.ui.theme.iconUpgrade
 import dev.jdgarita.frnk.ui.theme.stringAppearance
+import dev.jdgarita.frnk.ui.theme.stringHaptics
+import dev.jdgarita.frnk.ui.theme.stringHapticsSubtitle
+import dev.jdgarita.frnk.ui.theme.stringNotifications
+import dev.jdgarita.frnk.ui.theme.stringPreferences
+import dev.jdgarita.frnk.ui.theme.stringPrivacyPolicy
+import dev.jdgarita.frnk.ui.theme.stringRateApp
+import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
+import dev.jdgarita.frnk.ui.theme.stringSectionLegal
+import dev.jdgarita.frnk.ui.theme.stringSectionSubscription
+import dev.jdgarita.frnk.ui.theme.stringSectionSupport
+import dev.jdgarita.frnk.ui.theme.stringSendFeedback
 import dev.jdgarita.frnk.ui.theme.stringSettings
+import dev.jdgarita.frnk.ui.theme.stringShowOnboarding
+import dev.jdgarita.frnk.ui.theme.stringTermsOfService
 import dev.jdgarita.frnk.ui.theme.stringThemeDark
 import dev.jdgarita.frnk.ui.theme.stringThemeLight
 import dev.jdgarita.frnk.ui.theme.stringThemeSystem
+import dev.jdgarita.frnk.ui.theme.stringUpgradeToPro
+
+@Immutable
+data object SettingsArguments : Arguments
+
+/**
+ * Data-only layer for [SettingsViewModel]. Carries everything needed to render [SettingsScreenState]:
+ * the VM is seeded from the host-built [SettingsScreenState] (via
+ * [toModelState][dev.jdgarita.frnk.ui.scaffolds.settings.ext.toModelState]), mutates *this* through the
+ * reducers, and the engine derives the rendered [SettingsScreenState] via the VM's `mapToUiState`
+ * ([toUiState][dev.jdgarita.frnk.ui.scaffolds.settings.ext.toUiState]). Fields mirror
+ * [SettingsScreenState]'s data fields one-for-one; the computed `developerVisible` and the
+ * `DEVELOPER_REVEAL_TAPS` companion stay on [SettingsScreenState].
+ */
+@Immutable
+data class SettingsModelState(
+    val title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
+    // Same minimal token-only default as [SettingsScreenState], so the model is constructible without a
+    // host catalogue; the real catalogue is seeded from the constructor's initial state.
+    val sections: List<SettingsSectionState> =
+        listOf(
+            SettingsSectionState(
+                rows =
+                    listOf(
+                        SettingsThemeRowState(
+                            title = FrnkStringSource.Token(stringAppearance),
+                            selected = Appearance.System,
+                            optionLabels =
+                                listOf(
+                                    FrnkStringSource.Token(stringThemeSystem),
+                                    FrnkStringSource.Token(stringThemeLight),
+                                    FrnkStringSource.Token(stringThemeDark)
+                                )
+                        )
+                    )
+            )
+        ),
+    val footer: SettingsFooterState? = null,
+    val developerSection: SettingsSectionState? = null,
+    val showDeveloperSection: Boolean = false,
+    val developerRevealed: Boolean = false,
+    val versionTapCount: Int = 0
+) : ModelState {
+    companion object {
+        val DEFAULT =
+            SettingsModelState(
+                title = FrnkStringSource.Token(stringSettings),
+                sections =
+                    listOf(
+                        SettingsSectionState(
+                            rows =
+                                listOf(
+                                    SettingsThemeRowState(
+                                        title = FrnkStringSource.Token(stringAppearance),
+                                        selected = Appearance.System,
+                                        optionLabels =
+                                            listOf(
+                                                FrnkStringSource.Token(stringThemeSystem),
+                                                FrnkStringSource.Token(stringThemeLight),
+                                                FrnkStringSource.Token(stringThemeDark)
+                                            )
+                                    )
+                                )
+                        ),
+                        SettingsSectionState(
+                            title = FrnkStringSource.Token(stringPreferences),
+                            rows =
+                                listOf(
+                                    SettingsToggleRowState(
+                                        id = "notifications",
+                                        icon = FrnkIconSource.Token(iconNotifications),
+                                        title = FrnkStringSource.Token(stringNotifications),
+                                        checked = true
+                                    ),
+                                    SettingsToggleRowState(
+                                        id = HAPTICS_TOGGLE_ID,
+                                        icon = FrnkIconSource.Token(iconHaptics),
+                                        title = FrnkStringSource.Token(stringHaptics),
+                                        subtitle = FrnkStringSource.Token(stringHapticsSubtitle),
+                                        checked = true
+                                    )
+                                )
+                        ),
+                        SettingsSectionState(
+                            title = FrnkStringSource.Token(stringSectionSubscription),
+                            // Strict Free/Pro visibility matrix:
+                            //  - Free → Upgrade-to-Pro (opens the paywall) + Restore Purchases.
+                            //  - Pro  → a "Pro Member" status badge + Manage Subscription (deep-links the OS
+                            //    subscriptions page). Upgrade and Restore are hidden — dead weight once entitled.
+                            rows =
+                                listOf(
+                                    SettingsClickableRowState(
+                                        id = "upgrade_to_pro",
+                                        icon = FrnkIconSource.Token(iconUpgrade),
+                                        title = FrnkStringSource.Token(stringUpgradeToPro),
+                                        action = SettingsAction.UpgradeToPro
+                                    ),
+                                    SettingsClickableRowState(
+                                        id = "restore_purchases",
+                                        icon = FrnkIconSource.Token(iconRestore),
+                                        title = FrnkStringSource.Token(stringRestorePurchases),
+                                        action = SettingsAction.RestorePurchases
+                                    )
+                                )
+                        ),
+                        SettingsSectionState(
+                            title = FrnkStringSource.Token(stringSectionSupport),
+                            rows =
+                                listOf(
+                                    SettingsClickableRowState(
+                                        id = "send_feedback",
+                                        icon = FrnkIconSource.Token(iconFeedback),
+                                        title = FrnkStringSource.Token(stringSendFeedback),
+                                        action = SettingsAction.SendFeedback
+                                    ),
+                                    SettingsClickableRowState(
+                                        id = "rate_app",
+                                        icon = FrnkIconSource.Token(iconRate),
+                                        title = FrnkStringSource.Token(stringRateApp),
+                                        action = SettingsAction.RateApp
+                                    ),
+                                    SettingsClickableRowState(
+                                        id = "show_onboarding",
+                                        icon = FrnkIconSource.Token(iconOnboarding),
+                                        title = FrnkStringSource.Token(stringShowOnboarding),
+                                        action = SettingsAction.ShowOnboarding
+                                    )
+                                )
+                        ),
+                        SettingsSectionState(
+                            title = FrnkStringSource.Token(stringSectionLegal),
+                            rows =
+                                listOf(
+                                    SettingsClickableRowState(
+                                        id = "privacy_policy",
+                                        icon = FrnkIconSource.Token(iconPrivacy),
+                                        title = FrnkStringSource.Token(stringPrivacyPolicy),
+                                        action = SettingsAction.PrivacyPolicy
+                                    ),
+                                    SettingsClickableRowState(
+                                        id = "terms_of_service",
+                                        icon = FrnkIconSource.Token(iconTerms),
+                                        title = FrnkStringSource.Token(stringTermsOfService),
+                                        action = SettingsAction.TermsOfService
+                                    )
+                                )
+                        )
+                    )
+            )
+    }
+}
 
 /**
  * Typed catalogue of the actions a clickable settings row can fire. The toolkit ships the common
@@ -116,14 +294,14 @@ data class SettingsFooterState(
 )
 
 /**
- * Configuration + runtime state for [SettingsScreen]. The screen is a list of [sections] (each a
+ * Configuration + runtime state for [FrnkSettingsScreen]. The screen is a list of [sections] (each a
  * card of [SettingsRowState] rows) plus an optional [footer]. State mutations flow through the
  * ViewModel reducer; hosts build the initial state by hand or via
  * [defaultSettingsState][defaultSettingsState].
  */
 @Immutable
 data class SettingsScreenState(
-    val title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
+    val topBar: FrnkTopAppBarState,
     // Minimal token-only default so the state is constructible (and the VM seedable) without
     // composition; the full catalogue is built by [defaultSettingsState].
     val sections: List<SettingsSectionState> =

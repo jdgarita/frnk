@@ -7,7 +7,7 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
-import dev.jdgarita.frnk.ui.mvi.ModelMviViewModel
+import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.launch
 
@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 class PaywallViewModel(
     private val paywallPurchaseUseCase: PaywallPurchaseUseCase,
     private val analytics: AnalyticsTracker
-) : ModelMviViewModel<PaywallArguments, PaywallModelState, PaywallScreenState, PaywallIntent, PaywallEffect>(
+) : MviViewModel<PaywallArguments, PaywallModelState, PaywallScreenState, PaywallIntent, PaywallEffect>(
         factory = PaywallModelStateFactory
     ) {
     override fun onAttached(arguments: PaywallArguments) {

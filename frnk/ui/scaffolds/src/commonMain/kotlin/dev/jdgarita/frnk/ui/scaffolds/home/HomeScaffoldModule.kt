@@ -8,10 +8,12 @@ import org.koin.dsl.module
  * composable must install this module (or `includes(homeScaffoldModule)` it from a parent module);
  * `frnkUiModules()` in `:ui-app` includes it.
  *
- * The ViewModel takes the initial [HomeScreenState] as a runtime parameter, so the call site passes
- * the configured chrome via `parametersOf(initialState)` — mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule].
+ * The ViewModel is model-first: runtime chrome (the top-bar title) arrives as [HomeArguments] at
+ * attach time via [dev.jdgarita.frnk.ui.mvi.FrnkScreen], not through the constructor — so the binding
+ * just resolves the [dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase] it needs.
+ * Mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule].
  */
 val homeScaffoldModule =
     module {
-        viewModel { params -> HomeViewModel(initial = params.get()) }
+        viewModel { HomeViewModel(observeProStatus = get()) }
     }

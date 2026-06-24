@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenContent
-import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
+import dev.jdgarita.frnk.ui.scaffolds.settings.defaultSettingsState
 import dev.jdgarita.frnk.ui.theme.Appearance
 
 @Preview
@@ -13,7 +13,7 @@ import dev.jdgarita.frnk.ui.theme.Appearance
 private fun SettingsScreen_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         SettingsScreenContent(
-            state = rememberDefaultSettingsState(version = "v0.1.0", appearance = Appearance.Light),
+            state = defaultSettingsState(version = "v0.1.0", appearance = Appearance.Light),
             onIntent = {},
             modifier = Modifier.fillMaxSize()
         )
@@ -25,7 +25,7 @@ private fun SettingsScreen_Light() {
 private fun SettingsScreen_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         SettingsScreenContent(
-            state = rememberDefaultSettingsState(version = "v0.1.0", appearance = Appearance.Dark),
+            state = defaultSettingsState(version = "v0.1.0", appearance = Appearance.Dark),
             onIntent = {},
             modifier = Modifier.fillMaxSize()
         )
@@ -38,7 +38,7 @@ private fun SettingsScreen_Pro_Light() {
     PreviewSurface(appearance = Appearance.Light) {
         SettingsScreenContent(
             state =
-                rememberDefaultSettingsState(
+                defaultSettingsState(
                     version = "v0.1.0",
                     appearance = Appearance.System,
                     isPro = true

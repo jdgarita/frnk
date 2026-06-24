@@ -12,7 +12,7 @@ private const val ANIMATION_DURATION_IN_MILLIS = 250
  * Forward navigation transition: new screen slides in from the right
  * while the current screen slides out to the left.
  */
-internal fun defaultEnterTransition(): ContentTransform =
+fun defaultEnterTransition(): ContentTransform =
     slideInHorizontally(
         initialOffsetX = { it },
         animationSpec = tween(ANIMATION_DURATION_IN_MILLIS)
@@ -26,7 +26,7 @@ internal fun defaultEnterTransition(): ContentTransform =
  * Back navigation transition: previous screen slides in from the left
  * while the current screen slides out to the right.
  */
-internal fun defaultExitTransition(): ContentTransform =
+fun defaultExitTransition(): ContentTransform =
     slideInHorizontally(
         initialOffsetX = { -it },
         animationSpec = tween(ANIMATION_DURATION_IN_MILLIS)

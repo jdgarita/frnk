@@ -14,7 +14,7 @@ import dev.jdgarita.frnk.utils.FeedbackEmail
  * a subject, a short prompt, and an app/OS/device diagnostics block (see [FeedbackEmail]). It is
  * pure Compose Multiplatform: it builds a `mailto:` URI and hands it to [LocalUriHandler], so it
  * works on Android and iOS with no platform wiring. Wire the returned lambda to
- * [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction.SendFeedback] from a [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreen] `onEffect` handler.
+ * [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction.SendFeedback] from a [dev.jdgarita.frnk.ui.scaffolds.settings.FrnkSettingsScreen] `onEffect` handler.
  *
  * Subject and prompt default to `FrnkStrings` tokens, so hosts re-skin them through
  * `FrnkThemeConfig.stringOverrides`; pass [subject] / [bodyHint] to override directly. [recipient]

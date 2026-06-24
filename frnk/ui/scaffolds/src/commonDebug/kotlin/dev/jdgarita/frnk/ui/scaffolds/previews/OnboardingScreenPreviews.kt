@@ -6,8 +6,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
+import dev.jdgarita.frnk.ui.scaffolds.onboarding.FrnkOnboardingScreen
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -59,48 +59,48 @@ private fun sampleState(pageIndex: Int): OnboardingScreenState {
 
 @Preview
 @Composable
-private fun OnboardingScreen_FirstPage_Light() {
+private fun FrnkOnboardingScreen_FirstPage_Light() {
     PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreen(state = sampleState(0), onIntent = {})
+        FrnkOnboardingScreen(state = sampleState(0), onIntent = {})
     }
 }
 
 @Preview
 @Composable
-private fun OnboardingScreen_MiddlePage_Light() {
+private fun FrnkOnboardingScreen_MiddlePage_Light() {
     PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreen(state = sampleState(1), onIntent = {})
+        FrnkOnboardingScreen(state = sampleState(1), onIntent = {})
     }
 }
 
 @Preview
 @Composable
-private fun OnboardingScreen_LastPage_Light() {
+private fun FrnkOnboardingScreen_LastPage_Light() {
     PreviewSurface(appearance = Appearance.Light) {
-        OnboardingScreen(state = sampleState(2), onIntent = {})
+        FrnkOnboardingScreen(state = sampleState(2), onIntent = {})
     }
 }
 
 @Preview
 @Composable
-private fun OnboardingScreen_FirstPage_Dark() {
+private fun FrnkOnboardingScreen_FirstPage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
-        OnboardingScreen(state = sampleState(0), onIntent = {})
+        FrnkOnboardingScreen(state = sampleState(0), onIntent = {})
     }
 }
 
 @Preview
 @Composable
-private fun OnboardingScreen_MiddlePage_Dark() {
+private fun FrnkOnboardingScreen_MiddlePage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
-        OnboardingScreen(state = sampleState(1), onIntent = {})
+        FrnkOnboardingScreen(state = sampleState(1), onIntent = {})
     }
 }
 
 @Preview
 @Composable
-private fun OnboardingScreen_LastPage_Dark() {
+private fun FrnkOnboardingScreen_LastPage_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
-        OnboardingScreen(state = sampleState(2), onIntent = {})
+        FrnkOnboardingScreen(state = sampleState(2), onIntent = {})
     }
 }
