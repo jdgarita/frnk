@@ -19,6 +19,7 @@ import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.ext.resolve
 
 // Gap between the floating pill and the system navigation bar it hovers above.
 private val PillBottomMargin = 12.dp
@@ -82,7 +83,7 @@ private fun RowScope.NavBarItems(
         val selected = index == selectedIndex
         IconButton(onClick = { onItemSelected(index) }) {
             Icon(
-                imageVector = item.icon,
+                imageVector = item.icon.resolve(),
                 contentDescription = item.label,
                 tint = Theme[colors][if (selected) colorPrimary else colorOnSurfaceVariant]
             )
