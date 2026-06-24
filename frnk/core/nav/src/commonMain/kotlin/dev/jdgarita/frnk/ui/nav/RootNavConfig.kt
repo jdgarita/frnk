@@ -2,7 +2,6 @@ package dev.jdgarita.frnk.ui.nav
 
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
@@ -27,17 +26,14 @@ import kotlinx.serialization.modules.polymorphic
  *
  * Pass the result to `rememberFrnkNavBackStack(appNavConfig, startRoute)` (`:shared-ui-atoms`).
  */
-fun frnkNavConfiguration(hostRoutes: SerializersModule = EmptySerializersModule()): SavedStateConfiguration =
+val frnkRootNavConfig =
     SavedStateConfiguration {
         serializersModule =
             SerializersModule {
                 polymorphic(NavKey::class) {
-                    subclass(FrnkRoute.Home::class, FrnkRoute.Home.serializer())
-                    subclass(FrnkRoute.Onboarding::class, FrnkRoute.Onboarding.serializer())
-                    subclass(FrnkRoute.Settings::class, FrnkRoute.Settings.serializer())
-                    subclass(FrnkRoute.Paywall::class, FrnkRoute.Paywall.serializer())
-                    subclass(FrnkRoute.Custom::class, FrnkRoute.Custom.serializer())
+                    subclass(FrnkRootRoute.Onboarding::class, FrnkRootRoute.Onboarding.serializer())
+                    subclass(FrnkRootRoute.Tab::class, FrnkRootRoute.Tab.serializer())
+                    subclass(FrnkRootRoute.Paywall::class, FrnkRootRoute.Paywall.serializer())
                 }
-                include(hostRoutes)
             }
     }

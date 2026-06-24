@@ -7,6 +7,7 @@ import dev.jdgarita.frnk.camera.cameraModule
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.demo.notes.Note
 import dev.jdgarita.frnk.demo.notes.NoteStore
+import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
@@ -33,7 +34,7 @@ import kotlin.time.Clock
  * Demo wiring. The point of having a separate module is that a real host would swap these for
  * `revenueCatModule` / `firebaseObservabilityModule` — the toolkit doesn't care.
  */
-val demoModule =
+val frnkAppModule =
     module {
         includes(appearanceModule)
         includes(homeScaffoldModule)
@@ -61,7 +62,7 @@ val demoModule =
         // demoNotesModule (demo-owned DemoDB over SqlDriverFactory, OQ-2) — and the JVM
         // round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
-        viewModel { DemoViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
 
 /** In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK. */

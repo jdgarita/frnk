@@ -57,7 +57,7 @@ import dev.jdgarita.frnk.ui.theme.strings
  * change (Next/Back) animates the pager — each guarded by an equality check to avoid a feedback loop.
  */
 @Composable
-fun OnboardingScreen(
+fun FrnkOnboardingScreen(
     state: OnboardingScreenState,
     onIntent: (OnboardingIntent) -> Unit
 ) {

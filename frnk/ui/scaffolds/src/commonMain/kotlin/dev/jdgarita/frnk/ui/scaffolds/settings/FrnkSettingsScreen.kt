@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconState
@@ -26,9 +24,9 @@ import dev.jdgarita.frnk.ui.atoms.FrnkSwitch
 import dev.jdgarita.frnk.ui.atoms.FrnkSwitchState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
-import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.mvi.SyncMviConfig
+import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.organisms.FrnkSectionCard
+import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.colorBackground
@@ -49,48 +47,29 @@ import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingMd
 import dev.jdgarita.frnk.ui.theme.spacingSm
 import dev.jdgarita.frnk.ui.theme.spacingXxs
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
-/**
- * VM-backed convenience wrapper around [SettingsScreenContent]. Resolves a [SettingsViewModel] from
- * Koin (initialised with [initialState] via `parametersOf`), forwards its state to the stateless
- * renderer, and surfaces one-shot effects to [onEffect]. Mirrors
- * [OnboardingScreen][dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen] exactly.
- *
- * The VM reacts to [initialState]: it is seeded once via `parametersOf`, then every later recomposition
- * that produces a *new* [initialState] (e.g. the host's [defaultSettingsState] rebuilt because
- * `isPro` flipped) is merged in via [SettingsIntent.ConfigChanged] — adopting the new catalogue while
- * preserving the user's in-session toggles, theme, and dev-reveal. So a single VM tracks entitlement
- * changes; **leave [vmKey] at its default** rather than re-keying to re-seed.
- *
- * [vmKey] scopes the ViewModel inside the host's `ViewModelStore`. By default the VM is reused for the
- * lifetime of the enclosing `ViewModelStoreOwner`; change [vmKey] only to force a *fresh* VM (a hard
- * reset that discards the merged state). [SettingsScreenContent] is the module-internal stateless
- * renderer (previews + this wrapper), not part of the public host API.
- */
 @Composable
-fun SettingsScreen(
-    initialState: SettingsScreenState,
+fun FrnkSettingsScreen(
     modifier: Modifier = Modifier,
-    vmKey: String? = null,
+    state: SettingsScreenState,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
-    onEffect: (SettingsEffect) -> Unit = {}
+    onNavigationClick: () -> Unit = {},
+    onActionClick: (FrnkTopAppBarAction) -> Unit = {},
+    onIntent: (SettingsIntent) -> Unit
 ) {
-    val vm: SettingsViewModel = koinViewModel(key = vmKey) { parametersOf(initialState) }
-    val state by vm.state.collectAsStateWithLifecycle()
-
-    // Sync later catalogue recomputes (e.g. isPro flipped upstream) into the live VM.
-    SyncMviConfig(vm, initialState, SettingsIntent::ConfigChanged)
-
-    EffectCollector(vm.effects, onEffect = onEffect)
-
-    SettingsScreenContent(
-        state = state,
-        onIntent = vm::send,
-        modifier = modifier,
-        contentPadding = contentPadding
-    )
+    FrnkScreenScaffold(
+        topBar = state.topBar,
+        contentPadding = contentPadding,
+        onNavigationClick = onNavigationClick,
+        onActionClick = onActionClick
+    ) { mergedPadding ->
+        SettingsScreenContent(
+            modifier = modifier,
+            state = state,
+            contentPadding = mergedPadding,
+            onIntent = onIntent
+        )
+    }
 }
 
 /**
@@ -99,9 +78,9 @@ fun SettingsScreen(
  */
 @Composable
 internal fun SettingsScreenContent(
+    modifier: Modifier,
     state: SettingsScreenState,
     onIntent: (SettingsIntent) -> Unit,
-    modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg])
 ) {
     Column(
@@ -113,13 +92,6 @@ internal fun SettingsScreenContent(
                 .padding(contentPadding),
         verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingLg])
     ) {
-        // Hosts that render their own header (e.g. a FrnkTopAppBar) pass a blank title to suppress
-        // this one and avoid a duplicate heading.
-        val titleText = state.title.resolve()
-        if (titleText.isNotBlank()) {
-            FrnkText(state = FrnkTextState.HeadlineSmall(text = titleText))
-        }
-
         state.sections.forEach { section ->
             SettingsSection(section = section, onIntent = onIntent)
         }
