@@ -52,7 +52,7 @@ fun nestedNavigationModule(
     navigation<FrnkRoute.Settings> {
         SettingsScreen(
             onNavigateAway = { backStack.back() },
-            onNavigateToOnboarding = { backStack.back() }
+            onNavigateToOnboarding = { onRootNavigate(FrnkRootRoute.Onboarding) }
         )
     }
 }

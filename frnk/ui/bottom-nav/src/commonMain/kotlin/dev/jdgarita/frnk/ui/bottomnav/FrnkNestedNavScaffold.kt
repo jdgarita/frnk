@@ -20,10 +20,6 @@ import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
-import dev.jdgarita.frnk.ui.theme.FrnkIconSource
-import dev.jdgarita.frnk.ui.theme.iconNavComponent
-import dev.jdgarita.frnk.ui.theme.iconNavHome
-import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.context.loadKoinModules
@@ -62,6 +58,7 @@ import org.koin.core.module.Module
 @Composable
 fun FrnkNestedNavScaffold(
     modifier: Modifier = Modifier,
+    nestedNavArguments: FrnkNestedNavArguments,
     onSavedStateConfiguration: () -> SavedStateConfiguration,
     onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
@@ -89,33 +86,7 @@ fun FrnkNestedNavScaffold(
     }
 
     FrnkScreen(
-        arguments =
-            FrnkNestedNavArguments(
-                items =
-                    listOf(
-                        FrnkNavBarItemModel(
-                            key = "Home",
-                            icon = FrnkIconSource.Token(iconNavHome),
-                            iosSystemIcon = "house",
-                            label = "Home",
-                            route = FrnkRoute.Home
-                        ),
-                        FrnkNavBarItemModel(
-                            key = "Components",
-                            icon = FrnkIconSource.Token(iconNavComponent),
-                            iosSystemIcon = "square.grid.2x2",
-                            label = "Components",
-                            route = FrnkRoute.Custom("Components")
-                        ),
-                        FrnkNavBarItemModel(
-                            key = "Settings",
-                            icon = FrnkIconSource.Token(iconNavSettings),
-                            iosSystemIcon = "gearshape",
-                            label = "Settings",
-                            route = FrnkRoute.Settings
-                        )
-                    )
-            ),
+        arguments = nestedNavArguments,
         viewModel = viewModel,
         onEffect = { uiEffect ->
             when (uiEffect) {
