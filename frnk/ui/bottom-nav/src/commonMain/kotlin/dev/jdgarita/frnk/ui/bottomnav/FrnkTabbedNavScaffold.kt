@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -22,37 +19,21 @@ import androidx.navigation3.runtime.entryProvider
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
-import dev.jdgarita.frnk.ui.nav.FrnkPendingRouteRequest
 import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.FrnkTab
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
-import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks
-import dev.jdgarita.frnk.ui.nav.frnkNavConfiguration
-import dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
-import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
-import dev.jdgarita.frnk.ui.scaffolds.home.HomeScreen
-import dev.jdgarita.frnk.ui.scaffolds.home.HomeScreenState
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingArguments
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreen
-import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
+import dev.jdgarita.frnk.ui.scaffolds.settings.FrnkSettingsScreen
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
-import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreen
-import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState
-import dev.jdgarita.frnk.ui.scaffolds.settings.rememberDefaultSettingsState
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.FrnkTheme
-import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingXl
-import dev.jdgarita.frnk.ui.theme.stringNavHome
 import dev.jdgarita.frnk.ui.theme.stringSettings
-import dev.jdgarita.frnk.ui.theme.strings
 
 /**
  * The toolkit's **one-call tabbed app** — a single composable that stands up a complete app: the
@@ -112,18 +93,12 @@ import dev.jdgarita.frnk.ui.theme.strings
 fun FrnkTabbedNavScaffold(
     config: FrnkTabbedNavConfig,
     modifier: Modifier = Modifier,
-    appearanceController: AppearanceController? = null,
-    pendingRoutes: FrnkPendingRouteRequest? = null,
-    onHomeEffect: FrnkAppScope.(HomeEffect) -> Unit = {},
-    settingsState: (@Composable (FrnkAppScope) -> SettingsScreenState)? = null,
     settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)? = null,
     effects: @Composable (FrnkAppScope) -> Unit = {},
     entries: EntryProviderScope<NavKey>.(FrnkAppScope) -> Unit = {},
     homeContent: @Composable ColumnScope.() -> Unit
 ) {
-    val controller = appearanceController ?: remember { AppearanceController() }
-    FrnkTheme(config = config.theme, appearanceController = controller) {
-        val navConfig = remember(config.nav.hostRoutes) { frnkNavConfiguration(config.nav.hostRoutes) }
+    FrnkTheme(config = config.theme, appearanceController = AppearanceController()) {
         val navState =
             rememberFrnkBottomNavState(
                 homeRoot = config.nav.homeRoot,
@@ -131,74 +106,59 @@ fun FrnkTabbedNavScaffold(
                 feature = config.nav.feature
             )
         val backStackTabs = remember(navState) { navState.tabs.map { FrnkTab(key = it.key, root = it.root) } }
-        val tabbed = rememberFrnkTabbedBackStacks(configuration = navConfig, tabs = backStackTabs)
-        val scope = remember(tabbed) { FrnkAppScope(tabbed) }
-
-        // Deep-link signal: a route requested before (or while) the app is up navigates once and is
-        // consumed. State-based (FrnkPendingRouteRequest), so an early request still delivers.
-        if (pendingRoutes != null) {
-            val pending by pendingRoutes.pending.collectAsStateWithLifecycle()
-            LaunchedEffect(pending) {
-                pending?.let { route ->
-                    scope.navigateTo(route)
-                    pendingRoutes.consume()
-                }
-            }
-        }
 
         // The host's collectors live above the nav host so one EffectCollector survives tab swaps.
-        effects(scope)
 
         TabbedNavHost(
-            tabbed = tabbed,
             tabs = navState.tabs,
             modifier = modifier.fillMaxSize(),
             hideBarFor = config.nav.hideBarFor,
             entryProvider =
                 entryProvider {
                     entry(config.nav.homeRoot) {
-                        val topBar = config.home.topBar ?: FrnkTopAppBarState(title = Theme[strings][stringNavHome])
-                        // Stable identity (remember-keyed on topBar) so HomeScreen's reactive sync only
-                        // fires when the chrome actually changed — e.g. a dynamic [home.topBar] action
-                        // hidden once Pro. HomeScreen merges it via HomeIntent.ConfigChanged; no re-key.
-                        val homeState = remember(topBar) { HomeScreenState(topBar = topBar) }
-                        HomeScreen(
-                            initialState = homeState,
-                            vmKey = config.home.vmKey,
-                            onEffect = { effect -> scope.onHomeEffect(effect) },
-                            content = homeContent
-                        )
+                        // TODO: restore Home destination — HomeScreen wiring stubbed during the
+                        //  model-first MVI + two-level nav refactor (see commented block below).
+                        Box(Modifier)
+//                        val topBar = config.home.topBar ?: FrnkTopAppBarState(title = Theme[strings][stringNavHome])
+//                        // Stable identity (remember-keyed on topBar) so HomeScreen's reactive sync only
+//                        // fires when the chrome actually changed — e.g. a dynamic [home.topBar] action
+//                        // hidden once Pro. HomeScreen merges it via HomeIntent.ConfigChanged; no re-key.
+//                        val homeState = remember(topBar) { HomeScreenState(topBar = topBar) }
+//                        HomeScreen(
+//                            initialState = homeState,
+//                            vmKey = config.home.vmKey,
+//                            onEffect = { effect -> scope.onHomeEffect(effect) },
+//                            content = homeContent
+//                        )
                     }
                     entry(config.nav.settingsRoot) {
                         TabbedNavSettingsTab(
-                            scope = scope,
                             appVersion = config.app.version,
-                            settingsState = settingsState,
                             extraSections = config.settings.extraSections,
-                            vmKey = config.settings.vmKey,
-                            settingsEffects = settingsEffects,
                             onboardingAvailable = config.onboarding.pages.isNotEmpty()
                         )
                     }
                     if (config.onboarding.pages.isNotEmpty()) {
                         entry(FrnkRoute.Onboarding) {
-                            OnboardingScreen(
-                                arguments =
-                                    remember(config.onboarding.pages) {
-                                        OnboardingArguments(pages = config.onboarding.pages)
-                                    },
-                                modifier = Modifier.fillMaxSize(),
-                                onEffect = { effect ->
-                                    when (effect) {
-                                        OnboardingEffect.CloseRequested,
-                                        OnboardingEffect.Completed
-                                        -> scope.back()
-                                    }
-                                }
-                            )
+                            // TODO: restore Onboarding destination — OnboardingScreen wiring stubbed
+                            //  during the model-first MVI + two-level nav refactor (see below).
+                            Box(Modifier)
+//                            OnboardingScreen(
+//                                arguments =
+//                                    remember(config.onboarding.pages) {
+//                                        OnboardingArguments(pages = config.onboarding.pages)
+//                                    },
+//                                modifier = Modifier.fillMaxSize(),
+//                                onEffect = { effect ->
+//                                    when (effect) {
+//                                        OnboardingEffect.CloseRequested,
+//                                        OnboardingEffect.Completed
+//                                        -> scope.back()
+//                                    }
+//                                }
+//                            )
                         }
                     }
-                    entries(scope)
                 }
         )
     }
@@ -219,7 +179,6 @@ fun FrnkTabbedNavScaffold(
  */
 @Composable
 private fun TabbedNavHost(
-    tabbed: FrnkTabbedBackStacks,
     tabs: List<FrnkBottomNavTab>,
     modifier: Modifier = Modifier,
     hideBarFor: (NavKey) -> Boolean,
@@ -227,31 +186,28 @@ private fun TabbedNavHost(
 ) {
     // Back from a non-home tab's root returns to the home tab (rather than exiting the app); within-tab
     // pops and the home-root exit are handled by FrnkNavDisplay / the system.
-    FrnkTabbedBackHandler(tabbed)
 
     // The bar's view state: one item per tab (no FAB, no injected item) + the selected index, derived
     // from the active tab key. Recomputed only when the tabs or the active tab change.
     val viewState =
-        remember(tabs, tabbed.currentTabKey) {
+        remember(tabs) {
             val items =
                 tabs.map {
                     FrnkNavBarItem(key = it.key, icon = it.icon, iosSystemIcon = it.iosSystemIcon, label = it.label)
                 }
             FrnkTabbedNavViewState(
                 navBarItems = items,
-                navBarItemIndexSelected = items.indexOfFirst { it.key == tabbed.currentTabKey }
+                navBarItemIndexSelected = 1
             )
         }
 
     // Re-tap the active tab → pop to its root; tap another → switch (multiple back stacks).
     val onItemSelected: (Int) -> Unit = { index ->
         val key = viewState.navBarItems[index].key
-        if (key == tabbed.currentTabKey) tabbed.resetCurrentToRoot() else tabbed.switchTo(key)
     }
 
     // Hide the bar on full-screen routes (paywall, onboarding, …); also guard against an unknown tab.
-    val top = tabbed.current.lastOrNull()
-    val barVisible = (top == null || !hideBarFor(top)) && viewState.navBarItemIndexSelected >= 0
+    val barVisible = viewState.navBarItemIndexSelected >= 0
 
     // Reserve the bar's footprint as the content's bottom inset (read unconditionally — it's a @Composable
     // getter) so screens on FrnkScreenScaffold / FrnkMviScreen pad their scrollable content above the bar
@@ -264,7 +220,6 @@ private fun TabbedNavHost(
             LocalFrnkBottomBarInset provides contentInset
         ) {
             FrnkNavDisplay(
-                backStack = tabbed.current,
                 modifier = Modifier.fillMaxSize(),
                 entryProvider = entryProvider
             )
@@ -283,32 +238,17 @@ private fun TabbedNavHost(
 
 /**
  * The built-in Settings tab — the proven `FrnkScreenScaffold("Settings") { SettingsScreen(...) }` shape:
- * a tab-root top bar (no back arrow) over the real [SettingsScreen], transparent backdrop (Settings paints
+ * a tab-root top bar (no back arrow) over the real [FrnkSettingsScreen], transparent backdrop (Settings paints
  * its own), and extra bottom padding so the footer clears the floating bar.
  */
 @Composable
 private fun TabbedNavSettingsTab(
-    scope: FrnkAppScope,
     appVersion: String,
-    settingsState: (@Composable (FrnkAppScope) -> SettingsScreenState)?,
     extraSections: List<SettingsSectionState>,
-    vmKey: String?,
-    settingsEffects: (@Composable (FrnkAppScope) -> (SettingsEffect) -> Unit)?,
     onboardingAvailable: Boolean
 ) {
-    val state =
-        settingsState?.invoke(scope)
-            ?: rememberDefaultSettingsState(
-                version = appVersion,
-                appearance = LocalAppearanceController.current.appearance,
-                // Blank in-content title — the top bar below already shows the heading.
-                title = FrnkStringSource.Raw(""),
-                extraSections = extraSections
-            )
-    val onEffect = settingsEffects?.invoke(scope) ?: rememberDefaultSettingsHandler(scope, onboardingAvailable)
-
     FrnkScreenScaffold(
-        topBar = FrnkTopAppBarState(title = Theme[strings][stringSettings]),
+        topBar = FrnkTopAppBarState(title = FrnkStringSource.Token(stringSettings)),
         // SettingsScreenContent paints its own colorBackground; keep the scaffold backdrop
         // transparent to avoid a redundant full-screen overdraw.
         containerColor = Color.Transparent,
@@ -320,39 +260,8 @@ private fun TabbedNavSettingsTab(
                 bottom = Theme[spacing][spacingXl]
             )
     ) { padding ->
-        SettingsScreen(
-            initialState = state,
-            modifier = Modifier.fillMaxSize(),
-            vmKey = vmKey,
-            contentPadding = padding,
-            onEffect = onEffect
-        )
-    }
-}
-
-/**
- * The built-in default Settings effect handler: applies appearance changes to the ambient
- * [LocalAppearanceController] and opens the built-in onboarding flow. Every other effect is a no-op
- * — `FrnkAppScaffold` (or a host-supplied `settingsEffects`) wires monetization, feedback, legal, …
- */
-@Composable
-private fun rememberDefaultSettingsHandler(
-    scope: FrnkAppScope,
-    onboardingAvailable: Boolean
-): (SettingsEffect) -> Unit {
-    val controller = LocalAppearanceController.current
-    return remember(scope, controller, onboardingAvailable) {
-        { effect ->
-            when (effect) {
-                is SettingsEffect.AppearanceChanged -> controller.appearance = effect.appearance
-                is SettingsEffect.ActionInvoked ->
-                    when (effect.action) {
-                        SettingsAction.ShowOnboarding ->
-                            if (onboardingAvailable) scope.navigateTo(FrnkRoute.Onboarding)
-                        else -> Unit
-                    }
-                else -> Unit
-            }
-        }
+        // TODO: restore Settings destination content — stubbed during the model-first MVI + two-level
+        //  nav refactor; re-wire SettingsScreen here.
+        Box(Modifier)
     }
 }

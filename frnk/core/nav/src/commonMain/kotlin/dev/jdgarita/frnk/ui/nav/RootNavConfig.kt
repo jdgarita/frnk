@@ -6,25 +6,15 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
 /**
- * Builds the `SavedStateConfiguration` a nav3 `NavBackStack` uses to persist/restore its entries across
- * configuration change and process death. nav3 serializes back-stack keys polymorphically over [NavKey],
- * so every concrete route type must be registered.
+ * The `SavedStateConfiguration` for the **root** back stack of the lower-level `FrnkApp` path: it
+ * persists/restores the root entries across configuration change and process death. nav3 serializes
+ * back-stack keys polymorphically over [NavKey], so every concrete route type must be registered — this
+ * registers the toolkit's [FrnkRootRoute] members ([FrnkRootRoute.Onboarding] / [FrnkRootRoute.Tab] /
+ * [FrnkRootRoute.Paywall]).
  *
- * The toolkit's own [FrnkRoute] members are registered here; a host merges its own routes by passing a
- * [hostRoutes] module with its `polymorphic(NavKey::class) { subclass(...) }` block:
- *
- * ```
- * val appNavConfig = frnkNavConfiguration(
- *     hostRoutes = SerializersModule {
- *         polymorphic(NavKey::class) {
- *             subclass(Home::class, Home.serializer())
- *             // … the host's routes
- *         }
- *     },
- * )
- * ```
- *
- * Pass the result to `rememberFrnkNavBackStack(appNavConfig, startRoute)` (`:shared-ui-atoms`).
+ * Pass it to the root `NavDisplay` in `:ui-app`'s `FrnkApp` (via its `onSavedStateConfiguration`). The
+ * **nested** tab back stack inside [FrnkRootRoute.Tab] uses [frnkNestedNavConfig] instead, which registers
+ * [FrnkRoute] and merges the host's own routes.
  */
 val frnkRootNavConfig =
     SavedStateConfiguration {

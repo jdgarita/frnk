@@ -4,7 +4,7 @@ import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 
 /**
- * Single entry point for both `androidDemoApp` and `iosDemoApp`. Installs only [demoModule],
+ * Single entry point for both `androidDemoApp` and `iosDemoApp`. Installs only [frnkAppModule],
  * which binds fakes for every `*-api` interface the screen touches (`FakeEntitlementProvider`,
  * `FakeKeyValueStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`). No real backend by design.
  *
@@ -17,6 +17,6 @@ import org.koin.core.context.startKoin
  */
 fun bootstrapDemoKoin(extraConfig: KoinApplication.() -> Unit = {}): KoinApplication =
     startKoin {
-        modules(demoModule)
+        modules(frnkAppModule)
         extraConfig()
     }

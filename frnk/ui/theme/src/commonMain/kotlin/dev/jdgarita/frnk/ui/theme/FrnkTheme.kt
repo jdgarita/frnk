@@ -41,6 +41,15 @@ val shapes = ThemeProperty<Shape>("shapes")
 val strings = ThemeProperty<String>("strings")
 val icons = ThemeProperty<ImageVector>("icons")
 
+// indications
+val bright = ThemeToken<Indication>("bright")
+val dim = ThemeToken<Indication>("dim")
+
+// shadow levels
+val subtle = ThemeToken<Shadow>("subtle")
+val elevated = ThemeToken<Shadow>("elevated")
+val modal = ThemeToken<Shadow>("modal")
+
 // Dp axes (P-host-alignment): spacing/padding + icon sizes are host-overridable theme axes, mirroring
 // the colors/shapes pattern. Defaults come from the FrnkSpacing / FrnkIconSize objects; hosts override
 // per token via FrnkThemeConfig.spacingOverrides / iconSizeOverrides.

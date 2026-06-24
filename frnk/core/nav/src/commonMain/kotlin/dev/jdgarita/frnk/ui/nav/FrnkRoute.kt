@@ -4,14 +4,16 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 /**
- * The toolkit's default catalogue of type-safe Navigation3 destinations. Each member is a
+ * The toolkit's default **tab-level** catalogue of type-safe Navigation3 destinations. Each member is a
  * [NavKey] (the nav3 back-stack key marker) and `@Serializable` so it can be persisted on a
- * `NavBackStack` and restored via a [frnkNavConfiguration]-built `SavedStateConfiguration`.
+ * `NavBackStack` and restored via a [frnkNestedNavConfig]-built `SavedStateConfiguration` (the
+ * `Home`/`Custom`/`Settings` members are the ones it registers). For the lower-level `FrnkApp` root path,
+ * the app-root/full-screen flows live on the parallel [FrnkRootRoute] catalogue instead.
  *
- * These are plain serializable data objects/classes — `:shared-ui-api` stays Compose-free (the nav3
+ * These are plain serializable data objects/classes — `:core-nav` stays Compose-free (the nav3
  * runtime is pure Kotlin), so this contract is consumable by feature ViewModels without dragging in
  * `compose.runtime`. Hosts may also declare their own `@Serializable` `NavKey` route types; the nav
- * engine (`FrnkNavDisplay` in `:shared-ui-atoms`) is generic over any `NavKey`, this is just the
+ * engine (`FrnkNavDisplay` in `:ui-scaffolds`) is generic over any `NavKey`, this is just the
  * batteries-included set.
  *
  * Navigation flows through the MVI effect channel: a ViewModel emits a one-shot navigation effect and a

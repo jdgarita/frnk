@@ -15,6 +15,7 @@ import com.composeunstyled.theme.Theme
 import com.composeunstyled.theme.ThemeToken
 import dev.jdgarita.frnk.ui.haptics.HapticType
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.shapeFull
 import dev.jdgarita.frnk.ui.theme.shapes
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
@@ -27,15 +28,37 @@ import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
  * [Content.size] `null` (the default) uses the theme icon-size axis.
  */
 sealed interface FrnkIconButtonState {
+    /**
+     * The glyph is supplied as a [FrnkIconSource] — either a theme [FrnkIconSource.Token] (so host
+     * `iconOverrides` apply and a VM can author icon state without composition) or a host-supplied
+     * [FrnkIconSource.Vector]. A `String`-free secondary constructor accepts a raw [ImageVector]
+     * directly (wrapping it in [FrnkIconSource.Vector]), so existing call sites stay unchanged.
+     */
     @Immutable
     data class Content(
-        val imageVector: ImageVector,
+        val icon: FrnkIconSource,
         val contentDescription: String,
         val size: Dp? = null,
         val tint: ThemeToken<Color>? = null,
         val contentPadding: PaddingValues = PaddingValues(FrnkSpacing.sm),
         val enabled: Boolean = true
-    ) : FrnkIconButtonState
+    ) : FrnkIconButtonState {
+        constructor(
+            imageVector: ImageVector,
+            contentDescription: String,
+            size: Dp? = null,
+            tint: ThemeToken<Color>? = null,
+            contentPadding: PaddingValues = PaddingValues(FrnkSpacing.sm),
+            enabled: Boolean = true
+        ) : this(
+            FrnkIconSource.Vector(imageVector),
+            contentDescription,
+            size,
+            tint,
+            contentPadding,
+            enabled
+        )
+    }
 
     data object Skeleton : FrnkIconButtonState
 }
@@ -74,7 +97,7 @@ fun FrnkIconButton(
         FrnkIcon(
             state =
                 FrnkIconState.Content(
-                    imageVector = content.imageVector,
+                    icon = content.icon,
                     contentDescription = content.contentDescription,
                     size = content.size,
                     tint = content.tint,

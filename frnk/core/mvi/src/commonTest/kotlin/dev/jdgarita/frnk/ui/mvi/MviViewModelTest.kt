@@ -14,12 +14,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Verifies the [MviViewModel] engine via a minimal in-test subclass: an intent reduces state
- * through [MviViewModel.setState], and an intent emits a one-shot effect through the effects
- * channel. This is the reusable template for testing real feature reducers.
+ * Verifies the [MviViewModel] engine via a minimal in-test subclass: the initial UiState is the
+ * factory's model mapped through [MviViewModel.mapToUiState]; mutating the model via
+ * [MviViewModel.updateModel] re-derives the UiState automatically; and an intent emits a one-shot
+ * effect. The reusable template for testing real model-first reducers.
  */
 class MviViewModelTest {
-    // Shared scheduler so the ViewModel's `viewModelScope` (Main) and the test body advance together.
     private val dispatcher = UnconfinedTestDispatcher()
 
     @BeforeTest
@@ -33,59 +33,116 @@ class MviViewModelTest {
     }
 
     @Test
-    fun intent_reduces_state() =
+    fun initial_ui_state_is_mapped_from_the_factory_model() =
         runTest(dispatcher) {
-            val vm = CounterViewModel()
+            val vm = SampleViewModel()
 
-            vm.send(CounterIntent.Increment)
-            vm.send(CounterIntent.Increment)
-            runCurrent()
-
-            assertEquals(2, vm.state.value.count)
+            // Factory seeds count = 7; the mapper decorates it as "Count: 7".
+            assertEquals(7, vm.state.value.count)
+            assertEquals("Count: 7", vm.state.value.label)
         }
 
     @Test
-    fun reset_intent_restores_state_and_emits_effect() =
+    fun updating_the_model_re_derives_the_ui_state() =
         runTest(dispatcher) {
-            val vm = CounterViewModel()
-            vm.send(CounterIntent.Increment)
+            val vm = SampleViewModel()
+
+            vm.send(SampleIntent.Increment)
+            vm.send(SampleIntent.Increment)
             runCurrent()
 
-            // Start awaiting the effect before triggering it.
+            assertEquals(9, vm.state.value.count)
+            assertEquals("Count: 9", vm.state.value.label)
+        }
+
+    @Test
+    fun attach_seeds_the_model_from_arguments() =
+        runTest(dispatcher) {
+            val vm = SampleViewModel()
+
+            // Before attach the model is the factory seed (7); attach overwrites it from the arguments.
+            assertEquals(7, vm.state.value.count)
+            vm.attach(SampleArguments(startCount = 20))
+            runCurrent()
+
+            assertEquals(20, vm.state.value.count)
+            assertEquals("Count: 20", vm.state.value.label)
+        }
+
+    @Test
+    fun attach_runs_only_once() =
+        runTest(dispatcher) {
+            val vm = SampleViewModel()
+
+            vm.attach(SampleArguments(startCount = 20))
+            vm.attach(SampleArguments(startCount = 99)) // ignored — already attached
+            runCurrent()
+
+            assertEquals(20, vm.state.value.count)
+        }
+
+    @Test
+    fun reset_intent_re_derives_state_and_emits_effect() =
+        runTest(dispatcher) {
+            val vm = SampleViewModel()
+            vm.send(SampleIntent.Increment)
+            runCurrent()
+
             val effect = async { vm.effects.first() }
             runCurrent()
 
-            vm.send(CounterIntent.Reset)
+            vm.send(SampleIntent.Reset)
             runCurrent()
 
             assertEquals(0, vm.state.value.count)
-            assertEquals(CounterEffect.DidReset, effect.await())
+            assertEquals("Count: 0", vm.state.value.label)
+            assertEquals(SampleEffect.DidReset, effect.await())
         }
 }
 
-// --- Test fixtures: a trivial MviViewModel subclass exercising state + effects. ---
+// --- Test fixtures: a trivial MviViewModel exercising model → UiState mapping + effects. ---
 
-private data class CounterState(
-    val count: Int = 0
+private data class SampleArguments(
+    val startCount: Int
+) : Arguments
+
+private data class SampleModel(
+    val count: Int = 7
+) : ModelState
+
+private object SampleModelFactory : ModelStateFactory<SampleModel> {
+    override fun initialModelState() = SampleModel()
+}
+
+private data class SampleUiState(
+    val count: Int,
+    val label: String
 ) : UiState
 
-private sealed interface CounterIntent : UiIntent {
-    data object Increment : CounterIntent
+private sealed interface SampleIntent : UiIntent {
+    data object Increment : SampleIntent
 
-    data object Reset : CounterIntent
+    data object Reset : SampleIntent
 }
 
-private sealed interface CounterEffect : UiEffect {
-    data object DidReset : CounterEffect
+private sealed interface SampleEffect : UiEffect {
+    data object DidReset : SampleEffect
 }
 
-private class CounterViewModel : MviViewModel<CounterState, CounterIntent, CounterEffect>(CounterState()) {
-    override suspend fun onIntent(intent: CounterIntent) {
+private class SampleViewModel :
+    MviViewModel<SampleArguments, SampleModel, SampleUiState, SampleIntent, SampleEffect>(SampleModelFactory) {
+    override fun onAttached(arguments: SampleArguments) {
+        updateModel { copy(count = arguments.startCount) }
+    }
+
+    override fun mapToUiState(modelState: SampleModel) = SampleUiState(count = modelState.count, label = "Count: ${modelState.count}")
+
+    override suspend fun onIntent(intent: SampleIntent) {
         when (intent) {
-            CounterIntent.Increment -> setState { copy(count = count + 1) }
-            CounterIntent.Reset -> {
-                setState { copy(count = 0) }
-                emit(CounterEffect.DidReset)
+            SampleIntent.Increment -> updateModel { copy(count = count + 1) }
+            SampleIntent.Reset -> {
+                updateModel { copy(count = 0) }
+                emit(SampleEffect.DidReset)
             }
         }
     }

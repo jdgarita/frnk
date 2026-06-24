@@ -23,11 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.bodyLarge
 import dev.jdgarita.frnk.ui.theme.colorBackground
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
@@ -46,7 +47,7 @@ import dev.jdgarita.frnk.ui.theme.textStyles
 /** A single trailing action rendered as an icon button on the right of [FrnkTopAppBar]. */
 @Immutable
 data class FrnkTopAppBarAction(
-    val icon: ImageVector,
+    val icon: FrnkIconSource,
     /** Doubles as the icon button's accessibility label. */
     val contentDescription: String,
     /** Stable identifier the host switches on in `onActionClick`. Defaults to [contentDescription]. */
@@ -55,9 +56,9 @@ data class FrnkTopAppBarAction(
 
 @Immutable
 data class FrnkTopAppBarState(
-    val title: String,
+    val title: FrnkStringSource,
     /** Optional leading icon (e.g. a back arrow). `null` renders no leading button. */
-    val navigationIcon: ImageVector? = null,
+    val navigationIcon: FrnkIconSource? = null,
     val navigationContentDescription: String? = null,
     val actions: List<FrnkTopAppBarAction> = emptyList(),
     /**
@@ -146,7 +147,7 @@ fun FrnkTopAppBar(
                     FrnkIconButton(
                         state =
                             FrnkIconButtonState.Content(
-                                imageVector = icon,
+                                icon = icon,
                                 contentDescription = state.navigationContentDescription ?: "Back",
                                 tint = colorOnBackground
                             ),
@@ -157,7 +158,7 @@ fun FrnkTopAppBar(
                 FrnkText(
                     state =
                         FrnkTextState.Title(
-                            text = state.title,
+                            content = state.title,
                             color = colorOnBackground,
                             singleLine = true
                         ),
@@ -172,7 +173,7 @@ fun FrnkTopAppBar(
                     FrnkIconButton(
                         state =
                             FrnkIconButtonState.Content(
-                                imageVector = action.icon,
+                                icon = action.icon,
                                 contentDescription = action.contentDescription,
                                 tint = colorOnBackground
                             ),

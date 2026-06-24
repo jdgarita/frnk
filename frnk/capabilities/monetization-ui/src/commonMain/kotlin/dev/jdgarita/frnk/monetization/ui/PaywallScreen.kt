@@ -16,12 +16,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
@@ -32,9 +30,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkIconState
 import dev.jdgarita.frnk.ui.atoms.FrnkSkeleton
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
-import dev.jdgarita.frnk.ui.mvi.EffectCollector
-import dev.jdgarita.frnk.ui.mvi.FrnkScreen
-import dev.jdgarita.frnk.ui.scaffolds.FrnkFullScreenScaffold
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colorPrimary
@@ -85,26 +80,29 @@ fun PaywallScreen(
     onEffect: (PaywallEffect) -> Unit = {}
 ) {
     val vm: PaywallViewModel = koinViewModel(key = vmKey)
-    FrnkScreen(viewModel = vm, arguments = PaywallArguments(source)) {
-        val state by vm.state.collectAsStateWithLifecycle()
-
-        EffectCollector(vm.effects, onEffect = onEffect)
-
-        FrnkFullScreenScaffold(
-            onCloseClick = { vm.send(PaywallIntent.Close) },
-            modifier = modifier,
-            contentPadding = PaddingValues(Theme[spacing][spacingLg])
-        ) { padding ->
-            // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
-            // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
-            PaywallScreenContent(
-                state = state,
-                features = features,
-                onIntent = vm::send,
-                contentPadding = padding
-            )
-        }
-    }
+    // TODO: restore PaywallScreen — body commented out during the model-first MVI + two-level nav
+    //  refactor (FrnkScreen/FrnkFullScreenScaffold wiring below). Currently renders nothing.
+    Box(Modifier)
+//    FrnkScreen(viewModel = vm, arguments = PaywallArguments(source)) {
+//        val state by vm.state.collectAsStateWithLifecycle()
+//
+//        EffectCollector(vm.effects, onEffect = onEffect)
+//
+//        FrnkFullScreenScaffold(
+//            onCloseClick = { vm.send(PaywallIntent.Close) },
+//            modifier = modifier,
+//            contentPadding = PaddingValues(Theme[spacing][spacingLg])
+//        ) { padding ->
+//            // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
+//            // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
+//            PaywallScreenContent(
+//                state = state,
+//                features = features,
+//                onIntent = vm::send,
+//                contentPadding = padding
+//            )
+//        }
+//    }
 }
 
 /** Stateless paywall body — header, feature checklist, plan cards, CTA, restore + legal. */

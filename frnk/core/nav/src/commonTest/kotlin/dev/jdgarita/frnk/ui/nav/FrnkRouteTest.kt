@@ -18,9 +18,7 @@ class FrnkRouteTest {
     @Test
     fun members_are_nav_keys() {
         assertIs<NavKey>(FrnkRoute.Home)
-        assertIs<NavKey>(FrnkRoute.Onboarding)
         assertIs<NavKey>(FrnkRoute.Settings)
-        assertIs<NavKey>(FrnkRoute.Paywall)
         assertIs<NavKey>(FrnkRoute.Custom(id = "x"))
     }
 
@@ -37,9 +35,7 @@ class FrnkRouteTest {
         val names =
             listOf(
                 serializer<FrnkRoute.Home>().descriptor.serialName,
-                serializer<FrnkRoute.Onboarding>().descriptor.serialName,
                 serializer<FrnkRoute.Settings>().descriptor.serialName,
-                serializer<FrnkRoute.Paywall>().descriptor.serialName,
                 serializer<FrnkRoute.Custom>().descriptor.serialName
             )
 

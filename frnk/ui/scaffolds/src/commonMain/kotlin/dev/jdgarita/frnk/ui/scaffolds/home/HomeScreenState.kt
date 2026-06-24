@@ -3,12 +3,35 @@ package dev.jdgarita.frnk.ui.scaffolds.home
 import androidx.compose.runtime.Immutable
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
+import dev.jdgarita.frnk.ui.mvi.Arguments
+import dev.jdgarita.frnk.ui.mvi.ModelState
+import dev.jdgarita.frnk.ui.mvi.ModelStateFactory
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
+
+@Immutable
+data class HomeArguments(
+    val topBarTitle: FrnkStringSource
+) : Arguments
+
+@Immutable
+data class HomeModelState(
+    val topBarTitle: FrnkStringSource,
+    val isPro: Boolean
+) : ModelState
+
+object HomeModelStateFactory : ModelStateFactory<HomeModelState> {
+    override fun initialModelState() =
+        HomeModelState(
+            topBarTitle = FrnkStringSource.Raw("Home"),
+            isPro = false
+        )
+}
 
 /**
- * State for [HomeScreen] — the toolkit's home-tab page template: a [FrnkTopAppBar][topBar] pinned
+ * State for [FrnkHomeScreen] — the toolkit's home-tab page template: a [FrnkTopAppBar][topBar] pinned
  * over a vertically scrollable column the host fills through the screen's `content` slot.
  *
  * Skeleton decision (recorded): **non-sealed, no `Skeleton` object** — like [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsScreenState] /
@@ -32,13 +55,14 @@ sealed interface HomeIntent : UiIntent {
     data object NavigationClicked : HomeIntent
 
     /**
-     * The host recomputed the chrome (e.g. a top-bar action that appears only while Free) and handed
-     * down a fresh [newState]. The VM adopts it wholesale — [HomeScreenState] is pure chrome with no
-     * VM-owned interaction state to preserve. Mirrors [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent.ConfigChanged]; replaces the old
+     * The host recomputed the chrome and handed down a fresh [topBarTitle]. The VM folds it into the
+     * model (`updateModel { copy(topBarTitle = …) }`) and the top bar re-derives via `mapToUiState` —
+     * [HomeScreenState] is pure chrome with no VM-owned interaction state to preserve. Mirrors
+     * [dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent.ConfigChanged]; replaces the old
      * "re-key the ViewModel to re-seed it" approach.
      */
     data class ConfigChanged(
-        val newState: HomeScreenState
+        val topBarTitle: FrnkStringSource
     ) : HomeIntent
 }
 

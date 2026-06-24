@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.ui.scaffolds.settings
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.theme.Appearance
@@ -84,7 +83,7 @@ enum class SettingsExtraSectionsPlacement {
  * @param isPro switches the subscription section between the Free and Pro layouts (see above).
  * @param notificationsEnabled initial checked state of the notifications toggle.
  * @param hapticsEnabled initial checked state of the haptic-feedback toggle. The host resolves this
- *   from the live [LocalFrnkHaptics][dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics] (a composition
+ *   from the live [LocalFrnkHaptics][LocalFrnkHaptics] (a composition
  *   read) and passes it in, since this builder is no longer composable.
  * @param showNotifications when false, the notifications section is omitted entirely.
  * @param showHaptics when false, the haptic-feedback toggle is omitted entirely.
@@ -253,61 +252,15 @@ fun defaultSettingsState(
         }
 
     return SettingsScreenState(
-        title = title,
+        topBar =
+            FrnkTopAppBarState(
+                title = FrnkStringSource.Raw("Frnk")
+            ),
         sections = sections,
-        footer = SettingsFooterState(text = FrnkStringSource.Token(stringSettingsFooter), version = FrnkStringSource.Raw(version))
+        footer =
+            SettingsFooterState(
+                text = FrnkStringSource.Token(stringSettingsFooter),
+                version = FrnkStringSource.Raw(version)
+            )
     )
-}
-
-/**
- * `@Composable` convenience over [defaultSettingsState]: seeds the haptic-feedback toggle from the live
- * ambient [LocalFrnkHaptics] (a composition read) and memoizes the result with [remember] so the catalogue
- * only rebuilds when an input changes — the stable `config` [SyncMviConfig][dev.jdgarita.frnk.ui.mvi.SyncMviConfig]
- * expects.
- *
- * This is now a thin wrapper: the substantive builder ([defaultSettingsState]) is composition-free, so a
- * ViewModel/Koin factory can build the catalogue without composition. Reach for this wrapper only when
- * building the state *inside* a composable that wants the live haptics state baked in.
- */
-@Composable
-fun rememberDefaultSettingsState(
-    version: String,
-    appearance: Appearance,
-    isPro: Boolean = false,
-    notificationsEnabled: Boolean = true,
-    showNotifications: Boolean = true,
-    showHaptics: Boolean = true,
-    title: FrnkStringSource = FrnkStringSource.Token(stringSettings),
-    extraSections: List<SettingsSectionState> = emptyList(),
-    extraSectionsPlacement: SettingsExtraSectionsPlacement = SettingsExtraSectionsPlacement.BeforeLegal
-): SettingsScreenState {
-    // Seed from the live haptics state so the row reflects reality on first paint; runtime flips are
-    // owned by SettingsViewModel + applied by rememberFrnkSettingsHandler. .value (not a lifecycle
-    // collect) is enough — the VM owns the row's checked state after the first reduction.
-    val hapticsEnabled = LocalFrnkHaptics.current.isEnabled.value
-    return remember(
-        version,
-        appearance,
-        isPro,
-        notificationsEnabled,
-        hapticsEnabled,
-        showNotifications,
-        showHaptics,
-        title,
-        extraSections,
-        extraSectionsPlacement
-    ) {
-        defaultSettingsState(
-            version = version,
-            appearance = appearance,
-            isPro = isPro,
-            notificationsEnabled = notificationsEnabled,
-            hapticsEnabled = hapticsEnabled,
-            showNotifications = showNotifications,
-            showHaptics = showHaptics,
-            title = title,
-            extraSections = extraSections,
-            extraSectionsPlacement = extraSectionsPlacement
-        )
-    }
 }

@@ -4,14 +4,11 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.Scene
-import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -46,26 +43,24 @@ fun rememberFrnkNavBackStack(
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun FrnkNavDisplay(
-    backStack: NavBackStack<NavKey>,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = { backStack.back() },
     entryProvider: (NavKey) -> NavEntry<NavKey> = koinEntryProvider(),
     transitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = { frnkEnterTransition() },
     popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = { frnkExitTransition() },
     predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.(Int) -> ContentTransform = { frnkExitTransition() }
 ) {
-    NavDisplay(
-        backStack = backStack,
-        modifier = modifier,
-        onBack = { onBack() },
-        entryProvider = entryProvider,
-        entryDecorators =
-            listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
-            ),
-        transitionSpec = transitionSpec,
-        popTransitionSpec = popTransitionSpec,
-        predictivePopTransitionSpec = predictivePopTransitionSpec
-    )
+    // TODO: restore FrnkNavDisplay — body commented out during the two-level nav refactor, and it
+    //  lost its backStack/onBack params. Re-wire NavDisplay over the new root/nested back stacks.
+//    NavDisplay(
+//        modifier = modifier,
+//        entryProvider = entryProvider,
+//        entryDecorators =
+//            listOf(
+//                rememberSaveableStateHolderNavEntryDecorator(),
+//                rememberViewModelStoreNavEntryDecorator()
+//            ),
+//        transitionSpec = transitionSpec,
+//        popTransitionSpec = popTransitionSpec,
+//        predictivePopTransitionSpec = predictivePopTransitionSpec
+//    )
 }

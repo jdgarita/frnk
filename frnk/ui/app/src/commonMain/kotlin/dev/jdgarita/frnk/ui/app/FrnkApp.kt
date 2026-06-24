@@ -23,6 +23,31 @@ import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
 
+/**
+ * The toolkit's **lower-level** app root — owns only the app chrome and hands the navigation graph to
+ * the host. It **coexists below** [FrnkAppScaffold]: reach for [FrnkAppScaffold] when you want the
+ * batteries (live-entitlement Settings, auto-paywall, first-launch onboarding) from a declarative
+ * `FrnkAppConfig`; reach for [FrnkApp] when you want full control over the nav graph.
+ *
+ * It provides the [AppearanceController]-driven light/dark [FrnkTheme], system-bar appearance, the
+ * `AppScaffold` window chrome, and a single **root** [androidx.navigation3.ui.NavDisplay] seeded at
+ * [FrnkRootRoute.Onboarding]. The graph itself comes from the host:
+ *  - [onSavedStateConfiguration] supplies the root `SavedStateConfiguration` (typically
+ *    [dev.jdgarita.frnk.ui.nav.frnkRootNavConfig]) that persists/restores the root back stack.
+ *  - [onNavigationModule] receives the root [NavBackStack] and returns a **Koin navigation module**
+ *    (built with `org.koin.dsl.navigation3.navigation<Route> { … }`), loaded via `loadKoinModules`, that
+ *    registers the root destinations (onboarding, the tabbed shell, paywall, …). Destinations are
+ *    resolved by the display's `koinEntryProvider()`.
+ *
+ * No batteries are wired here — the host registers its own root destinations and owns the nested tab
+ * navigation (e.g. via [FrnkRootRoute.Tab] hosting a nested back stack built with
+ * [dev.jdgarita.frnk.ui.nav.frnkNestedNavConfig]). Assumes `initializeFrnk(...)` has run (the
+ * [AppearanceController] is resolved from Koin).
+ *
+ * @param onSavedStateConfiguration supplies the root back stack's `SavedStateConfiguration`.
+ * @param onNavigationModule returns the Koin navigation module registering the root destinations, given
+ *   the root back stack to drive from effect handlers.
+ */
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun FrnkApp(
