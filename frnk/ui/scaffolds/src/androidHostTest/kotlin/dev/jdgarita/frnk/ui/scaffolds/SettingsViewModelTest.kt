@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.scaffolds
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
+import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsClickableRowState
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsIntent
@@ -18,6 +19,7 @@ import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -91,7 +93,7 @@ class SettingsViewModelTest {
         notificationsChecked: Boolean = true,
         theme: Appearance = Appearance.System
     ) = SettingsScreenState(
-        title = FrnkStringSource.Raw(""),
+        topBar = FrnkTopAppBarState(title = FrnkStringSource.Raw("")),
         sections =
             listOf(
                 SettingsSectionState(
@@ -137,10 +139,22 @@ class SettingsViewModelTest {
     // Stand-in for the Koin-resolved use case; the reducer tests don't care about its value.
     private fun proStatus(isPro: Boolean = false) = ObserveProStatusUseCase { MutableStateFlow(isPro) }
 
+    // Model-first: the VM seeds from SettingsModelState.DEFAULT, then the host folds its catalogue in
+    // via ConfigChanged (mergedWith) — exactly how the scaffold seeds it. So tests build the VM and
+    // immediately push their initial catalogue, replacing the old `SettingsViewModel(initialState, …)`.
+    private fun TestScope.settingsVm(
+        initial: SettingsScreenState,
+        isPro: Boolean = false
+    ): SettingsViewModel =
+        SettingsViewModel(proStatus(isPro)).also {
+            it.send(SettingsIntent.ConfigChanged(initial))
+            runCurrent()
+        }
+
     @Test
     fun config_changed_adopts_the_new_subscription_rows() =
         runTest(dispatcher) {
-            val vm = SettingsViewModel(state(freeSubscriptionRows()), proStatus())
+            val vm = settingsVm(state(freeSubscriptionRows()))
 
             vm.send(SettingsIntent.ConfigChanged(state(proSubscriptionRows())))
             runCurrent()
@@ -154,7 +168,7 @@ class SettingsViewModelTest {
     @Test
     fun config_changed_preserves_a_user_flipped_toggle_over_the_incoming_default() =
         runTest(dispatcher) {
-            val vm = SettingsViewModel(state(freeSubscriptionRows(), notificationsChecked = true), proStatus())
+            val vm = settingsVm(state(freeSubscriptionRows(), notificationsChecked = true))
             vm.send(SettingsIntent.ToggleChanged("notifications", false))
             runCurrent()
 
@@ -184,12 +198,11 @@ class SettingsViewModelTest {
                 )
             }
             val vm =
-                SettingsViewModel(
+                settingsVm(
                     state(freeSubscriptionRows()).copy(
                         developerSection = devSection(false),
                         showDeveloperSection = true
-                    ),
-                    proStatus()
+                    )
                 )
 
             // Tapping the dev-section toggle must flip it in state (regression: mapRows skipped developerSection).
@@ -223,7 +236,7 @@ class SettingsViewModelTest {
     @Test
     fun config_changed_preserves_dev_reveal_progress() =
         runTest(dispatcher) {
-            val vm = SettingsViewModel(state(freeSubscriptionRows()), proStatus())
+            val vm = settingsVm(state(freeSubscriptionRows()))
             repeat(SettingsScreenState.DEVELOPER_REVEAL_TAPS) { vm.send(SettingsIntent.VersionTapped) }
             runCurrent()
             assertTrue(vm.state.value.developerRevealed)
@@ -238,7 +251,7 @@ class SettingsViewModelTest {
     @Test
     fun config_changed_adopts_the_incoming_theme_so_external_appearance_changes_apply() =
         runTest(dispatcher) {
-            val vm = SettingsViewModel(state(freeSubscriptionRows(), theme = Appearance.Dark), proStatus())
+            val vm = settingsVm(state(freeSubscriptionRows(), theme = Appearance.Dark))
 
             // Appearance changed outside the Settings toggle (the controller is the source of truth) and
             // arrives via the recomputed catalogue — the segmented control must follow it.
@@ -251,8 +264,8 @@ class SettingsViewModelTest {
     @Test
     fun is_pro_reflects_the_injected_use_case() =
         runTest(dispatcher) {
-            val pro = SettingsViewModel(state(proSubscriptionRows()), proStatus(isPro = true))
-            val free = SettingsViewModel(state(freeSubscriptionRows()), proStatus(isPro = false))
+            val pro = SettingsViewModel(proStatus(isPro = true))
+            val free = SettingsViewModel(proStatus(isPro = false))
 
             assertTrue(pro.isPro.value)
             assertFalse(free.isPro.value)
@@ -261,7 +274,7 @@ class SettingsViewModelTest {
     @Test
     fun a_theme_tap_round_trips_through_incoming_without_reverting() =
         runTest(dispatcher) {
-            val vm = SettingsViewModel(state(freeSubscriptionRows(), theme = Appearance.System), proStatus())
+            val vm = settingsVm(state(freeSubscriptionRows(), theme = Appearance.System))
             // Optimistic feedback from the ThemeSelected reducer.
             vm.send(SettingsIntent.ThemeSelected(Appearance.Dark))
             runCurrent()

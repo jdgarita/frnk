@@ -6,6 +6,7 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
+import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
@@ -65,7 +66,7 @@ class PaywallViewModelTest {
                 )
             vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
-            val effects = mutableListOf<PaywallEffect>()
+            val effects = mutableListOf<UiEffect>()
             val job = launch { vm.effects.toList(effects) }
             runCurrent()
 
@@ -89,7 +90,7 @@ class PaywallViewModelTest {
                 )
             vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
-            val effects = mutableListOf<PaywallEffect>()
+            val effects = mutableListOf<UiEffect>()
             val job = launch { vm.effects.toList(effects) }
             runCurrent()
 
@@ -111,7 +112,7 @@ class PaywallViewModelTest {
                 )
             vm.attach(PaywallArguments("settings"))
             runCurrent()
-            val effects = mutableListOf<PaywallEffect>()
+            val effects = mutableListOf<UiEffect>()
             val job = launch { vm.effects.toList(effects) }
             runCurrent()
 

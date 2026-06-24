@@ -14,12 +14,14 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import com.composables.icons.lucide.House
 import com.composables.icons.lucide.Lucide
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class FrnkTopAppBarTest : RobolectricComposeTest() {
-    private val searchAction = FrnkTopAppBarAction(icon = Lucide.House, contentDescription = "Search")
+    private val searchAction = FrnkTopAppBarAction(icon = FrnkIconSource.Vector(Lucide.House), contentDescription = "Search")
     private val placeholder = "Search notes"
 
     @Test
@@ -29,7 +31,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             actions = listOf(searchAction),
                             applyStatusBarPadding = false
                         )
@@ -46,7 +48,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             actions = listOf(searchAction),
                             isSearchActive = true,
                             searchPlaceholder = placeholder,
@@ -68,7 +70,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             isSearchActive = true,
                             searchQuery = "",
                             searchPlaceholder = placeholder,
@@ -89,7 +91,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             isSearchActive = true,
                             searchQuery = "kotlin",
                             searchPlaceholder = placeholder,
@@ -113,7 +115,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             isSearchActive = true,
                             searchQuery = query,
                             searchPlaceholder = placeholder,
@@ -139,7 +141,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             isSearchActive = true,
                             searchQuery = "kotlin",
                             searchPlaceholder = placeholder,
@@ -162,7 +164,7 @@ class FrnkTopAppBarTest : RobolectricComposeTest() {
                 FrnkTopAppBar(
                     state =
                         FrnkTopAppBarState(
-                            title = "Settings",
+                            title = FrnkStringSource.Raw("Settings"),
                             isSearchActive = true,
                             searchPlaceholder = placeholder,
                             applyStatusBarPadding = false

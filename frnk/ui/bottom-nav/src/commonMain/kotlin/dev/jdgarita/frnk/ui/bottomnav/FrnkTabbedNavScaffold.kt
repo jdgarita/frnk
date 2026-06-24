@@ -22,6 +22,9 @@ import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
 import dev.jdgarita.frnk.ui.nav.FrnkRoute
 import dev.jdgarita.frnk.ui.nav.FrnkTab
 import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackHandler
+import dev.jdgarita.frnk.ui.nav.FrnkTabbedBackStacks
+import dev.jdgarita.frnk.ui.nav.frnkNestedNavConfig
+import dev.jdgarita.frnk.ui.nav.rememberFrnkTabbedBackStacks
 import dev.jdgarita.frnk.ui.scaffolds.FrnkScreenScaffold
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import dev.jdgarita.frnk.ui.scaffolds.settings.FrnkSettingsScreen
@@ -106,15 +109,24 @@ fun FrnkTabbedNavScaffold(
                 feature = config.nav.feature
             )
         val backStackTabs = remember(navState) { navState.tabs.map { FrnkTab(key = it.key, root = it.root) } }
+        val tabbed =
+            rememberFrnkTabbedBackStacks(
+                configuration = frnkNestedNavConfig(config.nav.hostRoutes),
+                tabs = backStackTabs
+            )
+        val scope = remember(tabbed) { FrnkAppScope(tabbed) }
 
         // The host's collectors live above the nav host so one EffectCollector survives tab swaps.
+        effects(scope)
 
         TabbedNavHost(
+            tabbed = tabbed,
             tabs = navState.tabs,
             modifier = modifier.fillMaxSize(),
             hideBarFor = config.nav.hideBarFor,
             entryProvider =
                 entryProvider {
+                    entries(scope)
                     entry(config.nav.homeRoot) {
                         // TODO: restore Home destination — HomeScreen wiring stubbed during the
                         //  model-first MVI + two-level nav refactor (see commented block below).
@@ -179,6 +191,7 @@ fun FrnkTabbedNavScaffold(
  */
 @Composable
 private fun TabbedNavHost(
+    tabbed: FrnkTabbedBackStacks,
     tabs: List<FrnkBottomNavTab>,
     modifier: Modifier = Modifier,
     hideBarFor: (NavKey) -> Boolean,
@@ -186,28 +199,33 @@ private fun TabbedNavHost(
 ) {
     // Back from a non-home tab's root returns to the home tab (rather than exiting the app); within-tab
     // pops and the home-root exit are handled by FrnkNavDisplay / the system.
+    FrnkTabbedBackHandler(tabbed)
 
     // The bar's view state: one item per tab (no FAB, no injected item) + the selected index, derived
     // from the active tab key. Recomputed only when the tabs or the active tab change.
+    val currentTabKey = tabbed.currentTabKey
+    val selectedIndex = remember(tabs, currentTabKey) { tabs.indexOfFirst { it.key == currentTabKey } }
     val viewState =
-        remember(tabs) {
+        remember(tabs, selectedIndex) {
             val items =
                 tabs.map {
                     FrnkNavBarItem(key = it.key, icon = it.icon, iosSystemIcon = it.iosSystemIcon, label = it.label)
                 }
             FrnkTabbedNavViewState(
                 navBarItems = items,
-                navBarItemIndexSelected = 1
+                navBarItemIndexSelected = selectedIndex
             )
         }
 
     // Re-tap the active tab → pop to its root; tap another → switch (multiple back stacks).
     val onItemSelected: (Int) -> Unit = { index ->
         val key = viewState.navBarItems[index].key
+        if (key == tabbed.currentTabKey) tabbed.resetCurrentToRoot() else tabbed.switchTo(key)
     }
 
     // Hide the bar on full-screen routes (paywall, onboarding, …); also guard against an unknown tab.
-    val barVisible = viewState.navBarItemIndexSelected >= 0
+    val topRoute = tabbed.current.lastOrNull()
+    val barVisible = selectedIndex >= 0 && (topRoute == null || !hideBarFor(topRoute))
 
     // Reserve the bar's footprint as the content's bottom inset (read unconditionally — it's a @Composable
     // getter) so screens on FrnkScreenScaffold / FrnkMviScreen pad their scrollable content above the bar
@@ -220,6 +238,7 @@ private fun TabbedNavHost(
             LocalFrnkBottomBarInset provides contentInset
         ) {
             FrnkNavDisplay(
+                backStack = tabbed.current,
                 modifier = Modifier.fillMaxSize(),
                 entryProvider = entryProvider
             )
