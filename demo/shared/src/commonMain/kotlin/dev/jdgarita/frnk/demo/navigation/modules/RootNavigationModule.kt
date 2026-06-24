@@ -51,8 +51,8 @@ fun rootNavigationModule(backStack: NavBackStack<NavKey>) =
             FrnkNestedNavScaffold(
                 tabs = demoNestedTabs,
                 onSavedStateConfiguration = { frnkNestedNavConfig() },
-                onNestedNavigationModule = { tabbed ->
-                    nestedNavigationModule(tabbed) { navKey ->
+                onNestedNavigationModule = { nestedBackStack ->
+                    nestedNavigationModule(nestedBackStack) { navKey ->
                         backStack.navigateTo(screen = navKey)
                     }
                 }
