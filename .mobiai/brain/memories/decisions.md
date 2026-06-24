@@ -1088,3 +1088,21 @@ FrnkNestedNavScaffold (backed by FrnkNestedNavViewModel) replaced the removed Fr
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavScaffold.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavViewModel.kt
 - frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavMviContract.kt
+
+## Per-tab back stacks moved into FrnkNestedNavViewModel + host-provided Custom tab
+
+- id: per-tab-back-stacks-moved-into-frnknestednavviewmodel-host-p-20260624-204831
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: navigation
+- date: 2026-06-24
+
+FOLLOW-UP LANDED (replaces the interim single-shared-stack note in 'bottom-nav-nav-state-moved-into-mvi-viewmodel-...'). FrnkNestedNavViewModel now OWNS per-tab back stacks (true multiple-back-stacks). Design: the VM holds one live NavBackStack<NavKey> (val backStack, seeded with FrnkRoute.Home) that the scaffold renders via FrnkNavDisplay AND hands to the host's onNestedNavigationModule; plus savedStacks: MutableList<MutableList<NavKey>> snapshots per tab. The active tab is mirrored live in backStack; on tab switch the VM snapshots the current stack into savedStacks[from], then clears+addAll savedStacks[to] (canonical nav3 multiple-back-stack pattern). NavBackStack is constructed OUTSIDE composition via its public ctor NavBackStack(vararg) (a SnapshotStateList) — confirmed in navigation3-runtime 1.1.1. Conventions implemented: re-tapping the active tab pops it to root (clearAndNavigateTo); system/predictive back at a tab root from a non-Home tab returns to Home (HOME_INDEX=0). Intents: FrnkNestedNavIntent.Tap(index) + NEW data object Back. FrnkNestedNavEffect.Navigate REMOVED (nav is VM-internal now; the empty sealed FrnkNestedNavEffect only satisfies the MVI generic; FrnkNestedNavArguments is now an empty data object). Scaffold stopped using FrnkScreen — it uses koinViewModel { parametersOf(customTab) } + collectAsStateWithLifecycle + a CONDITIONAL BackHandler(enabled = backStack.size <= 1 && selectedIndex != 0) so within-tab pops are left to FrnkNavDisplay/NavDisplay's own back and only the tab-root->Home case is handled by the scaffold. HOST-PROVIDED CUSTOM TAB: new public type FrnkCustomTab(route: NavKey, icon: FrnkIconSource, iosSystemIcon: String, label: String). Home + Settings stay toolkit-fixed (iconNavHome/iconNavSettings, house/gearshape, FrnkRoute.Home/FrnkRoute.Settings); the host supplies ONLY the middle tab via FrnkCustomTab (it can use FrnkIconSource.Vector for a fully host-owned icon). New scaffold signature: FrnkNestedNavScaffold(customTab: FrnkCustomTab, modifier, onNestedNavigationModule) — REMOVED nestedNavArguments AND onSavedStateConfiguration. frnkNestedNavModule now binds viewModel { params -> FrnkNestedNavViewModel(customTab = params.get()) }. PERSISTENCE TRADEOFF: stacks are in-memory (survive recomposition + config change via the VM, NOT full process death). The dropped onSavedStateConfiguration / frnkNestedNavConfig path means process-death restore of the nested stacks is deferred (a future SavedStateHandle option). Verified end-to-end on a physical Pixel 7a: per-tab persistence (component detail retained across a Settings round-trip), within-tab back pop, back-at-non-home-root->Home. Reducer tests added in :ui-bottom-nav commonTest (FrnkNestedNavViewModelTest). NOTE: NOT committed yet (user reviews first). Demo caller: demo/shared/.../navigation/modules/RootNavigationModule.kt.
+
+### Files
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavViewModel.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavScaffold.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavMviContract.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkCustomTab.kt
+- frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavModule.kt

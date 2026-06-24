@@ -13,12 +13,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 
 /**
- * Screen wrapper that attaches a [MviViewModel] to the composition's lifecycle — so screens don't
- * repeat the [RememberMviLifecycle] call themselves — then renders [content].
+ * Screen wrapper that attaches a [MviViewModel] to the composition's lifecycle (calling
+ * [MviViewModel.attach] once on first attach), collects its state lifecycle-aware, consumes its effect
+ * channel, and renders [content] with the collected state.
  *
- * The wrapper is fully generic over the VM's five type params; it doesn't read the state itself (the
- * `content` slot collects it), it only ties [viewModel] and [arguments] together at the type level and
- * forwards them to [RememberMviLifecycle], which calls [MviViewModel.attach] once on first attach.
+ * By default it also installs a `BackHandler` that routes system back to
+ * [CommonUiIntent.OnBackPressed]. Screens that need their own back semantics (e.g. a tabbed scaffold whose
+ * back convention depends on the active tab + its stack depth) pass [handleBackPressed] `= false` and place
+ * their own `BackHandler` inside [content], where the collected `state` is in scope.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -26,6 +28,7 @@ fun <A : Arguments, M : ModelState, S : UiState, I : UiIntent, E : UiEffect> Frn
     viewModel: MviViewModel<A, M, S, I, E>,
     arguments: A,
     initialLifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
+    handleBackPressed: Boolean = true,
     onEffect: (uiEffect: UiEffect) -> Unit,
     content: @Composable (state: S) -> Unit
 ) {
@@ -35,8 +38,10 @@ fun <A : Arguments, M : ModelState, S : UiState, I : UiIntent, E : UiEffect> Frn
 
     val currentOnEffect by rememberUpdatedState(onEffect)
 
-    BackHandler(enabled = true) {
-        viewModel.onIntent(CommonUiIntent.OnBackPressed)
+    if (handleBackPressed) {
+        BackHandler(enabled = true) {
+            viewModel.onIntent(CommonUiIntent.OnBackPressed)
+        }
     }
 
     DisposableEffect(lifecycleOwner, viewModel) {

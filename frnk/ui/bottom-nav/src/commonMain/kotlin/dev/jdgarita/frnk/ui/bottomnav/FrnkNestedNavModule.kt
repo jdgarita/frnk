@@ -4,13 +4,12 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 /**
- * Koin bindings for the onboarding scaffold. Hosts that use the VM-backed [FrnkOnboardingScreen]
- * convenience composable must install this module (or `includes(onboardingScaffoldModule)` it
- * from a parent module).
+ * Koin bindings for [FrnkNestedNavScaffold]'s [FrnkNestedNavViewModel].
  *
- * The ViewModel takes no constructor params: the page catalog arrives as [OnboardingArguments] at
- * attach time (via [FrnkOnboardingScreen]'s [dev.jdgarita.frnk.ui.mvi.FrnkScreen] wrapper), keeping it
- * at the composable boundary rather than in the DI graph.
+ * The VM takes no constructor params: the host's middle [FrnkCustomTab] arrives as
+ * [FrnkNestedNavArguments] at attach time (via the scaffold's `RememberMviLifecycle`), keeping the host's
+ * tab config at the composable boundary rather than in the DI graph. Installed by the core UI modules
+ * (`frnkUiModules()` / `FrnkAppModule`).
  */
 val frnkNestedNavModule =
     module {

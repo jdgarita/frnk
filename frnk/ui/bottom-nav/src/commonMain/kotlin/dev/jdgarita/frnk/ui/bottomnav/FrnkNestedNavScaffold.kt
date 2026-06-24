@@ -12,13 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.nav.FrnkNavDisplay
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
-import dev.jdgarita.frnk.ui.nav.back
-import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -26,77 +21,65 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
 
 /**
- * The toolkit's **fixed three-tab** bottom-nav scaffold — a `Home · Components · Settings` bar over a
- * multiple-back-stack tabbed surface. The three tabs (labels, theme icon tokens, SF-Symbols, and routes —
- * [FrnkRoute.Home], [FrnkRoute.Custom] `"Components"`, [FrnkRoute.Settings]) are defined **inside the
- * scaffold**; the host supplies only the destinations behind those routes.
+ * The toolkit's **fixed three-tab** bottom-nav scaffold — a `Home · <custom> · Settings` bar over a
+ * **multiple-back-stack** tabbed surface. Home and Settings are toolkit-fixed (theme icon tokens,
+ * SF-Symbols, and routes [FrnkRoute.Home][dev.jdgarita.frnk.ui.nav.FrnkRoute.Home] /
+ * [FrnkRoute.Settings][dev.jdgarita.frnk.ui.nav.FrnkRoute.Settings]); the **middle tab is host-provided**
+ * via [customTab] (route + icon + SF-Symbol + label).
  *
- * **The scaffold owns the navigation plumbing**, so the host stays declarative: it supplies the saved-state
- * config via [onSavedStateConfiguration] and a Koin nav module via [onNestedNavigationModule]; the scaffold
- * loads the module against the back stack (`loadKoinModules`) and renders the core:
- *  - a [FrnkNavDisplay] driven by the back stack,
+ * **The scaffold owns the navigation plumbing**, so the host stays declarative: it supplies the middle
+ * [customTab] and a Koin nav module via [onNestedNavigationModule]; the scaffold loads the module against
+ * the back stack (`loadKoinModules`) and renders the core:
+ *  - a [FrnkNavDisplay] driven by the active tab's back stack,
  *  - the platform-adaptive [FrnkBottomFloatingBar] overlaid above it (so it persists across tab swaps),
- *  - tab switching driven by [FrnkNestedNavViewModel] (the selected tab is VM-owned state, not `remember`),
- *  - the bottom-inset bookkeeping (`LocalFrnkBottomBarInset`) so screens on
+ *  - the bottom-inset bookkeeping ([LocalFrnkBottomBarInset]) so screens on
  *    `FrnkScreenScaffold` / `FrnkMviScreen` reserve the bar's footprint automatically.
  *
- * Selection state (`items` + `selectedIndex`) lives in [FrnkNestedNavViewModel], not in a `remember*`
- * holder: a tap updates the model's `selectedIndex` and emits a [FrnkNestedNavEffect.Navigate] carrying the
- * tapped tab's route, which this scaffold applies to the back stack.
+ * **Per-tab back stacks** live in [FrnkNestedNavViewModel] (not in a `remember*` holder): each tab keeps
+ * its own nested-navigation history, swapped in/out of the single live `backStack` on tab change. A tap →
+ * [FrnkNestedNavIntent.Tap] → the VM switches the active tab (re-tapping the active tab pops it to root);
+ * system/predictive back at a tab root from a non-Home tab returns to Home. The host's within-tab
+ * navigation drives the same back stack handed to [onNestedNavigationModule] (so `backStack.navigateTo(...)`
+ * pushes onto the active tab).
  *
- * **Interim:** a single shared back stack drives every tab. True per-tab back stacks (so a tab never loses
- * its nested navigation) and the back-from-a-non-home-tab-root → home convention are the planned follow-up,
- * where the back stacks move into the ViewModel too.
+ * **In-memory:** the per-tab stacks survive recomposition + configuration change but not full process death.
  *
- * @param onSavedStateConfiguration the saved-state config for the back stack (e.g.
- *   `frnkNestedNavConfig(hostRoutes)`).
+ * @param customTab the host-provided middle tab (route + icon + SF-Symbol + label).
  * @param onNestedNavigationModule builds the Koin nav module registering the tabs' destinations
- *   ([FrnkRoute.Home] / [FrnkRoute.Custom] `"Components"` / [FrnkRoute.Settings]), bound to the
- *   scaffold-owned back stack.
+ *   ([FrnkRoute.Home][dev.jdgarita.frnk.ui.nav.FrnkRoute.Home] / [customTab]'s route /
+ *   [FrnkRoute.Settings][dev.jdgarita.frnk.ui.nav.FrnkRoute.Settings]), bound to the scaffold-owned back stack.
  */
 @OptIn(KoinExperimentalAPI::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FrnkNestedNavScaffold(
+    customTab: FrnkCustomTab,
     modifier: Modifier = Modifier,
-    nestedNavArguments: FrnkNestedNavArguments,
-    onSavedStateConfiguration: () -> SavedStateConfiguration,
     onNestedNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
     val viewModel: FrnkNestedNavViewModel = koinViewModel()
-
-    val backStack =
-        rememberNavBackStack(
-            configuration = onSavedStateConfiguration(),
-            elements = arrayOf(FrnkRoute.Home)
-        )
+    val backStack = viewModel.backStack
 
     remember(backStack) {
         loadKoinModules(
-            modules =
-                listOf(
-                    onNestedNavigationModule(backStack)
-                )
+            modules = listOf(onNestedNavigationModule(backStack))
         )
     }
 
-    // Interim single-stack back convention: pop the current screen. The back-from-a-non-home-tab-root → home
-    // convention lands with the per-tab back-stacks follow-up.
-    BackHandler(enabled = true) {
-        backStack.back()
-    }
-
+    // FrnkScreen owns the attach (handing the VM the host's middle tab via FrnkNestedNavArguments) + the
+    // lifecycle-aware state collection. The VM emits no effects (navigation is VM-internal), and back is
+    // handled by this scaffold rather than FrnkScreen's default handler — hence handleBackPressed = false.
     FrnkScreen(
-        arguments = nestedNavArguments,
         viewModel = viewModel,
-        onEffect = { uiEffect ->
-            when (uiEffect) {
-                is FrnkNestedNavEffect.Navigate -> backStack.navigateTo(uiEffect.route)
-            }
-        }
+        arguments = FrnkNestedNavArguments(customTab = customTab),
+        handleBackPressed = false,
+        onEffect = {}
     ) { state ->
-
-        // The scaffold owns the back stack + loads the host's nested module against it, so the host supplies
-        // only the saved-state config + a module factory (and never touches the back stack).
+        // Within-tab pops are handled by FrnkNavDisplay's own back. This handler only covers the
+        // back-from-a-non-home-tab-root → Home convention: it is enabled exactly when FrnkNavDisplay's back
+        // is not (a single-entry active stack) and we're not already on Home.
+        BackHandler(enabled = backStack.size <= 1 && state.selectedIndex != HOME_TAB_INDEX) {
+            viewModel.send(intent = FrnkNestedNavIntent.Back)
+        }
 
         val reservedHeight = FrnkNavBarDefaults.reservedHeight
 
@@ -124,3 +107,5 @@ fun FrnkNestedNavScaffold(
         }
     }
 }
+
+private const val HOME_TAB_INDEX = 0
