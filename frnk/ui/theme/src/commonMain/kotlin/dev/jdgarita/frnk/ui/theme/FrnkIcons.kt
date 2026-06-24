@@ -7,6 +7,7 @@ import com.composables.icons.lucide.BookOpen
 import com.composables.icons.lucide.Check
 import com.composables.icons.lucide.ChevronRight
 import com.composables.icons.lucide.CircleAlert
+import com.composables.icons.lucide.Component
 import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.FileText
@@ -26,7 +27,6 @@ import com.composeunstyled.theme.ThemeToken
 val iconBack = ThemeToken<ImageVector>("icon_back")
 val iconClose = ThemeToken<ImageVector>("icon_close")
 val iconSearch = ThemeToken<ImageVector>("icon_search")
-val iconSettings = ThemeToken<ImageVector>("icon_settings")
 val iconCheck = ThemeToken<ImageVector>("icon_check")
 val iconError = ThemeToken<ImageVector>("icon_error")
 
@@ -47,6 +47,9 @@ val iconHaptics = ThemeToken<ImageVector>("icon_haptics")
 // Bottom-nav scaffold icons. The Home tab uses [iconNavHome]; the Settings tab reuses
 // [iconSettings]; the configurable center "feature" tab supplies its own ImageVector at the call site.
 val iconNavHome = ThemeToken<ImageVector>("icon_nav_home")
+
+val iconNavComponent = ThemeToken<ImageVector>("icon_nav_component")
+val iconNavSettings = ThemeToken<ImageVector>("icon_nav_settings")
 // endregion
 
 internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
@@ -54,7 +57,6 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconBack to Lucide.ArrowLeft,
         iconClose to Lucide.X,
         iconSearch to Lucide.Search,
-        iconSettings to Lucide.Settings,
         iconCheck to Lucide.Check,
         iconError to Lucide.CircleAlert,
         iconChevronRight to Lucide.ChevronRight,
@@ -68,5 +70,7 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconNotifications to Lucide.Bell,
         iconOnboarding to Lucide.BookOpen,
         iconHaptics to Lucide.Vibrate,
-        iconNavHome to Lucide.House
+        iconNavHome to Lucide.House,
+        iconNavComponent to Lucide.Component,
+        iconNavSettings to Lucide.Settings
     )
