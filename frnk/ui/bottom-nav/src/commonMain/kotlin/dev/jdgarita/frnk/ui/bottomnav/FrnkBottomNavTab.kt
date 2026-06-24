@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.bottomnav
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
+import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 
 /**
  * A single tab in the toolkit's fixed `Home · feature · Settings` bottom bar. It carries the two icon
@@ -28,7 +29,7 @@ sealed class FrnkBottomNavTab(
     open val key: String,
     open val root: NavKey,
     open val label: String,
-    open val icon: ImageVector,
+    open val icon: FrnkIconSource,
     open val iosSystemIcon: String
 ) {
     /** The fixed leading Home tab (toolkit-owned; built from theme tokens). */
@@ -37,7 +38,7 @@ sealed class FrnkBottomNavTab(
         override val key: String,
         override val root: NavKey,
         override val label: String,
-        override val icon: ImageVector,
+        override val icon: FrnkIconSource,
         override val iosSystemIcon: String
     ) : FrnkBottomNavTab(key, root, label, icon, iosSystemIcon)
 
@@ -47,7 +48,7 @@ sealed class FrnkBottomNavTab(
         override val key: String,
         override val root: NavKey,
         override val label: String,
-        override val icon: ImageVector,
+        override val icon: FrnkIconSource,
         override val iosSystemIcon: String
     ) : FrnkBottomNavTab(key, root, label, icon, iosSystemIcon)
 
@@ -57,7 +58,7 @@ sealed class FrnkBottomNavTab(
         override val key: String,
         override val root: NavKey,
         override val label: String,
-        override val icon: ImageVector,
+        override val icon: FrnkIconSource,
         override val iosSystemIcon: String
     ) : FrnkBottomNavTab(key, root, label, icon, iosSystemIcon)
 }
