@@ -12,8 +12,8 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.iconChevronRight
+import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import dev.jdgarita.frnk.ui.theme.iconNotifications
-import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
 
 @Composable
@@ -39,7 +39,7 @@ private val accountRows: List<FrnkListRowState>
             FrnkListRowState.Content(
                 title = "Preferences",
                 subtitle = "Theme, language and units",
-                icon = FrnkIconState.Content(Theme[icons][iconSettings], contentDescription = null)
+                icon = FrnkIconState.Content(Theme[icons][iconNavSettings], contentDescription = null)
             )
         )
 
