@@ -12,8 +12,8 @@ import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingScreenState
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.iconCheck
+import dev.jdgarita.frnk.ui.theme.iconNavSettings
 import dev.jdgarita.frnk.ui.theme.iconSearch
-import dev.jdgarita.frnk.ui.theme.iconSettings
 import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 
@@ -24,7 +24,7 @@ private fun samplePages(): List<OnboardingPageState> {
     // happen once instead of on every preview recomposition.
     val checkIcon = Theme[icons][iconCheck]
     val searchIcon = Theme[icons][iconSearch]
-    val settingsIcon = Theme[icons][iconSettings]
+    val settingsIcon = Theme[icons][iconNavSettings]
     return remember(checkIcon, searchIcon, settingsIcon) {
         val pageIcons = listOf(checkIcon, searchIcon, settingsIcon)
         val titles =
