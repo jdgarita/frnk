@@ -46,18 +46,22 @@ never host-consumable.)
 ## 1. Inject your SQLDelight schema
 
 The toolkit owns the **driver factory** (`SqlDriverFactory`, `:data-db-api`, bound by
-`databaseModule` from `:data-db-impl`), never a schema. In your host app's DI graph:
+`databaseModule` from `:data-db-impl`), never a schema. In your host app's DI graph, use the
+`databaseSingle` Koin helper (`:data-db-api`) — it resolves the `SqlDriverFactory`, calls
+`create(schema, name)`, and registers the result as a `single<MyHostDatabase>`:
 
 ```kotlin
 val hostDatabaseModule = module {
-    single<MyHostDatabase> {
-        val factory: SqlDriverFactory = get()
-        MyHostDatabase(factory.create(MyHostDatabase.Schema, "host.db"))
-    }
+    databaseSingle(MyHostDatabase.Schema, "host.db") { driver -> MyHostDatabase(driver) }
 }
 ```
 
-(`demo/shared`'s `demoNotesModule` + `DemoDB` is the worked example of exactly this pattern.)
+(`demo/shared`'s `demoNotesModule` + `DemoDB` is the worked example.) The raw long form stays valid
+for anything the helper doesn't cover:
+
+```kotlin
+single<MyHostDatabase> { MyHostDatabase(get<SqlDriverFactory>().create(MyHostDatabase.Schema, "host.db")) }
+```
 
 On Android, before `startKoin { ... }`, point the toolkit at your `Application` context
 (`DatabaseContext` lives in `:core-di`, package `dev.jdgarita.frnk.di` — both the SQL driver and

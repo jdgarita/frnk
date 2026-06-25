@@ -1,5 +1,5 @@
 plugins {
-    id("frnk.kmp.library")
+    id("frnk.kmp.library.hosttest")
 }
 
 kotlin {
@@ -10,6 +10,8 @@ kotlin {
         commonMain.dependencies {
             // SqlDriver/SqlSchema appear in the SqlDriverFactory signature.
             api(libs.sqldelight.runtime)
+            // Module receiver of the inline databaseSingle helper — in its public signature.
+            api(libs.koin.core)
         }
     }
 }

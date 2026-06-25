@@ -57,7 +57,13 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
 - **Proposed change:** a small helper / Koin DSL (e.g. `databaseSingle(schema, name) { driver -> MyDb(driver) }`)
   in `:data-db-api`.
 - **Host benefit:** removes repeated DB-binding boilerplate; one obvious path.
-- **Effort:** S · **Risk:** low · **Doc-only vs API:** API (additive) · **Status:** Proposed
+- **Effort:** S · **Risk:** low · **Doc-only vs API:** API (additive) · **Status:** Done
+- **Shipped as:** `Module.databaseSingle(schema, name) { driver -> Db(driver) }` — an `inline reified`
+  `org.koin.core.module.Module` extension in `:data-db-api` (`database/ext/SqlDriverFactoryExt.kt`) that
+  registers a `single<T>` resolving the Koin `SqlDriverFactory` and forwarding `schema`/`name` to `create(...)`.
+  `:data-db-api` gains a `koin-core` `api` dep (the `Module` receiver is in the public signature) and moves to
+  the `frnk.kmp.library.hosttest` plugin for a `commonTest` (`DatabaseSingleTest`). The demo's `demoNotesModule`
+  was rewired onto it. The raw `single { … }` long form is unchanged and still valid.
 
 ## 2.5 — Consolidate the iOS umbrella + Crashlytics-dSYM story
 

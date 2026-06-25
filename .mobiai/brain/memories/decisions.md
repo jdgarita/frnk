@@ -1167,3 +1167,27 @@ Decision (2026-06-25): do NOT decouple the VM-backed Settings scaffold (:ui-scaf
 ### Files
 - docs/api-improvements/tier-2.md
 - frnk/ui/scaffolds/CLAUDE.md
+
+## databaseSingle Koin helper in :data-db-api (Tier 2.4)
+
+- id: databasesingle-koin-helper-in-data-db-api-tier-2-4-20260625-153944
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: data/db-api
+- date: 2026-06-25
+
+Added `Module.databaseSingle(schema, name) { driver -> Db(driver) }`, an `inline reified` Koin Module extension in :data-db-api (database/ext/SqlDriverFactoryExt.kt) that registers a `single<T>` resolving the Koin SqlDriverFactory and forwarding schema/name to create(...). Replaces the hand-written `single { Db(get<SqlDriverFactory>().create(Db.Schema, "x.db")) }` boilerplate every host wrote (HOST_INTEGRATION §1).
+
+Why / decisions:
+- Chose a Module-receiver extension (not a function returning a Module) so it composes inside an existing `module { }` block alongside the host's other singles (e.g. the NoteStore). Reads identically to the ticket's proposed call site.
+- :data-db-api now carries `api(libs.koin.core)` — deliberate: the `Module` receiver is in the public inline signature, so consumers must resolve Koin types. The *-api 'no third-party SDK' rule targets Ktor/SQLDelight-driver/RevenueCat/Firebase, not the DI framework; the ticket scopes the helper here. The only Koin in the module is this DSL helper — driver bindings still live in :data-db-impl (databaseModule).
+- Module moved from `frnk.kmp.library` to `frnk.kmp.library.hosttest` to host DatabaseSingleTest (commonTest), which uses a recording SqlDriverFactory + a never-invoked NoopSqlDriver fixture to assert schema/name forwarding + driver pass-through.
+- Additive/non-breaking: the raw `single { … }` long form stays valid. Demo's demoNotesModule rewired onto the helper (exercises it across demo-shared / demo-android / DemoKit.xcframework).
+
+Verified: :data-db-api compile+testAndroidHostTest, full compileAndroidMain + :demo-android:compileDebugKotlin, full testAndroidHostTest (incl. demo-shared NoteStore round-trip), and DemoKit XCFramework assemble.
+
+### Files
+- frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/ext/SqlDriverFactoryExt.kt
+- frnk/data/db-api/build.gradle.kts
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/notes/DemoNotesModule.kt

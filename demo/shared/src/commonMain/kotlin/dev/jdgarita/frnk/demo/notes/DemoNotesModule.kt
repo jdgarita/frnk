@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.demo.notes
 
 import dev.jdgarita.frnk.database.SqlDriverFactory
+import dev.jdgarita.frnk.database.ext.databaseSingle
 import dev.jdgarita.frnk.demo.sql.DemoDB
 import org.koin.dsl.module
 
@@ -15,7 +16,7 @@ import org.koin.dsl.module
  */
 val demoNotesModule =
     module {
-        single { DemoDB(get<SqlDriverFactory>().create(DemoDB.Schema, DEMO_DATABASE_FILE_NAME)) }
+        databaseSingle(DemoDB.Schema, DEMO_DATABASE_FILE_NAME) { driver -> DemoDB(driver) }
         single<NoteStore> { SqlDelightNoteStore(get()) }
     }
 

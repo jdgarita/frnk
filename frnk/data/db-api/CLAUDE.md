@@ -4,7 +4,8 @@ Pure-interface SQL persistence SPI (restructure Stage 4 split — the old `share
 
 ## Contents
 
-- `SqlDriverFactory.kt` — `fun interface` returning a `SqlDriver` for a host-supplied `SqlSchema` + db name. Bound by `databaseModule` (`:data-db-impl`); consumed by the host's own schema module (`MyDb(factory.create(MyDb.Schema, "my.db"))`) — `demo/shared`'s `demoNotesModule`/`DemoDB` is the worked example (OQ-2).
+- `SqlDriverFactory.kt` — `fun interface` returning a `SqlDriver` for a host-supplied `SqlSchema` + db name. Bound by `databaseModule` (`:data-db-impl`); consumed by the host's own schema module — `demo/shared`'s `demoNotesModule`/`DemoDB` is the worked example (OQ-2).
+- `ext/SqlDriverFactoryExt.kt` — `databaseSingle(schema, name) { driver -> Db(driver) }` (Tier 2.4), an `inline reified` Koin `Module` extension that registers a `single<T>` resolving the `SqlDriverFactory` and forwarding to `create(...)`, replacing the hand-written `single { Db(get<SqlDriverFactory>().create(Db.Schema, "x.db")) }`. The raw long form stays valid.
 
 What moved out at Stage 4:
 
@@ -14,8 +15,8 @@ What moved out at Stage 4:
 ## Rules
 
 - `sqldelight-runtime` is an `api` dep (the `SqlDriverFactory` signature uses `SqlDriver`/`SqlSchema`), but **no `.sq` files and no generated code here** — schemas belong to hosts (and the demo).
-- No Koin bindings here — wiring lives in `:data-db-impl` (`databaseModule`).
+- No Koin *bindings* here — driver wiring lives in `:data-db-impl` (`databaseModule`). The only Koin in this module is the `databaseSingle` **DSL helper** (above), which is why `koin-core` is an `api` dep.
 
 ## Dependencies
 
-- `api(libs.sqldelight.runtime)`. No tests (the SPI is a single `fun interface`); the plugin is plain `frnk.kmp.library`.
+- `api(libs.sqldelight.runtime)` + `api(libs.koin.core)` (the `Module` receiver of `databaseSingle` is in its public signature). The plugin is `frnk.kmp.library.hosttest` for the `databaseSingle` `commonTest` (`DatabaseSingleTest`; run with `./gradlew :data-db-api:testAndroidHostTest`).
