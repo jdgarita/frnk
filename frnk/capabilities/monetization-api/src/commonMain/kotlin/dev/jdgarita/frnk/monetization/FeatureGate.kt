@@ -9,26 +9,29 @@ import kotlinx.coroutines.flow.map
 /**
  * Gatekeeper used everywhere in the toolkit to decide whether to expose a Pro behaviour.
  *
- *   if (gate.canUse(Feature.UnlimitedExports)) doIt() else gate.requestUpgrade(...)
+ *   if (gate.canUse(FrnkFeature.UnlimitedExports)) doIt() else gate.requestUpgrade(...)
  *
  * Reads the frnk-owned [EntitlementManager] (so god mode + any future Pro source are honored
  * automatically). [requestUpgrade] emits a generic "Paywall_Viewed" analytics event and returns the
  * toolkit paywall route key the caller hands to its navigator.
  *
- * @param freeFeatures features always available to Free users (host-configurable).
+ * @param freeFeatures features always available to Free users (host-configurable). Matched by
+ * [Feature.id], so the comparison is correct across any [Feature] implementation.
  */
 class FeatureGate(
     private val entitlements: EntitlementManager,
     private val analytics: AnalyticsTracker,
-    private val freeFeatures: Set<Feature> = emptySet()
+    freeFeatures: Set<Feature> = emptySet()
 ) {
+    private val freeFeatureIds: Set<String> = freeFeatures.mapTo(mutableSetOf()) { it.id }
+
     val isPro: StateFlow<Boolean> get() = entitlements.isPro
 
     /** Synchronous check against the current snapshot. */
-    fun canUse(feature: Feature): Boolean = isPro.value || feature in freeFeatures
+    fun canUse(feature: Feature): Boolean = isPro.value || feature.id in freeFeatureIds
 
     /** Reactive variant for gating UI that should update when entitlement state changes. */
-    fun observe(feature: Feature): Flow<Boolean> = entitlements.isPro.map { pro -> pro || feature in freeFeatures }
+    fun observe(feature: Feature): Flow<Boolean> = entitlements.isPro.map { pro -> pro || feature.id in freeFeatureIds }
 
     /** Default fallback hook: log + return a route the host should navigate to. */
     fun requestUpgrade(source: String): String {

@@ -7,8 +7,8 @@ import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.camera.CameraController
 import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.monetization.EntitlementManager
-import dev.jdgarita.frnk.monetization.Feature
 import dev.jdgarita.frnk.monetization.FeatureGate
+import dev.jdgarita.frnk.monetization.FrnkFeature
 import dev.jdgarita.frnk.permissions.Permission
 import dev.jdgarita.frnk.permissions.PermissionController
 import dev.jdgarita.frnk.remoteconfig.RemoteConfigService
@@ -100,7 +100,7 @@ class DemoHomeViewModel(
                 }
 
             DemoHomeIntent.RequestUpgrade -> {
-                if (gate.canUse(Feature.Premium)) {
+                if (gate.canUse(FrnkFeature.Premium)) {
                     emit(DemoHomeEffect.Toast("Already Pro — feature unlocked"))
                 } else {
                     val route = gate.requestUpgrade(source = "demo_button")

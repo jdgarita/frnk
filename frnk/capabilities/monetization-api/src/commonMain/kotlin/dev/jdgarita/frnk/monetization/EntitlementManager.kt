@@ -40,14 +40,3 @@ interface EntitlementManager {
     /** The store's manage-subscriptions URL for the current customer, or `null` if none. */
     suspend fun managementUrl(): AppResult<String?, MonetizationError>
 }
-
-/** Stable, opaque feature identifiers. Host apps add their own as enum-like constants. */
-data class Feature(
-    val id: String
-) {
-    companion object {
-        val Premium = Feature("premium")
-        val UnlimitedExports = Feature("unlimited_exports")
-        val AdFree = Feature("ad_free")
-    }
-}

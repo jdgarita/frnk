@@ -13,7 +13,10 @@ churny, so weigh against blast radius.
   `sealed` hierarchy) so gates are checked at compile time.
 - **Host benefit:** premium gating can't silently misfire on a typo.
 - **Effort:** M · **Risk:** medium (touches the monetization contract) · **Doc-only vs API:** API ·
-  **Status:** Proposed
+  **Status:** Done — `Feature` is now an open marker `interface Feature { val id: String }`; the toolkit's
+  catalogue is `enum class FrnkFeature(override val id) : Feature`, and hosts implement `Feature`
+  (typically via their own enum), so `Feature("typo")` no longer compiles. `FeatureGate` matches
+  `freeFeatures` by `id` for correctness across any `Feature` impl.
 
 ## 3.2 — Unify / clearly document the component `*State` convention
 

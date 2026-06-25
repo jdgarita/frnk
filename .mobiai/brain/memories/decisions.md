@@ -1242,3 +1242,27 @@ Mirrors how Tier 2.3 was resolved (Won't do, rationale in brain not docs).
 ### Files
 - docs/api-improvements/tier-2.md
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt
+
+## Type-safe feature gating: Feature is an open marker interface + FrnkFeature enum
+
+- id: type-safe-feature-gating-feature-is-an-open-marker-interface-20260625-171045
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization
+- date: 2026-06-25
+
+Tier 3.1. Replaced `data class Feature(val id: String)` (with companion constants) by an OPEN marker `interface Feature { val id: String }` plus the toolkit catalogue `enum class FrnkFeature(override val id) : Feature { Premium, UnlimitedExports, AdFree }`.
+
+WHY: the old public constructor let a host call `gate.canUse(Feature("typo"))` and silently get false — no compile-time safety. An enum can't be the root because hosts can't extend an enum, so the root must be an open interface; the toolkit's own closed catalogue is an enum that IMPLEMENTS it, which is the exact shape hosts are told to copy (`enum class AppFeature(override val id) : Feature { ... }`) — typos become uncompilable. This mirrors the established NavKey(open marker)+FrnkRoute(sealed catalogue) pattern already in the codebase.
+
+FeatureGate now matches `freeFeatures` by `Feature.id` (`feature.id in freeFeatureIds`) instead of object/set equality, so the check is correct across ANY Feature impl regardless of its equals (a host's object and the toolkit enum with the same id still match).
+
+KNOWN GAP (left out of scope, type-safety only): `freeFeatures` is still not wired through `monetizationModule` — it binds the empty default, so configuring it requires overriding the FeatureGate Koin binding.
+
+Blast radius was tiny (only the demo's DemoHomeViewModel used Feature.Premium -> FrnkFeature.Premium); clean break, no deprecation shims since the repo is private/foundation-phase. Added FeatureGateTest (none existed) covering canUse/observe/requestUpgrade + the by-id robustness claim. No build.gradle change: :monetization-api is already exported into DemoKit.
+
+### Files
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/Feature.kt
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/FrnkFeature.kt
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/FeatureGate.kt

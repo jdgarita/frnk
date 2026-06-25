@@ -11,8 +11,13 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   returning `AppResult` (never throw).
 - `monetization/EntitlementManager.kt` — the **toolkit's canonical source of truth** feature code reads.
   Wraps a provider and overlays a persisted **god mode** override. `status: StateFlow<EntitlementStatus>`,
-  `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`. Also
-  holds `Feature` (opaque feature ids).
+  `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`.
+- `monetization/Feature.kt` — the **open marker** `interface Feature { val id: String }`. Type-safe and
+  host-extensible (Tier 3.1): hosts implement it (typically via their own enum:
+  `enum class AppFeature(override val id: String) : Feature { … }`), so `Feature("typo")` no longer
+  compiles. Mirrors the `NavKey`-marker / `FrnkRoute`-catalogue split.
+- `monetization/FrnkFeature.kt` — the toolkit's own catalogue: `enum class FrnkFeature(override val id) :
+  Feature { Premium, UnlimitedExports, AdFree }` — closed, exhaustive, the shape hosts copy.
 - `monetization/DefaultEntitlementManager.kt` — the pure-Kotlin impl. `isPro = provider.isPro || godMode`;
   god mode persisted via `KeyValueStore`'s typed `booleanPreference("frnk.god_mode", default = false)`
   (P4-3 — same key/representation as a raw `putBoolean`); sets analytics user-properties
@@ -23,7 +28,9 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/MonetizationError.kt` — typed offerings/purchase/restore failures.
 - `monetization/FeatureGate.kt` — gating helper over the manager: `canUse(feature)`, reactive
   `observe(feature)`, `requestUpgrade(source)` (emits `Paywall_Viewed`, returns `PAYWALL_ROUTE_KEY`),
-  host-configurable `freeFeatures`.
+  host-configurable `freeFeatures` (matched by `Feature.id`, so the check is correct across any `Feature`
+  impl). Note: `freeFeatures` is **not** wired through `monetizationModule` today (binds the `emptySet()`
+  default) — configuring it requires overriding the `FeatureGate` Koin binding.
 - `monetization/usecase/ObserveProStatusUseCase.kt` — the toolkit's **first use case**: an injectable
   `fun interface` returning `StateFlow<Boolean>` so ViewModels read Free/Pro via Koin instead of having
   it threaded down through Compose. `DefaultObserveProStatusUseCase` re-exposes `EntitlementManager.isPro`.

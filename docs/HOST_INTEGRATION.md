@@ -362,6 +362,28 @@ The toolkit never calls `Purchases.configure(...)`; the consumer app must:
 Until configured, `EntitlementManager` degrades to a safe no-op (`isPro == false`) — every SDK
 call is `runCatching`-wrapped.
 
+### Gating features with `FeatureGate` (Tier 3.1)
+
+`Feature` is an **open marker interface** (`interface Feature { val id: String }`), so gates are
+type-safe and host-extensible — there's no public `Feature("…")` constructor to fat-finger. The toolkit
+ships its own catalogue as `enum class FrnkFeature(override val id) : Feature { Premium, … }`; declare
+your own the same way:
+
+```kotlin
+enum class AppFeature(override val id: String) : Feature {
+    CloudSync("cloud_sync"),
+    DarkThemes("dark_themes")
+}
+
+// resolve the FeatureGate from Koin, then:
+if (gate.canUse(AppFeature.CloudSync)) sync() else navigate(gate.requestUpgrade(source = "sync_button"))
+```
+
+`canUse` / `observe` return Pro-or-free; `requestUpgrade(source)` logs `Paywall_Viewed` and returns the
+toolkit paywall route key. `FeatureGate(freeFeatures = …)` whitelists features for Free users (matched by
+`Feature.id`) — but note it's **not wired through `monetizationModule`** today (binds the empty default),
+so configuring it means overriding the `FeatureGate` Koin binding.
+
 ### Crashlytics setup (do this for every new iOS app)
 
 > **Claude: when the user is creating/scaffolding a new iOS app on frnk and wants crash reporting,
