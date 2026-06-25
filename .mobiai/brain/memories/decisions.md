@@ -1317,3 +1317,25 @@ VERIFIED: compileAndroidMain + :demo-android; full testAndroidHostTest (FrnkTabR
 - frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/RootNavConfig.kt
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallNav.kt
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/FrnkSettingsHandler.kt
+
+## FrnkApp exposes themeConfig pass-through for host theming
+
+- id: frnkapp-exposes-themeconfig-pass-through-for-host-theming-20260625-233109
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui-app / theming
+- date: 2026-06-25
+
+FrnkApp now takes `themeConfig: FrnkThemeConfig = FrnkThemeConfig.Default` (between `startRoute` and `onNavigationModule`) and passes it to the `FrnkTheme(config = themeConfig)` it owns. This is the sanctioned way a host brands the whole app via FrnkApp — previously the only path was wrapping your own FrnkTheme(config) around screens, which FrnkApp's path couldn't reach.
+
+Why: token overrides (FrnkThemeConfig: light/darkColorOverrides, textStyle/shape/string/icon/spacing/iconSize overrides, fontFamily) merge over the bundled palette via Map.plus (host wins per token). FrnkApp publishes them through LocalFrnkThemeConfig; FrnkPlatformTheme re-reads + merges each axis per composition; bundled color tokens animate over 450ms via animateColorPalette. Default FrnkThemeConfig.Default keeps the bundled palette, so the new param is non-breaking for existing hosts.
+
+Demo: FrnkDemoApp now passes themeConfig = demoRedThemeConfig() (DemoColors.kt) — red accent #DC2626 light / #F87171 dark (renamed from the previously-DEAD demoPurpleThemeConfig, which existed but was never wired). The demo is now the reference integration for host theming.
+
+Note: only hosts that hand-wire the nav primitives without FrnkApp still wrap their own FrnkTheme(config). FrnkApp itself has no per-screen theme override path — it's one app-wide config.
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/FrnkDemoApp.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoColors.kt

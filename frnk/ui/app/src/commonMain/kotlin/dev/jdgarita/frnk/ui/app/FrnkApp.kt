@@ -16,6 +16,7 @@ import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.theme.Appearance
 import dev.jdgarita.frnk.ui.theme.AppearanceController
 import dev.jdgarita.frnk.ui.theme.FrnkTheme
+import dev.jdgarita.frnk.ui.theme.FrnkThemeConfig
 import dev.jdgarita.frnk.ui.theme.LocalAppearanceController
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
@@ -47,6 +48,8 @@ import org.koin.core.module.Module
  * @param startRoute the route the root back stack is seeded with on first launch (before any saved stack
  *   is restored). Defaults to [FrnkRootRoute.Onboarding]; pass [FrnkRootRoute.Tab] (or
  *   [rememberFrnkRootStartRoute]) to skip onboarding for returning users.
+ * @param themeConfig the host's [FrnkThemeConfig] (color/text/shape/string/icon/… token overrides) handed
+ *   to [FrnkTheme]. Defaults to [FrnkThemeConfig.Default] (the toolkit's bundled palette unchanged).
  * @param onNavigationModule returns the Koin navigation module registering the root destinations, given
  *   the root back stack to drive from effect handlers.
  */
@@ -55,6 +58,7 @@ import org.koin.core.module.Module
 fun FrnkApp(
     onSavedStateConfiguration: () -> SavedStateConfiguration,
     startRoute: FrnkRootRoute = FrnkRootRoute.Onboarding,
+    themeConfig: FrnkThemeConfig = FrnkThemeConfig.Default,
     onNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
     val appearanceController: AppearanceController = koinInject()
@@ -71,7 +75,7 @@ fun FrnkApp(
 
         ApplySystemBarAppearance(darkTheme = darkTheme)
 
-        FrnkTheme {
+        FrnkTheme(config = themeConfig) {
             AppScaffold {
                 val backStack =
                     rememberNavBackStack(

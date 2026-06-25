@@ -32,6 +32,7 @@ fun FrnkDemoApp() {
     FrnkApp(
         onSavedStateConfiguration = { frnkRootNavConfig() },
         startRoute = rememberFrnkRootStartRoute(),
+        themeConfig = demoRedThemeConfig(),
         onNavigationModule =
             frnkTabbedRootModule(
                 customTab =

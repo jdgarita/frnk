@@ -8,21 +8,19 @@ import dev.jdgarita.frnk.ui.theme.colorPrimary
 /**
  * Shared demo theme override so Android and iOS render identically.
  *
- * Uses the violet accent palette from the frnk landing page (jdgarita.dev `--accent`):
- * `#6E56CF` in light, `#9F85FF` in dark. Light keeps white text on the accent (as the landing's
- * `.btn-primary` does); dark pairs the pastel accent with a deep-violet `onPrimary` so button text
- * stays legible.
+ * Uses a red accent palette: `#DC2626` in light, `#F87171` in dark. Light keeps white text on the
+ * accent; dark pairs the lighter accent with a deep-red `onPrimary` so button text stays legible.
  */
-fun demoPurpleThemeConfig(): FrnkThemeConfig =
+fun demoRedThemeConfig(): FrnkThemeConfig =
     FrnkThemeConfig(
         lightColorOverrides =
             mapOf(
-                colorPrimary to Color(0xFF6E56CF),
+                colorPrimary to Color(0xFFDC2626),
                 colorOnPrimary to Color.White
             ),
         darkColorOverrides =
             mapOf(
-                colorPrimary to Color(0xFF9F85FF),
-                colorOnPrimary to Color(0xFF1E1145)
+                colorPrimary to Color(0xFFF87171),
+                colorOnPrimary to Color(0xFF450A0A)
             )
     )

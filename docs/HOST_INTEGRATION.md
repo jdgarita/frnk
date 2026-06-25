@@ -98,9 +98,11 @@ FrnkTheme(
 }
 ```
 
-`FrnkApp` wraps `FrnkTheme` for you, with the `AppearanceController`-driven light/dark palette. For host
-token overrides (`FrnkThemeConfig`), wrap your own `FrnkTheme(config) { … }` around the screens you render
-from the navigation module.
+`FrnkApp` wraps `FrnkTheme` for you, with the `AppearanceController`-driven light/dark palette. Pass your
+host token overrides straight through its `themeConfig: FrnkThemeConfig` parameter (§8) — `FrnkApp` hands it
+to the `FrnkTheme` it owns, so the whole app picks them up (default `FrnkThemeConfig.Default` leaves the
+bundled palette unchanged). Only hosts that hand-wire the nav primitives without `FrnkApp` wrap their own
+`FrnkTheme(config) { … }`.
 
 **Custom icon pack.** The toolkit ships a default Lucide-backed icon registry (`iconBack`, `iconClose`,
 `iconSearch`, `iconSettings`, …). A host overrides any or all of them — **or adds brand-specific icons** —
@@ -465,12 +467,14 @@ After `initializeFrnk(...)` (§4), **`FrnkApp`** (`:ui-app`) is the app root. It
 `NavDisplay` over `FrnkRootRoute` (seeded at `Onboarding`) — and hands the navigation graph to you. You
 supply two lambdas: `onSavedStateConfiguration` (the root saved-state config, normally `frnkRootNavConfig()`)
 and `onNavigationModule(backStack)`, which returns a Koin `navigation<Route> { … }` module registering your
-root destinations (it's loaded via `loadKoinModules`):
+root destinations (it's loaded via `loadKoinModules`). Brand the whole app by passing a `themeConfig`
+(`FrnkThemeConfig`, §2) — it flows into the `FrnkTheme` `FrnkApp` owns; omit it for the bundled palette:
 
 ```kotlin
 setContent {
     FrnkApp(
         onSavedStateConfiguration = { frnkRootNavConfig() },
+        themeConfig = FrnkThemeConfig(lightColorOverrides = mapOf(colorPrimary to Brand.Primary)),
         onNavigationModule = { backStack -> myRootNavigationModule(backStack) },
     )
 }
