@@ -24,6 +24,10 @@ import dev.jdgarita.frnk.ui.molecules.FrnkListRowState
  * one tier down: enable `skeleton` on the individual [FrnkListRowState]s (each collapses to a block)
  * rather than adding a section-level flag, so a partially-loaded list can skeletonize per row. The
  * card chrome (title, surface, dividers) is static framing.
+ *
+ * State shape — **Category C** (single-state `data class`, no `Skeleton`): the skeleton is delegated
+ * to the child [FrnkListRowState] rows (see above). See the component-state taxonomy in
+ * `docs/HOST_INTEGRATION.md` §9.
  */
 @Immutable
 data class FrnkListSectionState(

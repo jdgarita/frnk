@@ -38,6 +38,10 @@ import dev.jdgarita.frnk.ui.theme.spacingXs
  * @property subtitle optional supporting line (rendered centered, muted); omitted when `null`.
  * @property actionLabel optional CTA label; the action button renders only when this **and** an
  *   `onActionClick` are both supplied.
+ *
+ * State shape — **Category C** (single-state `data class`, no `Skeleton`): a terminal zero-content
+ * state (see the no-skeleton rationale above). See the component-state taxonomy in
+ * `docs/HOST_INTEGRATION.md` §9.
  */
 @Immutable
 data class FrnkEmptyStateState(

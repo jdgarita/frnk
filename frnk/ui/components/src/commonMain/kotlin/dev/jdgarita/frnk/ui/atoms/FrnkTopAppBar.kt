@@ -54,6 +54,13 @@ data class FrnkTopAppBarAction(
     val key: String = contentDescription
 )
 
+/**
+ * View state for [FrnkTopAppBar].
+ *
+ * State shape — **Category C** (single-state `data class`, no `Skeleton`): the bar has one visual
+ * state (search mode is a field, not a separate state) and never shows a loading placeholder. See the
+ * component-state taxonomy in `docs/HOST_INTEGRATION.md` §9.
+ */
 @Immutable
 data class FrnkTopAppBarState(
     val title: FrnkStringSource,

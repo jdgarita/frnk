@@ -1266,3 +1266,27 @@ Blast radius was tiny (only the demo's DemoHomeViewModel used Feature.Premium ->
 - frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/Feature.kt
 - frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/FrnkFeature.kt
 - frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/FeatureGate.kt
+
+## Component *State three-category taxonomy (Tier 3.2)
+
+- id: component-state-three-category-taxonomy-tier-3-2-20260625-175602
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: ui-components / design system
+- date: 2026-06-25
+
+Tier 3.2 asked to unify/document the component `*State` convention. Decision: **document, not align** — every divergence from the canonical `sealed interface { Content + Skeleton }` shape is justified, so aligning would be net-negative.
+
+Three sanctioned `*State` shapes (canonical text in HOST_INTEGRATION.md §9):
+- **A — Stateful (default):** `sealed interface` + `Content` data class + `data object Skeleton` (+ `Error`). For loading-capable components. Members: FrnkButton, FrnkSwitch, FrnkSegmentedControl, FrnkIcon, FrnkIconButton, FrnkListRow, FrnkLabeledValue, FrnkProfileHeader.
+- **B — Variant (shared-field):** a `sealed class` whose variants share stored `open val` fields — the one case a sealed *class* (not interface) is correct, since an interface cannot carry stored props. Members: FrnkDividerState (Horizontal/Vertical, no skeleton — always-on chrome), FrnkTextState (semantic variants + per-subtype `skeleton` field + a Skeleton object).
+- **C — Single-state:** plain `@Immutable data class`, no Skeleton. For single-state/terminal/chrome/skeleton-delegated. Members: FrnkTopAppBarState (single state), FrnkEmptyStateState (terminal zero-content), FrnkSwipeableState (interaction chrome), FrnkListSectionState (skeleton on child rows).
+
+Cross-cutting: ergonomic secondary constructors (FrnkIconState/FrnkIconButtonState `ImageVector`→FrnkIconSource.Vector; FrnkTextState `String`→FrnkStringSource.Raw) are sanctioned — primary ctor stays the source-wrapper form; add a secondary only when the wrapped type is the overwhelmingly common case.
+
+Also corrected a doc bug: ui/components/CLAUDE.md previously called FrnkDivider "non-sealed" — it is a Category-B sealed class. Each Category-B/C `*State` now carries a one-line `State shape — Category X` KDoc marker at its declaration. No API/behavior change; comments + docs only.
+
+### Files
+- docs/HOST_INTEGRATION.md
+- frnk/ui/components/CLAUDE.md

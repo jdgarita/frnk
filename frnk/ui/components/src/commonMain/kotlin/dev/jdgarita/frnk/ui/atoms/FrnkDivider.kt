@@ -13,6 +13,14 @@ import com.composeunstyled.theme.ThemeToken
 import dev.jdgarita.frnk.ui.theme.colorOutline
 import dev.jdgarita.frnk.ui.theme.colors
 
+/**
+ * View state for [FrnkDivider].
+ *
+ * State shape — **Category B** (`sealed class` of shared-field variants): [Horizontal] / [Vertical]
+ * share the stored `open val` [thickness] / [color] fields, which a sealed *interface* can't model.
+ * No `Skeleton` object — a divider is always-on chrome, never a loading state. See the
+ * component-state taxonomy in `docs/HOST_INTEGRATION.md` §9.
+ */
 @Immutable
 sealed class FrnkDividerState(
     open val thickness: Dp,

@@ -62,6 +62,10 @@ import kotlin.math.roundToInt
  * @property threshold fraction of the component width the content may be dragged (also the open
  *   distance). 0.5 = up to half the width.
  * @property enabled when false the gesture is inert (the content renders as-is).
+ *
+ * State shape — **Category C** (single-state `data class`, no `Skeleton`): interaction-only chrome —
+ * the wrapped content owns its own loading state, so there is nothing here to skeletonize. See the
+ * component-state taxonomy in `docs/HOST_INTEGRATION.md` §9.
  */
 @Immutable
 data class FrnkSwipeableState(

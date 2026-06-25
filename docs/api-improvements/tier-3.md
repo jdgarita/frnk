@@ -29,7 +29,14 @@ churny, so weigh against blast radius.
   guide (`HOST_INTEGRATION.md` §9 + `frnk/ui/components/CLAUDE.md`) with the rationale for each.
 - **Host benefit:** faster to learn; fewer "why is this one different?" moments when authoring components.
 - **Effort:** M (align) or S (document) · **Risk:** medium if aligning (touches many atoms) ·
-  **Doc-only vs API:** doc-only or API · **Status:** Proposed
+  **Doc-only vs API:** doc-only or API · **Status:** Done (document, not align) — every divergence is
+  justified, so aligning would be net-negative (a sealed *interface* can't carry `FrnkDivider`/`FrnkText`'s
+  shared `open val` fields; a `Skeleton` object on a terminal empty state is nonsense; the secondary
+  constructors are deliberate ergonomics). Instead documented a **three-category `*State` taxonomy** (A
+  Stateful sealed-interface · B Variant shared-field sealed class · C Single-state data class) + the
+  ergonomic-secondary-constructor pattern in `HOST_INTEGRATION.md` §9 and `frnk/ui/components/CLAUDE.md`,
+  **corrected** the `FrnkDivider` "non-sealed" mislabel (it's a Category-B sealed class), and added a
+  one-line `State shape — Category X` marker to each outlier `*State`. No API change.
 
 ## 3.3 — Tighten `FrnkRoute` / `FrnkRootRoute` naming + config asymmetry
 

@@ -529,12 +529,17 @@ declare** here. On **Android** the bar is a Material3 Expressive `HorizontalFloa
 workaround is gone). iOS-only: the library's older-iOS Compose fallback needs a `DrawableResource`, which the
 toolkit supplies internally via a single bundled placeholder — again nothing for the host to do.
 
-## 9. Component style guide — sealed state + `Skeleton` object
+## 9. Component style guide — the component `*State` taxonomy
 
-**Every frnk UI component with multiple visual states models its state as a `sealed interface` with a
-`Content` data class and a `data object Skeleton`** (and an `Error` data class where there's a real error
-visual). The composable `when`-switches; the `Skeleton` branch is a **non-interactive** token-driven
-placeholder. Copy this shape for new components (host or toolkit):
+Every frnk UI component takes an `@Immutable *State` value (callbacks are separate params, before
+`modifier`). The *shape* of that state falls into exactly one of **three sanctioned categories** — pick by
+what the component actually does, and don't force a component into the wrong one:
+
+**Category A — Stateful (the default).** A `sealed interface` with a `Content` data class and a
+`data object Skeleton` (plus a `data class Error` where there's a real error visual). Use it whenever the
+component toggles between runtime visual states (loading vs loaded). The composable `when`-switches; the
+`Skeleton` branch is a **non-interactive** token-driven placeholder. Copy this shape for new components
+(host or toolkit):
 
 ```kotlin
 sealed interface FrnkButtonState {
@@ -559,12 +564,37 @@ fun FrnkButton(state: FrnkButtonState, onClick: () -> Unit, modifier: Modifier =
 }
 ```
 
-Rules: state is hoisted into the feature's `MviViewModel` (never `remember { mutableStateOf }` for
-screen/business state); styling comes from `Theme[colors|textStyles|shapes|spacing|iconSizes][token]`, never
-hardcoded `Color(0xFF…)` / raw `.dp`; the `Skeleton` branch renders no clickable/toggleable node.
-Single-state or terminal components (a pure divider, a terminal empty state, interaction-only chrome) stay
-non-sealed and skip the `Skeleton` object — note why. `FrnkText` additionally keeps a per-subtype `skeleton`
-field for content-sized text skeletons. See `frnk/ui/components/CLAUDE.md` for the full convention.
+Members today: `FrnkButton`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkIcon`, `FrnkIconButton`,
+`FrnkListRow`, `FrnkLabeledValue`, `FrnkProfileHeader`.
+
+**Category B — Variant (shared-field).** A `sealed class` whose mutually-exclusive variants share *stored*
+`open val` styling fields. This is the **one** case a sealed *class* is correct rather than an interface: a
+sealed interface can't carry stored properties, so variants that share fields need the class. It may still add
+a `Skeleton` object if the component loads. Members: `FrnkDividerState` (`Horizontal`/`Vertical`; no skeleton
+— a divider is always-on chrome) and `FrnkTextState` (semantic text variants that share styling fields, with
+a per-subtype `skeleton` field **and** a `Skeleton` object).
+
+**Category C — Single-state.** A plain `@Immutable data class`, no `Skeleton`. Use it when the component has
+exactly one visual state, is terminal, is interaction-only chrome, or delegates its skeleton to child states
+— and say which in a doc comment. Members: `FrnkTopAppBarState` (single visual state; search is a field),
+`FrnkEmptyStateState` (terminal zero-content — you skeletonize the *eventual* content, never the empty
+state), `FrnkSwipeableState` (interaction chrome; the wrapped content owns its skeleton), `FrnkListSectionState`
+(skeleton carried by the child `FrnkListRowState` rows).
+
+**Ergonomic secondary constructors (cross-cutting).** A `Content` (or a Category-B variant) may add a
+secondary constructor that wraps a raw Compose type in the toolkit's source wrapper so the common call site
+stays terse — `FrnkIconState.Content(imageVector)` → `FrnkIconSource.Vector`,
+`FrnkIconButtonState.Content(imageVector)` → `FrnkIconSource.Vector`, `FrnkTextState.<variant>(text: String)`
+→ `FrnkStringSource.Raw`. The **primary** constructor stays the source-wrapper form; add the secondary only
+when the wrapped type is the overwhelmingly common case (it deliberately doubles a small slice of the surface
+to keep call sites clean).
+
+Rules across all categories: state is hoisted into the feature's `MviViewModel` (never
+`remember { mutableStateOf }` for screen/business state); styling comes from
+`Theme[colors|textStyles|shapes|spacing|iconSizes][token]`, never hardcoded `Color(0xFF…)` / raw `.dp`; any
+`Skeleton` branch renders no clickable/toggleable node. Each outlier `*State` (Categories B and C) carries a
+one-line `State shape — **Category X**` marker at its declaration. See `frnk/ui/components/CLAUDE.md` for the
+full per-component convention.
 
 ## 10. Demo isolation & the upstream rule
 

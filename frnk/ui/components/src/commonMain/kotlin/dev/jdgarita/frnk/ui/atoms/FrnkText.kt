@@ -51,6 +51,12 @@ val FrnkTextDefaultSkeleton: FrnkSkeleton = FrnkSkeleton()
  *   variants that default to the matching [dev.jdgarita.frnk.ui.theme.titleLarge],
  *   [dev.jdgarita.frnk.ui.theme.bodyLarge], etc. token. Use these at top-level callsites.
  * - [AppName] — renders an [AnnotatedString] (lets the brand name have per-character styling).
+ *
+ * State shape — **Category B** (`sealed class` of shared-field variants): the variants share stored
+ * `open val` styling fields, which a sealed *interface* can't model, and it carries a per-subtype
+ * `skeleton` field **plus** a [Skeleton] object. Each [Resolvable] variant also exposes a `String`
+ * secondary constructor (wraps [FrnkStringSource.Raw]) — the sanctioned ergonomic-overload pattern.
+ * See the component-state taxonomy in `docs/HOST_INTEGRATION.md` §9.
  */
 
 @Immutable
