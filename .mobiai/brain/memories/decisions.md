@@ -1191,3 +1191,31 @@ Verified: :data-db-api compile+testAndroidHostTest, full compileAndroidMain + :d
 - frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/ext/SqlDriverFactoryExt.kt
 - frnk/data/db-api/build.gradle.kts
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/notes/DemoNotesModule.kt
+
+## Tier 2.2 bootstrap presets + fail-fast validation
+
+- id: tier-2-2-bootstrap-presets-fail-fast-validation-20260625-160937
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: DI / host bootstrap
+- date: 2026-06-25
+
+Shipped Tier 2.2 as TWO additive pieces because they cover different halves and neither subsumes the other:
+
+WHY two pieces: Koin 4.2.1 cannot introspect a List<Module> before startKoin. So a *duplicate* observability/remote-config install (silent shadowing) can only be prevented STRUCTURALLY (a typed builder with single-assignment slots), while a *missing* required module can only be detected POST-start via getOrNull. The builder prevents duplicates; the validator catches missing — both together fully cover the documented footguns.
+
+WHERE the builder lives — :ui-app, NOT :core-di. The builder must reference frnkUiModules() (in :ui-app) and auto-bundle monetizationModule (:monetization-api) + paywallScaffoldModule (:monetization-ui). :core-di is the bottom of the ui column and is forbidden by rule (OQ-7) from any capability knowledge, and must depend only on koin-core. So frnkModules { } + validateFrnkBootstrap live in :ui-app; :core-di only got an additive function-typed hook initializeFrnk(modules, validate, validator) that runs whatever check it is handed, naming no capability type.
+
+CINTEROP rule: the builder NEVER references an *-impl val (firebaseObservabilityModule/revenueCatModule/remoteConfigModule/databaseModule) — that would drag Firebase/RevenueCat/SQLite native cinterops into every consumer and break the XCFramework. The host imports the impl val and assigns it to a slot. Only the noop modules (clean api modules) are referenced as defaults. One new clean api edge was added: :ui-app -> :remote-config-api (interfaces only) so the builder can default remoteConfig and the validator can resolve RemoteConfigService.
+
+VALIDATOR required-vs-optional: REQUIRED (throw) = observability (AnalyticsTracker+CrashReporter), remote-config (RemoteConfigService), monetization (ObserveProStatusUseCase+EntitlementManager — frnkUiModules always renders Settings which needs pro-status; matches the 'monetization is always installed' decision in tier 2.3). OPTIONAL (never throw) = KeyValueStore/SqlDriverFactory (a local-only host omits them).
+
+VALIDATOR gotcha: getOrNull throws InstanceCreationException (NOT caught by Koin's getOrNull) when a definition exists but a transitive dep is missing. A private Koin.isBound<T>() treats InstanceCreationException as 'bound' so a missing leaf (e.g. AnalyticsTracker) is reported ONCE by its own check (observability) instead of falsely reporting 'monetization missing' when monetizationModule IS installed.
+
+DEMO: demo-android assembles its real-SDK override list via frnkModules { } (coexists with allowOverride(true) over the fake frnkAppModule); checkFrnkModules() runs inside bootstrapDemoKoin so both Android and iOS validate the fully-assembled graph. The explicit initializeFrnk(modules=…) path is untouched (additive).
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidation.kt
+- frnk/core/di/src/commonMain/kotlin/dev/jdgarita/frnk/di/FrnkInitializer.kt

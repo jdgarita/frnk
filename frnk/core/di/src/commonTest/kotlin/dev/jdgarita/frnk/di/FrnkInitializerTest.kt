@@ -28,4 +28,31 @@ class FrnkInitializerTest {
         assertSame(app.koin, requireFrnkKoin())
         assertEquals("host-binding", requireFrnkKoin().get<String>())
     }
+
+    @Test
+    fun initializeFrnk_runs_validator_against_started_koin_when_validate_true() {
+        val hostModule = module { single { "host-binding" } }
+        val failure =
+            assertFailsWith<IllegalStateException> {
+                initializeFrnk(
+                    modules = listOf(hostModule),
+                    validate = true,
+                    // The validator sees the fully started graph (it can resolve bindings).
+                    validator = { koin -> error("validator-saw=${koin.get<String>()}") }
+                )
+            }
+        assertEquals(true, failure.message?.contains("validator-saw=host-binding"), "validator runs post-start")
+    }
+
+    @Test
+    fun initializeFrnk_skips_validator_when_validate_false() {
+        val hostModule = module { single { "host-binding" } }
+        // validator would throw if invoked; validate = false must never call it.
+        initializeFrnk(
+            modules = listOf(hostModule),
+            validate = false,
+            validator = { error("validator must not run when validate = false") }
+        )
+        assertEquals("host-binding", requireFrnkKoin().get<String>())
+    }
 }

@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.di
 
 import android.content.Context
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.module.Module
 
@@ -21,15 +22,20 @@ import org.koin.core.module.Module
  * ```
  *
  * iOS hosts keep calling the common [initializeFrnk] (no context to thread).
+ *
+ * [validate]/[validator] forward to the common overload — pass `validator = Koin::validateFrnkBootstrap`
+ * (`:ui-app`) to fail fast on a missing required module.
  */
 fun initializeFrnk(
     context: Context,
     modules: List<Module>,
+    validate: Boolean = false,
+    validator: (Koin) -> Unit = {},
     extraConfig: KoinApplication.() -> Unit = {}
 ): KoinApplication {
     val applicationContext = context.applicationContext
     DatabaseContext.application = applicationContext
-    return initializeFrnk(modules) {
+    return initializeFrnk(modules, validate, validator) {
         androidContext(applicationContext)
         extraConfig()
     }

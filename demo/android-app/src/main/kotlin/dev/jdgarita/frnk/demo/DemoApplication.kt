@@ -9,7 +9,7 @@ import dev.jdgarita.frnk.demo.notes.demoNotesModule
 import dev.jdgarita.frnk.di.DatabaseContext
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import dev.jdgarita.frnk.remoteconfig.firebase.remoteConfigModule
-import org.koin.core.module.Module
+import dev.jdgarita.frnk.ui.app.frnkModules
 
 class DemoApplication : Application() {
     override fun onCreate() {
@@ -32,13 +32,21 @@ class DemoApplication : Application() {
         //    a public Android SDK key is present in local.properties. Purchases.configure(...) must run
         //    before the override so the manager reads a configured SDK; the Android context is captured
         //    automatically by RevenueCat's androidx.startup initializer before onCreate.
-        val overrides =
-            mutableListOf<Module>(firebaseObservabilityModule, databaseModule, demoNotesModule, remoteConfigModule)
+        // Assemble the real-SDK override list with the toolkit's own frnkModules { } builder (Tier 2.2):
+        // single observability/remoteConfig slots make the XOR explicit, and monetization(provider)
+        // bundles the trio. The host still imports the impl vals and assigns them here.
         val rcKey = BuildConfig.REVENUECAT_ANDROID_API_KEY
-        if (rcKey.isNotBlank()) {
+        val rcConfigured = rcKey.isNotBlank()
+        if (rcConfigured) {
             Purchases.configure(apiKey = rcKey)
-            overrides += revenueCatModule
         }
+        val overrides =
+            frnkModules {
+                observability = firebaseObservabilityModule
+                remoteConfig = remoteConfigModule
+                if (rcConfigured) monetization(provider = revenueCatModule)
+                modules(databaseModule, demoNotesModule)
+            }
         bootstrapDemoKoin {
             allowOverride(true)
             modules(overrides)

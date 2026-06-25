@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-24T19:06:21.425891Z",
+  "generatedAt": "2026-06-25T16:16:17.072497Z",
   "root": "/Users/jd/code/frnk",
   "files": [
     {
       "path": "demo/android-app/src/main/kotlin/dev/jdgarita/frnk/demo/DemoApplication.kt",
       "language": "kotlin",
-      "lines": 47,
+      "lines": 55,
       "imports": [
         "android.app.Application",
         "com.revenuecat.purchases.kmp.Purchases",
@@ -17,7 +17,7 @@
         "dev.jdgarita.frnk.di.DatabaseContext",
         "dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule",
         "dev.jdgarita.frnk.remoteconfig.firebase.remoteConfigModule",
-        "org.koin.core.module.Module"
+        "dev.jdgarita.frnk.ui.app.frnkModules"
       ],
       "symbols": [
         {
@@ -86,7 +86,7 @@
     {
       "path": "demo/ios-app/iosDemoApp/ComposeViewController.swift",
       "language": "swift",
-      "lines": 17,
+      "lines": 13,
       "imports": [
         "DemoKit",
         "SwiftUI",
@@ -101,13 +101,13 @@
         {
           "name": "makeUIViewController",
           "kind": "func",
-          "line": 10,
+          "line": 8,
           "container": "ComposeViewController"
         },
         {
           "name": "updateUIViewController",
           "kind": "func",
-          "line": 16,
+          "line": 12,
           "container": "ComposeViewController"
         }
       ]
@@ -115,7 +115,7 @@
     {
       "path": "demo/ios-app/iosDemoApp/ContentView.swift",
       "language": "swift",
-      "lines": 56,
+      "lines": 9,
       "imports": [
         "DemoKit",
         "SwiftUI"
@@ -125,32 +125,6 @@
           "name": "ContentView",
           "kind": "struct",
           "line": 4
-        },
-        {
-          "name": "handleEffect",
-          "kind": "func",
-          "line": 21,
-          "container": "ContentView",
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "show",
-          "kind": "func",
-          "line": 33,
-          "container": "ContentView",
-          "modifiers": [
-            "private"
-          ]
-        },
-        {
-          "name": "ToastBanner",
-          "kind": "struct",
-          "line": 43,
-          "modifiers": [
-            "private"
-          ]
         }
       ]
     },
@@ -219,8 +193,9 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoBootstrap.kt",
       "language": "kotlin",
-      "lines": 22,
+      "lines": 28,
       "imports": [
+        "dev.jdgarita.frnk.ui.app.checkFrnkModules",
         "org.koin.core.KoinApplication",
         "org.koin.core.context.startKoin"
       ],
@@ -228,7 +203,7 @@
         {
           "name": "bootstrapDemoKoin",
           "kind": "fun",
-          "line": 18
+          "line": 24
         }
       ]
     },
@@ -533,86 +508,43 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/FrnkDemoApp.kt",
       "language": "kotlin",
-      "lines": 16,
+      "lines": 94,
       "imports": [
         "androidx.compose.runtime.Composable",
-        "dev.jdgarita.frnk.demo.navigation.modules.rootNavigationModule",
+        "dev.jdgarita.frnk.demo.ui.component.ComponentDetailScreen",
+        "dev.jdgarita.frnk.demo.ui.component.ComponentScreen",
+        "dev.jdgarita.frnk.demo.ui.component.ComponentsListScreen",
+        "dev.jdgarita.frnk.demo.ui.home.HomeScreen",
+        "dev.jdgarita.frnk.demo.ui.onboarding.OnboardingScreen",
+        "dev.jdgarita.frnk.demo.ui.settings.SettingsScreen",
+        "dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination",
         "dev.jdgarita.frnk.ui.app.FrnkApp",
-        "dev.jdgarita.frnk.ui.nav.frnkRootNavConfig"
+        "dev.jdgarita.frnk.ui.app.frnkTabbedRootModule",
+        "dev.jdgarita.frnk.ui.app.rememberFrnkRootStartRoute",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkCustomTab",
+        "dev.jdgarita.frnk.ui.mvi.CommonUiEffect",
+        "dev.jdgarita.frnk.ui.nav.FrnkRoute",
+        "dev.jdgarita.frnk.ui.nav.frnkRootNavConfig",
+        "dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect",
+        "dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect",
+        "dev.jdgarita.frnk.ui.theme.FrnkIconSource",
+        "dev.jdgarita.frnk.ui.theme.iconNavComponent"
       ],
       "symbols": [
         {
           "name": "FrnkDemoApp",
           "kind": "fun",
-          "line": 9
-        }
-      ]
-    },
-    {
-      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/navigation/modules/NestedNavigationModule.kt",
-      "language": "kotlin",
-      "lines": 58,
-      "imports": [
-        "androidx.navigation3.runtime.NavBackStack",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.demo.ui.component.ComponentDetailScreen",
-        "dev.jdgarita.frnk.demo.ui.component.ComponentScreen",
-        "dev.jdgarita.frnk.demo.ui.component.ComponentsListScreen",
-        "dev.jdgarita.frnk.demo.ui.home.HomeScreen",
-        "dev.jdgarita.frnk.demo.ui.settings.SettingsScreen",
-        "dev.jdgarita.frnk.ui.mvi.CommonUiEffect",
-        "dev.jdgarita.frnk.ui.nav.FrnkRootRoute",
-        "dev.jdgarita.frnk.ui.nav.FrnkRoute",
-        "dev.jdgarita.frnk.ui.nav.back",
-        "dev.jdgarita.frnk.ui.nav.navigateTo",
-        "dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect",
-        "org.koin.core.annotation.KoinExperimentalAPI",
-        "org.koin.dsl.module",
-        "org.koin.dsl.navigation3.navigation"
-      ],
-      "symbols": [
-        {
-          "name": "nestedNavigationModule",
-          "kind": "fun",
-          "line": 21
-        }
-      ]
-    },
-    {
-      "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/navigation/modules/RootNavigationModule.kt",
-      "language": "kotlin",
-      "lines": 58,
-      "imports": [
-        "androidx.navigation3.runtime.NavBackStack",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.demo.ui.onboarding.OnboardingScreen",
-        "dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkNestedNavScaffold",
-        "dev.jdgarita.frnk.ui.mvi.CommonUiEffect",
-        "dev.jdgarita.frnk.ui.nav.FrnkRootRoute",
-        "dev.jdgarita.frnk.ui.nav.back",
-        "dev.jdgarita.frnk.ui.nav.clearAndNavigateTo",
-        "dev.jdgarita.frnk.ui.nav.frnkNestedNavConfig",
-        "dev.jdgarita.frnk.ui.nav.navigateTo",
-        "dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect",
-        "org.koin.core.annotation.KoinExperimentalAPI",
-        "org.koin.dsl.module",
-        "org.koin.dsl.navigation3.navigation"
-      ],
-      "symbols": [
-        {
-          "name": "rootNavigationModule",
-          "kind": "fun",
-          "line": 20
+          "line": 31
         }
       ]
     },
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/notes/DemoNotesModule.kt",
       "language": "kotlin",
-      "lines": 22,
+      "lines": 23,
       "imports": [
         "dev.jdgarita.frnk.database.SqlDriverFactory",
+        "dev.jdgarita.frnk.database.ext.databaseSingle",
         "dev.jdgarita.frnk.demo.sql.DemoDB",
         "org.koin.dsl.module"
       ],
@@ -1364,10 +1296,9 @@
     {
       "path": "demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/ui/settings/SettingsScreen.kt",
       "language": "kotlin",
-      "lines": 48,
+      "lines": 43,
       "imports": [
         "androidx.compose.runtime.Composable",
-        "dev.jdgarita.frnk.ui.mvi.CommonUiEffect",
         "dev.jdgarita.frnk.ui.mvi.FrnkScreen",
         "dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher",
         "dev.jdgarita.frnk.ui.scaffolds.settings.FrnkSettingsScreen",
@@ -1382,7 +1313,7 @@
         {
           "name": "SettingsScreen",
           "kind": "fun",
-          "line": 16
+          "line": 15
         }
       ]
     },
@@ -4230,10 +4161,11 @@
     {
       "path": "frnk/core/di/src/androidMain/kotlin/dev/jdgarita/frnk/di/FrnkInitializer.android.kt",
       "language": "kotlin",
-      "lines": 36,
+      "lines": 42,
       "imports": [
         "android.content.Context",
         "org.koin.android.ext.koin.androidContext",
+        "org.koin.core.Koin",
         "org.koin.core.KoinApplication",
         "org.koin.core.module.Module"
       ],
@@ -4241,14 +4173,14 @@
         {
           "name": "initializeFrnk",
           "kind": "fun",
-          "line": 25
+          "line": 29
         }
       ]
     },
     {
       "path": "frnk/core/di/src/commonMain/kotlin/dev/jdgarita/frnk/di/FrnkInitializer.kt",
       "language": "kotlin",
-      "lines": 48,
+      "lines": 57,
       "imports": [
         "org.koin.core.Koin",
         "org.koin.core.KoinApplication",
@@ -4260,19 +4192,19 @@
         {
           "name": "initializeFrnk",
           "kind": "fun",
-          "line": 29
+          "line": 36
         },
         {
           "name": "requireFrnkKoin",
           "kind": "fun",
-          "line": 43
+          "line": 52
         }
       ]
     },
     {
       "path": "frnk/core/di/src/commonTest/kotlin/dev/jdgarita/frnk/di/FrnkInitializerTest.kt",
       "language": "kotlin",
-      "lines": 31,
+      "lines": 58,
       "imports": [
         "org.koin.core.context.stopKoin",
         "org.koin.dsl.module",
@@ -4304,6 +4236,18 @@
           "name": "initializeFrnk_starts_koin_with_the_passed_modules",
           "kind": "fun",
           "line": 25,
+          "container": "FrnkInitializerTest"
+        },
+        {
+          "name": "initializeFrnk_runs_validator_against_started_koin_when_validate_true",
+          "kind": "fun",
+          "line": 33,
+          "container": "FrnkInitializerTest"
+        },
+        {
+          "name": "initializeFrnk_skips_validator_when_validate_false",
+          "kind": "fun",
+          "line": 48,
           "container": "FrnkInitializerTest"
         }
       ]
@@ -4923,7 +4867,7 @@
     {
       "path": "frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/NavBackStackExt.kt",
       "language": "kotlin",
-      "lines": 50,
+      "lines": 51,
       "imports": [
         "androidx.navigation3.runtime.NavBackStack",
         "androidx.navigation3.runtime.NavKey"
@@ -5425,6 +5369,161 @@
           "name": "create",
           "kind": "fun",
           "line": 12
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/ext/SqlDriverFactoryExt.kt",
+      "language": "kotlin",
+      "lines": 30,
+      "imports": [
+        "app.cash.sqldelight.db.QueryResult",
+        "app.cash.sqldelight.db.SqlDriver",
+        "app.cash.sqldelight.db.SqlSchema",
+        "dev.jdgarita.frnk.database.SqlDriverFactory",
+        "org.koin.core.module.Module"
+      ],
+      "symbols": [
+        {
+          "name": "databaseSingle",
+          "kind": "fun",
+          "line": 24,
+          "modifiers": [
+            "inline"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/data/db-api/src/commonTest/kotlin/dev/jdgarita/frnk/database/ext/DatabaseSingleTest.kt",
+      "language": "kotlin",
+      "lines": 112,
+      "imports": [
+        "app.cash.sqldelight.Query",
+        "app.cash.sqldelight.Transacter",
+        "app.cash.sqldelight.db.AfterVersion",
+        "app.cash.sqldelight.db.QueryResult",
+        "app.cash.sqldelight.db.SqlCursor",
+        "app.cash.sqldelight.db.SqlDriver",
+        "app.cash.sqldelight.db.SqlPreparedStatement",
+        "app.cash.sqldelight.db.SqlSchema",
+        "dev.jdgarita.frnk.database.SqlDriverFactory",
+        "org.koin.dsl.koinApplication",
+        "org.koin.dsl.module",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertSame"
+      ],
+      "symbols": [
+        {
+          "name": "DatabaseSingleTest",
+          "kind": "class",
+          "line": 24
+        },
+        {
+          "name": "FakeDb",
+          "kind": "class",
+          "line": 25,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "registers_single_and_forwards_schema_and_name",
+          "kind": "fun",
+          "line": 30,
+          "container": "DatabaseSingleTest"
+        },
+        {
+          "name": "create",
+          "kind": "fun",
+          "line": 65,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "migrate",
+          "kind": "fun",
+          "line": 67,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "executeQuery",
+          "kind": "fun",
+          "line": 78,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "execute",
+          "kind": "fun",
+          "line": 86,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "newTransaction",
+          "kind": "fun",
+          "line": 93,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "currentTransaction",
+          "kind": "fun",
+          "line": 95,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "addListener",
+          "kind": "fun",
+          "line": 97,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "removeListener",
+          "kind": "fun",
+          "line": 102,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "notifyListeners",
+          "kind": "fun",
+          "line": 107,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "close",
+          "kind": "fun",
+          "line": 109,
+          "container": "DatabaseSingleTest",
+          "modifiers": [
+            "override"
+          ]
         }
       ]
     },
@@ -5958,7 +6057,7 @@
     {
       "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt",
       "language": "kotlin",
-      "lines": 103,
+      "lines": 104,
       "imports": [
         "androidx.compose.foundation.isSystemInDarkTheme",
         "androidx.compose.runtime.Composable",
@@ -5987,40 +6086,189 @@
         {
           "name": "FrnkApp",
           "kind": "fun",
-          "line": 53
+          "line": 55
         }
       ]
     },
     {
-      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkAppConfig.kt",
+      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidation.kt",
       "language": "kotlin",
-      "lines": 55,
+      "lines": 76,
       "imports": [
-        "androidx.compose.runtime.Immutable",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkAppInfo",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkHomeConfig",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkNavConfig",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkOnboardingConfig",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkSettingsConfig",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavConfig",
-        "dev.jdgarita.frnk.ui.theme.FrnkThemeConfig"
+        "dev.jdgarita.frnk.backend.AnalyticsTracker",
+        "dev.jdgarita.frnk.backend.CrashReporter",
+        "dev.jdgarita.frnk.monetization.EntitlementManager",
+        "dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase",
+        "dev.jdgarita.frnk.remoteconfig.RemoteConfigService",
+        "org.koin.core.Koin",
+        "org.koin.core.KoinApplication",
+        "org.koin.core.error.InstanceCreationException"
       ],
       "symbols": [
         {
-          "name": "FrnkAppConfig",
-          "kind": "class",
-          "line": 37,
+          "name": "validateFrnkBootstrap",
+          "kind": "fun",
+          "line": 29
+        },
+        {
+          "name": "checkFrnkModules",
+          "kind": "fun",
+          "line": 62
+        },
+        {
+          "name": "isBound",
+          "kind": "fun",
+          "line": 71,
           "modifiers": [
-            "data"
+            "private",
+            "inline"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt",
+      "language": "kotlin",
+      "lines": 86,
+      "imports": [
+        "dev.jdgarita.frnk.backend.noopObservabilityModule",
+        "dev.jdgarita.frnk.monetization.monetizationModule",
+        "dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule",
+        "dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule",
+        "org.koin.core.module.Module"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkModulesScope",
+          "kind": "class",
+          "line": 39
+        },
+        {
+          "name": "monetization",
+          "kind": "fun",
+          "line": 54,
+          "container": "FrnkModulesScope"
+        },
+        {
+          "name": "modules",
+          "kind": "fun",
+          "line": 59,
+          "container": "FrnkModulesScope"
+        },
+        {
+          "name": "module",
+          "kind": "fun",
+          "line": 64,
+          "container": "FrnkModulesScope"
+        },
+        {
+          "name": "build",
+          "kind": "fun",
+          "line": 68,
+          "container": "FrnkModulesScope",
+          "modifiers": [
+            "internal"
           ]
         },
         {
-          "name": "FrnkMonetizationConfig",
+          "name": "frnkModules",
+          "kind": "fun",
+          "line": 86
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkTabbedRootModule.kt",
+      "language": "kotlin",
+      "lines": 170,
+      "imports": [
+        "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.LaunchedEffect",
+        "androidx.navigation3.runtime.NavBackStack",
+        "androidx.navigation3.runtime.NavKey",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkCustomTab",
+        "dev.jdgarita.frnk.ui.bottomnav.FrnkNestedNavScaffold",
+        "dev.jdgarita.frnk.ui.nav.FrnkRootRoute",
+        "dev.jdgarita.frnk.ui.nav.FrnkRoute",
+        "dev.jdgarita.frnk.ui.nav.back",
+        "dev.jdgarita.frnk.ui.nav.clearAndNavigateTo",
+        "dev.jdgarita.frnk.ui.nav.navigateTo",
+        "dev.jdgarita.frnk.ui.scaffolds.onboarding.rememberOnboardingGate",
+        "org.koin.core.annotation.KoinExperimentalAPI",
+        "org.koin.core.module.Module",
+        "org.koin.dsl.module",
+        "org.koin.dsl.navigation3.navigation"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkTabNavigator",
           "kind": "class",
-          "line": 53,
-          "modifiers": [
-            "data"
-          ]
+          "line": 26
+        },
+        {
+          "name": "open",
+          "kind": "fun",
+          "line": 31
+        },
+        {
+          "name": "back",
+          "kind": "fun",
+          "line": 34
+        },
+        {
+          "name": "openPaywall",
+          "kind": "fun",
+          "line": 37
+        },
+        {
+          "name": "showOnboarding",
+          "kind": "fun",
+          "line": 40
+        },
+        {
+          "name": "FrnkTabbedRootScope",
+          "kind": "class",
+          "line": 49
+        },
+        {
+          "name": "home",
+          "kind": "fun",
+          "line": 57,
+          "container": "FrnkTabbedRootScope"
+        },
+        {
+          "name": "custom",
+          "kind": "fun",
+          "line": 65,
+          "container": "FrnkTabbedRootScope"
+        },
+        {
+          "name": "settings",
+          "kind": "fun",
+          "line": 70,
+          "container": "FrnkTabbedRootScope"
+        },
+        {
+          "name": "onboarding",
+          "kind": "fun",
+          "line": 75,
+          "container": "FrnkTabbedRootScope"
+        },
+        {
+          "name": "paywall",
+          "kind": "fun",
+          "line": 80,
+          "container": "FrnkTabbedRootScope"
+        },
+        {
+          "name": "frnkTabbedRootModule",
+          "kind": "fun",
+          "line": 113
+        },
+        {
+          "name": "rememberFrnkRootStartRoute",
+          "kind": "fun",
+          "line": 167
         }
       ]
     },
@@ -6077,21 +6325,224 @@
       "symbols": []
     },
     {
-      "path": "frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/ext/FrnkAppConfigExt.kt",
+      "path": "frnk/ui/app/src/commonTest/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidationTest.kt",
       "language": "kotlin",
-      "lines": 15,
+      "lines": 127,
       "imports": [
-        "dev.jdgarita.frnk.ui.app.FrnkAppConfig",
-        "dev.jdgarita.frnk.ui.bottomnav.FrnkTabbedNavConfig"
+        "dev.jdgarita.frnk.backend.noopObservabilityModule",
+        "dev.jdgarita.frnk.database.KeyValueStore",
+        "dev.jdgarita.frnk.monetization.EntitlementProvider",
+        "dev.jdgarita.frnk.monetization.MonetizationError",
+        "dev.jdgarita.frnk.monetization.ProProduct",
+        "dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule",
+        "dev.jdgarita.frnk.utils.AppResult",
+        "kotlinx.coroutines.flow.MutableStateFlow",
+        "kotlinx.coroutines.flow.StateFlow",
+        "org.koin.core.module.Module",
+        "org.koin.dsl.koinApplication",
+        "org.koin.dsl.module",
+        "kotlin.test.Test",
+        "kotlin.test.assertEquals",
+        "kotlin.test.assertFailsWith"
       ],
       "symbols": [
         {
-          "name": "toTabbedNavConfig",
+          "name": "FrnkBootstrapValidationTest",
+          "kind": "class",
+          "line": 24
+        },
+        {
+          "name": "validModules",
           "kind": "fun",
-          "line": 7,
+          "line": 32,
+          "container": "FrnkBootstrapValidationTest",
           "modifiers": [
-            "internal"
+            "private"
           ]
+        },
+        {
+          "name": "validateMissing",
+          "kind": "fun",
+          "line": 37,
+          "container": "FrnkBootstrapValidationTest",
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "complete_stack_passes",
+          "kind": "fun",
+          "line": 47,
+          "container": "FrnkBootstrapValidationTest"
+        },
+        {
+          "name": "missing_observability_names_the_module",
+          "kind": "fun",
+          "line": 57,
+          "container": "FrnkBootstrapValidationTest"
+        },
+        {
+          "name": "missing_remote_config_names_the_module",
+          "kind": "fun",
+          "line": 65,
+          "container": "FrnkBootstrapValidationTest"
+        },
+        {
+          "name": "missing_monetization_names_the_module_and_settings",
+          "kind": "fun",
+          "line": 72,
+          "container": "FrnkBootstrapValidationTest"
+        },
+        {
+          "name": "FakeEntitlementProvider",
+          "kind": "class",
+          "line": 81,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "refresh",
+          "kind": "fun",
+          "line": 84,
+          "container": "FakeEntitlementProvider",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "offerings",
+          "kind": "fun",
+          "line": 86,
+          "container": "FakeEntitlementProvider",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "purchase",
+          "kind": "fun",
+          "line": 88,
+          "container": "FakeEntitlementProvider",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "restore",
+          "kind": "fun",
+          "line": 90,
+          "container": "FakeEntitlementProvider",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "managementUrl",
+          "kind": "fun",
+          "line": 92,
+          "container": "FakeEntitlementProvider",
+          "modifiers": [
+            "override",
+            "suspend"
+          ]
+        },
+        {
+          "name": "FakeKeyValueStore",
+          "kind": "class",
+          "line": 95,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "putString",
+          "kind": "fun",
+          "line": 99,
+          "container": "FakeKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getString",
+          "kind": "fun",
+          "line": 106,
+          "container": "FakeKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "putBoolean",
+          "kind": "fun",
+          "line": 111,
+          "container": "FakeKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "getBoolean",
+          "kind": "fun",
+          "line": 118,
+          "container": "FakeKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        },
+        {
+          "name": "remove",
+          "kind": "fun",
+          "line": 123,
+          "container": "FakeKeyValueStore",
+          "modifiers": [
+            "override"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "frnk/ui/app/src/commonTest/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilderTest.kt",
+      "language": "kotlin",
+      "lines": 54,
+      "imports": [
+        "dev.jdgarita.frnk.backend.noopObservabilityModule",
+        "dev.jdgarita.frnk.monetization.monetizationModule",
+        "dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule",
+        "dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule",
+        "org.koin.dsl.module",
+        "kotlin.test.Test",
+        "kotlin.test.assertFalse",
+        "kotlin.test.assertTrue"
+      ],
+      "symbols": [
+        {
+          "name": "FrnkModulesBuilderTest",
+          "kind": "class",
+          "line": 17
+        },
+        {
+          "name": "defaults_to_noop_observability_remote_config_and_scaffold_vms_without_monetization",
+          "kind": "fun",
+          "line": 22,
+          "container": "FrnkModulesBuilderTest"
+        },
+        {
+          "name": "monetization_provider_auto_bundles_the_trio",
+          "kind": "fun",
+          "line": 32,
+          "container": "FrnkModulesBuilderTest"
+        },
+        {
+          "name": "assigned_slots_replace_the_defaults_and_extras_are_carried",
+          "kind": "fun",
+          "line": 43,
+          "container": "FrnkModulesBuilderTest"
         }
       ]
     },
@@ -6121,7 +6572,7 @@
       ]
     },
     {
-      "path": "frnk/ui/app/src/iosArm64Main/kotlin/dev/jdgarita/frnk/ui/app/SystemBarAppearance.iosArm64.kt",
+      "path": "frnk/ui/app/src/iosMain/kotlin/dev/jdgarita/frnk/ui/app/SystemBarAppearance.ios.kt",
       "language": "kotlin",
       "lines": 9,
       "imports": [
@@ -6186,80 +6637,19 @@
       ]
     },
     {
-      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavState.kt",
+      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkCustomTab.kt",
       "language": "kotlin",
-      "lines": 29,
-      "imports": [
-        "androidx.compose.runtime.Immutable"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkBottomNavState",
-          "kind": "class",
-          "line": 23
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkBottomNavTab.kt",
-      "language": "kotlin",
-      "lines": 64,
+      "lines": 23,
       "imports": [
         "androidx.compose.runtime.Immutable",
-        "androidx.compose.ui.graphics.vector.ImageVector",
         "androidx.navigation3.runtime.NavKey",
         "dev.jdgarita.frnk.ui.theme.FrnkIconSource"
       ],
       "symbols": [
         {
-          "name": "FrnkBottomNavTab",
+          "name": "FrnkCustomTab",
           "kind": "class",
-          "line": 28,
-          "modifiers": [
-            "sealed"
-          ]
-        },
-        {
-          "name": "Home",
-          "kind": "class",
-          "line": 37,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Feature",
-          "kind": "class",
-          "line": 47,
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
-          "name": "Settings",
-          "kind": "class",
-          "line": 57,
-          "modifiers": [
-            "data"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkFeatureItem.kt",
-      "language": "kotlin",
-      "lines": 32,
-      "imports": [
-        "androidx.compose.runtime.Immutable",
-        "androidx.compose.ui.graphics.vector.ImageVector",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.ui.theme.FrnkIconSource"
-      ],
-      "symbols": [
-        {
-          "name": "FrnkFeatureItem",
-          "kind": "class",
-          "line": 26,
+          "line": 18,
           "modifiers": [
             "data"
           ]
@@ -6289,7 +6679,7 @@
     {
       "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavModule.kt",
       "language": "kotlin",
-      "lines": 18,
+      "lines": 17,
       "imports": [
         "org.koin.core.module.dsl.viewModel",
         "org.koin.dsl.module"
@@ -6299,7 +6689,7 @@
     {
       "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavMviContract.kt",
       "language": "kotlin",
-      "lines": 57,
+      "lines": 78,
       "imports": [
         "androidx.compose.runtime.Immutable",
         "androidx.navigation3.runtime.NavKey",
@@ -6331,7 +6721,7 @@
         {
           "name": "FrnkNestedNavModelState",
           "kind": "class",
-          "line": 29,
+          "line": 39,
           "modifiers": [
             "data"
           ]
@@ -6339,7 +6729,7 @@
         {
           "name": "FrnkNestedNavIntent",
           "kind": "interface",
-          "line": 34,
+          "line": 46,
           "modifiers": [
             "sealed"
           ]
@@ -6347,7 +6737,16 @@
         {
           "name": "Tap",
           "kind": "class",
-          "line": 35,
+          "line": 47,
+          "container": "FrnkNestedNavIntent",
+          "modifiers": [
+            "data"
+          ]
+        },
+        {
+          "name": "Back",
+          "kind": "object",
+          "line": 52,
           "container": "FrnkNestedNavIntent",
           "modifiers": [
             "data"
@@ -6356,7 +6755,7 @@
         {
           "name": "FrnkNestedNavArguments",
           "kind": "class",
-          "line": 41,
+          "line": 60,
           "modifiers": [
             "data"
           ]
@@ -6364,29 +6763,20 @@
         {
           "name": "FrnkNestedNavEffect",
           "kind": "interface",
-          "line": 45,
+          "line": 68,
           "modifiers": [
             "sealed"
           ]
         },
         {
-          "name": "Navigate",
-          "kind": "class",
-          "line": 46,
-          "container": "FrnkNestedNavEffect",
-          "modifiers": [
-            "data"
-          ]
-        },
-        {
           "name": "FrnkNestedNavModelStateFactory",
           "kind": "object",
-          "line": 51
+          "line": 70
         },
         {
           "name": "initialModelState",
           "kind": "fun",
-          "line": 52,
+          "line": 71,
           "container": "FrnkNestedNavModelStateFactory",
           "modifiers": [
             "override"
@@ -6397,7 +6787,7 @@
     {
       "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavScaffold.kt",
       "language": "kotlin",
-      "lines": 153,
+      "lines": 111,
       "imports": [
         "androidx.compose.foundation.layout.Box",
         "androidx.compose.foundation.layout.fillMaxSize",
@@ -6411,18 +6801,9 @@
         "androidx.compose.ui.backhandler.BackHandler",
         "androidx.navigation3.runtime.NavBackStack",
         "androidx.navigation3.runtime.NavKey",
-        "androidx.navigation3.runtime.rememberNavBackStack",
-        "androidx.savedstate.serialization.SavedStateConfiguration",
         "dev.jdgarita.frnk.ui.mvi.FrnkScreen",
         "dev.jdgarita.frnk.ui.nav.FrnkNavDisplay",
-        "dev.jdgarita.frnk.ui.nav.FrnkRoute",
-        "dev.jdgarita.frnk.ui.nav.back",
-        "dev.jdgarita.frnk.ui.nav.navigateTo",
         "dev.jdgarita.frnk.ui.scaffolds.LocalFrnkBottomBarInset",
-        "dev.jdgarita.frnk.ui.theme.FrnkIconSource",
-        "dev.jdgarita.frnk.ui.theme.iconNavComponent",
-        "dev.jdgarita.frnk.ui.theme.iconNavHome",
-        "dev.jdgarita.frnk.ui.theme.iconNavSettings",
         "org.koin.compose.viewmodel.koinViewModel",
         "org.koin.core.annotation.KoinExperimentalAPI",
         "org.koin.core.context.loadKoinModules",
@@ -6432,27 +6813,35 @@
         {
           "name": "FrnkNestedNavScaffold",
           "kind": "fun",
-          "line": 63
+          "line": 54
         }
       ]
     },
     {
       "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavViewModel.kt",
       "language": "kotlin",
-      "lines": 40,
+      "lines": 142,
       "imports": [
-        "dev.jdgarita.frnk.ui.mvi.MviViewModel"
+        "androidx.navigation3.runtime.NavBackStack",
+        "androidx.navigation3.runtime.NavKey",
+        "dev.jdgarita.frnk.ui.mvi.MviViewModel",
+        "dev.jdgarita.frnk.ui.nav.FrnkRoute",
+        "dev.jdgarita.frnk.ui.nav.back",
+        "dev.jdgarita.frnk.ui.nav.clearAndNavigateTo",
+        "dev.jdgarita.frnk.ui.theme.FrnkIconSource",
+        "dev.jdgarita.frnk.ui.theme.iconNavHome",
+        "dev.jdgarita.frnk.ui.theme.iconNavSettings"
       ],
       "symbols": [
         {
           "name": "FrnkNestedNavViewModel",
           "kind": "class",
-          "line": 5
+          "line": 30
         },
         {
           "name": "onAttached",
           "kind": "fun",
-          "line": 9,
+          "line": 37,
           "modifiers": [
             "override"
           ]
@@ -6460,7 +6849,7 @@
         {
           "name": "mapToUiState",
           "kind": "fun",
-          "line": 16,
+          "line": 73,
           "modifiers": [
             "override"
           ]
@@ -6468,96 +6857,122 @@
         {
           "name": "onIntent",
           "kind": "fun",
-          "line": 30,
+          "line": 87,
           "modifiers": [
             "override",
             "suspend"
           ]
+        },
+        {
+          "name": "onTap",
+          "kind": "fun",
+          "line": 94,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "onBack",
+          "kind": "fun",
+          "line": 106,
+          "modifiers": [
+            "private"
+          ]
+        },
+        {
+          "name": "switchTab",
+          "kind": "fun",
+          "line": 118,
+          "modifiers": [
+            "private"
+          ]
         }
       ]
     },
     {
-      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavConfig.kt",
+      "path": "frnk/ui/bottom-nav/src/commonTest/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkNestedNavViewModelTest.kt",
       "language": "kotlin",
-      "lines": 131,
+      "lines": 149,
       "imports": [
-        "androidx.compose.runtime.Immutable",
-        "androidx.navigation3.runtime.NavKey",
-        "dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState",
-        "dev.jdgarita.frnk.ui.nav.FrnkFullScreenRoute",
         "dev.jdgarita.frnk.ui.nav.FrnkRoute",
-        "dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingPageState",
-        "dev.jdgarita.frnk.ui.scaffolds.settings.SettingsSectionState",
-        "dev.jdgarita.frnk.ui.theme.FrnkThemeConfig",
-        "kotlinx.serialization.modules.EmptySerializersModule",
-        "kotlinx.serialization.modules.SerializersModule"
+        "dev.jdgarita.frnk.ui.nav.navigateTo",
+        "dev.jdgarita.frnk.ui.theme.FrnkIconSource",
+        "dev.jdgarita.frnk.ui.theme.iconNavComponent",
+        "kotlinx.coroutines.Dispatchers",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlinx.coroutines.test.UnconfinedTestDispatcher",
+        "kotlinx.coroutines.test.resetMain",
+        "kotlinx.coroutines.test.runCurrent",
+        "kotlinx.coroutines.test.runTest",
+        "kotlinx.coroutines.test.setMain",
+        "kotlin.test.AfterTest",
+        "kotlin.test.BeforeTest",
+        "kotlin.test.Test",
+        "kotlin.test.assertContentEquals",
+        "kotlin.test.assertEquals"
       ],
       "symbols": [
         {
-          "name": "FrnkTabbedNavConfig",
+          "name": "FrnkNestedNavViewModelTest",
           "kind": "class",
-          "line": 45,
+          "line": 26
+        },
+        {
+          "name": "viewModel",
+          "kind": "fun",
+          "line": 32,
+          "container": "FrnkNestedNavViewModelTest",
           "modifiers": [
-            "data"
+            "private"
           ]
         },
         {
-          "name": "FrnkAppInfo",
-          "kind": "class",
-          "line": 61,
-          "modifiers": [
-            "data"
-          ]
+          "name": "setUp",
+          "kind": "fun",
+          "line": 49,
+          "container": "FrnkNestedNavViewModelTest"
         },
         {
-          "name": "FrnkNavConfig",
-          "kind": "class",
-          "line": 84,
-          "modifiers": [
-            "data"
-          ]
+          "name": "tearDown",
+          "kind": "fun",
+          "line": 54,
+          "container": "FrnkNestedNavViewModelTest"
         },
         {
-          "name": "FrnkHomeConfig",
-          "kind": "class",
-          "line": 100,
-          "modifiers": [
-            "data"
-          ]
+          "name": "seeds_three_tabs_with_home_selected_and_home_root",
+          "kind": "fun",
+          "line": 59,
+          "container": "FrnkNestedNavViewModelTest"
         },
         {
-          "name": "FrnkSettingsConfig",
-          "kind": "class",
-          "line": 113,
-          "modifiers": [
-            "data"
-          ]
+          "name": "tapping_a_tab_switches_selection_and_swaps_to_that_tab_root",
+          "kind": "fun",
+          "line": 70,
+          "container": "FrnkNestedNavViewModelTest"
         },
         {
-          "name": "FrnkOnboardingConfig",
-          "kind": "class",
-          "line": 128,
-          "modifiers": [
-            "data"
-          ]
-        }
-      ]
-    },
-    {
-      "path": "frnk/ui/bottom-nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/bottomnav/FrnkTabbedNavViewState.kt",
-      "language": "kotlin",
-      "lines": 9,
-      "imports": [
-        "androidx.compose.runtime.Immutable"
-      ],
-      "symbols": [
+          "name": "each_tab_keeps_its_own_history_across_switches",
+          "kind": "fun",
+          "line": 82,
+          "container": "FrnkNestedNavViewModelTest"
+        },
         {
-          "name": "FrnkTabbedNavViewState",
-          "kind": "class",
-          "line": 6,
-          "modifiers": [
-            "data"
-          ]
+          "name": "re_tapping_the_active_tab_pops_it_to_root",
+          "kind": "fun",
+          "line": 104,
+          "container": "FrnkNestedNavViewModelTest"
+        },
+        {
+          "name": "back_pops_within_tab_when_history_is_deeper_than_root",
+          "kind": "fun",
+          "line": 120,
+          "container": "FrnkNestedNavViewModelTest"
+        },
+        {
+          "name": "back_at_a_non_home_tab_root_returns_to_home",
+          "kind": "fun",
+          "line": 136,
+          "container": "FrnkNestedNavViewModelTest"
         }
       ]
     },
@@ -10048,11 +10463,12 @@
     {
       "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt",
       "language": "kotlin",
-      "lines": 56,
+      "lines": 76,
       "imports": [
         "androidx.compose.runtime.Composable",
         "androidx.compose.runtime.DisposableEffect",
         "androidx.compose.runtime.LaunchedEffect",
+        "androidx.compose.runtime.compositionLocalOf",
         "androidx.compose.runtime.getValue",
         "androidx.compose.runtime.rememberUpdatedState",
         "androidx.compose.ui.ExperimentalComposeUiApi",
@@ -10066,18 +10482,19 @@
         {
           "name": "FrnkScreen",
           "kind": "fun",
-          "line": 25
+          "line": 42
         }
       ]
     },
     {
       "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkNavDisplay.kt",
       "language": "kotlin",
-      "lines": 71,
+      "lines": 78,
       "imports": [
         "androidx.compose.animation.AnimatedContentTransitionScope",
         "androidx.compose.animation.ContentTransform",
         "androidx.compose.runtime.Composable",
+        "androidx.compose.runtime.CompositionLocalProvider",
         "androidx.compose.ui.Modifier",
         "androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator",
         "androidx.navigation3.runtime.NavBackStack",
@@ -10088,6 +10505,7 @@
         "androidx.navigation3.scene.Scene",
         "androidx.navigation3.ui.NavDisplay",
         "androidx.savedstate.serialization.SavedStateConfiguration",
+        "dev.jdgarita.frnk.ui.mvi.LocalFrnkBackHandledByHost",
         "org.koin.compose.navigation3.koinEntryProvider",
         "org.koin.core.annotation.KoinExperimentalAPI"
       ],
@@ -10095,12 +10513,12 @@
         {
           "name": "rememberFrnkNavBackStack",
           "kind": "fun",
-          "line": 30
+          "line": 32
         },
         {
           "name": "FrnkNavDisplay",
           "kind": "fun",
-          "line": 48
+          "line": 50
         }
       ]
     },
@@ -10153,7 +10571,7 @@
     {
       "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/FrnkBottomBarInset.kt",
       "language": "kotlin",
-      "lines": 22,
+      "lines": 20,
       "imports": [
         "androidx.compose.runtime.compositionLocalOf",
         "androidx.compose.ui.unit.dp"
@@ -10546,7 +10964,7 @@
     {
       "path": "frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/onboarding/OnboardingGate.kt",
       "language": "kotlin",
-      "lines": 58,
+      "lines": 57,
       "imports": [
         "androidx.compose.runtime.Composable",
         "androidx.compose.runtime.remember",
@@ -10558,17 +10976,17 @@
         {
           "name": "OnboardingGate",
           "kind": "class",
-          "line": 28
+          "line": 27
         },
         {
           "name": "markSeen",
           "kind": "fun",
-          "line": 39
+          "line": 38
         },
         {
           "name": "rememberOnboardingGate",
           "kind": "fun",
-          "line": 54
+          "line": 53
         }
       ]
     },

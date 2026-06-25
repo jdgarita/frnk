@@ -22,18 +22,27 @@ import org.koin.mp.KoinPlatformTools
  * )
  * ```
  *
+ * @param validate when `true`, runs [validator] against the started [Koin] right after `startKoin`,
+ *   turning an incomplete module list into an immediate, explained crash instead of a deep
+ *   `NoDefinitionFound` later. Off by default (the explicit module list stays no-magic). The toolkit's
+ *   rule set is `:ui-app`'s `Koin::validateFrnkBootstrap` — `:core-di` stays capability-agnostic and only
+ *   runs whatever check it is handed.
+ * @param validator the check invoked when [validate] is `true`. Defaults to a no-op so this module
+ *   names no capability type; hosts on the `:ui-app` layer pass `validator = Koin::validateFrnkBootstrap`.
  * @param extraConfig escape hatch for anything else the host needs on the `KoinApplication`
  *   (`androidContext(...)`, `allowOverride(true)`, logging, …). Android hosts should prefer the
  *   androidMain `initializeFrnk(context, modules)` overload, which wires the context for them.
  */
 fun initializeFrnk(
     modules: List<Module>,
+    validate: Boolean = false,
+    validator: (Koin) -> Unit = {},
     extraConfig: KoinApplication.() -> Unit = {}
 ): KoinApplication =
     startKoin {
         modules(modules)
         extraConfig()
-    }
+    }.also { if (validate) validator(it.koin) }
 
 /**
  * Fail-fast accessor for the global Koin started by [initializeFrnk] — used by entry-point

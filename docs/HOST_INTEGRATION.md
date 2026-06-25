@@ -16,7 +16,7 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 
 | Module | Coordinate (`dev.jdgarita.frnk:`) | Accessor | Purpose |
 | --- | --- | --- | --- |
-| `:core-di` | `core-di` | `projects.coreDi` | Bootstrap: `initializeFrnk(modules)` + `requireFrnkKoin()`. |
+| `:core-di` | `core-di` | `projects.coreDi` | Bootstrap: `initializeFrnk(modules, validate, validator)` + `requireFrnkKoin()`. |
 | `:shared-utils` | `shared-utils` | `projects.sharedUtils` | Root utils: coroutines, datetime, `AppResult`, `PlatformInfo`, `Frnk.VERSION`. |
 | `:core-mvi` | `core-mvi` | `projects.coreMvi` | MVI engine (`MviViewModel`, `UiText`); no Compose. |
 | `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`FrnkRoute`, back-stack helpers); no Compose. |
@@ -25,7 +25,7 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
 | `:ui-scaffolds` | `ui-scaffolds` | `projects.uiScaffolds` | Page templates + Compose MVI/nav bindings. |
 | `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkNestedNavScaffold` (the multiple-back-stack tabbed scaffold). **Sole Material3 module.** |
-| `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkApp` + `frnkUiModules()`. The app-root apex. |
+| `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkApp` + `frnkUiModules()` + `frnkModules { }` builder + `Koin::validateFrnkBootstrap`/`checkFrnkModules()` (§4.1). The app-root apex. |
 | `:data-db-api` | `data-db-api` | `projects.dataDbApi` | `SqlDriverFactory` SPI (toolkit owns no schema). |
 | `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform SQLDelight drivers → `databaseModule`. |
 | `:data-prefs-api` | `data-prefs-api` | `projects.dataPrefsApi` | `KeyValueStore` + typed `Preference<T>`. |
@@ -194,6 +194,37 @@ fun bootstrapMyAppKit(): KoinApplication =
 
 After bootstrap, `FrnkApp(onSavedStateConfiguration, onNavigationModule)` (§8) is the app root; it fails
 fast with an explanation if `initializeFrnk` didn't run.
+
+### 4.1 Optional: the `frnkModules { }` builder + `validate = true` (Tier 2.2)
+
+The explicit list above stays the canonical path. Two **additive** opt-ins (both in `:ui-app`) remove the
+two footguns it leaves to host discipline:
+
+```kotlin
+initializeFrnk(
+    context = this,
+    modules = frnkModules {
+        observability = firebaseObservabilityModule   // single slot ⇒ XOR by construction
+        remoteConfig = remoteConfigModule             // single slot ⇒ XOR by construction
+        monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
+        modules(databaseModule, prefsModule, *hostModules.toTypedArray())
+    },
+    validate = true,
+    validator = Koin::validateFrnkBootstrap,
+)
+```
+
+- **`frnkModules { }`** assembles the list. `observability`/`remoteConfig` are single slots (default to the
+  no-op modules), so installing two — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)`
+  auto-bundles the trio so you can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is
+  always included. You still import the impl `val`s yourself and assign them (the builder never references an
+  `*-impl` module, so the toolkit stays cinterop-clean).
+- **`validate = true` + `validator = Koin::validateFrnkBootstrap`** runs a post-`startKoin` check that throws a
+  message naming the exact missing module (one observability, one remote-config, the monetization stack the
+  Settings scaffold needs). This catches the *missing-module* footgun on **either** path — it works with a raw
+  `initializeFrnk(modules = …)` list too. Note it runs after start, so it can detect a *missing* module but **not**
+  a *duplicate* one (two observability modules collapse to one binding) — that's what the builder's single slots
+  prevent. `KeyValueStore`/`SqlDriverFactory` are treated as optional (a local-only host omits them).
 
 ## 5. Custom analytics
 

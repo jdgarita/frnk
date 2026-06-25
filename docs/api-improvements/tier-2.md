@@ -39,7 +39,27 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
   monetization = revenueCat(key); database(...) }`) **and/or** a startup validation that fails fast on the
   documented rules. Additive — keep `initializeFrnk(modules = …)`.
 - **Host benefit:** removes silent-shadowing / incomplete-stack footguns; less guesswork.
-- **Effort:** M · **Risk:** low–medium · **Doc-only vs API:** API (additive) · **Status:** Proposed
+- **Effort:** M · **Risk:** low–medium · **Doc-only vs API:** API (additive) · **Status:** Done
+- **Shipped as:** both pieces (they cover different halves — Koin 4.x can't introspect a module list
+  pre-`startKoin`, so duplicates can only be prevented *structurally* and missing modules detected
+  *post-start*):
+  - **`frnkModules { observability / remoteConfig / monetization(provider) / modules(…) } : List<Module>`**
+    in `:ui-app` — single-assignment `observability`/`remoteConfig` slots make the XOR **unrepresentable**;
+    `monetization(provider)` auto-bundles `monetizationModule` + `paywallScaffoldModule`; `frnkUiModules()`
+    always included. It never references an `*-impl` module (the host imports the impl `val` and assigns it),
+    so the toolkit stays cinterop-clean. Lives in `:ui-app` (not `:core-di`) because it needs `frnkUiModules()`
+    + the monetization trio, all forbidden to the capability-agnostic `:core-di`.
+  - **`Koin.validateFrnkBootstrap()` / `KoinApplication.checkFrnkModules()`** in `:ui-app` — post-`startKoin`
+    fail-fast that throws naming the exact missing module (one observability, one remote-config, the
+    monetization stack §2.3 below needs). `KeyValueStore`/`SqlDriverFactory` are optional. Detects *missing*
+    modules, not *duplicates* (the builder's job).
+  - **`initializeFrnk(modules, validate = false, validator = {}, extraConfig)`** in `:core-di` — additive
+    params (defaults keep every existing call unchanged). `:core-di` stays capability-agnostic: it just runs the
+    handed-in `validator(koin)` after start; hosts on the `:ui-app` layer pass `validator = Koin::validateFrnkBootstrap`.
+  - Demo adopts both: `demo-android` assembles its real-SDK override list via `frnkModules { }`, and
+    `bootstrapDemoKoin` runs `checkFrnkModules()` (covering iOS too). Coexists with `allowOverride(true)`.
+  - Partially addresses §2.3 — the validator surfaces a missing monetization stack as a clear error instead of
+    a deep `NoDefinitionFound` from the Settings scaffold.
 
 ## 2.3 — Decouple Settings from monetization — **Won't do**
 
