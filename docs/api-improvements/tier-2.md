@@ -24,9 +24,11 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
   low-level `FrnkApp(onSavedStateConfiguration, onNavigationModule)` is unchanged.
 - **Incidental pre-existing fixes** found while verifying iOS (unrelated to 2.1): `:ui-app`'s
   `ApplySystemBarAppearance` actual was in `iosArm64Main` (device-only) → moved to `iosMain` so the simulator
-  target builds; `MainViewController` referenced the deleted `DemoEffect` → param removed. **Still broken
-  (separate):** the demo's Swift `iosDemoApp` (`ComposeViewController.swift`/`ContentView.swift`) still
-  references the deleted `DemoEffect`/toast — a pre-existing rot needing a Swift-side cleanup.
+  target builds; `MainViewController` referenced the deleted `DemoEffect` → param removed. The demo's Swift
+  `iosDemoApp` (`ComposeViewController.swift`/`ContentView.swift`) was then cleaned of the dead
+  `DemoEffect`/toast routing (now hosts `MainViewController()` directly); `DemoKit.xcframework` assembles
+  for both iOS arches. (The full Xcode app build still needs the local SPM / `GoogleService-Info.plist`
+  setup the iOS README documents.)
 
 ## 2.2 — Optional bootstrap presets + fail-fast validation
 
