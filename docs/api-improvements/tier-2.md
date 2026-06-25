@@ -16,7 +16,17 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
   the low-level `FrnkApp(onSavedStateConfiguration, onNavigationModule)` for full control.
 - **Host benefit:** the most common integration becomes trivial; less Koin-DSL knowledge required.
 - **Effort:** M–L · **Risk:** medium (new public entry point; must not regress the low-level path) ·
-  **Doc-only vs API:** API (additive) · **Status:** Proposed
+  **Doc-only vs API:** API (additive) · **Status:** Done
+- **Shipped as:** `frnkTabbedRootModule(customTab) { home/custom/settings + optional onboarding/paywall }`
+  + `FrnkTabNavigator` (`open`/`back`/`openPaywall`/`showOnboarding`) + `rememberFrnkRootStartRoute()` (first-launch
+  gating via `OnboardingGate`) + a new `FrnkApp(startRoute = …)` param (additive, default `Onboarding`). Demo's
+  `RootNavigationModule` + `NestedNavigationModule` collapsed into one `FrnkDemoApp` call (both deleted). The
+  low-level `FrnkApp(onSavedStateConfiguration, onNavigationModule)` is unchanged.
+- **Incidental pre-existing fixes** found while verifying iOS (unrelated to 2.1): `:ui-app`'s
+  `ApplySystemBarAppearance` actual was in `iosArm64Main` (device-only) → moved to `iosMain` so the simulator
+  target builds; `MainViewController` referenced the deleted `DemoEffect` → param removed. **Still broken
+  (separate):** the demo's Swift `iosDemoApp` (`ComposeViewController.swift`/`ContentView.swift`) still
+  references the deleted `DemoEffect`/toast — a pre-existing rot needing a Swift-side cleanup.
 
 ## 2.2 — Optional bootstrap presets + fail-fast validation
 

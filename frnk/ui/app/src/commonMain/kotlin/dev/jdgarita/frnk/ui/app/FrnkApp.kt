@@ -44,6 +44,9 @@ import org.koin.core.module.Module
  * [AppearanceController] is resolved from Koin).
  *
  * @param onSavedStateConfiguration supplies the root back stack's `SavedStateConfiguration`.
+ * @param startRoute the route the root back stack is seeded with on first launch (before any saved stack
+ *   is restored). Defaults to [FrnkRootRoute.Onboarding]; pass [FrnkRootRoute.Tab] (or
+ *   [rememberFrnkRootStartRoute]) to skip onboarding for returning users.
  * @param onNavigationModule returns the Koin navigation module registering the root destinations, given
  *   the root back stack to drive from effect handlers.
  */
@@ -51,6 +54,7 @@ import org.koin.core.module.Module
 @Composable
 fun FrnkApp(
     onSavedStateConfiguration: () -> SavedStateConfiguration,
+    startRoute: FrnkRootRoute = FrnkRootRoute.Onboarding,
     onNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
     val appearanceController: AppearanceController = koinInject()
@@ -69,12 +73,10 @@ fun FrnkApp(
 
         FrnkTheme {
             AppScaffold {
-                val initialRoute = FrnkRootRoute.Onboarding
-
                 val backStack =
                     rememberNavBackStack(
                         configuration = onSavedStateConfiguration(),
-                        elements = arrayOf(initialRoute)
+                        elements = arrayOf(startRoute)
                     )
 
                 remember(backStack) {

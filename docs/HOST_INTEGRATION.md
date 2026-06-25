@@ -299,6 +299,17 @@ A host that adds its own KMP library modules can apply the same plugin by adding
 
 ## 8. Spin up the whole app with `FrnkApp`
 
+> **Shortcut for the common shape.** If your app is the standard `onboarding → tab shell
+> (Home · <custom> · Settings) → paywall`, use **`frnkTabbedRootModule(customTab) { … }`** (`:ui-app`) for
+> `FrnkApp`'s `onNavigationModule` instead of hand-writing the root + nested Koin modules. You declare only
+> the content slots — `home { nav -> }`, `custom { route, nav -> }`, `settings { nav -> }` (required) +
+> optional `onboarding { onComplete -> }` / `paywall { onClose -> }`; the helper wires the `navigation<…>`
+> registration, the cross-level navigation (the slots get a `FrnkTabNavigator` with `open`/`back`/
+> `openPaywall`/`showOnboarding`), and the onboarding→Tab / paywall→back conventions. Pair it with
+> `startRoute = rememberFrnkRootStartRoute()` for first-launch onboarding gating. See `:demo-shared`'s
+> `FrnkDemoApp` for the reference call. The rest of this section documents the lower-level `FrnkApp` path for
+> full control.
+
 After `initializeFrnk(...)` (§4), **`FrnkApp`** (`:ui-app`) is the app root. It owns only the app chrome —
 `FrnkTheme` + the `AppearanceController`-driven light/dark + system-bar appearance + a single root
 `NavDisplay` over `FrnkRootRoute` (seeded at `Onboarding`) — and hands the navigation graph to you. You

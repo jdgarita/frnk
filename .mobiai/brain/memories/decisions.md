@@ -1136,3 +1136,19 @@ Tiered backlog of frnk public-API improvements (host ergonomics) lives at docs/a
 ### Files
 - docs/api-improvements/README.md
 - docs/api-improvements/tier-1.md
+
+## Tier 2.1: frnkTabbedRootModule batteries-included tabbed app root
+
+- id: tier-2-1-frnktabbedrootmodule-batteries-included-tabbed-app-20260624-231308
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: navigation
+- date: 2026-06-24
+
+Added a batteries-included convenience over FrnkApp for the common onboarding->tab shell->paywall shape, collapsing the host's hand-written root+nested Koin modules + cross-level threading. New public API in :ui-app (FrnkTabbedRootModule.kt): frnkTabbedRootModule(customTab) { home{nav->}; custom{route,nav->}; settings{nav->} (required) + optional onboarding{onComplete->}; paywall{onClose->} } returns the (rootBackStack)->Module lambda FrnkApp's onNavigationModule expects. Tab slots receive FrnkTabNavigator(open/back = active tab stack; openPaywall/showOnboarding = root stack). rememberFrnkRootStartRoute(showOnboarding=true) returns Onboarding until OnboardingGate seen then Tab; the helper marks the gate seen when onboarding is presented. FrnkApp gained startRoute: FrnkRootRoute = FrnkRootRoute.Onboarding (additive, non-breaking; restored saved stacks override it). The DSL hides the navigation<> DSL + KoinExperimentalAPI opt-in. SHAPE/GATING were user-chosen (DSL-helper over content-slot composable; auto-gating via OnboardingGate). Demo migrated: FrnkDemoApp is now one FrnkApp(... frnkTabbedRootModule ...) call; deleted demo RootNavigationModule.kt + NestedNavigationModule.kt. Implementation note: function-type slots must be called positionally (named args on function types are prohibited). VERIFIED: Android compile+test+device run (onboarding gating on first launch -> Home; Components tab+detail+back via nav.open/back; Home crown -> paywall via nav.openPaywall). iOS: both Kotlin targets compile. INCIDENTAL PRE-EXISTING iOS fixes (unrelated to 2.1) needed to build iOS: moved :ui-app ApplySystemBarAppearance actual from iosArm64Main (device-only) to iosMain (so iosSimulatorArm64 builds); removed MainViewController's onEffect param (referenced the long-deleted DemoEffect). STILL BROKEN separately: demo Swift iosDemoApp (ComposeViewController.swift/ContentView.swift) still references deleted DemoEffect/toast -> needs a Swift-side cleanup. NOT committed (user reviews). Backlog: docs/api-improvements/tier-2.md (2.1 -> Done).
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkTabbedRootModule.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/FrnkDemoApp.kt
