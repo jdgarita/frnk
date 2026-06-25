@@ -102,7 +102,7 @@ links under the consumer's existing `-undefined dynamic_lookup`.
   supplies this one tab (and registers the destination behind `route` via `onNestedNavigationModule`).
 - `FrnkNestedNavViewModel.kt` — the `MviViewModel` backing the scaffold. Owns the bar's `items` +
   `selectedIndex` **and the per-tab navigation**: a single live `backStack: NavBackStack<NavKey>` (rendered by
-  the scaffold + handed to the host module, seeded with `FrnkRoute.Home`) plus `savedStacks` snapshots per tab;
+  the scaffold + handed to the host module, seeded with `FrnkTabRoute.Home`) plus `savedStacks` snapshots per tab;
   on tab switch it snapshots the active stack and swaps in the target tab's (canonical nav3 multiple-back-stack
   pattern). `NavBackStack` is constructed outside composition via its public `NavBackStack(vararg)` ctor.
   Constructed with the host's `FrnkCustomTab`; registered by `frnkNestedNavModule`.
@@ -145,7 +145,7 @@ live back stack — register destinations there). The fixed icon tokens are over
 `FrnkThemeConfig.iconOverrides`. frnk owns the `FrnkNavDisplay` + persistent bar + selection state + the
 per-tab back stacks (all in `FrnkNestedNavViewModel`) + bar-inset. The reference integration is `:demo-shared`,
 which mounts
-`FrnkNestedNavScaffold(customTab = FrnkCustomTab(route = FrnkRoute.Custom("Components"), …), onNestedNavigationModule = { nestedBackStack -> nestedNavigationModule(nestedBackStack) { … } })`
+`FrnkNestedNavScaffold(customTab = FrnkCustomTab(route = FrnkTabRoute.Custom("Components"), …), onNestedNavigationModule = { nestedBackStack -> nestedNavigationModule(nestedBackStack) { … } })`
 inside the `FrnkRootRoute.Tab` destination, under `:ui-app`'s `FrnkApp` root.
 
 ## Dependencies

@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.bottomnav.FrnkCustomTab
 import dev.jdgarita.frnk.ui.bottomnav.FrnkNestedNavScaffold
 import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkTabRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.clearAndNavigateTo
 import dev.jdgarita.frnk.ui.nav.navigateTo
@@ -48,25 +48,25 @@ class FrnkTabNavigator internal constructor(
  */
 class FrnkTabbedRootScope internal constructor() {
     internal var homeContent: (@Composable (nav: FrnkTabNavigator) -> Unit)? = null
-    internal var customContent: (@Composable (route: FrnkRoute.Custom, nav: FrnkTabNavigator) -> Unit)? = null
+    internal var customContent: (@Composable (route: FrnkTabRoute.Custom, nav: FrnkTabNavigator) -> Unit)? = null
     internal var settingsContent: (@Composable (nav: FrnkTabNavigator) -> Unit)? = null
     internal var onboardingContent: (@Composable (onComplete: () -> Unit) -> Unit)? = null
     internal var paywallContent: (@Composable (onClose: () -> Unit) -> Unit)? = null
 
-    /** The Home tab ([FrnkRoute.Home]). Required. */
+    /** The Home tab ([FrnkTabRoute.Home]). Required. */
     fun home(content: @Composable (nav: FrnkTabNavigator) -> Unit) {
         homeContent = content
     }
 
     /**
-     * The middle host tab + everything pushed onto it ([FrnkRoute.Custom]). Required. The `route.id`
-     * distinguishes the tab root from pushed sub-destinations (e.g. `nav.open(FrnkRoute.Custom(detailId))`).
+     * The middle host tab + everything pushed onto it ([FrnkTabRoute.Custom]). Required. The `route.id`
+     * distinguishes the tab root from pushed sub-destinations (e.g. `nav.open(FrnkTabRoute.Custom(detailId))`).
      */
-    fun custom(content: @Composable (route: FrnkRoute.Custom, nav: FrnkTabNavigator) -> Unit) {
+    fun custom(content: @Composable (route: FrnkTabRoute.Custom, nav: FrnkTabNavigator) -> Unit) {
         customContent = content
     }
 
-    /** The Settings tab ([FrnkRoute.Settings]). Required. */
+    /** The Settings tab ([FrnkTabRoute.Settings]). Required. */
     fun settings(content: @Composable (nav: FrnkTabNavigator) -> Unit) {
         settingsContent = content
     }
@@ -91,7 +91,7 @@ class FrnkTabbedRootScope internal constructor() {
  *
  * ```kotlin
  * FrnkApp(
- *     onSavedStateConfiguration = { frnkRootNavConfig },
+ *     onSavedStateConfiguration = { frnkRootNavConfig() },
  *     startRoute = rememberFrnkRootStartRoute(),
  *     onNavigationModule = frnkTabbedRootModule(customTab) {
  *         onboarding { onComplete -> MyOnboarding(onComplete) }
@@ -138,9 +138,9 @@ fun frnkTabbedRootModule(
                     onNestedNavigationModule = { tabBackStack ->
                         val nav = FrnkTabNavigator(rootBackStack = rootBackStack, tabBackStack = tabBackStack)
                         module {
-                            navigation<FrnkRoute.Home> { home(nav) }
-                            navigation<FrnkRoute.Custom> { route -> custom(route, nav) }
-                            navigation<FrnkRoute.Settings> { settings(nav) }
+                            navigation<FrnkTabRoute.Home> { home(nav) }
+                            navigation<FrnkTabRoute.Custom> { route -> custom(route, nav) }
+                            navigation<FrnkTabRoute.Settings> { settings(nav) }
                         }
                     }
                 )

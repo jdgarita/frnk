@@ -20,13 +20,13 @@ monetization domain (`:monetization-api`).
   install it alongside `revenueCatModule` + `monetizationModule` in their `initializeFrnk(...)` list.
 - `PaywallNav.kt` — the Navigation3 paywall: a route-agnostic `@Composable FrnkPaywallDestination(features,
   source, onMessage, onClose)` destination body **and** `Module.frnkPaywallNavigation(...)` which registers it
-  at `FrnkRoute.Paywall` via Koin's `navigation<Route> { }` DSL (resolved by `FrnkNavDisplay`'s default
+  at `FrnkRootRoute.Paywall` via Koin's `navigation<Route> { }` DSL (resolved by `FrnkNavDisplay`'s default
   `koinEntryProvider()`). **The toolkit owns the paywall destination; the host owns the `NavBackStack`.** A host
   with its own paywall route just calls `FrnkPaywallDestination(...)` inside its own `navigation<MyRoute.Paywall>`
   block. (No `kotlin-serialization` plugin needed here anymore — that was for the old nav2 `frnkComposable<T>`.)
 - `FrnkSettingsHandler.kt` — `rememberFrnkSettingsHandler(backStack, entitlements, analytics, onMessage,
   fallback)` returns a `(SettingsEffect) -> Unit` that wires the monetization Settings rows for free:
-  `UpgradeToPro` → `backStack.navigateTo(FrnkRoute.Paywall)`, `RestorePurchases` → `entitlements.restorePurchases()`,
+  `UpgradeToPro` → `backStack.navigateTo(FrnkRootRoute.Paywall)`, `RestorePurchases` → `entitlements.restorePurchases()`,
   `ManageSubscription` → `entitlements.managementUrl()` opened via `LocalUriHandler`, **falling back to
   `platformManageSubscriptionsUrl()`** (the OS subscriptions deep link) when the provider has no
   customer-specific URL — so the row always lands somewhere useful; the `GOD_MODE_TOGGLE_ID` toggle →
@@ -41,7 +41,7 @@ monetization domain (`:monetization-api`).
 
 Two always-on paywall entry points the demo wires (and real hosts copy):
 1. **Home top bar** — a top-right `FrnkTopAppBarAction` (crown / `iconUpgrade`), hidden once `isPro`,
-   `onActionClick` → `gate.requestUpgrade(...)` / navigate `FrnkRoute.Paywall`.
+   `onActionClick` → `gate.requestUpgrade(...)` / navigate `FrnkRootRoute.Paywall`.
 2. **Settings** — the default catalog's Subscription rows (Free: Upgrade + Restore; Pro: "Pro Member"
    badge + Manage Subscription), routed through `rememberFrnkSettingsHandler`.
    God mode lives in the Settings hidden Developer section (reveal: tap the version footer 7×, or the host
@@ -57,6 +57,6 @@ Two always-on paywall entry points the demo wires (and real hosts copy):
 ## Dependencies
 
 - `api(projects.uiScaffolds)`, `api(projects.monetizationApi)` (transitively `:core-nav` for
-  `FrnkRoute` + the nav3 back-stack helpers, and the nav3 engine via `:ui-scaffolds`). `commonTest`: `kotlin.test` +
+  `FrnkRootRoute` + the nav3 back-stack helpers, and the nav3 engine via `:ui-scaffolds`). `commonTest`: `kotlin.test` +
   `kotlinx.coroutines.test`.
 - Plugins: compose (+ hosttest). No `kotlin-serialization` — the nav3 route serializers live in `:core-nav`.

@@ -3,7 +3,7 @@ package dev.jdgarita.frnk.ui.bottomnav
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkTabRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.clearAndNavigateTo
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
@@ -19,7 +19,7 @@ import dev.jdgarita.frnk.ui.theme.iconNavSettings
  * [backStack] is the single live stack the scaffold renders (and hands to the host's nested-nav module);
  * on a tab change the outgoing tab's history is snapshotted into `savedStacks` and the target tab's is
  * swapped into [backStack] — the canonical Navigation3 multiple-back-stack pattern. The Home tab (index 0)
- * starts at [FrnkRoute.Home].
+ * starts at [FrnkTabRoute.Home].
  *
  * **Conventions:** re-tapping the active tab pops it back to its root; system/predictive back at a tab
  * root from a non-Home tab returns to Home.
@@ -32,7 +32,7 @@ class FrnkNestedNavViewModel :
         factory = FrnkNestedNavModelStateFactory
     ) {
     /** The single live stack the scaffold renders + hands to the host module. Seeded with the Home tab's root. */
-    val backStack: NavBackStack<NavKey> = NavBackStack(FrnkRoute.Home)
+    val backStack: NavBackStack<NavKey> = NavBackStack(FrnkTabRoute.Home)
 
     override fun onAttached(arguments: FrnkNestedNavArguments) {
         super.onAttached(arguments)
@@ -43,7 +43,7 @@ class FrnkNestedNavViewModel :
                     icon = FrnkIconSource.Token(iconNavHome),
                     iosSystemIcon = "house",
                     label = "Home",
-                    route = FrnkRoute.Home
+                    route = FrnkTabRoute.Home
                 ),
                 FrnkNavBarItemModel(
                     key = arguments.customTab.label,
@@ -57,7 +57,7 @@ class FrnkNestedNavViewModel :
                     icon = FrnkIconSource.Token(iconNavSettings),
                     iosSystemIcon = "gearshape",
                     label = "Settings",
-                    route = FrnkRoute.Settings
+                    route = FrnkTabRoute.Settings
                 )
             )
         val roots = items.map { it.route }

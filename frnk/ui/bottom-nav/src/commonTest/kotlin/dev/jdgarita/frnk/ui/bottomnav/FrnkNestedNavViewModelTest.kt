@@ -1,6 +1,6 @@
 package dev.jdgarita.frnk.ui.bottomnav
 
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkTabRoute
 import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.iconNavComponent
@@ -26,8 +26,8 @@ import kotlin.test.assertEquals
 class FrnkNestedNavViewModelTest {
     private val dispatcher = UnconfinedTestDispatcher()
 
-    private val componentsRoot = FrnkRoute.Custom("Components")
-    private val componentDetail = FrnkRoute.Custom("Detail")
+    private val componentsRoot = FrnkTabRoute.Custom("Components")
+    private val componentDetail = FrnkTabRoute.Custom("Detail")
 
     private fun viewModel() =
         FrnkNestedNavViewModel().apply {
@@ -63,7 +63,7 @@ class FrnkNestedNavViewModelTest {
 
             assertEquals(3, vm.state.value.items.size)
             assertEquals(0, vm.state.value.selectedIndex)
-            assertContentEquals(listOf(FrnkRoute.Home), vm.backStack.toList())
+            assertContentEquals(listOf(FrnkTabRoute.Home), vm.backStack.toList())
         }
 
     @Test
@@ -92,7 +92,7 @@ class FrnkNestedNavViewModelTest {
             // Switch to Settings — Components' history is saved, Settings shows its root.
             vm.send(FrnkNestedNavIntent.Tap(index = 2))
             runCurrent()
-            assertContentEquals(listOf(FrnkRoute.Settings), vm.backStack.toList())
+            assertContentEquals(listOf(FrnkTabRoute.Settings), vm.backStack.toList())
 
             // Back to Components — its detail is restored.
             vm.send(FrnkNestedNavIntent.Tap(index = 1))
@@ -144,6 +144,6 @@ class FrnkNestedNavViewModelTest {
             runCurrent()
 
             assertEquals(0, vm.state.value.selectedIndex)
-            assertContentEquals(listOf(FrnkRoute.Home), vm.backStack.toList())
+            assertContentEquals(listOf(FrnkTabRoute.Home), vm.backStack.toList())
         }
 }

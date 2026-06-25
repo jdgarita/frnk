@@ -20,7 +20,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 
 /**
  * Create the host-owned Navigation3 back stack, seeded with [start] and configured with [configuration]
- * (build it via `frnkNestedNavConfig(hostRoutes = …)` for a tab/nested stack, or `frnkRootNavConfig` for the
+ * (build it via `frnkNestedNavConfig(hostRoutes = …)` for a tab/nested stack, or `frnkRootNavConfig(…)` for the
  * root stack). `rememberSaveable`-backed, so the stack survives configuration change and process death.
  *
  * ```

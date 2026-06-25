@@ -19,7 +19,7 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:core-di` | `core-di` | `projects.coreDi` | Bootstrap: `initializeFrnk(modules, validate, validator)` + `requireFrnkKoin()`. |
 | `:shared-utils` | `shared-utils` | `projects.sharedUtils` | Root utils: coroutines, datetime, `AppResult`, `PlatformInfo`, `Frnk.VERSION`. |
 | `:core-mvi` | `core-mvi` | `projects.coreMvi` | MVI engine (`MviViewModel`, `UiText`); no Compose. |
-| `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`FrnkRoute`, back-stack helpers); no Compose. |
+| `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`FrnkTabRoute` / `FrnkRootRoute`, back-stack helpers); no Compose. |
 | `:haptics` | `haptics` | `projects.haptics` | `HapticFeedback`/`HapticType` contract + multihaptic engine. |
 | `:ui-theme` | `ui-theme` | `projects.uiTheme` | `FrnkTheme` + tokens (compose-unstyled). |
 | `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
@@ -118,13 +118,15 @@ FrnkThemeConfig(
 )
 ```
 
-## 3. Map FrnkRoute to Compose screens
+## 3. Map routes to Compose screens
 
-The toolkit's `FrnkRoute` (`:core-nav`) is a `@Serializable sealed interface … : NavKey` of
-default routes (`Home`, `Settings`, `Onboarding`, `Paywall`). The host wires them itself: register them on
-your `FrnkNavDisplay` `entryProvider` (or, with `FrnkApp` / `FrnkNestedNavScaffold` (§8), in the Koin
-`navigation<Route> { … }` module you hand the scaffold) and drive navigation through the MVI effect channel,
-mutating the host-owned `NavBackStack`:
+The toolkit ships **two** `@Serializable sealed interface … : NavKey` route catalogues (`:core-nav`):
+**`FrnkTabRoute`** keys the **nested/tab** stack — the fixed three tabs (`Home`, `Settings`, `Custom`) — and
+**`FrnkRootRoute`** keys the **root** stack and owns the full-screen flows (`Onboarding`, `Paywall`, plus the
+`Tab` shell). Reach for `FrnkRootRoute` for anything above the bottom bar. The host wires them itself:
+register them on your `FrnkNavDisplay` `entryProvider` (or, with `FrnkApp` / `FrnkNestedNavScaffold` (§8), in
+the Koin `navigation<Route> { … }` module you hand the scaffold) and drive navigation through the MVI effect
+channel, mutating the host-owned `NavBackStack`:
 
 ```kotlin
 // FrnkScreen consumes the VM's one-shot effects via its single-consumer onEffect:
@@ -134,14 +136,14 @@ FrnkScreen(
     onEffect = { effect ->
         when (effect) {
             is MyEffect.Navigate -> backStack.navigateTo(effect.route)   // route: NavKey
-            MyEffect.Upgrade     -> backStack.navigateTo(FrnkRoute.Paywall)
+            MyEffect.Upgrade     -> backStack.navigateTo(FrnkRootRoute.Paywall)
             MyEffect.Back        -> backStack.back()
         }
     }
 ) { state -> /* render with Frnk* atoms */ }
 ```
 
-See `docs/ARCHITECTURE.md` → Navigation for `frnkRootNavConfig` / `frnkNestedNavConfig` /
+See `docs/ARCHITECTURE.md` → Navigation for `frnkRootNavConfig(...)` / `frnkNestedNavConfig(...)` /
 `rememberFrnkNavBackStack` / `FrnkNavDisplay` and the multiple-back-stack `FrnkNestedNavScaffold`.
 
 ## 4. Bootstrap Koin with an explicit module list
@@ -461,14 +463,14 @@ A host that adds its own KMP library modules can apply the same plugin by adding
 After `initializeFrnk(...)` (§4), **`FrnkApp`** (`:ui-app`) is the app root. It owns only the app chrome —
 `FrnkTheme` + the `AppearanceController`-driven light/dark + system-bar appearance + a single root
 `NavDisplay` over `FrnkRootRoute` (seeded at `Onboarding`) — and hands the navigation graph to you. You
-supply two lambdas: `onSavedStateConfiguration` (the root saved-state config, normally `frnkRootNavConfig`)
+supply two lambdas: `onSavedStateConfiguration` (the root saved-state config, normally `frnkRootNavConfig()`)
 and `onNavigationModule(backStack)`, which returns a Koin `navigation<Route> { … }` module registering your
 root destinations (it's loaded via `loadKoinModules`):
 
 ```kotlin
 setContent {
     FrnkApp(
-        onSavedStateConfiguration = { frnkRootNavConfig },
+        onSavedStateConfiguration = { frnkRootNavConfig() },
         onNavigationModule = { backStack -> myRootNavigationModule(backStack) },
     )
 }
@@ -499,8 +501,8 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
 
 - **`FrnkNestedNavScaffold(onSavedStateConfiguration, onNestedNavigationModule)`** is a **fixed three-tab**
   (`Home · Components · Settings`) multiple-back-stack tabbed scaffold. The bar items (labels, theme icon
-  tokens, SF-Symbols, and the routes `FrnkRoute.Home` / `FrnkRoute.Custom("Components")` /
-  `FrnkRoute.Settings`) are defined **inside** the scaffold; you supply only the saved-state config and a
+  tokens, SF-Symbols, and the routes `FrnkTabRoute.Home` / `FrnkTabRoute.Custom("Components")` /
+  `FrnkTabRoute.Settings`) are defined **inside** the scaffold; you supply only the saved-state config and a
   nested navigation module that registers the destinations behind those three routes. The scaffold owns the
   `FrnkNavDisplay` + the persistent adaptive bottom bar, and reserves the bottom inset via
   `LocalFrnkBottomBarInset`. Selection lives in the MVI `FrnkNestedNavViewModel` (registered by

@@ -15,7 +15,7 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/Feature.kt` — the **open marker** `interface Feature { val id: String }`. Type-safe and
   host-extensible (Tier 3.1): hosts implement it (typically via their own enum:
   `enum class AppFeature(override val id: String) : Feature { … }`), so `Feature("typo")` no longer
-  compiles. Mirrors the `NavKey`-marker / `FrnkRoute`-catalogue split.
+  compiles. Mirrors the `NavKey`-marker / `FrnkTabRoute`-catalogue split.
 - `monetization/FrnkFeature.kt` — the toolkit's own catalogue: `enum class FrnkFeature(override val id) :
   Feature { Premium, UnlimitedExports, AdFree }` — closed, exhaustive, the shape hosts copy.
 - `monetization/DefaultEntitlementManager.kt` — the pure-Kotlin impl. `isPro = provider.isPro || godMode`;

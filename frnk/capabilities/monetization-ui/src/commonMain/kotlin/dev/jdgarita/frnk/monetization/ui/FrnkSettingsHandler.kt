@@ -12,7 +12,7 @@ import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
 import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
@@ -26,11 +26,15 @@ const val GOD_MODE_TOGGLE_ID = "god_mode"
 /**
  * Centralizes the toolkit's Settings wiring so every host gets paywall navigation, restore,
  * manage-subscription, the god-mode toggle, and the haptic-feedback toggle for free. Handles
- * `UpgradeToPro` (→ navigate to the toolkit [FrnkRoute.Paywall]), `RestorePurchases`,
+ * `UpgradeToPro` (→ navigate to the toolkit [FrnkRootRoute.Paywall]), `RestorePurchases`,
  * `ManageSubscription` (→ open the provider's customer-specific management URL, falling back to the
  * platform's native subscriptions deep link via [platformManageSubscriptionsUrl]), and the god-mode and
  * `HAPTICS_TOGGLE_ID` [SettingsEffect.ToggleChanged]s (the latter drives the ambient [LocalFrnkHaptics]);
  * delegates everything else (theme appearance, other actions) to [fallback].
+ *
+ * @param backStack the **root** back stack — the paywall is a full-screen flow ([FrnkRootRoute.Paywall],
+ *   marked `FrnkFullScreenRoute`), so it must land above the bottom bar, not pushed onto a tab's stack.
+ *   (Mirrors `FrnkTabNavigator.openPaywall()`, which also pushes the paywall onto the root stack.)
  */
 @Composable
 fun rememberFrnkSettingsHandler(
@@ -50,7 +54,7 @@ fun rememberFrnkSettingsHandler(
                     when (effect.action) {
                         SettingsAction.UpgradeToPro -> {
                             analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to "settings"))
-                            backStack.navigateTo(FrnkRoute.Paywall)
+                            backStack.navigateTo(FrnkRootRoute.Paywall)
                         }
                         SettingsAction.RestorePurchases ->
                             scope.launch {

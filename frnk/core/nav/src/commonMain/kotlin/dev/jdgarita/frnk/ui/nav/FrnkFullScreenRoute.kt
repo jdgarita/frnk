@@ -10,7 +10,8 @@ import androidx.navigation3.runtime.NavKey
  * A route carries this marker to declare "no bottom bar" **on the route itself** (next to where it's
  * defined and registered) rather than via a separate predicate that can drift out of sync.
  * (`FrnkNestedNavScaffold` does not yet auto-hide its bar for these routes — full-screen bar hiding is a
- * planned follow-up; the intent is recorded on the route for when it lands.) Pure marker (no Compose, no
+ * planned follow-up; the intent is recorded on the route for when it lands.) The toolkit's full-screen
+ * flows ([FrnkRootRoute.Onboarding] / [FrnkRootRoute.Paywall]) carry it. Pure marker (no Compose, no
  * members) so it lives here in the Compose-free nav contract.
  */
 interface FrnkFullScreenRoute : NavKey

@@ -13,7 +13,7 @@ import dev.jdgarita.frnk.ui.app.frnkTabbedRootModule
 import dev.jdgarita.frnk.ui.app.rememberFrnkRootStartRoute
 import dev.jdgarita.frnk.ui.bottomnav.FrnkCustomTab
 import dev.jdgarita.frnk.ui.mvi.CommonUiEffect
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkTabRoute
 import dev.jdgarita.frnk.ui.nav.frnkRootNavConfig
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect
@@ -30,13 +30,13 @@ import dev.jdgarita.frnk.ui.theme.iconNavComponent
 @Composable
 fun FrnkDemoApp() {
     FrnkApp(
-        onSavedStateConfiguration = { frnkRootNavConfig },
+        onSavedStateConfiguration = { frnkRootNavConfig() },
         startRoute = rememberFrnkRootStartRoute(),
         onNavigationModule =
             frnkTabbedRootModule(
                 customTab =
                     FrnkCustomTab(
-                        route = FrnkRoute.Custom("Components"),
+                        route = FrnkTabRoute.Custom("Components"),
                         icon = FrnkIconSource.Token(iconNavComponent),
                         iosSystemIcon = "square.grid.2x2",
                         label = "Components"
@@ -62,10 +62,10 @@ fun FrnkDemoApp() {
                 }
 
                 custom { route, nav ->
-                    // FrnkRoute.Custom doubles as the Components tab root ("Components") and each component's
+                    // FrnkTabRoute.Custom doubles as the Components tab root ("Components") and each component's
                     // detail (id = the component name pushed on top of the Components tab's own back stack).
                     if (route.id == "Components") {
-                        ComponentsListScreen(onOpenComponent = { name -> nav.open(FrnkRoute.Custom(name)) })
+                        ComponentsListScreen(onOpenComponent = { name -> nav.open(FrnkTabRoute.Custom(name)) })
                     } else {
                         ComponentDetailScreen(name = route.id, onBack = { nav.back() }) {
                             ComponentScreen(name = route.id)

@@ -47,7 +47,18 @@ churny, so weigh against blast radius.
   builders (or document the asymmetry's reason: root is fixed, nested is host-extensible).
 - **Host benefit:** less mental overhead at the most error-prone layer.
 - **Effort:** S–M · **Risk:** medium if renaming public types · **Doc-only vs API:** doc-only (or API if
-  renaming) · **Status:** Proposed
+  renaming) · **Status:** Done (rename + prune + symmetric config) — the tab-level catalogue was renamed
+  `FrnkRoute` → **`FrnkTabRoute`** so the level is explicit in the type name (`FrnkRootRoute` keeps its
+  name), and its vestigial `Onboarding`/`Paywall` members were **pruned** (full-screen flows live on
+  `FrnkRootRoute`); `:shared-monetization-ui`'s paywall helpers (`frnkPaywallNavigation` +
+  `rememberFrnkSettingsHandler`) were repointed to **`FrnkRootRoute.Paywall`** (the paywall is a
+  `FrnkFullScreenRoute`, so it belongs above the bottom bar). The config asymmetry was a real capability
+  gap, not just cosmetics: `frnkRootNavConfig` became a **function symmetric** with
+  `frnkNestedNavConfig(hostRoutes)` — it now registers `FrnkRootRoute.Custom` (the old `val` form silently
+  dropped it) and merges host root routes, so the root stack is host-extensible too. Nested/tab stacks are
+  in-memory only, so the `FrnkTabRoute` `serialName` change needs no persistence migration; `FrnkRootRoute`
+  was not renamed, so the process-death-persisted root stack is unaffected. Covered by `FrnkTabRouteTest`
+  + the new `RootNavConfigTest`.
 
 ## 3.4 — `Preference<T>` coverage
 

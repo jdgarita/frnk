@@ -1,14 +1,14 @@
 package dev.jdgarita.frnk.monetization.ui
 
 import androidx.compose.runtime.Composable
-import dev.jdgarita.frnk.ui.nav.FrnkRoute
+import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.Module
 import org.koin.dsl.navigation3.navigation
 
 /**
  * The toolkit-owned paywall as a **ready-to-mount Navigation3 destination body** — the paywall UI plus its
- * effect wiring, decoupled from any concrete route so a host can mount it against [FrnkRoute.Paywall]
+ * effect wiring, decoupled from any concrete route so a host can mount it against [FrnkRootRoute.Paywall]
  * (via [frnkPaywallNavigation]) **or** its own route:
  *
  * ```
@@ -35,7 +35,7 @@ fun FrnkPaywallDestination(
 }
 
 /**
- * Registers [FrnkPaywallDestination] at the toolkit-owned [FrnkRoute.Paywall] in a Koin navigation
+ * Registers [FrnkPaywallDestination] at the toolkit-owned [FrnkRootRoute.Paywall] in a Koin navigation
  * module — the one-liner real hosts use (the same route `rememberFrnkSettingsHandler` navigates to). The
  * host resolves destinations through `FrnkNavDisplay`'s default `koinEntryProvider()`:
  *
@@ -50,7 +50,7 @@ fun Module.frnkPaywallNavigation(
     onMessage: (String) -> Unit = {},
     onClose: () -> Unit
 ) {
-    navigation<FrnkRoute.Paywall> {
+    navigation<FrnkRootRoute.Paywall> {
         FrnkPaywallDestination(features = features, source = source, onMessage = onMessage, onClose = onClose)
     }
 }

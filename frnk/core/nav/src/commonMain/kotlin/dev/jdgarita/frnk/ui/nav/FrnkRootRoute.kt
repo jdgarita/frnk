@@ -6,13 +6,14 @@ import kotlinx.serialization.Serializable
 /**
  * The toolkit's **root-level** catalogue of type-safe Navigation3 destinations, for the lower-level
  * `FrnkApp` two-level navigation shape (`:ui-app`): full-screen/modal flows ([Onboarding], [Paywall])
- * and the tabbed shell ([Tab], which hosts its own inner [FrnkRoute] back stack) live at the app root.
+ * and the tabbed shell ([Tab], which hosts its own inner [FrnkTabRoute] back stack) live at the app root.
  * Each member is a [NavKey] (the nav3 back-stack key marker) and `@Serializable` so it can be persisted
  * on the root `NavBackStack` and restored via [frnkRootNavConfig]'s `SavedStateConfiguration`.
  * [Onboarding] and [Paywall] carry [FrnkFullScreenRoute].
  *
- * This **coexists with** [FrnkRoute]: [FrnkRootRoute] keys the **root** back stack (`FrnkApp`'s root
- * `NavDisplay`), while [FrnkRoute] keys the **nested/tab** back stack inside the `Tab` shell
+ * **Which catalogue keys which stack:** [FrnkRootRoute] keys the **root** back stack (`FrnkApp`'s root
+ * `NavDisplay`) and owns everything that appears above the bottom bar (onboarding / paywall / the tab
+ * shell), while [FrnkTabRoute] keys the **nested/tab** back stack inside the [Tab] shell
  * (`FrnkNestedNavScaffold`). These are plain serializable data objects/classes — `:core-nav` stays
  * Compose-free (the nav3 runtime is pure Kotlin), so the contract is consumable by feature ViewModels
  * without dragging in `compose.runtime`. Hosts may also add their own `@Serializable` `NavKey` route

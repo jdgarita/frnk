@@ -1290,3 +1290,30 @@ Also corrected a doc bug: ui/components/CLAUDE.md previously called FrnkDivider 
 ### Files
 - docs/HOST_INTEGRATION.md
 - frnk/ui/components/CLAUDE.md
+
+## Tier 3.3 — FrnkRoute→FrnkTabRoute + paywall to root + symmetric nav config
+
+- id: tier-3-3-frnkroute-frnktabroute-paywall-to-root-symmetric-na-20260625-182149
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: navigation / :core-nav
+- date: 2026-06-25
+
+Tightened the nav route catalogues in :core-nav.
+
+(1) RENAME: tab-level catalogue FrnkRoute -> FrnkTabRoute so the level is explicit in the type name (FrnkRootRoute keeps its name). Hosts kept reaching for FrnkRoute thinking it was the general/root one when it was actually tab-level. After the prune FrnkTabRoute = Home/Settings/Custom, matching the fixed three-tab bar exactly.
+
+(2) PRUNE + PAYWALL-TO-ROOT: removed the vestigial FrnkRoute.Onboarding/Paywall members — full-screen flows (FrnkFullScreenRoute) belong on FrnkRootRoute, above the bottom bar. Repointed :shared-monetization-ui frnkPaywallNavigation + rememberFrnkSettingsHandler from FrnkRoute.Paywall to FrnkRootRoute.Paywall (rememberFrnkSettingsHandler backStack must now be the ROOT stack). NOTE: those two helpers have NO live callers — the demo opens the paywall via FrnkRootRoute.Paywall already (frnkTabbedRootModule / FrnkTabNavigator.openPaywall), so the repoint is compile-verified + architecturally correct but NOT demo-exercised at runtime.
+
+(3) SYMMETRIC CONFIG (real capability gap, not cosmetics): frnkRootNavConfig became a function frnkRootNavConfig(hostRoutes = …) symmetric with frnkNestedNavConfig. The old val never registered FrnkRootRoute.Custom (couldn't serialize) and offered no way to merge host root routes, so the root stack was not host-extensible. Added RootNavConfigTest (core-nav commonTest) as the only automated coverage for the gap fix.
+
+SAFETY: nested/tab stacks are in-memory only (survive recomposition + config change, not process death), so the FrnkTabRoute serialName change needs no persistence migration; FrnkRootRoute was NOT renamed so the process-death-persisted root stack is unaffected.
+
+VERIFIED: compileAndroidMain + :demo-android; full testAndroidHostTest (FrnkTabRouteTest + RootNavConfigTest + FrnkNestedNavViewModelTest); ktlintFormat; DemoKit xcframework link. Not committed (user reviews/ships).
+
+### Files
+- frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/FrnkTabRoute.kt
+- frnk/core/nav/src/commonMain/kotlin/dev/jdgarita/frnk/ui/nav/RootNavConfig.kt
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallNav.kt
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/FrnkSettingsHandler.kt

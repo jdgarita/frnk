@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * State-based (not event-based) on purpose: if the signal is set before the observer attaches, it still
  * delivers — a `SharedFlow` with `replay = 0` would miss the emission in that race.
  *
- * Generic over [NavKey] so any host route (a [FrnkRoute] member or a host-defined route) can be the
+ * Generic over [NavKey] so any host route (a [FrnkTabRoute]/[FrnkRootRoute] member or a host-defined route) can be the
  * deep-link target. Register it as a singleton in the host's DI graph.
  */
 class FrnkPendingRouteRequest {

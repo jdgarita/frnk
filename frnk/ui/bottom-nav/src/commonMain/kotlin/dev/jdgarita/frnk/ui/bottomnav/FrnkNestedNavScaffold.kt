@@ -23,8 +23,8 @@ import org.koin.core.module.Module
 /**
  * The toolkit's **fixed three-tab** bottom-nav scaffold — a `Home · <custom> · Settings` bar over a
  * **multiple-back-stack** tabbed surface. Home and Settings are toolkit-fixed (theme icon tokens,
- * SF-Symbols, and routes [FrnkRoute.Home][dev.jdgarita.frnk.ui.nav.FrnkRoute.Home] /
- * [FrnkRoute.Settings][dev.jdgarita.frnk.ui.nav.FrnkRoute.Settings]); the **middle tab is host-provided**
+ * SF-Symbols, and routes [FrnkTabRoute.Home][dev.jdgarita.frnk.ui.nav.FrnkTabRoute.Home] /
+ * [FrnkTabRoute.Settings][dev.jdgarita.frnk.ui.nav.FrnkTabRoute.Settings]); the **middle tab is host-provided**
  * via [customTab] (route + icon + SF-Symbol + label).
  *
  * **The scaffold owns the navigation plumbing**, so the host stays declarative: it supplies the middle
@@ -46,8 +46,8 @@ import org.koin.core.module.Module
  *
  * @param customTab the host-provided middle tab (route + icon + SF-Symbol + label).
  * @param onNestedNavigationModule builds the Koin nav module registering the tabs' destinations
- *   ([FrnkRoute.Home][dev.jdgarita.frnk.ui.nav.FrnkRoute.Home] / [customTab]'s route /
- *   [FrnkRoute.Settings][dev.jdgarita.frnk.ui.nav.FrnkRoute.Settings]), bound to the scaffold-owned back stack.
+ *   ([FrnkTabRoute.Home][dev.jdgarita.frnk.ui.nav.FrnkTabRoute.Home] / [customTab]'s route /
+ *   [FrnkTabRoute.Settings][dev.jdgarita.frnk.ui.nav.FrnkTabRoute.Settings]), bound to the scaffold-owned back stack.
  */
 @OptIn(KoinExperimentalAPI::class, ExperimentalComposeUiApi::class)
 @Composable
