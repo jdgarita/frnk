@@ -41,14 +41,14 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
 - **Host benefit:** removes silent-shadowing / incomplete-stack footguns; less guesswork.
 - **Effort:** M · **Risk:** low–medium · **Doc-only vs API:** API (additive) · **Status:** Proposed
 
-## 2.3 — Decouple Settings from monetization
+## 2.3 — Decouple Settings from monetization — **Won't do**
 
 - **Problem:** `SettingsViewModel` requires `ObserveProStatusUseCase` (`:monetization-api`) via Koin `get()`,
   so the Settings scaffold can't run unless monetization is installed.
-- **Proposed change:** make the use-case optional (default "not pro" → no Subscription section), or inject a
-  no-op default.
-- **Host benefit:** Settings works in apps that don't ship IAP.
-- **Effort:** S–M · **Risk:** low · **Doc-only vs API:** API · **Status:** Proposed
+- **Decision (2026-06-25):** **Won't do.** It's accepted that a monetization module is **always installed**,
+  so the Settings scaffold's hard dependency on it is the intended design, not a wart. Do not add
+  nullable/no-op/`getOrNull` fallbacks for monetization in Settings. (See the MobiAI brain / project memory
+  "settings-may-depend-on-monetization".)
 
 ## 2.4 — `:data-db-api` Koin helper for host schemas
 

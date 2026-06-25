@@ -1152,3 +1152,18 @@ Added a batteries-included convenience over FrnkApp for the common onboarding->t
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkTabbedRootModule.kt
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/FrnkDemoApp.kt
+
+## Settings↔monetization coupling kept by design (Tier 2.3 Won't do)
+
+- id: settings-monetization-coupling-kept-by-design-tier-2-3-won-t-20260625-152246
+- type: architecture_decision
+- status: active
+- platform: shared
+- area: architecture
+- date: 2026-06-25
+
+Decision (2026-06-25): do NOT decouple the VM-backed Settings scaffold (:ui-scaffolds) from monetization. SettingsViewModel takes a REQUIRED ObserveProStatusUseCase (get()), bound by monetizationModule, so monetizationModule is a baseline dependency of the Settings scaffold. The user confirmed it's fine to ASSUME a monetization module is always installed; this is the intended design, not a temporary compromise (supersedes the earlier 'refactor planned later' framing from 2026-06-17). Public-API backlog item docs/api-improvements/tier-2.md §2.3 ('Decouple Settings from monetization') is marked Won't do. DO NOT reintroduce nullable / no-op / getOrNull fallbacks for monetization in Settings, and don't propose decoupling. Updated: tier-2.md §2.3, :ui-scaffolds CLAUDE.md SettingsScreen note, and the project memory 'settings-may-depend-on-monetization'.
+
+### Files
+- docs/api-improvements/tier-2.md
+- frnk/ui/scaffolds/CLAUDE.md
