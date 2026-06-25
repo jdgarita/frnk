@@ -66,4 +66,11 @@ churny, so weigh against blast radius.
   `Enum`; `Long`, `Double`, and nullable-string are deferred, so hosts drop to raw `KeyValueStore`.
 - **Proposed change:** add `longPreference` / `doublePreference` / nullable-string support.
 - **Host benefit:** hosts stay on the typed delegate layer.
-- **Effort:** S · **Risk:** low (additive) · **Doc-only vs API:** API (additive) · **Status:** Proposed
+- **Effort:** S · **Risk:** low (additive) · **Doc-only vs API:** API (additive) · **Status:** Done —
+  added `longPreference` / `doublePreference` (decimal-string encoded, same corrupt-value fallback as
+  `intPreference`) and `nullableStringPreference(key, default = null)` (models `null` as key absence —
+  the store can't distinguish stored-`null` from absent, so writing `null` clears the key). The
+  `KeyValueStore` contract is untouched: all three ride the existing `getString`/`putString`/`remove`
+  primitives. Covered by new round-trip / unset-default / corrupt-fallback (Long/Double) and
+  round-trip / null-default / non-null-default / write-null-clears (nullable-string) cases in
+  `PreferenceTest`.

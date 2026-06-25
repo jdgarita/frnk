@@ -6,8 +6,9 @@ import kotlin.reflect.KProperty
 /**
  * A typed, single-key view over a [KeyValueStore]. Reads fall back to [defaultValue] when the key
  * is absent (and, for encoded types, when the stored value can't be decoded). Created via the
- * extension factories below ([stringPreference], [booleanPreference], [intPreference],
- * [enumPreference]); not meant to be implemented by callers.
+ * extension factories below ([stringPreference], [nullableStringPreference], [booleanPreference],
+ * [intPreference], [longPreference], [doublePreference], [enumPreference]); not meant to be
+ * implemented by callers.
  *
  * Usable two ways from a single object:
  * ```
@@ -17,12 +18,9 @@ import kotlin.reflect.KProperty
  * ```
  *
  * The [KeyValueStore] contract is unchanged: every typed accessor rides on the existing
- * `getString`/`putString`/`getBoolean`/`putBoolean`/`remove` primitives.
- *
- * Type coverage is intentionally limited to String, Boolean, Int and Enum. `Long`/`Double` and a
- * nullable-string variant are deliberately deferred — there is no consumer today and the AC forbids
- * changing the underlying contract (they would need extra String encoding). [Preference] already
- * supports `T = String?`, so a nullable-string factory is a non-breaking future addition.
+ * `getString`/`putString`/`getBoolean`/`putBoolean`/`remove` primitives. `Int`/`Long`/`Double`/`Enum`
+ * all encode losslessly as their decimal/name string over the `getString`/`putString` pair, so no new
+ * store primitives are needed; corrupt or unknown stored values fall back to the default (never throw).
  */
 sealed interface Preference<T> : ReadWriteProperty<Any?, T> {
     /** The underlying [KeyValueStore] key this preference reads from / writes to. */
@@ -80,6 +78,24 @@ fun KeyValueStore.stringPreference(
         write = { store, k, v -> store.putString(k, v) }
     )
 
+/**
+ * A nullable [String] preference. Reads return [default] when the key is unset; writing `null`
+ * clears the key (so a later read returns [default]). The underlying store can't distinguish a
+ * stored-`null` from an absent key, so `null` is modelled as absence — pass `default = null` for the
+ * common "absent ⇒ null" case.
+ */
+fun KeyValueStore.nullableStringPreference(
+    key: String,
+    default: String? = null
+): Preference<String?> =
+    KeyValuePreference(
+        store = this,
+        key = key,
+        defaultValue = default,
+        read = { store, k, d -> store.getString(k, null) ?: d },
+        write = { store, k, v -> if (v == null) store.remove(k) else store.putString(k, v) }
+    )
+
 /** A typed [Boolean] preference. Reads return [default] when the key is unset. */
 fun KeyValueStore.booleanPreference(
     key: String,
@@ -106,6 +122,39 @@ fun KeyValueStore.intPreference(
         key = key,
         defaultValue = default,
         read = { store, k, d -> store.getString(k, null)?.toIntOrNull() ?: d },
+        write = { store, k, v -> store.putString(k, v.toString()) }
+    )
+
+/**
+ * A typed [Long] preference, encoded over the String primitive. Reads return [default] when the key
+ * is unset **or** the stored value is not a valid `Long` (e.g. written by an older app version).
+ */
+fun KeyValueStore.longPreference(
+    key: String,
+    default: Long
+): Preference<Long> =
+    KeyValuePreference(
+        store = this,
+        key = key,
+        defaultValue = default,
+        read = { store, k, d -> store.getString(k, null)?.toLongOrNull() ?: d },
+        write = { store, k, v -> store.putString(k, v.toString()) }
+    )
+
+/**
+ * A typed [Double] preference, encoded over the String primitive. Reads return [default] when the
+ * key is unset **or** the stored value is not a valid `Double` (e.g. written by an older app
+ * version).
+ */
+fun KeyValueStore.doublePreference(
+    key: String,
+    default: Double
+): Preference<Double> =
+    KeyValuePreference(
+        store = this,
+        key = key,
+        defaultValue = default,
+        read = { store, k, d -> store.getString(k, null)?.toDoubleOrNull() ?: d },
         write = { store, k, v -> store.putString(k, v.toString()) }
     )
 

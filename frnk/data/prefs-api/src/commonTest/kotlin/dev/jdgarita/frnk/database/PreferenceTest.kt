@@ -26,6 +26,35 @@ class PreferenceTest {
         assertEquals("anon", store.stringPreference("name", default = "anon").value)
     }
 
+    // --- Nullable String ---
+
+    @Test
+    fun nullable_string_preference_round_trips() {
+        val pref = store.nullableStringPreference("name")
+        pref.value = "frnk"
+        assertEquals("frnk", pref.value)
+        assertEquals("frnk", store.getString("name"))
+    }
+
+    @Test
+    fun nullable_string_preference_returns_null_default_when_unset() {
+        assertNull(store.nullableStringPreference("name").value)
+    }
+
+    @Test
+    fun nullable_string_preference_returns_non_null_default_when_unset() {
+        assertEquals("anon", store.nullableStringPreference("name", default = "anon").value)
+    }
+
+    @Test
+    fun nullable_string_preference_writing_null_clears_key() {
+        val pref = store.nullableStringPreference("name", default = "anon")
+        pref.value = "frnk"
+        pref.value = null
+        assertEquals("anon", pref.value)
+        assertNull(store.getString("name"))
+    }
+
     // --- Boolean ---
 
     @Test
@@ -60,6 +89,48 @@ class PreferenceTest {
     fun int_preference_falls_back_to_default_on_corrupt_value() {
         store.putString("count", "not-a-number")
         assertEquals(7, store.intPreference("count", default = 7).value)
+    }
+
+    // --- Long (encoded over String) ---
+
+    @Test
+    fun long_preference_round_trips() {
+        val pref = store.longPreference("ts", default = 0L)
+        pref.value = 9_999_999_999L
+        assertEquals(9_999_999_999L, pref.value)
+        assertEquals("9999999999", store.getString("ts"))
+    }
+
+    @Test
+    fun long_preference_returns_default_when_unset() {
+        assertEquals(42L, store.longPreference("ts", default = 42L).value)
+    }
+
+    @Test
+    fun long_preference_falls_back_to_default_on_corrupt_value() {
+        store.putString("ts", "not-a-number")
+        assertEquals(42L, store.longPreference("ts", default = 42L).value)
+    }
+
+    // --- Double (encoded over String) ---
+
+    @Test
+    fun double_preference_round_trips() {
+        val pref = store.doublePreference("ratio", default = 0.0)
+        pref.value = 3.14
+        assertEquals(3.14, pref.value)
+        assertEquals("3.14", store.getString("ratio"))
+    }
+
+    @Test
+    fun double_preference_returns_default_when_unset() {
+        assertEquals(1.5, store.doublePreference("ratio", default = 1.5).value)
+    }
+
+    @Test
+    fun double_preference_falls_back_to_default_on_corrupt_value() {
+        store.putString("ratio", "not-a-number")
+        assertEquals(1.5, store.doublePreference("ratio", default = 1.5).value)
     }
 
     // --- Enum (encoded as name over String) ---

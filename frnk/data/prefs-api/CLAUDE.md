@@ -5,7 +5,7 @@ Pure-interface key-value persistence (split out of `shared-database-api` at rest
 ## Contents
 
 - `KeyValueStore.kt` — interface for simple key/value storage (impl uses `russhwolf/multiplatform-settings`, bound by `prefsModule` in `:data-prefs-impl`).
-- `Preference.kt` — typed convenience layer over `KeyValueStore` (BACKLOG P4-3). `Preference<T> : ReadWriteProperty` plus `KeyValueStore.stringPreference/booleanPreference/intPreference/enumPreference(...)` factories, so hosts get typed accessors with defaults and `var x by pref` delegation instead of stringly keys. Pure stdlib; Int/Enum encode losslessly over the String primitive (corrupt/unknown values fall back to the default; enum decode never throws). `Long`/`Double`/nullable-string are deliberately deferred (no consumer; would need extra encoding). Dogfooded by `DefaultEntitlementManager`'s god-mode persistence (`:monetization-api`, which `api()`-depends on this module).
+- `Preference.kt` — typed convenience layer over `KeyValueStore` (BACKLOG P4-3; coverage completed in Tier 3.4). `Preference<T> : ReadWriteProperty` plus `KeyValueStore.stringPreference/nullableStringPreference/booleanPreference/intPreference/longPreference/doublePreference/enumPreference(...)` factories, so hosts get typed accessors with defaults and `var x by pref` delegation instead of stringly keys. Pure stdlib; Int/Long/Double/Enum encode losslessly over the String primitive (corrupt/unknown values fall back to the default; enum decode never throws). `nullableStringPreference` models `null` as key absence (the store can't tell stored-`null` from absent) — writing `null` clears the key. Dogfooded by `DefaultEntitlementManager`'s god-mode persistence (`:monetization-api`, which `api()`-depends on this module).
 
 ## Rules
 
