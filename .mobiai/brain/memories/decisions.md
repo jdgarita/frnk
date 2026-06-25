@@ -1219,3 +1219,26 @@ DEMO: demo-android assembles its real-SDK override list via frnkModules { } (coe
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidation.kt
 - frnk/core/di/src/commonMain/kotlin/dev/jdgarita/frnk/di/FrnkInitializer.kt
+
+## Tier 2.6 EffectCollector/SyncMviConfig — Won't do
+
+- id: tier-2-6-effectcollector-syncmviconfig-won-t-do-20260625-165522
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: mvi
+- date: 2026-06-25
+
+Decided (2026-06-25) Won't do for both Tier 2.6 helpers; no new public API.
+
+FrnkScreen is the single sanctioned MVI effect-collection binding: lifecycle-gated (repeatOnLifecycle) + rememberUpdatedState, single-consumer onEffect callback. Collect effects in exactly one place.
+
+EffectCollector: had NO consumer — every screen routes effects through FrnkScreen, and even the one VM-without-effects case (FrnkNestedNavScaffold) just passes onEffect={}. A standalone collector would be speculative and a second way to do the same thing.
+
+SyncMviConfig: dropped by user. The receiving half (HomeIntent.ConfigChanged / SettingsIntent.ConfigChanged, the latter merges via mergedWith to preserve in-session state) already exists but is unwired, and there is no current runtime-changing config to sync. Re-entry if ever needed: LaunchedEffect(config){ vm.send(ConfigChanged(it)) }.
+
+Mirrors how Tier 2.3 was resolved (Won't do, rationale in brain not docs).
+
+### Files
+- docs/api-improvements/tier-2.md
+- frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/mvi/FrnkScreen.kt

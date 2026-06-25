@@ -105,13 +105,21 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
   consumer) app and already emits its own dSYM build phase, so an umbrella-export step doesn't apply —
   this stayed a docs-only consolidation.
 
-## 2.6 — Implement `EffectCollector` (+ `SyncMviConfig`)
+## 2.6 — Implement `EffectCollector` (+ `SyncMviConfig`) — **Won't do**
 
-- **Problem:** the docs long promised these (now removed in Tier 1.1 as phantom). They are small, genuinely
-  useful patterns: a standalone lifecycle-gated one-shot effect collector, and a persistent-VM config-sync
-  helper. Today only `FrnkScreen` bundles effect collection (all-or-nothing).
-- **Proposed change:** implement `EffectCollector(effects, minActiveState, onEffect)` and (optionally)
-  `SyncMviConfig(viewModel, config, asIntent)` in `:ui-scaffolds` `ui/mvi/`, then document them.
-- **Host benefit:** consume effects / sync config without adopting the full `FrnkScreen` template.
-- **Effort:** S–M · **Risk:** low (additive) · **Doc-only vs API:** API (additive) · **Status:** Proposed
-  (moved from Tier 1)
+- **Problem:** the docs long promised these (removed in Tier 1.1 as phantom): a standalone lifecycle-gated
+  one-shot effect collector, and a persistent-VM config-sync helper. Today only `FrnkScreen` bundles effect
+  collection.
+- **Decision (2026-06-25):** **Won't do** for both — no new public API; `FrnkScreen` stays the single
+  sanctioned binding for one-shot effects.
+  - **`EffectCollector`** — has **no consumer**. Every screen already routes effects through `FrnkScreen`'s
+    single `onEffect` callback, whose collection is already correct (lifecycle-gated via `repeatOnLifecycle`,
+    `rememberUpdatedState`, single-consumer); even the one VM-without-effects case (`FrnkNestedNavScaffold`)
+    just passes `onEffect = {}`. A parallel standalone collector would be speculative and add a second way to
+    do the same thing. `FrnkScreen` is the documented effect-collection path (see `CLAUDE.md` — "the effect
+    channel is single-consumer — collect it in exactly one place").
+  - **`SyncMviConfig`** — dropped. The receiving half (`HomeIntent.ConfigChanged` /
+    `SettingsIntent.ConfigChanged`) already exists for hosts that need to feed a persistent VM, and there is
+    no current runtime-changing config to sync. If a real need arises, the trivial
+    `LaunchedEffect(config) { vm.send(ConfigChanged(it)) }` pattern (or this helper) can be reintroduced then.
+- **Doc-only vs API:** docs only · **Status:** Won't do. (Rationale/history kept in the MobiAI brain, not the docs.)
