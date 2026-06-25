@@ -93,7 +93,17 @@ The high-value simplifications: reduce the boilerplate and footguns a host hits 
 - **Proposed change:** one consolidated iOS-setup reference page and (ideally) a scaffold step in the
   `scaffold-kmp-app` skill that emits the umbrella `build.gradle.kts` + the Crashlytics build phase.
 - **Host benefit:** the highest real-world onboarding cost becomes copy-paste-safe.
-- **Effort:** M · **Risk:** low (tooling/docs) · **Doc-only vs API:** docs + tooling · **Status:** Proposed
+- **Effort:** M · **Risk:** low (tooling/docs) · **Doc-only vs API:** docs + tooling · **Status:** Done
+- **Shipped as:** `HOST_INTEGRATION.md` §6 rewritten into a single copy-paste-safe iOS-host reference —
+  the full umbrella `build.gradle.kts` (XCFramework + `export(...)` list + `isStatic` +
+  `linkerOpts("-undefined","dynamic_lookup")` + the `assemble<Name>XCFramework` task), both Xcode
+  **Run Script** build phases verbatim (build-the-XCFramework, upload-Crashlytics-dSYMs), and the
+  RevenueCat-SPM + Crashlytics checklists. Corrected a stale inconsistency: step 4 told hosts to call
+  the `firebase-ios-sdk/Crashlytics/run` wrapper, but the demo's proven phase uses
+  `upload-symbols -gsp … -p ios "$DSYM"` — the doc now ships that form and links to it. **Scaffold
+  tooling deliberately not taken:** the `scaffold-kmp-app` skill scaffolds a *standalone* (non-frnk-
+  consumer) app and already emits its own dSYM build phase, so an umbrella-export step doesn't apply —
+  this stayed a docs-only consolidation.
 
 ## 2.6 — Implement `EffectCollector` (+ `SyncMviConfig`)
 

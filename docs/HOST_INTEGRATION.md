@@ -241,8 +241,10 @@ analytics.trackCustom("Recipe_Saved", mapOf("recipe_id" to id))
 frnk publishes **no** prebuilt XCFramework (the old `FrnkKit` died with the `:iosApp` aggregator).
 An iOS host adds a small KMP "shared" module in its own repo that `api()`-depends on the frnk
 modules it uses, `export(...)`s them from an `XCFramework("<YourAppKit>")`, and links that from
-Xcode — exactly what the demo does with `DemoKit` (`demo/shared/build.gradle.kts` is the
-worked example). Two rules carry over from the old packaging:
+Xcode. `demo/shared/build.gradle.kts` is the worked example; everything below is lifted from it and
+generalized so you can copy it without opening the demo.
+
+Two rules carry over from the old packaging:
 
 - `isStatic = true` + `linkerOpts("-undefined", "dynamic_lookup")` on the framework — bundled impls
   (`:monetization-impl`, `:analytics-impl`) reference native iOS SDKs
@@ -250,6 +252,98 @@ worked example). Two rules carry over from the old packaging:
   resolution lets the framework link without them.
 - Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native
   dep list.
+
+### The umbrella module's `build.gradle.kts`
+
+`export(...)` is **non-transitive**, so list every frnk module whose Swift API you want visible —
+depending on it via `api(...)` is not enough. Each exported module must *also* be a direct `api(...)`
+dependency.
+
+```kotlin
+kotlin {
+    val xcf = XCFramework("YourAppKit")
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { t ->
+        t.binaries.framework {
+            baseName = "YourAppKit"
+            xcf.add(this)
+            isStatic = true
+            // Export every frnk module whose symbols Swift calls (export is non-transitive).
+            export(projects.sharedUtils)
+            export(projects.coreMvi)
+            export(projects.coreNav)
+            export(projects.haptics)
+            export(projects.uiTheme)
+            export(projects.uiComponents)
+            export(projects.uiScaffolds)
+            export(projects.uiBottomNav)
+            export(projects.analyticsApi)
+            export(projects.dataDbApi)
+            export(projects.dataPrefsApi)
+            export(projects.monetizationApi)
+            export(projects.sharedMonetizationUi)
+            export(projects.uiApp)
+            // Defer native RevenueCat/Firebase symbols to the app's own link step.
+            linkerOpts("-undefined", "dynamic_lookup")
+        }
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            // One api(...) per export(...) above.
+            api(projects.sharedUtils)
+            // …
+            api(projects.uiApp)
+        }
+    }
+}
+```
+
+Keep the **common** surface free of `*-impl` modules so the framework links no native cinterop. If you
+need real crash reporting or RevenueCat on iOS, add those impls **only** to `iosMain` (the demo adds
+`crashkios.crashlytics` + `monetizationImpl` + `revenuecat.core` there) — the consumer Xcode project
+then supplies the matching native SDKs via SPM, and the `dynamic_lookup` flag above lets the framework
+link locally without them.
+
+Build it with the generated task `assemble<Name>{Debug,Release}XCFramework` — e.g.
+`./gradlew :your-shared:assembleYourAppKitDebugXCFramework`.
+
+### Xcode build phases
+
+Two **Run Script** phases wire the framework + symbolication into the Xcode build (the demo's
+`iosDemoApp.xcodeproj` is the working reference). Add both with **"Based on dependency analysis"
+unchecked** so they run every build.
+
+**1. Build the XCFramework** — place this *above* "Compile Sources" so the framework exists before the
+app compiles:
+
+```sh
+set -e
+cd "$SRCROOT/../.."   # adjust to your repo root
+if [ "$CONFIGURATION" = "Release" ]; then
+  ./gradlew :your-shared:assembleYourAppKitReleaseXCFramework
+else
+  ./gradlew :your-shared:assembleYourAppKitDebugXCFramework
+fi
+```
+
+**2. Upload Crashlytics dSYMs** — the last phase; uploads the app dSYM (which, because the framework
+is static, already carries frnk's Kotlin frames) so crashes symbolicate:
+
+```sh
+# Requires DEBUG_INFORMATION_FORMAT=dwarf-with-dsym (Xcode's Release default).
+set -e
+TOOL="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols"
+GSP="${SRCROOT}/YourApp/GoogleService-Info.plist"
+DSYM="${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"
+if [ -f "$TOOL" ] && [ -d "$DSYM" ]; then
+  "$TOOL" -gsp "$GSP" -p ios "$DSYM" || echo "warning: Crashlytics dSYM upload failed (continuing)"
+else
+  echo "warning: Crashlytics upload-symbols or dSYM not found - skipping (add FirebaseCrashlytics via SPM + enable dSYM)"
+fi
+```
+
+The `GoogleService-Info.plist` itself is added to the app target as a normal bundled resource — no copy
+phase needed.
 
 ### RevenueCat consumer setup
 
@@ -284,12 +378,9 @@ exception into a Crashlytics report — but Crashlytics still needs the matching
    Kotlin bootstrap with `firebaseObservabilityModule` in the module list.
 3. **Confirm Release builds emit dSYMs** — `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym` (Xcode's
    Release default; Debug defaults to `dwarf` = **no dSYM**).
-4. **Upload dSYMs to Crashlytics** — add the Crashlytics **run-script build phase** so every
-   archive uploads automatically (SPM path):
-   ```
-   "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
-   ```
-   (`iosDemoApp` has a working example of this build phase — copy its shape.)
+4. **Upload dSYMs to Crashlytics** — add the dSYM-upload run-script build phase from
+   [Xcode build phases](#xcode-build-phases) above (phase 2) so every build/archive uploads
+   automatically. Skipping this is the #1 cause of unsymbolicated crashes.
 
 KMP specifics: because the umbrella framework is **static**, your app's own dSYM already contains
 frnk's Kotlin frames — no separate Kotlin-framework dSYM step, and no CrashKiOS `crashlyticslink`
