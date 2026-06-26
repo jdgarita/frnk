@@ -8,6 +8,7 @@ import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
 import app.cash.sqldelight.db.SqlSchema
+import dev.jdgarita.frnk.database.SchemaUpgrade
 import dev.jdgarita.frnk.database.SqlDriverFactory
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -30,11 +31,19 @@ class DatabaseSingleTest {
     fun registers_single_and_forwards_schema_and_name() {
         var recordedSchema: SqlSchema<QueryResult.Value<Unit>>? = null
         var recordedName: String? = null
+        var recordedUpgrade: SchemaUpgrade? = null
         val factory =
-            SqlDriverFactory { schema, name ->
-                recordedSchema = schema
-                recordedName = name
-                NoopSqlDriver
+            object : SqlDriverFactory {
+                override fun create(
+                    schema: SqlSchema<QueryResult.Value<Unit>>,
+                    name: String,
+                    upgrade: SchemaUpgrade
+                ): SqlDriver {
+                    recordedSchema = schema
+                    recordedName = name
+                    recordedUpgrade = upgrade
+                    return NoopSqlDriver
+                }
             }
 
         val app =
@@ -52,6 +61,7 @@ class DatabaseSingleTest {
             assertSame(NoopSqlDriver, db.driver, "driver from the factory is threaded into the constructor")
             assertSame(FakeSchema, recordedSchema, "host schema forwarded to the factory unchanged")
             assertEquals("fake.db", recordedName, "database name forwarded to the factory unchanged")
+            assertEquals(SchemaUpgrade.None, recordedUpgrade, "defaults to no schema upgrade")
         } finally {
             app.close()
         }

@@ -1339,3 +1339,19 @@ Note: only hosts that hand-wire the nav primitives without FrnkApp still wrap th
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/FrnkDemoApp.kt
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoColors.kt
+
+## SqlDriverFactory gains opt-in SchemaUpgrade (wipe-on-version-bump)
+
+- id: sqldriverfactory-gains-opt-in-schemaupgrade-wipe-on-version-20260626-195502
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: data/db
+- date: 2026-06-26
+
+-
+
+### Files
+- frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/SchemaUpgrade.kt
+- frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt
+- frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/DatabaseModule.kt

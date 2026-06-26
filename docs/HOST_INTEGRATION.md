@@ -63,6 +63,22 @@ for anything the helper doesn't cover:
 single<MyHostDatabase> { MyHostDatabase(get<SqlDriverFactory>().create(MyHostDatabase.Schema, "host.db")) }
 ```
 
+**Wipe-on-version-bump (pre-launch alternative to `.sqm` migrations).** Pass a `SchemaUpgrade` to drop
+and recreate the database when your schema generation changes — no migration files:
+
+```kotlin
+databaseSingle(MyHostDatabase.Schema, "host.db", SchemaUpgrade.WipeOnVersionBump(4)) { driver ->
+    MyHostDatabase(driver)
+}
+```
+
+`version` is *your* schema generation counter (bump it on any schema-shape change; independent of
+SQLDelight's `Schema.version`). When the value persisted for that db name differs from `version` **and**
+a file already exists, the factory deletes the file (+ `-wal`/`-shm`) before opening, then records the
+new version. The factory persists the version through the host's `KeyValueStore`, so
+**`WipeOnVersionBump` requires `prefsModule`** in the graph (it throws otherwise). The default
+`SchemaUpgrade.None` opens the file as-is.
+
 On Android, before `startKoin { ... }`, point the toolkit at your `Application` context
 (`DatabaseContext` lives in `:core-di`, package `dev.jdgarita.frnk.di` — both the SQL driver and
 the SharedPreferences-backed `KeyValueStore` resolve through it):

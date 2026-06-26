@@ -4,8 +4,9 @@ Pure-interface SQL persistence SPI (restructure Stage 4 split — the old `share
 
 ## Contents
 
-- `SqlDriverFactory.kt` — `fun interface` returning a `SqlDriver` for a host-supplied `SqlSchema` + db name. Bound by `databaseModule` (`:data-db-impl`); consumed by the host's own schema module — `demo/shared`'s `demoNotesModule`/`DemoDB` is the worked example (OQ-2).
-- `ext/SqlDriverFactoryExt.kt` — `databaseSingle(schema, name) { driver -> Db(driver) }` (Tier 2.4), an `inline reified` Koin `Module` extension that registers a `single<T>` resolving the `SqlDriverFactory` and forwarding to `create(...)`, replacing the hand-written `single { Db(get<SqlDriverFactory>().create(Db.Schema, "x.db")) }`. The raw long form stays valid.
+- `SqlDriverFactory.kt` — `interface` returning a `SqlDriver` for a host-supplied `SqlSchema` + db name + `SchemaUpgrade`. Bound by `databaseModule` (`:data-db-impl`); consumed by the host's own schema module — `demo/shared`'s `demoNotesModule`/`DemoDB` is the worked example (OQ-2). **Was a `fun interface`** until the wipe hook added the defaulted `upgrade` param (a SAM can't carry it) — construct via `object : SqlDriverFactory` now.
+- `SchemaUpgrade.kt` — `sealed interface SchemaUpgrade` (`None` | `WipeOnVersionBump(version)`) + the pure `shouldWipe(persisted, current, dbFileExists)` decision (tested by `ShouldWipeTest`). `WipeOnVersionBump` is the pre-launch delete-and-recreate alternative to `.sqm` migrations; the impl persists the version through the host's `KeyValueStore` (so it needs `prefsModule`).
+- `ext/SqlDriverFactoryExt.kt` — `databaseSingle(schema, name, upgrade = SchemaUpgrade.None) { driver -> Db(driver) }` (Tier 2.4), an `inline reified` Koin `Module` extension that registers a `single<T>` resolving the `SqlDriverFactory` and forwarding to `create(...)`, replacing the hand-written `single { Db(get<SqlDriverFactory>().create(Db.Schema, "x.db")) }`. The raw long form stays valid.
 
 What moved out at Stage 4:
 

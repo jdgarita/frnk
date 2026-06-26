@@ -4,8 +4,9 @@ Platform SQLDelight **driver** wiring for `:data-db-api` (restructure Stage 4 sp
 
 ## Contents
 
-- `DatabaseModule.kt` — exports `val databaseModule = module { single<SqlDriverFactory> { defaultSqlDriverFactory() } }`. That's the whole module: drivers only. Key-value is a separate axis (`prefsModule`, `:data-prefs-impl`).
-- `Defaults.kt` (`commonMain`) + `Defaults.android.kt` / `Defaults.ios.kt` — `expect/actual` for the platform driver factory: `AndroidSqliteDriver` (reads the Android `Context` from `:core-di`'s `DatabaseContext`) / `NativeSqliteDriver`.
+- `DatabaseModule.kt` — exports `val databaseModule = module { single<SqlDriverFactory> { defaultSqlDriverFactory(versionStore = getOrNull<KeyValueStore>()) } }`. Drivers only; the `KeyValueStore` is resolved **leniently** (needed only for `SchemaUpgrade.WipeOnVersionBump`, which persists the schema generation through it — so wipe hosts also install `prefsModule`; `None` hosts don't).
+- `Defaults.kt` (`commonMain`) — the common `DefaultSqlDriverFactory` (honors `SchemaUpgrade`: for `WipeOnVersionBump` it reads the persisted version from the `KeyValueStore` key `frnk.db.<name>.schema_version`, runs `shouldWipe`, deletes the file *before* opening, then records the version *after* a successful open) + the internal `DbPlatform` SPI (`createDriver`/`databaseFileExists`/`deleteDatabaseFiles`) it drives.
+- `Defaults.android.kt` / `Defaults.ios.kt` — `actual fun dbPlatform()`: Android `AndroidSqliteDriver` + `context.getDatabasePath(name)` exists/delete (reads the Android `Context` from `:core-di`'s `DatabaseContext`); iOS `NativeSqliteDriver` + `NSDocumentDirectory` exists/delete. **iOS wipe path is a known-deferred follow-up (m2):** `NativeSqliteDriver` may store the DB outside Documents, making the delete a no-op — fix by passing an explicit `DatabaseConfiguration` path.
 
 What moved out at Stage 4:
 
@@ -20,6 +21,6 @@ What moved out at Stage 4:
 
 ## Dependencies
 
-- `api(projects.dataDbApi)`; `implementation(libs.koin.core)`.
+- `api(projects.dataDbApi)`; `implementation(libs.koin.core)`; `implementation(projects.dataPrefsApi)` (the `KeyValueStore` the factory persists the schema generation through, for `WipeOnVersionBump`).
 - `androidMain`: `sqldelight-android-driver` + `implementation(projects.coreDi)` (for `DatabaseContext`).
 - `iosMain`: `sqldelight-native-driver`.
