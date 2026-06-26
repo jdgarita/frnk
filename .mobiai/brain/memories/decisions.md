@@ -1355,3 +1355,23 @@ Note: only hosts that hand-wire the nav primitives without FrnkApp still wrap th
 - frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/SchemaUpgrade.kt
 - frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt
 - frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/DatabaseModule.kt
+
+## iOS DbPlatform pins explicit App-Support basePath (m2 closed)
+
+- id: ios-dbplatform-pins-explicit-app-support-basepath-m2-closed-20260626-212611
+- type: architecture_decision
+- status: active
+- platform: ios
+- area: data-db-impl
+- date: 2026-06-26
+
+Closes the deferred m2 follow-up on SchemaUpgrade.WipeOnVersionBump. The iOS DbPlatform actual previously opened NativeSqliteDriver(schema, name) (SQLiter default path) but checked/deleted under NSDocumentDirectory — a path mismatch that made the wipe a silent no-op on iOS.
+
+Root cause (decompiled SQLiter 1.3.3 sources, pulled by SQLDelight 2.3.2): NativeSqliteDriver writes to NSApplicationSupportDirectory/databases/<name> by default (co.touchlab.sqliter.DatabaseFileContext.iosDirPath("databases")), NOT NSDocumentDirectory. So delete-path != create-path.
+
+Fix: createDriver/databaseFileExists/deleteDatabaseFiles now share one databasesDir() helper that pins NSApplicationSupportDirectory/databases. createDriver injects it via NativeSqliteDriver onConfiguration { extendedConfig.copy(basePath = …) }; exists/delete resolve the same dir → delete-path == create-path by construction, decoupled from any future SQLiter default change. The helper createDirectoryAtPath(withIntermediateDirectories=true) itself because passing an explicit basePath bypasses SQLiter auto-create. Chose App Support (= SQLiter default) so existing on-disk DBs are still found (no orphaning) and the DB keeps correct iOS semantics (not user-visible/iCloud). No :data-db-api SPI / Android actual / DbPlatform shape change.
+
+Verified on a physical iPhone (iOS 26.5) via Still iosApp: v4 fresh install → exists=false, create @ Library/Application Support/databases, no wipe; v4 relaunch → no exists/delete (matching version short-circuit); 4→5 bump → delete fresh_track.db/-wal/-shm existedBefore=true→existsAfter=false at that path, recreate same dir; v5 relaunch → no wipe.
+
+### Files
+- frnk/data/db-impl/src/iosMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.ios.kt
