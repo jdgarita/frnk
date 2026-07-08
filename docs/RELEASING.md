@@ -4,7 +4,7 @@ frnk ships as **source** — there are no Maven artifacts, no AARs, and no publi
 
 A release therefore consists of three things:
 
-1. A signed Git tag `vMAJOR.MINOR.PATCH` on `main`.
+1. An annotated Git tag (`vMAJOR.MINOR.PATCH` or a prerelease tag like `vX.Y.Z-alphaN`) on `main`.
 2. A `CHANGELOG.md` section describing what changed.
 3. A GitHub Release with those notes — auto-created by `.github/workflows/release.yml` on tag push.
 
@@ -21,7 +21,7 @@ While the API is in `0.x`:
 
 Once `1.0.0` ships, standard SemVer applies: breaking changes go in `MAJOR`.
 
-Pre-release tags follow the `vX.Y.Z-rcN` / `-betaN` / `-alphaN` shape (e.g. `v0.2.0-rc1`). The release workflow detects the hyphen and marks them as GitHub pre-releases.
+Prerelease tags follow the `vX.Y.Z-alphaN` / `-betaN` / `-rcN` shape (e.g. `v0.2.0-alpha1`). The release workflow detects the hyphen and marks them as GitHub prereleases.
 
 ## How to cut a release
 
@@ -32,31 +32,31 @@ You need: a clean `main` with all wanted changes landed and **validated locally*
 2. **Update `Frnk.VERSION`** in `frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt`. The release workflow refuses to publish if this doesn't match the tag.
 
 3. **Update `CHANGELOG.md`:**
-   - Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`.
+   - Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` or `## [X.Y.Z-alphaN] - YYYY-MM-DD`.
    - Drop any empty subsections (`### Added` / `### Changed` / `### Fixed` / `### Removed`) for that version.
    - Add a fresh empty `## [Unreleased]` block at the top.
-   - Update the link references at the bottom (`[Unreleased]: ...compare/vX.Y.Z...HEAD` and add a `[X.Y.Z]: ...releases/tag/vX.Y.Z`).
+   - Update the link references at the bottom (`[Unreleased]: ...compare/vX.Y.Z-alphaN...HEAD` and add a `[X.Y.Z-alphaN]: ...releases/tag/vX.Y.Z-alphaN`).
 
 4. **Commit and tag:**
 
    ```bash
    git add CHANGELOG.md frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt
-   git commit -m "Release vX.Y.Z"
-   git tag -a vX.Y.Z -m "vX.Y.Z"
+   git commit -m "Release v0.2.0-alpha1"
+   git tag -a v0.2.0-alpha1 -m "v0.2.0-alpha1"
    ```
 
 5. **Push:**
 
    ```bash
    git push origin main
-   git push origin vX.Y.Z
+   git push origin v0.2.0-alpha1
    ```
 
 The `release` workflow fires on the tag push, verifies `Frnk.VERSION` matches, extracts the matching CHANGELOG section, and creates the GitHub Release. Watch it at <https://github.com/jdgarita/frnk/actions>.
 
 ## If the release workflow fails
 
-- **`Frnk.VERSION` mismatch:** delete the tag (`git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z`), fix `Frnk.kt`, commit, re-tag, re-push.
+- **`Frnk.VERSION` mismatch:** delete the tag (`git tag -d v0.2.0-alpha1 && git push origin :refs/tags/v0.2.0-alpha1`), fix `Frnk.kt`, commit, re-tag, re-push.
 - **No CHANGELOG section found:** the workflow falls back to GitHub's auto-generated notes (PR list since the previous tag). You can edit the release body manually afterwards on the GitHub UI.
 - **Anything else:** delete the tag as above and re-run after fixing.
 

@@ -15,6 +15,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.2.0-alpha1] - 2026-07-08
+
 ### Changed
 
 - **Breaking (nav contract): route catalogues tightened (Tier 3.3, `:core-nav`).** The tab-level catalogue was renamed **`FrnkRoute` → `FrnkTabRoute`** so the level is explicit in the type name (`FrnkRootRoute` keeps its name), and its vestigial `Onboarding`/`Paywall` members were **removed** — full-screen flows live on `FrnkRootRoute`. The paywall helpers in `:shared-monetization-ui` (`frnkPaywallNavigation` + `rememberFrnkSettingsHandler`) now target **`FrnkRootRoute.Paywall`** (the paywall is a `FrnkFullScreenRoute`, so it belongs above the bottom bar; `rememberFrnkSettingsHandler`'s `backStack` must be the **root** stack). The config builders are now **symmetric**: `frnkRootNavConfig` became a function `frnkRootNavConfig(hostRoutes = …)` that registers `FrnkRootRoute.Custom` (the old `val` form silently dropped it) and merges host root routes — closing a real capability gap (the root stack was not host-extensible). **Migration:** `FrnkRoute` → `FrnkTabRoute`; `{ frnkRootNavConfig }` → `{ frnkRootNavConfig() }`. Nested/tab stacks are in-memory only, so the `serialName` change needs no persistence migration; the process-death-persisted root stack (`FrnkRootRoute`) is unchanged.
@@ -81,5 +83,6 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.2.0-alpha1...HEAD
+[0.2.0-alpha1]: https://github.com/jdgarita/frnk/releases/tag/v0.2.0-alpha1
 [0.1.0]: https://github.com/jdgarita/frnk/releases/tag/v0.1.0

@@ -66,11 +66,11 @@ This toolkit is designed to live alongside the consuming app as a Git submodule.
 **1. Add the submodule and pin it to a release tag:**
 ```bash
 git submodule add git@github.com:jdgarita/frnk.git frnk
-cd frnk && git checkout v0.1.0 && cd ..    # pin to a published release — see Releases page
-git add frnk && git commit -m "Pin frnk to v0.1.0"
+cd frnk && git checkout v0.2.0-alpha1 && cd ..    # pin to a published release tag
+git add frnk && git commit -m "Pin frnk to v0.2.0-alpha1"
 ```
 
-> The submodule pointer is a commit SHA — checking out a tag records the tagged commit, which is how the consumer locks the toolkit version. To bump later: `cd frnk && git fetch --tags && git checkout vX.Y.Z && cd .. && git add frnk && git commit`.
+> The submodule pointer is a commit SHA — checking out a tag records the tagged commit, which is how the consumer locks the toolkit version. To bump later: `cd frnk && git fetch --tags && git checkout <tag> && cd .. && git add frnk && git commit`.
 
 **2. Wire it into the consumer's `settings.gradle.kts`:**
 ```kotlin
@@ -160,7 +160,7 @@ Installation is automatic: the root build registers `installGitHooks`, wired to 
 
 ## 🏷️ Releases & versioning
 
-Releases are cut as Git tags (`vMAJOR.MINOR.PATCH`) on `main`. There are no published artifacts — downstream apps pin via submodule checkout (see above). See [`docs/RELEASING.md`](docs/RELEASING.md) for the maintainer procedure and [`CHANGELOG.md`](CHANGELOG.md) for the history.
+Releases are cut as Git tags (`vMAJOR.MINOR.PATCH` or prerelease tags like `vX.Y.Z-alphaN`) on `main`. There are no published artifacts — downstream apps pin via submodule checkout (see above). See [`docs/RELEASING.md`](docs/RELEASING.md) for the maintainer procedure and [`CHANGELOG.md`](CHANGELOG.md) for the history.
 
 Pre-1.0 versioning policy: `0.x.0` may break API, `0.x.y` is additive/fix-only. Once `1.0.0` ships, standard SemVer applies. The current version is exposed at runtime as `dev.jdgarita.frnk.utils.Frnk.VERSION`.
 
@@ -170,7 +170,7 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 
 ## 🧪 CI
 
-**Build/test CI is paused while the repo is private** — free-tier GitHub Actions minutes are limited, and the per-push pipeline was exhausting them during foundation work. The only workflow that runs today is **`release.yml`** (fires on a `vX.Y.Z` tag push to publish the GitHub Release — see [`docs/RELEASING.md`](docs/RELEASING.md)); an on-demand `@claude` assistant (`claude.yml`) is also kept. The build/test job returns — along with branch protection and PRs — once the foundation lands and the repo goes public.
+**Build/test CI is paused while the repo is private** — free-tier GitHub Actions minutes are limited, and the per-push pipeline was exhausting them during foundation work. The only workflow that runs today is **`release.yml`** (fires on a `v*` tag push to publish the GitHub Release or prerelease — see [`docs/RELEASING.md`](docs/RELEASING.md)); an on-demand `@claude` assistant (`claude.yml`) is also kept. The build/test job returns — along with branch protection and PRs — once the foundation lands and the repo goes public.
 
 **Until then, validate locally before pushing** (this is what the old CI job ran):
 

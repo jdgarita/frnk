@@ -173,9 +173,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 In a downstream app's `settings.gradle.kts`:
 
 ```kotlin
-pluginManagement {
-    includeBuild("../frnk")  // path to this submodule
-}
+includeBuild("../frnk")  // path to this submodule
 
 dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
@@ -189,7 +187,8 @@ Add the submodule:
 
 ```bash
 git submodule add git@github.com:jdgarita/frnk.git frnk
-git submodule update --init --recursive
+cd frnk && git checkout v0.2.0-alpha1 && cd ..
+git add frnk && git commit -m "Pin frnk to v0.2.0-alpha1"
 ```
 
 Then declare the modules you use:
