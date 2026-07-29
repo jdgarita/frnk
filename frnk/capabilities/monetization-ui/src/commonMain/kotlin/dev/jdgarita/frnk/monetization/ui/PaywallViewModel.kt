@@ -25,20 +25,20 @@ class PaywallViewModel(
     private val paywallPurchaseUseCase: PaywallPurchaseUseCase,
     private val analytics: AnalyticsTracker
 ) : MviViewModel<PaywallArguments, PaywallModelState, PaywallScreenState, PaywallIntent, PaywallEffect>(
-        factory = PaywallModelStateFactory
+        factory = PaywallModelStateFactory,
+        mapper = { modelState ->
+            PaywallScreenState(
+                products = modelState.products,
+                selectedProductId = modelState.selectedProductId,
+                isLoading = modelState.isLoading,
+                isPurchasing = modelState.isPurchasing
+            )
+        }
     ) {
     override fun onAttached(arguments: PaywallArguments) {
         analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to arguments.source))
         viewModelScope.launch { loadOfferings() }
     }
-
-    override fun mapToUiState(modelState: PaywallModelState): PaywallScreenState =
-        PaywallScreenState(
-            products = modelState.products,
-            selectedProductId = modelState.selectedProductId,
-            isLoading = modelState.isLoading,
-            isPurchasing = modelState.isPurchasing
-        )
 
     override suspend fun onIntent(intent: PaywallIntent) {
         when (intent) {

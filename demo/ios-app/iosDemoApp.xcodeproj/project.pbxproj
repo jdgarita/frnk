@@ -204,7 +204,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Auto-upload Crashlytics dSYMs so iOS crashes (incl. Kotlin/CrashKiOS) symbolicate (BACKLOG P1-5b).\n# Requires DEBUG_INFORMATION_FORMAT=dwarf-with-dsym (set for Debug + Release).\nset -e\nTOOL=\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols\"\nGSP=\"${SRCROOT}/iosDemoApp/GoogleService-Info.plist\"\nDSYM=\"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\"\nif [ -f \"$TOOL\" ] && [ -d \"$DSYM\" ]; then\n  \"$TOOL\" -gsp \"$GSP\" -p ios \"$DSYM\" || echo \"warning: Crashlytics dSYM upload failed (continuing)\"\nelse\n  echo \"warning: Crashlytics upload-symbols or dSYM not found - skipping (add FirebaseCrashlytics via SPM + enable dSYM)\"\nfi\n";
+			shellScript = "# Auto-upload Crashlytics dSYMs so iOS crashes (incl. Kotlin/CrashKiOS) symbolicate (BACKLOG P1-5b).\n# Requires DEBUG_INFORMATION_FORMAT=dwarf-with-dsym (set for Debug + Release).\nset -e\nTOOL=\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols\"\nGSP=\"${SRCROOT}/iosDemoApp/GoogleService-Info.plist\"\nDSYM=\"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\"\nif [ -f \"$TOOL\" ] && [ -f \"$GSP\" ] && [ -d \"$DSYM\" ]; then\n  \"$TOOL\" -gsp \"$GSP\" -p ios \"$DSYM\" || echo \"warning: Crashlytics dSYM upload failed (continuing)\"\nelse\n  echo \"warning: Crashlytics upload-symbols, GoogleService-Info.plist, or dSYM not found - skipping\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

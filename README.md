@@ -177,6 +177,18 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 1. `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain` plus the demo harness
 2. `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidHostTest` (KMP host tests run under `testAndroidHostTest`, not `testDebugUnitTest`) plus the demo app's unit tests
 
-`assemble`, `allTests`, and `ktlintCheck` are intentionally out — the local pre-commit hook (style) and downstream consumer builds (release assembly, iOS link) already cover them.
+`assemble` and `ktlintCheck` are intentionally out — the local pre-commit hook (style) and downstream consumer builds cover them. `./gradlew allTests` is also available, but `analytics-impl` and `monetization-impl` skip their standalone iOS simulator test binaries because the native Firebase and RevenueCat SDKs belong to the consuming Xcode target. Their common tests still run through `testAndroidHostTest`.
 
-Every `*-impl` module ships `commonTest` and platform-specific (`androidUnitTest`, `iosTest`) source sets so concrete implementations are validated before consumers see them. The **design system** is tested too: `ui-components` carries Compose UI tests for its highest-value atoms (`FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar` search mode) that drive a real composition with `runComposeUiTest` and assert the semantics tree. They run as JVM host tests under **Robolectric** (`GraphicsMode.LEGACY`, no device needed) from an `androidHostTest` source set, so they gate in the same `testAndroidHostTest` step — see `frnk/ui/components/CLAUDE.md`.
+Validate those two modules' native Apple linkage through the demo host, which owns both SwiftPM dependencies:
+
+```bash
+./gradlew :demo-shared:assembleDemoKitDebugXCFramework
+xcodebuild build \
+  -project demo/ios-app/iosDemoApp.xcodeproj \
+  -scheme iosDemoApp \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO \
+  EXCLUDED_SOURCE_FILE_NAMES=GoogleService-Info.plist
+```
+
+Every `*-impl` module ships `commonTest` coverage so concrete implementations are validated before consumers see them. The **design system** is tested too: `ui-components` carries Compose UI tests for its highest-value atoms (`FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar` search mode) that drive a real composition with `runComposeUiTest` and assert the semantics tree. They run as JVM host tests under **Robolectric** (`GraphicsMode.LEGACY`, no device needed) from an `androidHostTest` source set, so they gate in the same `testAndroidHostTest` step — see `frnk/ui/components/CLAUDE.md`.

@@ -1,13 +1,19 @@
 package dev.jdgarita.frnk.ui.mvi
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -40,6 +46,54 @@ class MviViewModelTest {
             // Factory seeds count = 7; the mapper decorates it as "Count: 7".
             assertEquals(7, vm.state.value.count)
             assertEquals("Count: 7", vm.state.value.label)
+        }
+
+    @Test
+    fun initial_model_is_created_exactly_once() =
+        runTest(dispatcher) {
+            val factory = CountingSampleModelFactory()
+
+            SampleViewModel(factory)
+
+            assertEquals(1, factory.invocationCount)
+        }
+
+    @Test
+    fun effects_retain_the_feature_effect_type() =
+        runTest(dispatcher) {
+            val vm = SampleViewModel()
+
+            val typedEffects: Flow<SampleEffect> = vm.effects
+
+            val effect = async { typedEffects.first() }
+            vm.send(SampleIntent.Reset)
+            runCurrent()
+            assertEquals(SampleEffect.DidReset, effect.await())
+        }
+
+    @Test
+    fun intents_are_processed_in_order_without_dropping_bursts() =
+        runTest(dispatcher) {
+            val vm = OrderedIntentViewModel()
+
+            vm.send(OrderedIntent.Value(0))
+            vm.firstIntentStarted.await()
+            (1..64).forEach { vm.send(OrderedIntent.Value(it)) }
+            vm.releaseFirstIntent.complete(Unit)
+            advanceUntilIdle()
+
+            assertEquals((0..64).toList(), vm.received)
+        }
+
+    @Test
+    fun concurrent_model_updates_are_atomic() =
+        runTest(dispatcher) {
+            val vm = SampleViewModel()
+
+            vm.incrementConcurrently(1_000)
+            advanceUntilIdle()
+
+            assertEquals(1_007, vm.state.value.count)
         }
 
     @Test
@@ -114,6 +168,16 @@ private object SampleModelFactory : ModelStateFactory<SampleModel> {
     override fun initialModelState() = SampleModel()
 }
 
+private class CountingSampleModelFactory : ModelStateFactory<SampleModel> {
+    var invocationCount = 0
+        private set
+
+    override fun initialModelState(): SampleModel {
+        invocationCount += 1
+        return SampleModel()
+    }
+}
+
 private data class SampleUiState(
     val count: Int,
     val label: String
@@ -129,13 +193,25 @@ private sealed interface SampleEffect : UiEffect {
     data object DidReset : SampleEffect
 }
 
-private class SampleViewModel :
-    MviViewModel<SampleArguments, SampleModel, SampleUiState, SampleIntent, SampleEffect>(SampleModelFactory) {
+private class SampleViewModel(
+    factory: ModelStateFactory<SampleModel> = SampleModelFactory
+) : MviViewModel<SampleArguments, SampleModel, SampleUiState, SampleIntent, SampleEffect>(
+        factory = factory,
+        mapper = { SampleUiState(count = it.count, label = "Count: ${it.count}") }
+    ) {
+    suspend fun incrementConcurrently(times: Int) {
+        withContext(Dispatchers.Default) {
+            coroutineScope {
+                repeat(times) {
+                    launch { updateModel { copy(count = count + 1) } }
+                }
+            }
+        }
+    }
+
     override fun onAttached(arguments: SampleArguments) {
         updateModel { copy(count = arguments.startCount) }
     }
-
-    override fun mapToUiState(modelState: SampleModel) = SampleUiState(count = modelState.count, label = "Count: ${modelState.count}")
 
     override suspend fun onIntent(intent: SampleIntent) {
         when (intent) {
@@ -143,6 +219,50 @@ private class SampleViewModel :
             SampleIntent.Reset -> {
                 updateModel { copy(count = 0) }
                 emit(SampleEffect.DidReset)
+            }
+        }
+    }
+}
+
+private data object OrderedArguments : Arguments
+
+private data class OrderedModel(
+    val count: Int = 0
+) : ModelState
+
+private data class OrderedState(
+    val count: Int
+) : UiState
+
+private object OrderedModelFactory : ModelStateFactory<OrderedModel> {
+    override fun initialModelState() = OrderedModel()
+}
+
+private sealed interface OrderedIntent : UiIntent {
+    data class Value(
+        val value: Int
+    ) : OrderedIntent
+}
+
+private data object OrderedEffect : UiEffect
+
+private class OrderedIntentViewModel :
+    MviViewModel<OrderedArguments, OrderedModel, OrderedState, OrderedIntent, OrderedEffect>(
+        factory = OrderedModelFactory,
+        mapper = { OrderedState(it.count) }
+    ) {
+    val firstIntentStarted = CompletableDeferred<Unit>()
+    val releaseFirstIntent = CompletableDeferred<Unit>()
+    val received = mutableListOf<Int>()
+
+    override suspend fun onIntent(intent: OrderedIntent) {
+        when (intent) {
+            is OrderedIntent.Value -> {
+                if (intent.value == 0) {
+                    firstIntentStarted.complete(Unit)
+                    releaseFirstIntent.await()
+                }
+                received += intent.value
             }
         }
     }

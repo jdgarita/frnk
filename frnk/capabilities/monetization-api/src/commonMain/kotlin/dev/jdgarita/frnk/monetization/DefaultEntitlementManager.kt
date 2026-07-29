@@ -6,8 +6,6 @@ import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.database.booleanPreference
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,14 +24,14 @@ import kotlinx.coroutines.flow.stateIn
  * - God mode is persisted via [KeyValueStore] so it survives restarts (usable in release builds).
  * - Every purchase/restore routes through here so the funnel analytics fire in one place.
  *
- * Lives for the app's lifetime (a Koin `single`), so its internal [scope] is never cancelled. Tests pass
- * a controlled scope.
+ * Lives for the app's lifetime (a Koin `single`). Its application-owned [scope] is injected and
+ * cancelled when the Koin application closes. Tests pass a controlled scope.
  */
 class DefaultEntitlementManager(
     private val provider: EntitlementProvider,
     private val keyValueStore: KeyValueStore,
     private val analytics: AnalyticsTracker,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    scope: CoroutineScope
 ) : EntitlementManager {
     /** Typed view over the persisted god-mode flag — same key/representation as a raw `putBoolean`. */
     private val godModePref = keyValueStore.booleanPreference(GOD_MODE_KEY, default = false)

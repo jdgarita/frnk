@@ -4,7 +4,16 @@ import dev.jdgarita.frnk.monetization.usecase.DefaultObserveProStatusUseCase
 import dev.jdgarita.frnk.monetization.usecase.DefaultPaywallPurchaseUseCase
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.koin.core.module.dsl.onClose
+import org.koin.core.module.dsl.withOptions
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
+internal val FRNK_APPLICATION_SCOPE = named("frnkApplicationScope")
 
 /**
  * frnk-owned monetization bindings, independent of any billing SDK. Binds the canonical
@@ -16,7 +25,19 @@ import org.koin.dsl.module
  */
 val monetizationModule =
     module {
-        single<EntitlementManager> { DefaultEntitlementManager(get(), get(), get()) }
+        single<CoroutineScope>(FRNK_APPLICATION_SCOPE) {
+            CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        } withOptions {
+            onClose { scope -> scope?.cancel() }
+        }
+        single<EntitlementManager> {
+            DefaultEntitlementManager(
+                provider = get(),
+                keyValueStore = get(),
+                analytics = get(),
+                scope = get(FRNK_APPLICATION_SCOPE)
+            )
+        }
         single { FeatureGate(get(), get()) }
         single<ObserveProStatusUseCase> { DefaultObserveProStatusUseCase(get()) }
         single<PaywallPurchaseUseCase> { DefaultPaywallPurchaseUseCase(get()) }

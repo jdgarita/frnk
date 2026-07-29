@@ -15,3 +15,12 @@ kotlin {
         }
     }
 }
+
+// RevenueCat's Apple SDK is supplied by the consuming Xcode target, so this module cannot link a
+// standalone Kotlin/Native test executable. Its common tests still run via testAndroidHostTest;
+// native linkage is verified by the demo Xcode integration build.
+listOf("linkDebugTestIosSimulatorArm64", "iosSimulatorArm64Test").forEach { taskName ->
+    tasks.named(taskName) {
+        enabled = false
+    }
+}

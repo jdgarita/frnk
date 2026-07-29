@@ -273,6 +273,22 @@ Two rules carry over from the old packaging:
 - Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native
   dep list.
 
+The same ownership boundary applies to tests. `:analytics-impl` and `:monetization-impl` run their
+common tests through `testAndroidHostTest`, but skip standalone iOS simulator test executables:
+those executables have no consuming Xcode target from which to obtain Firebase or RevenueCat.
+Validate their native Apple linkage through an integration host that supplies both packages. The
+repository demo is the canonical gate:
+
+```bash
+./gradlew :demo-shared:assembleDemoKitDebugXCFramework
+xcodebuild build \
+  -project demo/ios-app/iosDemoApp.xcodeproj \
+  -scheme iosDemoApp \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO \
+  EXCLUDED_SOURCE_FILE_NAMES=GoogleService-Info.plist
+```
+
 ### The umbrella module's `build.gradle.kts`
 
 `export(...)` is **non-transitive**, so list every frnk module whose Swift API you want visible —

@@ -34,7 +34,8 @@ class DemoHomeViewModel(
     private val camera: CameraController,
     private val permissions: PermissionController
 ) : MviViewModel<DemoHomeArguments, DemoHomeModelState, DemoHomeScreenState, DemoHomeIntent, DemoHomeEffect>(
-        factory = DemoHomeModelStateFactory
+        factory = DemoHomeModelStateFactory,
+        mapper = { demoHomeScreenState() }
     ) {
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
@@ -65,20 +66,6 @@ class DemoHomeViewModel(
             onFailure = { emit(DemoHomeEffect.Toast("Couldn't load notes: ${it.message}")) }
         )
     }
-
-    override fun mapToUiState(modelState: DemoHomeModelState): DemoHomeScreenState =
-        DemoHomeScreenState(
-            email = "guy.turner@example.com",
-            isPro = false,
-            isGodMode = false,
-            frnkHomeState =
-                HomeScreenState(
-                    topBar =
-                        FrnkTopAppBarState(
-                            title = FrnkStringSource.Raw("Frnk")
-                        )
-                )
-        )
 
     override suspend fun onIntent(intent: DemoHomeIntent) {
         when (intent) {
@@ -186,3 +173,17 @@ class DemoHomeViewModel(
         }
     }
 }
+
+private fun demoHomeScreenState(): DemoHomeScreenState =
+    DemoHomeScreenState(
+        email = "guy.turner@example.com",
+        isPro = false,
+        isGodMode = false,
+        frnkHomeState =
+            HomeScreenState(
+                topBar =
+                    FrnkTopAppBarState(
+                        title = FrnkStringSource.Raw("Frnk")
+                    )
+            )
+    )
