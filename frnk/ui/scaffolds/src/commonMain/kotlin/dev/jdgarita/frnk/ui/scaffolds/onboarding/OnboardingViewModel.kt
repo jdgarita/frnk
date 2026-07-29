@@ -14,7 +14,13 @@ import dev.jdgarita.frnk.ui.scaffolds.onboarding.ext.toUiState
  */
 class OnboardingViewModel :
     MviViewModel<OnboardingArguments, OnboardingModelState, OnboardingScreenState, OnboardingIntent, OnboardingEffect>(
-        factory = OnboardingModelStateFactory
+        factory = OnboardingModelStateFactory,
+        mapper = { modelState ->
+            OnboardingScreenState(
+                pages = modelState.pages.map { it.toUiState() },
+                currentPageIndex = modelState.currentPageIndex
+            )
+        }
     ) {
     override fun onAttached(arguments: OnboardingArguments) {
         super.onAttached(arguments)
@@ -22,12 +28,6 @@ class OnboardingViewModel :
             copy(pages = arguments.pages)
         }
     }
-
-    override fun mapToUiState(modelState: OnboardingModelState): OnboardingScreenState =
-        OnboardingScreenState(
-            pages = modelState.pages.map { it.toUiState() },
-            currentPageIndex = modelState.currentPageIndex
-        )
 
     override suspend fun onIntent(intent: OnboardingIntent) {
         when (intent) {

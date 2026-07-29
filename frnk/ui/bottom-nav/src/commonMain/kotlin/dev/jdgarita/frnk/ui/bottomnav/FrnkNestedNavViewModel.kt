@@ -29,7 +29,8 @@ import dev.jdgarita.frnk.ui.theme.iconNavSettings
  */
 class FrnkNestedNavViewModel :
     MviViewModel<FrnkNestedNavArguments, FrnkNestedNavModelState, FrnkNestedNavScreenState, FrnkNestedNavIntent, FrnkNestedNavEffect>(
-        factory = FrnkNestedNavModelStateFactory
+        factory = FrnkNestedNavModelStateFactory,
+        mapper = ::nestedNavScreenState
     ) {
     /** The single live stack the scaffold renders + hands to the host module. Seeded with the Home tab's root. */
     val backStack: NavBackStack<NavKey> = NavBackStack(FrnkTabRoute.Home)
@@ -69,20 +70,6 @@ class FrnkNestedNavViewModel :
             )
         }
     }
-
-    override fun mapToUiState(modelState: FrnkNestedNavModelState): FrnkNestedNavScreenState =
-        FrnkNestedNavScreenState(
-            items =
-                modelState.items.map { item ->
-                    FrnkNavBarItem(
-                        key = item.key,
-                        icon = item.icon,
-                        iosSystemIcon = item.iosSystemIcon,
-                        label = item.label
-                    )
-                },
-            selectedIndex = modelState.selectedIndex
-        )
 
     override suspend fun onIntent(intent: FrnkNestedNavIntent) {
         when (intent) {
@@ -140,3 +127,17 @@ class FrnkNestedNavViewModel :
         ): List<List<NavKey>> = toMutableList().also { it[index] = value }
     }
 }
+
+private fun nestedNavScreenState(modelState: FrnkNestedNavModelState): FrnkNestedNavScreenState =
+    FrnkNestedNavScreenState(
+        items =
+            modelState.items.map { item ->
+                FrnkNavBarItem(
+                    key = item.key,
+                    icon = item.icon,
+                    iosSystemIcon = item.iosSystemIcon,
+                    label = item.label
+                )
+            },
+        selectedIndex = modelState.selectedIndex
+    )

@@ -29,12 +29,11 @@ class SettingsViewModel(
         factory =
             object : ModelStateFactory<SettingsModelState> {
                 override fun initialModelState() = SettingsModelState.DEFAULT
-            }
+            },
+        mapper = SettingsModelState::toUiState
     ) {
     /** Reactive Free/Pro status. */
     val isPro: StateFlow<Boolean> = observeProStatus.invoke()
-
-    override fun mapToUiState(modelState: SettingsModelState): SettingsScreenState = modelState.toUiState()
 
     override suspend fun onIntent(intent: SettingsIntent) {
         when (intent) {

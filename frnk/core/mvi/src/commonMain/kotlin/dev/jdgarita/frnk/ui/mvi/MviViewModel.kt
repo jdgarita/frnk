@@ -3,15 +3,16 @@ package dev.jdgarita.frnk.ui.mvi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.jdgarita.frnk.ui.mvi.ext.collect
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -21,12 +22,12 @@ import kotlinx.coroutines.launch
  *  - [ModelState] (`M`) — the **data only**, no UI decoration. The ViewModel mutates *this* in
  *    response to external sources (data sources, use cases, …) via [updateModel].
  *  - [UiState] (`S`) — the **rendered, decorated** state the UI collects ([state]). It is *never*
- *    set directly; it is **derived automatically** from the [ModelState] by [mapToUiState], which the
- *    base re-runs on every model change.
+ *    set directly; it is **derived automatically** from the [ModelState] by the constructor-supplied
+ *    mapper, which the base re-runs on every model change.
  *
  * No subclass receives an initial UiState, nor the initial ModelState directly: the initial model is
  * produced by a [ModelStateFactory], and the initial UiState is the factory's model mapped through
- * [mapToUiState]. So a feature only declares *how to seed the data* (the factory) and *how to decorate
+ * the supplied mapper. So a feature only declares *how to seed the data* (the factory) and *how to decorate
  * it* (the mapper) — the engine owns the wiring.
  *
  * Runtime inputs arrive as [Arguments] (`A`) at **attach time**, not via the constructor: the Compose
@@ -35,30 +36,36 @@ import kotlinx.coroutines.launch
  * arguments and start loads — that work runs when the screen is actually shown, not at construction.
  * Service dependencies (managers, trackers) stay as ordinary constructor params, separate from [Arguments].
  *
- * It also owns a `SharedFlow<I>` for fire-and-forget intents (replay = 0) and a
- * `Channel<E>` for one-shot effects (no replay, conflated). Override [onIntent] for side-effectful
+ * It also owns an ordered, non-lossy `Channel<I>` for intents and typed `Flow<E>` effects backed by a
+ * buffered channel. Override [onIntent] for side-effectful
  * work, mutate data with [updateModel], and surface one-shots with [emit].
  *
- * **Purity contract:** [mapToUiState] is invoked from the [state] field initializer (to seed the first
- * UiState), so it must be a *pure function of its [modelState][mapToUiState] argument* — it must not
+ * **Purity contract:** the mapper is invoked from the [state] field initializer (to seed the first
+ * UiState), so it must be a *pure function of its model-state argument* — it must not
  * read subclass properties that are initialized after the super constructor runs.
  */
 abstract class MviViewModel<A : Arguments, M : ModelState, S : UiState, I : UiIntent, E : UiEffect>(
-    factory: ModelStateFactory<M>
+    factory: ModelStateFactory<M>,
+    mapper: (M) -> S
 ) : ViewModel() {
     // The data-only layer. Mutate via [updateModel]; the UI never reads it (it collects [state]).
-    private val modelState = MutableStateFlow(factory.initialModelState())
-
-    private val _state = MutableStateFlow(mapToUiState(factory.initialModelState()))
+    private val initialModelState = factory.initialModelState()
+    private val modelState = MutableStateFlow(initialModelState)
 
     /** The rendered state the UI collects. Derived from [modelState]; never set directly. */
-    val state: StateFlow<S> = _state.asStateFlow()
+    val state: StateFlow<S> =
+        modelState
+            .map(mapper)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, mapper(initialModelState))
 
-    private val _intents = MutableSharedFlow<I>(extraBufferCapacity = 16, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val intents = _intents.asSharedFlow()
+    private val _intents = Channel<I>(capacity = Channel.UNLIMITED)
+    val intents: Flow<I> = _intents.receiveAsFlow()
 
-    private val _effects = Channel<UiEffect>(capacity = Channel.BUFFERED)
-    val effects = _effects.receiveAsFlow()
+    private val _effects = Channel<E>(capacity = Channel.BUFFERED)
+    val effects: Flow<E> = _effects.receiveAsFlow()
+
+    private val _commonEffects = Channel<CommonUiEffect>(capacity = Channel.BUFFERED)
+    val commonEffects: Flow<CommonUiEffect> = _commonEffects.receiveAsFlow()
 
     private var attached = false
 
@@ -67,17 +74,13 @@ abstract class MviViewModel<A : Arguments, M : ModelState, S : UiState, I : UiIn
         private set
 
     init {
-        // Trigger: re-derive the UiState automatically whenever the ModelState changes.
         viewModelScope.launch {
-            modelState.onEach { _state.value = mapToUiState(it) }.collect()
-        }
-        viewModelScope.launch {
-            _intents.onEach { onIntent(it) }.collect()
+            intents.onEach { onIntent(it) }.collect()
         }
     }
 
     fun send(intent: I) {
-        _intents.tryEmit(intent)
+        _intents.trySend(intent)
     }
 
     /**
@@ -100,23 +103,20 @@ abstract class MviViewModel<A : Arguments, M : ModelState, S : UiState, I : UiIn
 
     /** The only state mutator: change the data; the UiState re-maps automatically. */
     protected fun updateModel(reducer: M.() -> M) {
-        modelState.value = modelState.value.reducer()
+        modelState.update { current -> current.reducer() }
     }
 
     protected fun currentModel(): M = modelState.value
 
-    protected fun currentState(): S = _state.value
+    protected fun currentState(): S = state.value
 
     protected suspend fun emit(effect: E) {
         _effects.send(element = effect)
     }
 
     protected suspend fun emit(effect: CommonUiEffect) {
-        _effects.send(element = effect)
+        _commonEffects.send(element = effect)
     }
-
-    /** Map the data-only [ModelState] to the decorated [UiState]. Must be pure in its argument. */
-    protected abstract fun mapToUiState(modelState: M): S
 
     protected abstract suspend fun onIntent(intent: I)
 

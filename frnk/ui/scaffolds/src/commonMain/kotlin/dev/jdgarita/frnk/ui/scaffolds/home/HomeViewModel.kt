@@ -21,7 +21,8 @@ import kotlinx.coroutines.flow.onEach
 class HomeViewModel(
     observeProStatus: ObserveProStatusUseCase
 ) : MviViewModel<HomeArguments, HomeModelState, HomeScreenState, HomeIntent, HomeEffect>(
-        factory = HomeModelStateFactory
+        factory = HomeModelStateFactory,
+        mapper = ::homeScreenState
     ) {
     val isPro: StateFlow<Boolean> = observeProStatus.invoke()
 
@@ -38,26 +39,6 @@ class HomeViewModel(
         updateModel { copy(topBarTitle = arguments.topBarTitle) }
     }
 
-    override fun mapToUiState(modelState: HomeModelState): HomeScreenState =
-        HomeScreenState(
-            topBar =
-                FrnkTopAppBarState(
-                    title = modelState.topBarTitle,
-                    actions =
-                        when {
-                            modelState.isPro -> emptyList()
-                            else ->
-                                listOf(
-                                    FrnkTopAppBarAction(
-                                        icon = FrnkIconSource.Token(iconUpgrade),
-                                        contentDescription = "Upgrade to Pro",
-                                        key = "upgrade"
-                                    )
-                                )
-                        }
-                )
-        )
-
     override suspend fun onIntent(intent: HomeIntent) {
         when (intent) {
             is HomeIntent.TopBarActionClicked -> emit(HomeEffect.ActionInvoked(intent.action.key))
@@ -66,3 +47,23 @@ class HomeViewModel(
         }
     }
 }
+
+private fun homeScreenState(modelState: HomeModelState): HomeScreenState =
+    HomeScreenState(
+        topBar =
+            FrnkTopAppBarState(
+                title = modelState.topBarTitle,
+                actions =
+                    if (modelState.isPro) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            FrnkTopAppBarAction(
+                                icon = FrnkIconSource.Token(iconUpgrade),
+                                contentDescription = "Upgrade to Pro",
+                                key = "upgrade"
+                            )
+                        )
+                    }
+            )
+    )

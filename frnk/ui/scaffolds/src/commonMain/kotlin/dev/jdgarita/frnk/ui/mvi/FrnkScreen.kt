@@ -72,5 +72,13 @@ fun <A : Arguments, M : ModelState, S : UiState, I : UiIntent, E : UiEffect> Frn
         }
     }
 
+    LaunchedEffect(viewModel.commonEffects, lifecycleOwner, initialLifecycleState) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(initialLifecycleState) {
+            viewModel.commonEffects.collect { newUiEffect ->
+                currentOnEffect(newUiEffect)
+            }
+        }
+    }
+
     content(state)
 }
