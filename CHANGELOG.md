@@ -15,6 +15,11 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Added
+
+- **`:core-platform` host-service contracts.** Added an SDK-free KMP module for camera capture,
+  image selection/decoding, application settings actions, and maps integrations.
+
 ## [0.2.0-alpha1] - 2026-07-08
 
 ### Changed

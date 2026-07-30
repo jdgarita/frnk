@@ -11,6 +11,7 @@ core/   (no upward deps; util is the root everything depends on)
   util  ── coroutines + datetime + AppResult + PlatformInfo + Frnk.VERSION
   mvi   ── MviContract, MviViewModel, UiText             (no Compose)
   nav   ── Navigation3 contract, FrnkTabRoute / FrnkRootRoute, registries (no Compose)
+  platform ── SDK-free camera, image, settings, and maps host-service contracts
   di    ── initializeFrnk(modules) + requireFrnkKoin()
 
 data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (impl installed via Koin):
@@ -93,7 +94,7 @@ These are enforced in review:
 
 ```
 core-util ← everything                       # the root; depends on nothing in the graph
-core-mvi, core-nav, core-di:                 no Compose, no upward deps
+core-mvi, core-nav, core-platform, core-di:  no Compose, no upward deps
 data-*-api ← data-*-impl                      # capabilities may depend on data-*-api, never on a *-impl
 haptics ← ui-theme ← ui-components ← ui-scaffolds ← ui-bottom-nav ← ui-app
 ui-app ← {monetization-ui, analytics-api}     # resolves impls via Koin at runtime, never at compile time

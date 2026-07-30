@@ -75,6 +75,8 @@ descriptions.
 - `:core-mvi` owns the MVI engine and `:core-nav` the type-safe Navigation3
   contract — both carry **no Compose dependency**, so ViewModels compile without
   dragging in `compose.runtime` (split out of the old `shared-ui-api` at Stage 6).
+- `:core-platform` owns SDK-free host-service contracts for camera capture, image
+  selection/decoding, application settings actions, and maps. It has no Compose or SDK dependencies.
 - The design system (tokens, theme engine, atoms, molecules, organisms,
   scaffolds) lives across `:ui-theme` → `:ui-components` → `:ui-scaffolds` (split
   out of the old `shared-ui-atoms` at Stage 7); `:ui-theme` is the lowest module

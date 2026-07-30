@@ -20,6 +20,7 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:shared-utils` | `shared-utils` | `projects.sharedUtils` | Root utils: coroutines, datetime, `AppResult`, `PlatformInfo`, `Frnk.VERSION`. |
 | `:core-mvi` | `core-mvi` | `projects.coreMvi` | MVI engine (`MviViewModel`, `UiText`); no Compose. |
 | `:core-nav` | `core-nav` | `projects.coreNav` | Navigation3 contract (`FrnkTabRoute` / `FrnkRootRoute`, back-stack helpers); no Compose. |
+| `:core-platform` | `core-platform` | `projects.corePlatform` | SDK-free camera, image, settings, and maps host-service contracts. |
 | `:haptics` | `haptics` | `projects.haptics` | `HapticFeedback`/`HapticType` contract + multihaptic engine. |
 | `:ui-theme` | `ui-theme` | `projects.uiTheme` | `FrnkTheme` + tokens (compose-unstyled). |
 | `:ui-components` | `ui-components` | `projects.uiComponents` | `Frnk*` atoms / molecules / organisms. |
