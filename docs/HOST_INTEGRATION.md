@@ -33,6 +33,8 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:data-prefs-impl` | `data-prefs-impl` | `projects.dataPrefsImpl` | multiplatform-settings → `prefsModule`. |
 | `:analytics-api` | `analytics-api` | `projects.analyticsApi` | `AnalyticsTracker`/`CrashReporter` + `noopObservabilityModule`. |
 | `:analytics-impl` | `analytics-impl` | `projects.analyticsImpl` | Firebase analytics + crash → `firebaseObservabilityModule`. |
+| `:identity-api` | `identity-api` | `projects.identityApi` | SDK-free `AnonymousIdentityProvider` contract. |
+| `:identity-impl` | `identity-impl` | `projects.identityImpl` | Firebase anonymous auth → `firebaseIdentityModule`. |
 | `:remote-config-api` | `remote-config-api` | `projects.remoteConfigApi` | `RemoteConfigService` + `noopRemoteConfigModule`. |
 | `:remote-config-impl` | `remote-config-impl` | `projects.remoteConfigImpl` | Firebase Remote Config → `remoteConfigModule`. |
 | `:camera` | `camera` | `projects.camera` | api-only no-op scaffold → `cameraModule` (no impl yet). |
@@ -180,6 +182,7 @@ initializeFrnk(
             databaseModule,                      // :data-db-impl — platform SqlDriverFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
             firebaseObservabilityModule,         // or noopObservabilityModule (:analytics-api)
+            firebaseIdentityModule,              // :identity-impl — AnonymousIdentityProvider
             remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
             // Monetization stack (optional — omit all three to run without entitlements):
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
@@ -204,6 +207,13 @@ initializeFrnk(
   same XOR rule (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
   real impl ships.
+
+`firebaseIdentityModule` reuses `Firebase.auth.currentUser` or signs in anonymously and publishes
+the UID as `StateFlow<String?>`. The API module contains no Firebase types. Android hosts provide a
+`google-services.json`; iOS hosts link `FirebaseCore` and `FirebaseAuth`, call
+`FirebaseApp.configure()` before Kotlin bootstrap, and include the capability in their umbrella
+framework. Anonymous credentials normally persist across launches but are not recoverable after
+uninstall or cleared app data unless the host later links the user to a durable account.
 
 **iOS** (on launch, via a Kotlin bootstrap function your umbrella shared module exposes to Swift —
 the common `initializeFrnk(modules)` overload, no context param):

@@ -17,6 +17,7 @@ core/   (no upward deps; util is the root everything depends on)
 data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (impl installed via Koin):
   db-api    ── db-impl     (SqlDriverFactory)     analytics-api     ── analytics-impl     (Firebase)
   prefs-api ── prefs-impl  (KeyValueStore)        remote-config-api ── remote-config-impl (Firebase Remote Config)
+                                                  identity-api      ── identity-impl      (Firebase Auth)
                                                   monetization-api  ── monetization-impl  (RevenueCat)
                                                   haptics       (contract + multihaptic engine; UI-feedback, no api/impl split)
                                                   camera, permissions   (api-only no-op scaffolds — no impl yet)
@@ -102,6 +103,7 @@ monetization-api ← {analytics-api, data-prefs-api}
 monetization-ui  ← {ui-scaffolds, monetization-api}
 ui-scaffolds     ← monetization-api           # SettingsViewModel.ObserveProStatusUseCase (needs monetizationModule in graph)
 remote-config-api ← remote-config-impl        # sibling of analytics, never merged into it
+identity-api ← identity-impl                  # SDK-free anonymous identity contract + Firebase Auth binding
 Material3 only in ui-bottom-nav (ui-app inherits it transitively — the accepted batteries-included trade)
 Only demo modules may depend on *-impl modules from code; hosts wire impls via Koin modules only
 ```
@@ -117,7 +119,7 @@ Each domain that pulls in a third-party SDK is split:
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
 - **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules.
 
-Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`; a sibling of `:analytics-*`, **not** part of it) is backed by **`:remote-config-impl`** (Firebase Remote Config). **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
+Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) is backed by **`:remote-config-impl`** (Firebase Remote Config), while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` and **`:identity-impl`** binds it to Firebase Auth through `firebaseIdentityModule`. **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
