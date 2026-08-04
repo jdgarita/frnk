@@ -26,6 +26,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `shared-utils` | Root utilities — coroutines, datetime, `Logger`, `PlatformInfo` (the module's only `expect/actual`: OS + device), `FeedbackEmail` (`mailto:` draft builder), and `Frnk.VERSION`. Every other shared module depends on this. |
 | `core-mvi` | The **MVI engine**, no Compose deps: `MviContract` (`UiState` / `UiIntent` / `UiEffect`), `MviViewModel<S, I, E>` (StateFlow + intent flow + effect channel; `setState`/`onIntent`/`emit`), plus `UiText`. Feature ViewModels subclass `MviViewModel` here without pulling in Compose. |
 | `core-nav` | The Compose-free **type-safe Navigation3 contract**: `FrnkTabRoute` (tab-level) + `FrnkRootRoute` (app-root), the `NavBackStack<NavKey>` mutation helpers, the symmetric saved-state config builders (`frnkRootNavConfig(...)` + `frnkNestedNavConfig(...)`), the `FrnkPendingRouteRequest` deep-link signal, and the `FrnkFullScreenRoute` marker. No `compose.runtime`. |
+| `core-platform` | SDK-free host-service contracts for camera capture, image selection/decoding, application settings actions, and maps. |
 | `haptics` | The Compose-free `HapticFeedback`/`HapticType` contract + the `multihaptic`-backed engine binding and `LocalFrnkHaptics`. A UI-feedback concern (like the ripple), not an api/impl split. |
 | `ui-theme` | The **design-system foundation** on headless `compose-unstyled` (no Material3): tokens (`FrnkColors` / `FrnkTypography` / `FrnkSpacing` / `FrnkShapes` / `FrnkIconSize`) and the `FrnkTheme` engine (`FrnkThemeConfig` / `FrnkStrings` / `FrnkIcons` / `FrnkRipple`). `FrnkTheme` installs the automatic **press ripple** (`rememberFrnkRipple()` as `LocalIndication`) and **haptics** (`LocalFrnkHaptics`). |
 | `ui-components` | The **component tier** on `compose-unstyled`: `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`), molecules (`FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (`FrnkListSection`, `FrnkProfileHeader`), and the built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`). |
@@ -33,6 +34,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `ui-bottom-nav` | **Platform-adaptive bottom navigation** — `FrnkBottomFloatingBar`, an `expect`/`actual` composable: a Material3 *Expressive* `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS (via [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)), both themed from `FrnkTheme` tokens. It also owns `FrnkNestedNavScaffold(customTab, onNestedNavigationModule)` (replaced `FrnkTabbedNavScaffold`) — a fixed `Home · <custom> · Settings` multiple-back-stack tabbed scaffold (Home + Settings toolkit-fixed; the host supplies the middle `customTab` + the nested-nav Koin module registering the destinations behind the three routes), and the bar's view state **and per-tab back stacks** live in the MVI `FrnkNestedNavViewModel` (`frnkNestedNavModule`) — each tab keeps its own in-memory back stack. Icons are `FrnkIconSource` (Android) + SF-Symbol string (iOS). **The toolkit's sole Material3 dependency**, deliberately isolated here so `ui-theme`/`ui-components`/`ui-scaffolds` stay `compose-unstyled`-only. Android never touches `DrawableResource`, so there's **no host-side asset step**. |
 | `analytics-api` | Analytics / CrashReporter interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
 | `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseObservabilityModule` (analytics + crash). |
+| `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`. |
+| `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule`. |
 | `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
 | `remote-config-impl` | Firebase Remote Config impl. Exposes `remoteConfigModule`. |
 | `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
@@ -54,6 +57,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
 - **Remote Config:** GitLive Firebase Remote Config 2.4.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
+- **Identity:** GitLive Firebase Auth 2.4.0 (`dev.gitlive:firebase-auth`) — opt in by installing `firebaseIdentityModule` from `:identity-impl`
 - **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in by installing `firebaseObservabilityModule`, independent of every other capability
 - **Monetization:** RevenueCat 3.0.5
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
@@ -119,7 +123,7 @@ initializeFrnk(
 
 For iOS, there is no prebuilt toolkit framework: the host adds a small KMP shared module that `api()`-depends on the frnk modules it uses and bundles them into its own umbrella `XCFramework` — the demo's `DemoKit` (`demo/shared/build.gradle.kts`) is the worked example, and [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) §6 has the recipe.
 
-> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native SDK (and the relevant Firebase frameworks if installing `firebaseObservabilityModule`) via CocoaPods or SPM. The umbrella framework defers their symbol resolution via `-undefined dynamic_lookup`.
+> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native SDK and the relevant Firebase frameworks for installed Firebase capabilities (including `FirebaseCore` + `FirebaseAuth` for `firebaseIdentityModule`) via CocoaPods or SPM. The umbrella framework defers their symbol resolution via `-undefined dynamic_lookup`.
 
 ## ⚙️ Setup
 
