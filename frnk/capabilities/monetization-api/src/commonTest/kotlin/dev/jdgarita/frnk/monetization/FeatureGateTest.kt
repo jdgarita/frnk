@@ -91,7 +91,7 @@ private class FakeEntitlements(
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> =
-        AppResult.Success(ProMetadata("Title", "Subtitle", emptyList()))
+        AppResult.Success(ProMetadata.DUMMY)
 }
 
 private class RecordingAnalytics : AnalyticsTracker {
