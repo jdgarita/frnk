@@ -179,7 +179,7 @@ private class FakePaywallPurchaseUseCase(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val metadata: AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata("Title", "Subtitle", emptyList()))
+    private val metadata: AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
 ) : PaywallPurchaseUseCase {
     override suspend fun offerings() = offerings
 
