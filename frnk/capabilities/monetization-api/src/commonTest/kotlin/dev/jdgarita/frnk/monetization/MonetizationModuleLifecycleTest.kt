@@ -58,6 +58,9 @@ private class LifecycleTestProvider : EntitlementProvider {
     override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(false)
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> =
+        AppResult.Success(ProMetadata("Title", "Subtitle", emptyList()))
 }
 
 private class LifecycleTestKeyValueStore : KeyValueStore {

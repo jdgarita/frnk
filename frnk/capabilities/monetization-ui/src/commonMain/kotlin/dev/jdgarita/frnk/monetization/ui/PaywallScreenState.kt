@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.monetization.ui
 
 import androidx.compose.runtime.Immutable
+import dev.jdgarita.frnk.monetization.ProBenefit
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.ui.mvi.Arguments
 import dev.jdgarita.frnk.ui.mvi.ModelState
@@ -14,7 +15,10 @@ import dev.jdgarita.frnk.ui.mvi.UiState
  * the in-flight/purchase flags. [PaywallViewModel] mutates this; the UI state is derived from it.
  */
 data class PaywallModelState(
+    val title: String = "Default Paywall Title",
+    val subtitle: String = "Default Paywall Subtitle",
     val products: List<ProProduct> = emptyList(),
+    val benefits: List<ProBenefit> = emptyList(),
     val selectedProductId: String? = null,
     val isLoading: Boolean = true,
     val isPurchasing: Boolean = false
@@ -42,7 +46,10 @@ data class PaywallArguments(
  */
 @Immutable
 data class PaywallScreenState(
+    val title: String,
+    val subtitle: String,
     val products: List<ProProduct> = emptyList(),
+    val benefits: List<ProBenefit> = emptyList(),
     val selectedProductId: String? = null,
     val isLoading: Boolean = true,
     val isPurchasing: Boolean = false

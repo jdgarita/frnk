@@ -91,6 +91,8 @@ class DefaultEntitlementManager(
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = provider.managementUrl()
 
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = provider.fetchMetadata()
+
     private fun compute(
         providerPro: Boolean,
         god: Boolean

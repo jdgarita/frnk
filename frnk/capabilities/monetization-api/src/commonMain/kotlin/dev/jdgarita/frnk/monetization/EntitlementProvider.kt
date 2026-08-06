@@ -32,4 +32,6 @@ interface EntitlementProvider {
      * cancel/change their subscription — the store owns that UI, not the app.
      */
     suspend fun managementUrl(): AppResult<String?, MonetizationError>
+
+    suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError>
 }

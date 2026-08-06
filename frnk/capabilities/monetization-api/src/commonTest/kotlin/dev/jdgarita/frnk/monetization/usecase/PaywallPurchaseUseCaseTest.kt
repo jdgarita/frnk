@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.monetization.usecase
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.EntitlementStatus
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
@@ -60,6 +61,22 @@ class PaywallPurchaseUseCaseTest {
         }
 
     @Test
+    fun fetchMetadata_delegates_to_entitlement_manager() =
+        runTest {
+            val success = AppResult.Success(ProMetadata("Go Pro", "Unlock everything", emptyList()))
+            val useCase = DefaultPaywallPurchaseUseCase(FakeManager(metadata = success))
+            assertSame(success, useCase.fetchMetadata())
+        }
+
+    @Test
+    fun fetchMetadata_propagates_failure() =
+        runTest {
+            val failure = AppResult.Failure(MonetizationError.NoOfferings)
+            val useCase = DefaultPaywallPurchaseUseCase(FakeManager(metadata = failure))
+            assertEquals(failure, useCase.fetchMetadata())
+        }
+
+    @Test
     fun restore_propagates_failure() =
         runTest {
             val failure = AppResult.Failure(MonetizationError.NetworkUnavailable)
@@ -71,7 +88,8 @@ class PaywallPurchaseUseCaseTest {
 private class FakeManager(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true)
+    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val metadata: AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata("Title", "Subtitle", emptyList()))
 ) : EntitlementManager {
     var purchasedId: String? = null
         private set
@@ -94,4 +112,6 @@ private class FakeManager(
     override suspend fun restorePurchases() = restore
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+
+    override suspend fun fetchMetadata() = metadata
 }

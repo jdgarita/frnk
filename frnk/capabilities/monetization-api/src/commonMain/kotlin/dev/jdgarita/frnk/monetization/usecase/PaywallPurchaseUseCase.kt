@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.monetization.usecase
 
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
 
@@ -19,6 +20,8 @@ import dev.jdgarita.frnk.utils.AppResult
 interface PaywallPurchaseUseCase {
     /** Fetch purchasable plans for the paywall. */
     suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError>
+
+    suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError>
 
     /** Purchase a plan by provider package id. */
     suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError>
