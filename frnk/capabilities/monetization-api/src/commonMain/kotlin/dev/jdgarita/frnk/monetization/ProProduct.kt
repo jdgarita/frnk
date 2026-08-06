@@ -22,3 +22,14 @@ data class ProProduct(
     val hasFreeTrial: Boolean = false,
     val badge: String? = null
 )
+
+data class ProBenefit(
+    val key: String,
+    val value: String
+)
+
+data class ProMetadata(
+    val title: String,
+    val subtitle: String,
+    val benefits: List<ProBenefit>
+)

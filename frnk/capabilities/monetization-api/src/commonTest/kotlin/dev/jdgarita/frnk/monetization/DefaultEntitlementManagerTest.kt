@@ -133,6 +133,9 @@ private class FakeProvider(
     override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(_isPro.value)
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> =
+        AppResult.Success(ProMetadata("Title", "Subtitle", emptyList()))
 }
 
 private class FakeKeyValueStore : KeyValueStore {

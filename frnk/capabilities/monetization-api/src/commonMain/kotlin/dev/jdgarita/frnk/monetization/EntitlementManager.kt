@@ -39,4 +39,6 @@ interface EntitlementManager {
 
     /** The store's manage-subscriptions URL for the current customer, or `null` if none. */
     suspend fun managementUrl(): AppResult<String?, MonetizationError>
+
+    suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError>
 }

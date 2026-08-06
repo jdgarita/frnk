@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.monetization.revenuecat
 import com.revenuecat.purchases.kmp.Purchases
 import com.revenuecat.purchases.kmp.PurchasesDelegate
 import com.revenuecat.purchases.kmp.models.CustomerInfo
+import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
 import com.revenuecat.purchases.kmp.models.PackageType
 import com.revenuecat.purchases.kmp.models.PurchasesError
@@ -15,6 +16,8 @@ import com.revenuecat.purchases.kmp.result.awaitPurchaseResult
 import com.revenuecat.purchases.kmp.result.awaitRestoreResult
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProBenefit
+import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
@@ -110,8 +113,59 @@ internal class RevenueCatEntitlementProvider(
         )
     }
 
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> {
+        installListenerOnce()
+        val result =
+            runCatching { Purchases.sharedInstance.awaitOfferingsResult() }.getOrNull()
+                ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
+        return result.fold(
+            onSuccess = { offerings ->
+                offerings.current
+                    ?.let { AppResult.Success(extractPaywallMetadata(it)) }
+                    ?: AppResult.Failure(MonetizationError.NoOfferings)
+            },
+            onFailure = { AppResult.Failure(MonetizationError.Unknown) }
+        )
+    }
+
     private fun updateFrom(customerInfo: CustomerInfo) {
         _isPro.value = isProFor(customerInfo.entitlements.active.keys, config.proEntitlementId)
+    }
+
+    private fun extractPaywallMetadata(offering: Offering): ProMetadata {
+        // 1. Define your offline fallbacks
+        val defaultTitle = "Faint Pro"
+        val defaultSubtitle = "Elevate your coffee journal."
+        val defaultBenefits =
+            listOf(
+                ProBenefit("SCANS", "Unlimited label scans"),
+                ProBenefit("NOTES", "AI-read tasting notes from any bag"),
+                ProBenefit("PRIVACY", "Your cards stay on-device, always")
+            )
+
+        return try {
+            // 2. Extract Title and Subtitle Strings
+            val title = offering.metadata["title"] as? String ?: defaultTitle
+            val subtitle = offering.metadata["subtitle"] as? String ?: defaultSubtitle
+
+            // 3. Extract the Benefits Array
+            @Suppress("UNCHECKED_CAST")
+            val metadataList = offering.metadata["benefits"] as? List<Map<String, String>>
+
+            val benefits =
+                metadataList
+                    ?.mapNotNull { item ->
+                        val id = item["key"]
+                        val text = item["value"]
+                        if (id != null && text != null) ProBenefit(id, text) else null
+                    }?.takeIf { it.isNotEmpty() } ?: defaultBenefits
+
+            ProMetadata(title, subtitle, benefits)
+        } catch (e: Exception) {
+            //todo: add crashlytics logging
+            // Safe fallback if the JSON is malformed
+            ProMetadata(defaultTitle, defaultSubtitle, defaultBenefits)
+        }
     }
 
     /** Install the delegate once, lazily — see [RevenueCatConfig] / P3-2 notes. Doesn't clobber a host delegate. */

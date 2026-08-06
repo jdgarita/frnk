@@ -3,6 +3,8 @@ package dev.jdgarita.frnk.monetization.ui
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProBenefit
+import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
@@ -31,6 +33,8 @@ class PaywallViewModelTest {
             ProProduct("yearly", ProPlan.Yearly, "Yearly", "$39.99", "$3.33", hasFreeTrial = true, badge = "Save 33%")
         )
 
+    private val metadata = ProMetadata("Go Pro", "Unlock everything", listOf(ProBenefit("SCANS", "Unlimited scans")))
+
     @BeforeTest fun setUp() = Dispatchers.setMain(dispatcher)
 
     @AfterTest fun tearDown() = Dispatchers.resetMain()
@@ -44,6 +48,53 @@ class PaywallViewModelTest {
             assertEquals(2, vm.state.value.products.size)
             assertEquals("yearly", vm.state.value.selectedProductId)
             assertEquals(false, vm.state.value.isLoading)
+        }
+
+    @Test
+    fun attach_applies_metadata_alongside_products() =
+        runTest(dispatcher) {
+            val vm =
+                PaywallViewModel(
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        metadata = AppResult.Success(metadata)
+                    ),
+                    FakeAnalytics()
+                )
+            vm.attach(PaywallArguments("home_topbar"))
+            runCurrent()
+            assertEquals("Go Pro", vm.state.value.title)
+            assertEquals("Unlock everything", vm.state.value.subtitle)
+            assertEquals(metadata.benefits, vm.state.value.benefits)
+            assertEquals(2, vm.state.value.products.size)
+            assertEquals(false, vm.state.value.isLoading)
+        }
+
+    @Test
+    fun metadata_failure_discards_products_and_emits_single_message() =
+        runTest(dispatcher) {
+            val vm =
+                PaywallViewModel(
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        metadata = AppResult.Failure(MonetizationError.NoOfferings)
+                    ),
+                    FakeAnalytics()
+                )
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.attach(PaywallArguments("home_topbar"))
+            runCurrent()
+
+            assertTrue(
+                vm.state.value.products
+                    .isEmpty()
+            )
+            assertEquals(false, vm.state.value.isLoading)
+            assertEquals(1, effects.count { it is PaywallEffect.Message })
+            job.cancel()
         }
 
     @Test
@@ -127,9 +178,12 @@ class PaywallViewModelTest {
 private class FakePaywallPurchaseUseCase(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true)
+    private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val metadata: AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata("Title", "Subtitle", emptyList()))
 ) : PaywallPurchaseUseCase {
     override suspend fun offerings() = offerings
+
+    override suspend fun fetchMetadata() = metadata
 
     override suspend fun purchase(productId: String) = purchase
 

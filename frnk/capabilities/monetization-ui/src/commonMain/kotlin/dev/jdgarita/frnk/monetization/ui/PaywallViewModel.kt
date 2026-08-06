@@ -9,10 +9,13 @@ import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.utils.AppResult
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 /**
- * Drives the toolkit paywall: loads offerings, tracks the funnel, and runs purchase/restore through
+ * Drives the toolkit paywall: loads metadata + offerings in parallel (committed atomically — either
+ * both apply or a single error message is surfaced), tracks the funnel, and runs purchase/restore through
  * the injectable [PaywallPurchaseUseCase] (so the ViewModel stays agnostic of the concrete
  * `EntitlementManager`). Success closes the paywall ([PaywallEffect.Dismiss]); cancel / failure
  * surface a [PaywallEffect.Message] — nothing throws.
@@ -28,7 +31,10 @@ class PaywallViewModel(
         factory = PaywallModelStateFactory,
         mapper = { modelState ->
             PaywallScreenState(
+                title = modelState.title,
+                subtitle = modelState.subtitle,
                 products = modelState.products,
+                benefits = modelState.benefits,
                 selectedProductId = modelState.selectedProductId,
                 isLoading = modelState.isLoading,
                 isPurchasing = modelState.isPurchasing
@@ -37,7 +43,7 @@ class PaywallViewModel(
     ) {
     override fun onAttached(arguments: PaywallArguments) {
         analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to arguments.source))
-        viewModelScope.launch { loadOfferings() }
+        viewModelScope.launch { fetchPaywallData() }
     }
 
     override suspend fun onIntent(intent: PaywallIntent) {
@@ -52,23 +58,32 @@ class PaywallViewModel(
         }
     }
 
-    private suspend fun loadOfferings() {
-        when (val result = paywallPurchaseUseCase.offerings()) {
-            is AppResult.Success ->
+    private suspend fun fetchPaywallData() =
+        coroutineScope {
+            val metadataDeferred = async { paywallPurchaseUseCase.fetchMetadata() }
+            val productsDeferred = async { paywallPurchaseUseCase.offerings() }
+            val metadata = metadataDeferred.await()
+            val products = productsDeferred.await()
+
+            if (metadata is AppResult.Success && products is AppResult.Success) {
                 updateModel {
                     copy(
-                        products = result.data,
-                        selectedProductId = defaultSelection(result.data),
+                        title = metadata.data.title,
+                        subtitle = metadata.data.subtitle,
+                        benefits = metadata.data.benefits,
+                        products = products.data,
+                        selectedProductId = defaultSelection(products.data),
                         isLoading = false
                     )
                 }
-
-            is AppResult.Failure -> {
+            } else {
                 updateModel { copy(isLoading = false) }
-                emit(PaywallEffect.Message(result.error.message))
+                val error =
+                    (metadata as? AppResult.Failure)?.error
+                        ?: (products as AppResult.Failure).error
+                emit(PaywallEffect.Message(error.message))
             }
         }
-    }
 
     private suspend fun purchase() {
         val id = currentModel().selectedProductId ?: return
