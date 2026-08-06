@@ -27,11 +27,14 @@ monetization domain (`:monetization-api`).
 - `FrnkSettingsHandler.kt` — `rememberFrnkSettingsHandler(backStack, entitlements, analytics, onMessage,
   fallback)` returns a `(SettingsEffect) -> Unit` that wires the monetization Settings rows for free:
   `UpgradeToPro` → `backStack.navigateTo(FrnkRootRoute.Paywall)`, `RestorePurchases` → `entitlements.restorePurchases()`,
-  `ManageSubscription` → `entitlements.managementUrl()` opened via `LocalUriHandler`, **falling back to
-  `platformManageSubscriptionsUrl()`** (the OS subscriptions deep link) when the provider has no
-  customer-specific URL — so the row always lands somewhere useful; the `GOD_MODE_TOGGLE_ID` toggle →
-  `entitlements.setGodMode(...)`; everything else (theme, other actions) goes to `fallback`.
-  `GOD_MODE_TOGGLE_ID` is the stable id a host gives the god-mode `SettingsToggleRow`.
+  `ManageSubscription` → `entitlements.manageSubscriptionsUrl()` opened via `LocalUriHandler`; the
+  `GOD_MODE_TOGGLE_ID` toggle → `entitlements.setGodMode(...)`; everything else (theme, other actions)
+  goes to `fallback`. `GOD_MODE_TOGGLE_ID` is the stable id a host gives the god-mode `SettingsToggleRow`.
+- `ext/EntitlementManagerExt.kt` — the **public** `suspend fun EntitlementManager.manageSubscriptionsUrl():
+  String`: the provider's customer-specific management URL, **falling back to
+  `platformManageSubscriptionsUrl()`** (the OS subscriptions deep link) when the provider has no URL or
+  fails — so a "Manage Subscription" row always lands somewhere useful. The one public seam for hosts
+  with their own Settings UI (the handler above uses it too).
 - `ManageSubscriptions.kt` (+ `.android.kt`/`.ios.kt`) — `internal expect fun platformManageSubscriptionsUrl():
   String`, the module's only `expect/actual`: the native subscriptions deep link (Google Play on Android,
   App Store on iOS). Returned as a URL so it opens through Compose's `LocalUriHandler` without threading a
