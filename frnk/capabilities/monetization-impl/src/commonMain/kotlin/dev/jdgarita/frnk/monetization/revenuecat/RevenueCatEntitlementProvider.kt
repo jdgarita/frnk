@@ -21,7 +21,6 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.PrintLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,7 +59,6 @@ internal class RevenueCatEntitlementProvider(
             onSuccess = { offerings ->
                 val packages = offerings.current?.availablePackages.orEmpty()
                 packagesById = packages.associateBy { it.identifier }
-                PrintLogger.d("[JD]", "RevenueCat packages: ${packages.map { it.printable() }}")
                 AppResult.Success(mapProducts(packages))
             },
             onFailure = { AppResult.Failure(MonetizationError.NoOfferings) }
@@ -164,6 +162,7 @@ internal class RevenueCatEntitlementProvider(
 
             ProMetadata(title, subtitle, benefits)
         } catch (e: Exception) {
+            //todo: add crashlytics logging
             // Safe fallback if the JSON is malformed
             ProMetadata(defaultTitle, defaultSubtitle, defaultBenefits)
         }
@@ -254,7 +253,3 @@ internal fun isProFor(
     activeEntitlementIds: Set<String>,
     proEntitlementId: String
 ): Boolean = proEntitlementId in activeEntitlementIds
-
-private fun Package.printable(): String = "Package -> Identifier: $identifier, " + "Store Product: ${storeProduct.printable()}"
-
-private fun StoreProduct.printable(): String = "StoreProduct -> title: $title, price: ${price.formatted} "
