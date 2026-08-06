@@ -4,6 +4,7 @@ import dev.jdgarita.frnk.backend.noopObservabilityModule
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import dev.jdgarita.frnk.utils.AppResult
@@ -90,6 +91,8 @@ private class FakeEntitlementProvider : EntitlementProvider {
     override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(false)
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
 }
 
 private class FakeKeyValueStore : KeyValueStore {
