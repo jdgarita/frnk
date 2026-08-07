@@ -4,6 +4,7 @@ import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +52,7 @@ private class LifecycleTestProvider : EntitlementProvider {
 
     override suspend fun refresh() = Unit
 
-    override suspend fun identify(userId: String) = Unit
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
 

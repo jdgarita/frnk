@@ -60,6 +60,77 @@ class FirebaseAuthManagerTest {
         }
 
     @Test
+    fun `id token signs in first and returns the gateway token`() =
+        runTest {
+            val gateway = FakeFirebaseAuthGateway(signedInUid = "anonymous-uid", idTokenResult = "signed-jwt")
+            val manager = FirebaseAuthManager(gateway)
+
+            val result = manager.idToken()
+
+            assertEquals(AppResult.Success("signed-jwt"), result)
+            assertEquals(1, gateway.signInCalls)
+            assertEquals(false, gateway.lastForceRefresh)
+        }
+
+    @Test
+    fun `id token force refresh reaches the gateway`() =
+        runTest {
+            val gateway = FakeFirebaseAuthGateway(currentUid = "existing-uid", idTokenResult = "fresh-jwt")
+
+            val result = FirebaseAuthManager(gateway).idToken(forceRefresh = true)
+
+            assertEquals(AppResult.Success("fresh-jwt"), result)
+            assertEquals(true, gateway.lastForceRefresh)
+        }
+
+    @Test
+    fun `id token propagates sign in failure without fetching a token`() =
+        runTest {
+            val gateway = FakeFirebaseAuthGateway(failure = IllegalStateException("auth failed"))
+
+            val result = FirebaseAuthManager(gateway).idToken()
+
+            assertEquals(AppResult.Failure(CommonError.Unknown), result)
+            assertEquals(0, gateway.idTokenCalls)
+        }
+
+    @Test
+    fun `missing token maps to unauthorized`() =
+        runTest {
+            val gateway = FakeFirebaseAuthGateway(currentUid = "existing-uid", idTokenResult = null)
+
+            val result = FirebaseAuthManager(gateway).idToken()
+
+            assertEquals(AppResult.Failure(CommonError.Unauthorized), result)
+        }
+
+    @Test
+    fun `token fetch failure maps to common error`() =
+        runTest {
+            val gateway =
+                FakeFirebaseAuthGateway(
+                    currentUid = "existing-uid",
+                    idTokenFailure = IllegalStateException("token fetch failed")
+                )
+
+            val result = FirebaseAuthManager(gateway).idToken()
+
+            assertEquals(AppResult.Failure(CommonError.Unknown), result)
+        }
+
+    @Test
+    fun `token fetch cancellation is rethrown`() =
+        runTest {
+            val gateway =
+                FakeFirebaseAuthGateway(
+                    currentUid = "existing-uid",
+                    idTokenFailure = CancellationException("cancelled")
+                )
+
+            assertFailsWith<CancellationException> { FirebaseAuthManager(gateway).idToken() }
+        }
+
+    @Test
     fun `firebase identity module exposes anonymous identity provider`() {
         val application = koinApplication { modules(firebaseIdentityModule) }
 
@@ -74,14 +145,29 @@ class FirebaseAuthManagerTest {
 private class FakeFirebaseAuthGateway(
     override val currentUid: String? = null,
     private val signedInUid: String = "signed-in-uid",
-    private val failure: Throwable? = null
+    private val failure: Throwable? = null,
+    private val idTokenResult: String? = "id-token",
+    private val idTokenFailure: Throwable? = null
 ) : FirebaseAuthGateway {
     var signInCalls: Int = 0
+        private set
+
+    var idTokenCalls: Int = 0
+        private set
+
+    var lastForceRefresh: Boolean? = null
         private set
 
     override suspend fun signInAnonymously(): String {
         signInCalls += 1
         failure?.let { throw it }
         return signedInUid
+    }
+
+    override suspend fun idToken(forceRefresh: Boolean): String? {
+        idTokenCalls += 1
+        lastForceRefresh = forceRefresh
+        idTokenFailure?.let { throw it }
+        return idTokenResult
     }
 }

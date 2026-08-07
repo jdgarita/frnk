@@ -4,6 +4,7 @@ import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -106,6 +107,16 @@ class DefaultEntitlementManagerTest {
     }
 
     @Test
+    fun identify_delegates_to_provider_and_propagates_its_result() {
+        val provider = FakeProvider(identifyResult = AppResult.Failure(CommonError.Unknown))
+        val mgr = manager(provider)
+        kotlinx.coroutines.test.runTest {
+            assertEquals(AppResult.Failure(CommonError.Unknown), mgr.identify("uid-1"))
+        }
+        assertEquals(listOf("uid-1"), provider.identifiedUserIds)
+    }
+
+    @Test
     fun purchase_failure_emits_failed_event() {
         val analytics = FakeAnalytics()
         val mgr =
@@ -120,13 +131,16 @@ class DefaultEntitlementManagerTest {
 }
 
 private class FakeProvider(
-    private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true)
+    private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val identifyResult: AppResult<Unit, CommonError> = AppResult.Success(Unit)
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
     var refreshCount = 0
         private set
+
+    val identifiedUserIds = mutableListOf<String>()
 
     fun setPro(value: Boolean) {
         _isPro.value = value
@@ -136,7 +150,10 @@ private class FakeProvider(
         refreshCount++
     }
 
-    override suspend fun identify(userId: String) = Unit
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> {
+        identifiedUserIds += userId
+        return identifyResult
+    }
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
 

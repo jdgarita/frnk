@@ -21,10 +21,29 @@ internal class FirebaseAuthManager(
             mutableUid.value = resolvedUid
             AppResult.Success(resolvedUid)
         } catch (cancellation: CancellationException) {
-            //todo add crashlytics
+            // todo add crashlytics
             throw cancellation
         } catch (_: Exception) {
-            //todo add crashlytics
+            // todo add crashlytics
             AppResult.Failure(CommonError.Unknown)
         }
+
+    override suspend fun idToken(forceRefresh: Boolean): AppResult<String, CommonError> {
+        when (val signIn = ensureSignedIn()) {
+            is AppResult.Failure -> return signIn
+            is AppResult.Success -> Unit
+        }
+        return try {
+            when (val token = auth.idToken(forceRefresh)) {
+                null -> AppResult.Failure(CommonError.Unauthorized)
+                else -> AppResult.Success(token)
+            }
+        } catch (cancellation: CancellationException) {
+            // todo add crashlytics
+            throw cancellation
+        } catch (_: Exception) {
+            // todo add crashlytics
+            AppResult.Failure(CommonError.Unknown)
+        }
+    }
 }

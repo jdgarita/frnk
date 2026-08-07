@@ -22,6 +22,7 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,16 +40,26 @@ internal class RevenueCatEntitlementProvider(
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
-    override suspend fun identify(userId: String) {
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> {
         installListenerOnce()
-        // Skip the network logIn when already identified as [userId]; an unconfigured SDK throws on
-        // the appUserID read, and logIn would fail the same way, so default to skipping there too.
-        val alreadyIdentified =
-            runCatching { Purchases.sharedInstance.appUserID == userId }.getOrDefault(true)
-        if (alreadyIdentified) return
-        runCatching { Purchases.sharedInstance.awaitLogInResult(userId) }
-            .getOrNull()
-            ?.onSuccess { updateFrom(customerInfo = it.customerInfo) }
+        // An unconfigured SDK throws on the appUserID read — that's the documented
+        // graceful-degradation mode (missing/placeholder key), so identify succeeds as a no-op
+        // rather than blocking dev builds that never configured Purchases.
+        val activeUserId =
+            runCatching { Purchases.sharedInstance.appUserID }.getOrNull()
+                ?: return AppResult.Success(Unit)
+        // Skip the network logIn when already identified as [userId].
+        if (activeUserId == userId) return AppResult.Success(Unit)
+        val result =
+            runCatching { Purchases.sharedInstance.awaitLogInResult(userId) }.getOrNull()
+                ?: return AppResult.Failure(CommonError.Unknown)
+        return result.fold(
+            onSuccess = {
+                updateFrom(customerInfo = it.customerInfo)
+                AppResult.Success(Unit)
+            },
+            onFailure = { AppResult.Failure(CommonError.Unknown) }
+        )
     }
 
     private var listenerInstalled = false

@@ -7,6 +7,7 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
@@ -102,7 +103,7 @@ private class FakeManager(
 
     override suspend fun refresh() = Unit
 
-    override suspend fun identify(userId: String) = Unit
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
 
     override suspend fun offerings() = offerings
 
