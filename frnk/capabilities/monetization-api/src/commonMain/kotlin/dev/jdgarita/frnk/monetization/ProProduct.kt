@@ -34,10 +34,11 @@ data class ProMetadata(
     val benefits: List<ProBenefit>
 ) {
     companion object {
-        val DUMMY = ProMetadata(
-            title = "title",
-            subtitle = "subtitle",
-            benefits = emptyList()
-        )
+        val DUMMY =
+            ProMetadata(
+                title = "title",
+                subtitle = "subtitle",
+                benefits = emptyList()
+            )
     }
 }

@@ -82,6 +82,8 @@ private class FakeEntitlements(
 
     override suspend fun refresh() = Unit
 
+    override suspend fun identify(userId: String) = Unit
+
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
 
     override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> = AppResult.Success(true)
@@ -90,8 +92,7 @@ private class FakeEntitlements(
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
-    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> =
-        AppResult.Success(ProMetadata.DUMMY)
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
 }
 
 private class RecordingAnalytics : AnalyticsTracker {

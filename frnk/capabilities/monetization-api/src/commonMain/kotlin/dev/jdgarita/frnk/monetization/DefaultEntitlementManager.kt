@@ -66,6 +66,10 @@ class DefaultEntitlementManager(
         scope.launch { provider.refresh() }
     }
 
+    override suspend fun identify(userId: String) {
+        provider.identify(userId = userId)
+    }
+
     override fun setGodMode(enabled: Boolean) {
         if (_isGodMode.value == enabled) return
         godModePref.value = enabled

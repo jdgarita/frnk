@@ -11,6 +11,7 @@ import com.revenuecat.purchases.kmp.models.PurchasesTransactionException
 import com.revenuecat.purchases.kmp.models.StoreProduct
 import com.revenuecat.purchases.kmp.models.StoreTransaction
 import com.revenuecat.purchases.kmp.result.awaitCustomerInfoResult
+import com.revenuecat.purchases.kmp.result.awaitLogInResult
 import com.revenuecat.purchases.kmp.result.awaitOfferingsResult
 import com.revenuecat.purchases.kmp.result.awaitPurchaseResult
 import com.revenuecat.purchases.kmp.result.awaitRestoreResult
@@ -37,6 +38,18 @@ internal class RevenueCatEntitlementProvider(
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
+
+    override suspend fun identify(userId: String) {
+        installListenerOnce()
+        // Skip the network logIn when already identified as [userId]; an unconfigured SDK throws on
+        // the appUserID read, and logIn would fail the same way, so default to skipping there too.
+        val alreadyIdentified =
+            runCatching { Purchases.sharedInstance.appUserID == userId }.getOrDefault(true)
+        if (alreadyIdentified) return
+        runCatching { Purchases.sharedInstance.awaitLogInResult(userId) }
+            .getOrNull()
+            ?.onSuccess { updateFrom(customerInfo = it.customerInfo) }
+    }
 
     private var listenerInstalled = false
 
@@ -162,7 +175,7 @@ internal class RevenueCatEntitlementProvider(
 
             ProMetadata(title, subtitle, benefits)
         } catch (e: Exception) {
-            //todo: add crashlytics logging
+            // todo: add crashlytics logging
             // Safe fallback if the JSON is malformed
             ProMetadata(defaultTitle, defaultSubtitle, defaultBenefits)
         }

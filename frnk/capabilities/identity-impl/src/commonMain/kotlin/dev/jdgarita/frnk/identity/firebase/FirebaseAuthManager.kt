@@ -21,8 +21,10 @@ internal class FirebaseAuthManager(
             mutableUid.value = resolvedUid
             AppResult.Success(resolvedUid)
         } catch (cancellation: CancellationException) {
+            //todo add crashlytics
             throw cancellation
         } catch (_: Exception) {
+            //todo add crashlytics
             AppResult.Failure(CommonError.Unknown)
         }
 }

@@ -22,6 +22,12 @@ interface EntitlementManager {
     /** Whether the local god-mode override is currently active. */
     val isGodMode: StateFlow<Boolean>
 
+    /**
+     * Identify the current customer with the billing provider under the host's stable [userId] —
+     * see [EntitlementProvider.identify]. Best-effort and idempotent, so hosts call it on every launch.
+     */
+    suspend fun identify(userId: String)
+
     /** Enable/disable the persisted god-mode override (forces Pro regardless of the provider). */
     fun setGodMode(enabled: Boolean)
 

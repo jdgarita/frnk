@@ -14,6 +14,15 @@ interface EntitlementProvider {
     /** The provider's own purchased-entitlement state (no god-mode overlay). */
     val isPro: StateFlow<Boolean>
 
+    /**
+     * Log the current customer in to the billing backend under [userId] (the host's stable, opaque
+     * user id — e.g. its anonymous-identity uid; never an email or other PII). Purchases made before
+     * identification are aliased onto [userId] by the backend on first login. Safe to call on every
+     * launch: implementations skip the network call when [userId] is already the active identity,
+     * and failures (including an unconfigured SDK) degrade to a silent no-op.
+     */
+    suspend fun identify(userId: String)
+
     /** Re-fetch the latest customer info from the store/backend. */
     suspend fun refresh()
 
