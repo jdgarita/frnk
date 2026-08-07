@@ -9,4 +9,10 @@ interface AnonymousIdentityProvider {
     val uid: StateFlow<String?>
 
     suspend fun ensureSignedIn(): AppResult<String, CommonError>
+
+    /**
+     * The current user's signed ID token (a JWT backends verify to derive the uid), signing in
+     * anonymously first if needed. [forceRefresh] bypasses the SDK's internal token cache.
+     */
+    suspend fun idToken(forceRefresh: Boolean = false): AppResult<String, CommonError>
 }

@@ -7,6 +7,7 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.ui.platformManageSubscriptionsUrl
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
@@ -46,7 +47,7 @@ private class FakeEntitlementManager(
     override val isPro: StateFlow<Boolean> = MutableStateFlow(false)
     override val isGodMode: StateFlow<Boolean> = MutableStateFlow(false)
 
-    override suspend fun identify(userId: String) = Unit
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
 
     override fun setGodMode(enabled: Boolean) = Unit
 

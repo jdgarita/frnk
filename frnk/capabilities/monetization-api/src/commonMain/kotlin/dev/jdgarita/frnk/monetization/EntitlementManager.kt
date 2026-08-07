@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.monetization
 
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -24,9 +25,10 @@ interface EntitlementManager {
 
     /**
      * Identify the current customer with the billing provider under the host's stable [userId] —
-     * see [EntitlementProvider.identify]. Best-effort and idempotent, so hosts call it on every launch.
+     * see [EntitlementProvider.identify]. Idempotent, so hosts call it on every launch; the result
+     * lets callers that must not proceed with an unsynced identity gate on it.
      */
-    suspend fun identify(userId: String)
+    suspend fun identify(userId: String): AppResult<Unit, CommonError>
 
     /** Enable/disable the persisted god-mode override (forces Pro regardless of the provider). */
     fun setGodMode(enabled: Boolean)

@@ -75,7 +75,7 @@ class FakeEntitlementProvider : EntitlementProvider {
 
     override suspend fun refresh() = Unit
 
-    override suspend fun identify(userId: String) = Unit
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> =
         AppResult.Success(

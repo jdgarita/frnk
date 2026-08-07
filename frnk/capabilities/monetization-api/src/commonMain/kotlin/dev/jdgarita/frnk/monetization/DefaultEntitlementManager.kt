@@ -5,6 +5,7 @@ import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.database.booleanPreference
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -66,9 +67,7 @@ class DefaultEntitlementManager(
         scope.launch { provider.refresh() }
     }
 
-    override suspend fun identify(userId: String) {
-        provider.identify(userId = userId)
-    }
+    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = provider.identify(userId = userId)
 
     override fun setGodMode(enabled: Boolean) {
         if (_isGodMode.value == enabled) return
