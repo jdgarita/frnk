@@ -84,6 +84,8 @@ private class FakeEntitlementProvider : EntitlementProvider {
 
     override suspend fun refresh() = Unit
 
+    override suspend fun identify(userId: String) = Unit
+
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
 
     override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> = AppResult.Success(false)

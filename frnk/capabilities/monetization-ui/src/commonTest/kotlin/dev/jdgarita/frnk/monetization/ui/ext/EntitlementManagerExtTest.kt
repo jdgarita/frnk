@@ -46,6 +46,8 @@ private class FakeEntitlementManager(
     override val isPro: StateFlow<Boolean> = MutableStateFlow(false)
     override val isGodMode: StateFlow<Boolean> = MutableStateFlow(false)
 
+    override suspend fun identify(userId: String) = Unit
+
     override fun setGodMode(enabled: Boolean) = Unit
 
     override suspend fun refresh() = Unit

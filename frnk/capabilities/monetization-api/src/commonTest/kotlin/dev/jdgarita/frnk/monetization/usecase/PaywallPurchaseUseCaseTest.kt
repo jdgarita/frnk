@@ -102,6 +102,8 @@ private class FakeManager(
 
     override suspend fun refresh() = Unit
 
+    override suspend fun identify(userId: String) = Unit
+
     override suspend fun offerings() = offerings
 
     override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
