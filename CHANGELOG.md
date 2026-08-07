@@ -15,6 +15,19 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Pro state now hydrates on cold launch (`:monetization-api`).** `DefaultEntitlementManager`
+  launches `provider.refresh()` in its injected scope at construction. Previously nothing triggered
+  a customer-info fetch on startup — the RevenueCat provider's `isPro` starts `false` and its
+  `PurchasesDelegate` installs lazily on the first monetization call — so an entitled user was
+  reported Free on every launch until they happened to reopen the paywall. Hosts need no wiring:
+  on the validated bootstrap path (`validate = true`, `Koin::validateFrnkBootstrap`) the manager is
+  resolved — and therefore hydrated — at `initializeFrnk` time; unvalidated hosts hydrate on the
+  first injection. The RevenueCat SDK answers the refresh from its local cache even offline.
+  (The manager binding is deliberately *not* `createdAtStart`: eager instantiation would crash
+  `startKoin` with a raw Koin error before `validateFrnkBootstrap` could name a missing module.)
+
 ### Added
 
 - **`:core-platform` host-service contracts.** Added an SDK-free KMP module for camera capture,

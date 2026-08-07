@@ -21,7 +21,11 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/DefaultEntitlementManager.kt` — the pure-Kotlin impl. `isPro = provider.isPro || godMode`;
   god mode persisted via `KeyValueStore`'s typed `booleanPreference("frnk.god_mode", default = false)`
   (P4-3 — same key/representation as a raw `putBoolean`); sets analytics user-properties
-  `is_pro`/`pro_source`/`god_mode` and emits the purchase funnel events.
+  `is_pro`/`pro_source`/`god_mode` and emits the purchase funnel events. Construction launches
+  `provider.refresh()` in the injected scope so purchased state hydrates on cold launch (a provider
+  whose `isPro` starts `false` would otherwise report Free until some paywall interaction fetched
+  customer info); the binding stays lazy (NOT `createdAtStart`, which would crash `startKoin` before
+  `validateFrnkBootstrap` can explain a missing dep) — the validated path resolves it at bootstrap.
 - `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode})`.
 - `monetization/ProProduct.kt` — SDK-free purchasable plan (`ProPlan{Weekly,Monthly,Yearly,Lifetime,Other}`,
   prices, `hasFreeTrial`, `badge`) the paywall renders.

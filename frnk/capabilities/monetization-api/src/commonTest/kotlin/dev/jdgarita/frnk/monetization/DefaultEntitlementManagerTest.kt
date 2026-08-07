@@ -22,6 +22,14 @@ class DefaultEntitlementManagerTest {
     ) = DefaultEntitlementManager(provider, kv, analytics, CoroutineScope(Dispatchers.Unconfined))
 
     @Test
+    fun init_refreshes_provider_so_purchased_state_hydrates_on_cold_launch() {
+        val provider = FakeProvider()
+        manager(provider)
+        // The Unconfined scope runs the construction-time launch eagerly.
+        assertEquals(1, provider.refreshCount)
+    }
+
+    @Test
     fun god_mode_overlays_provider_and_sets_source() {
         val provider = FakeProvider()
         val mgr = manager(provider)
@@ -117,11 +125,16 @@ private class FakeProvider(
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
+    var refreshCount = 0
+        private set
+
     fun setPro(value: Boolean) {
         _isPro.value = value
     }
 
-    override suspend fun refresh() = Unit
+    override suspend fun refresh() {
+        refreshCount++
+    }
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
 
