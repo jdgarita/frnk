@@ -2,8 +2,10 @@ package dev.jdgarita.frnk.monetization
 
 import dev.jdgarita.frnk.monetization.usecase.DefaultObserveProStatusUseCase
 import dev.jdgarita.frnk.monetization.usecase.DefaultPaywallPurchaseUseCase
+import dev.jdgarita.frnk.monetization.usecase.DefaultSyncAuthUseCase
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
+import dev.jdgarita.frnk.monetization.usecase.SyncAuthUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,7 +23,9 @@ internal val FRNK_APPLICATION_SCOPE = named("frnkApplicationScope")
  * a fake in `:shared-demo`) plus [FeatureGate].
  *
  * Requires an [EntitlementProvider], a [dev.jdgarita.frnk.database.KeyValueStore] (for god-mode
- * persistence), and an [dev.jdgarita.frnk.backend.AnalyticsTracker] to be present in the graph.
+ * persistence), an [dev.jdgarita.frnk.backend.AnalyticsTracker], and an
+ * [dev.jdgarita.frnk.identity.AnonymousIdentityProvider] (for [SyncAuthUseCase]) to be present in
+ * the graph.
  */
 val monetizationModule =
     module {
@@ -45,4 +49,5 @@ val monetizationModule =
         single { FeatureGate(get(), get()) }
         single<ObserveProStatusUseCase> { DefaultObserveProStatusUseCase(get()) }
         single<PaywallPurchaseUseCase> { DefaultPaywallPurchaseUseCase(get()) }
+        single<SyncAuthUseCase> { DefaultSyncAuthUseCase(get(), get()) }
     }

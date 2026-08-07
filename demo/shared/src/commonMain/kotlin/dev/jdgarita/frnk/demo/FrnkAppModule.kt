@@ -8,6 +8,7 @@ import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.demo.notes.Note
 import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
+import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
@@ -55,6 +56,9 @@ val frnkAppModule =
         includes(monetizationModule)
         includes(paywallScaffoldModule)
         single<EntitlementProvider> { FakeEntitlementProvider() }
+        // In-memory identity so monetizationModule's SyncAuthUseCase stays resolvable without
+        // Firebase; a real host installs firebaseIdentityModule (:identity-impl) instead.
+        single<AnonymousIdentityProvider> { FakeAnonymousIdentityProvider() }
         // In-memory KeyValueStore so god mode persists for the session without the
         // multiplatform-settings impl; a real host installs prefsModule (:data-prefs-impl) instead.
         single<KeyValueStore> { FakeKeyValueStore() }
@@ -106,6 +110,23 @@ class FakeEntitlementProvider : EntitlementProvider {
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
+}
+
+/** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path without Firebase. */
+class FakeAnonymousIdentityProvider : AnonymousIdentityProvider {
+    private val _uid = MutableStateFlow<String?>(null)
+    override val uid: StateFlow<String?> = _uid.asStateFlow()
+
+    override suspend fun ensureSignedIn(): AppResult<String, CommonError> {
+        _uid.value = DEMO_UID
+        return AppResult.Success(DEMO_UID)
+    }
+
+    override suspend fun idToken(forceRefresh: Boolean): AppResult<String, CommonError> = AppResult.Success("demo-id-token")
+
+    companion object {
+        private const val DEMO_UID = "demo-anonymous-uid"
+    }
 }
 
 /** In-memory [KeyValueStore] for the demo (god-mode persistence) — keeps DemoKit free of the settings impl. */
