@@ -256,7 +256,7 @@ private fun SettingsRowScaffold(
 }
 
 @Composable
-private fun SettingsFooter(
+fun SettingsFooter(
     footer: SettingsFooterState,
     onVersionTap: () -> Unit
 ) {
