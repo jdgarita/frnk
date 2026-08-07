@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * frnk-owned [EntitlementManager]: combines an [EntitlementProvider]'s purchased state with a persisted
@@ -23,6 +24,8 @@ import kotlinx.coroutines.flow.stateIn
  * - `isPro = provider.isPro || godMode`. God mode wins as the [ProSource].
  * - God mode is persisted via [KeyValueStore] so it survives restarts (usable in release builds).
  * - Every purchase/restore routes through here so the funnel analytics fire in one place.
+ * - Construction kicks off `provider.refresh()` so purchased state hydrates on cold launch —
+ *   at bootstrap when `validateFrnkBootstrap` resolves the manager, else on first injection.
  *
  * Lives for the app's lifetime (a Koin `single`). Its application-owned [scope] is injected and
  * cancelled when the Koin application closes. Tests pass a controlled scope.
@@ -55,6 +58,13 @@ class DefaultEntitlementManager(
 
     override val isPro: StateFlow<Boolean> =
         status.map { it.isPro }.stateIn(scope, SharingStarted.Eagerly, status.value.isPro)
+
+    init {
+        // Hydrate purchased state at construction: without this, a provider whose `isPro` starts
+        // false (RevenueCat answers from its local cache, even offline) would report Free on every
+        // cold launch until some paywall interaction happened to trigger a customer-info fetch.
+        scope.launch { provider.refresh() }
+    }
 
     override fun setGodMode(enabled: Boolean) {
         if (_isGodMode.value == enabled) return

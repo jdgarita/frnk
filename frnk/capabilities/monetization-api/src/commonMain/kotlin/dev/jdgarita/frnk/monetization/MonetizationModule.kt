@@ -30,6 +30,10 @@ val monetizationModule =
         } withOptions {
             onClose { scope -> scope?.cancel() }
         }
+        // Deliberately NOT createdAtStart: eager instantiation would crash startKoin before
+        // validateFrnkBootstrap can name a missing dependency. The validated path resolves the
+        // manager at bootstrap anyway (isBound getOrNull), which triggers its construction-time
+        // provider.refresh() hydration; unvalidated hosts hydrate on first injection.
         single<EntitlementManager> {
             DefaultEntitlementManager(
                 provider = get(),
