@@ -17,6 +17,15 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Fixed
 
+- **`FrnkApp` now hands its `AppearanceController` to `FrnkTheme` (`:ui-app`).** `FrnkApp` provided
+  the Koin-resolved controller via `LocalAppearanceController` but called `FrnkTheme` without
+  passing it, so the theme's default parameter instantiated a *second* controller (stuck at
+  `Appearance.System`) that shadowed the first for everything under the theme. Net effect: the
+  palette and the iOS interface-style pin always followed the OS — `initialAppearance` seeding
+  (and any host toggle mutating the Koin controller) moved only the system-bar icon contrast,
+  while chrome like the Settings footer kept flipping with device dark mode. One controller now
+  drives palette, system bars, and the native interface style together.
+
 - **Pro state now hydrates on cold launch (`:monetization-api`).** `DefaultEntitlementManager`
   launches `provider.refresh()` in its injected scope at construction. Previously nothing triggered
   a customer-info fetch on startup — the RevenueCat provider's `isPro` starts `false` and its

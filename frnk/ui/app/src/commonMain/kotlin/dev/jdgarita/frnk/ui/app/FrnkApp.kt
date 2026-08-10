@@ -86,7 +86,11 @@ fun FrnkApp(
 
         ApplySystemBarAppearance(darkTheme = darkTheme)
 
-        FrnkTheme(config = themeConfig) {
+        // Hand the app-wide controller to the theme: FrnkTheme's default parameter would otherwise
+        // instantiate a second controller and shadow this one via LocalAppearanceController, leaving
+        // the palette (and the iOS interface-style pin) on Appearance.System regardless of what the
+        // host seeded or a toggle set — while the system bars above followed this controller.
+        FrnkTheme(config = themeConfig, appearanceController = appearanceController) {
             AppScaffold {
                 val backStack =
                     rememberNavBackStack(
