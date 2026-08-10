@@ -7,6 +7,8 @@ import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
 import com.revenuecat.purchases.kmp.models.PackageType
 import com.revenuecat.purchases.kmp.models.PurchasesError
+import com.revenuecat.purchases.kmp.models.PurchasesErrorCode
+import com.revenuecat.purchases.kmp.models.PurchasesException
 import com.revenuecat.purchases.kmp.models.PurchasesTransactionException
 import com.revenuecat.purchases.kmp.models.StoreProduct
 import com.revenuecat.purchases.kmp.models.StoreTransaction
@@ -15,6 +17,7 @@ import com.revenuecat.purchases.kmp.result.awaitLogInResult
 import com.revenuecat.purchases.kmp.result.awaitOfferingsResult
 import com.revenuecat.purchases.kmp.result.awaitPurchaseResult
 import com.revenuecat.purchases.kmp.result.awaitRestoreResult
+import com.revenuecat.purchases.kmp.result.awaitSyncPurchasesResult
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProBenefit
@@ -23,6 +26,7 @@ import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,7 +55,7 @@ internal class RevenueCatEntitlementProvider(
         // Skip the network logIn when already identified as [userId].
         if (activeUserId == userId) return AppResult.Success(Unit)
         val result =
-            runCatching { Purchases.sharedInstance.awaitLogInResult(userId) }.getOrNull()
+            sdkCall { Purchases.sharedInstance.awaitLogInResult(userId) }
                 ?: return AppResult.Failure(CommonError.Unknown)
         return result.fold(
             onSuccess = {
@@ -69,15 +73,14 @@ internal class RevenueCatEntitlementProvider(
 
     override suspend fun refresh() {
         installListenerOnce()
-        runCatching { Purchases.sharedInstance.awaitCustomerInfoResult() }
-            .getOrNull()
+        sdkCall { Purchases.sharedInstance.awaitCustomerInfoResult() }
             ?.onSuccess(::updateFrom)
     }
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> {
         installListenerOnce()
         val result =
-            runCatching { Purchases.sharedInstance.awaitOfferingsResult() }.getOrNull()
+            sdkCall { Purchases.sharedInstance.awaitOfferingsResult() }
                 ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
         return result.fold(
             onSuccess = { offerings ->
@@ -101,7 +104,7 @@ internal class RevenueCatEntitlementProvider(
                 ?: return AppResult.Failure(MonetizationError.NoOfferings)
 
         val result =
-            runCatching { Purchases.sharedInstance.awaitPurchaseResult(pkg) }.getOrNull()
+            sdkCall { Purchases.sharedInstance.awaitPurchaseResult(pkg) }
                 ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
         return result.fold(
             onSuccess = { success ->
@@ -115,21 +118,38 @@ internal class RevenueCatEntitlementProvider(
     override suspend fun restore(): AppResult<Boolean, MonetizationError> {
         installListenerOnce()
         val result =
-            runCatching { Purchases.sharedInstance.awaitRestoreResult() }.getOrNull()
+            sdkCall { Purchases.sharedInstance.awaitRestoreResult() }
                 ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
         return result.fold(
             onSuccess = { info ->
                 updateFrom(info)
-                AppResult.Success(_isPro.value)
+                // Computed from the restore's own CustomerInfo — `_isPro.value` would conflate a
+                // pre-existing Pro state (e.g. god-mode-free Pro before a no-op restore) with a
+                // successful restore, telling an already-Pro user "restored" when nothing happened.
+                AppResult.Success(isProFor(info.entitlements.active.keys, config.proEntitlementId))
             },
-            onFailure = { AppResult.Failure(MonetizationError.Unknown) }
+            onFailure = { AppResult.Failure(it.toMonetizationError()) }
+        )
+    }
+
+    override suspend fun syncPurchases(): AppResult<Boolean, MonetizationError> {
+        installListenerOnce()
+        val result =
+            sdkCall { Purchases.sharedInstance.awaitSyncPurchasesResult() }
+                ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
+        return result.fold(
+            onSuccess = { info ->
+                updateFrom(info)
+                AppResult.Success(isProFor(info.entitlements.active.keys, config.proEntitlementId))
+            },
+            onFailure = { AppResult.Failure(it.toMonetizationError()) }
         )
     }
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> {
         installListenerOnce()
         val result =
-            runCatching { Purchases.sharedInstance.awaitCustomerInfoResult() }.getOrNull()
+            sdkCall { Purchases.sharedInstance.awaitCustomerInfoResult() }
                 ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
         return result.fold(
             onSuccess = { AppResult.Success(it.managementUrlString) },
@@ -140,7 +160,7 @@ internal class RevenueCatEntitlementProvider(
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> {
         installListenerOnce()
         val result =
-            runCatching { Purchases.sharedInstance.awaitOfferingsResult() }.getOrNull()
+            sdkCall { Purchases.sharedInstance.awaitOfferingsResult() }
                 ?: return AppResult.Failure(MonetizationError.StoreUnavailable)
         return result.fold(
             onSuccess = { offerings ->
@@ -263,9 +283,44 @@ private fun PackageType.toProPlan(): ProPlan =
         else -> ProPlan.Other
     }
 
-private fun Throwable.toMonetizationError(): MonetizationError =
+/**
+ * Runs an SDK access, converting any throw (typically an unconfigured `Purchases.sharedInstance` —
+ * the documented graceful-degradation mode) into `null` — except [CancellationException], which must
+ * propagate so a cancelled caller isn't handed a bogus `StoreUnavailable`. This replaces the old
+ * `runCatching { ... }.getOrNull()` wrappers, which swallowed cancellation.
+ */
+private inline fun <T> sdkCall(block: () -> T): T? =
+    try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Throwable) {
+        null
+    }
+
+internal fun Throwable.toMonetizationError(): MonetizationError =
+    when (this) {
+        is PurchasesTransactionException -> monetizationErrorFor(code, userCancelled)
+        is PurchasesException -> monetizationErrorFor(code, userCancelled = false)
+        else -> MonetizationError.Unknown
+    }
+
+/**
+ * Pure, statics-free error-code → [MonetizationError] mapping, split out (like [isProFor]) so it is
+ * unit-testable without `Purchases.sharedInstance`. `ProductAlreadyPurchasedError` (Play: the user
+ * already owns the subscription under this store account) and `ReceiptAlreadyInUseError` (the
+ * receipt belongs to another app user) both mean "the store says you own this" — surfaced as
+ * [MonetizationError.AlreadyOwned] so callers can fall through to a restore instead of dead-ending.
+ */
+internal fun monetizationErrorFor(
+    code: PurchasesErrorCode,
+    userCancelled: Boolean
+): MonetizationError =
     when {
-        this is PurchasesTransactionException && userCancelled -> MonetizationError.UserCancelled
+        userCancelled || code == PurchasesErrorCode.PurchaseCancelledError -> MonetizationError.UserCancelled
+        code == PurchasesErrorCode.ProductAlreadyPurchasedError -> MonetizationError.AlreadyOwned
+        code == PurchasesErrorCode.ReceiptAlreadyInUseError -> MonetizationError.AlreadyOwned
+        code == PurchasesErrorCode.NetworkError -> MonetizationError.NetworkUnavailable
         else -> MonetizationError.Unknown
     }
 

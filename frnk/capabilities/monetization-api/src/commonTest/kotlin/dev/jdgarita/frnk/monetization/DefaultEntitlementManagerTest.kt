@@ -117,6 +117,18 @@ class DefaultEntitlementManagerTest {
     }
 
     @Test
+    fun syncPurchases_delegates_to_provider_and_tracks_event() {
+        val provider = FakeProvider(syncResult = AppResult.Success(true))
+        val analytics = FakeAnalytics()
+        val mgr = manager(provider, analytics = analytics)
+        kotlinx.coroutines.test.runTest {
+            assertEquals(AppResult.Success(true), mgr.syncPurchases())
+        }
+        assertEquals(1, provider.syncCount)
+        assertTrue(analytics.customEvents.contains("sync_purchases"))
+    }
+
+    @Test
     fun purchase_failure_emits_failed_event() {
         val analytics = FakeAnalytics()
         val mgr =
@@ -132,12 +144,16 @@ class DefaultEntitlementManagerTest {
 
 private class FakeProvider(
     private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val identifyResult: AppResult<Unit, CommonError> = AppResult.Success(Unit)
+    private val identifyResult: AppResult<Unit, CommonError> = AppResult.Success(Unit),
+    private val syncResult: AppResult<Boolean, MonetizationError> = AppResult.Success(false)
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
     var refreshCount = 0
+        private set
+
+    var syncCount = 0
         private set
 
     val identifiedUserIds = mutableListOf<String>()
@@ -163,6 +179,11 @@ private class FakeProvider(
     }
 
     override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(_isPro.value)
+
+    override suspend fun syncPurchases(): AppResult<Boolean, MonetizationError> {
+        syncCount++
+        return syncResult
+    }
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 

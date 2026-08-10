@@ -32,6 +32,42 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 - **`:core-platform` host-service contracts.** Added an SDK-free KMP module for camera capture,
   image selection/decoding, application settings actions, and maps integrations.
+- **Silent receipt sync + already-owned recovery (`:monetization-api`/`-impl`/`-ui`).** New
+  `EntitlementProvider.syncPurchases()` → `EntitlementManager.syncPurchases()` →
+  `PaywallPurchaseUseCase.sync()`: a silent, no-store-UI receipt sync (RevenueCat
+  `awaitSyncPurchasesResult()`), safe to run opportunistically because it only posts what the
+  device's store account already owns. The paywall runs it best-effort on attach — a reinstalled
+  Pro user is dismissed with Pro restored (`stringPaywallRestored`) instead of being sold to; sync
+  failures stay silent. New `MonetizationError.AlreadyOwned` (Play's `ProductAlreadyPurchasedError`
+  / `ReceiptAlreadyInUseError`) makes a purchase that the store rejects as "already owned" fall
+  through to a restore automatically instead of dead-ending on an error dialog. RC error codes now
+  map through the pure, unit-testable `monetizationErrorFor(code, userCancelled)` (cancellation →
+  `UserCancelled`, already-owned codes → `AlreadyOwned`, `NetworkError` → `NetworkUnavailable`).
+  The paywall's Restore button gains an in-flight state (`isRestoring` disables + relabels it via
+  the new `stringPaywallRestoring` token).
+
+### Changed
+
+- **Breaking: paywall messages are now `FrnkStringSource` (`:shared-monetization-ui`).**
+  `PaywallEffect.Message.text` (and the `onMessage` callbacks of `FrnkPaywallDestination` /
+  `frnkPaywallNavigation`) changed `String` → `FrnkStringSource`, so toolkit copy stays a theme
+  token — host `stringOverrides` + locale re-resolve apply. Hosts hold the source in state and
+  render via `resolve()`. New tokens: `stringPaywallRestoring`/`Restored`/`NothingToRestore`/
+  `AlreadyOwnedRestoring`/`IdentityError`.
+- **Breaking: restore/purchase are identity-gated (`:shared-monetization-ui`).** `PaywallViewModel`
+  now requires `SyncAuthUseCase` (resolved by `paywallScaffoldModule` from `monetizationModule`) and
+  sequences every store interaction behind `identify()`, so entitlements land on the host's stable
+  uid, never RC's transient anonymous id. Custom `EntitlementProvider`/`EntitlementManager`
+  implementations must add `syncPurchases()`.
+
+### Fixed (RevenueCat provider)
+
+- **`restore()` no longer reports success from stale Pro state (`:monetization-impl`).** Its result
+  is computed from the restore's **own** `CustomerInfo` instead of the provider's current `isPro`,
+  so a pre-existing Pro state (e.g. god mode) can't masquerade as a successful restore; restore/sync
+  failures map through `monetizationErrorFor` instead of collapsing to `Unknown`. SDK wrappers now
+  rethrow `CancellationException` (the old `runCatching` swallowed it, handing cancelled callers a
+  bogus `StoreUnavailable`).
 
 ## [0.2.0-alpha1] - 2026-07-08
 

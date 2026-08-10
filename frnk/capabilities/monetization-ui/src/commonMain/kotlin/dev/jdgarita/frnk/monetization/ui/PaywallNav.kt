@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.monetization.ui
 
 import androidx.compose.runtime.Composable
 import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.Module
 import org.koin.dsl.navigation3.navigation
@@ -17,13 +18,14 @@ import org.koin.dsl.navigation3.navigation
  * ```
  *
  * @param onClose called when the paywall should be dismissed (purchase/restore succeeded or user closed it).
- * @param onMessage surfaces transient messages (e.g. "Nothing to restore", purchase failure) — wire to a toast/snackbar.
+ * @param onMessage surfaces transient messages (e.g. "Nothing to restore", purchase failure) — hold it in
+ * state and render via `FrnkStringSource.resolve()` (a toast/snackbar/dialog under the ambient `FrnkTheme`).
  */
 @Composable
 fun FrnkPaywallDestination(
     features: List<String> = emptyList(),
     source: String = "paywall",
-    onMessage: (String) -> Unit = {},
+    onMessage: (FrnkStringSource) -> Unit = {},
     onClose: () -> Unit
 ) {
     PaywallScreen(source = source, features = features) { effect ->
@@ -47,7 +49,7 @@ fun FrnkPaywallDestination(
 fun Module.frnkPaywallNavigation(
     features: List<String> = emptyList(),
     source: String = "paywall",
-    onMessage: (String) -> Unit = {},
+    onMessage: (FrnkStringSource) -> Unit = {},
     onClose: () -> Unit
 ) {
     navigation<FrnkRootRoute.Paywall> {

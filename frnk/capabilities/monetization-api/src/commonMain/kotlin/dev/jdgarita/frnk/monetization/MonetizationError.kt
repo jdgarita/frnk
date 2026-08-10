@@ -11,5 +11,6 @@ enum class MonetizationError(
     NetworkUnavailable("Network unavailable"),
     NoOfferings("No products available"),
     PurchaseNotAllowed("Purchases are not allowed on this device"),
+    AlreadyOwned("Already subscribed"),
     Unknown("Something went wrong")
 }

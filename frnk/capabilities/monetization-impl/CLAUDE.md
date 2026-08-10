@@ -8,10 +8,15 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
   (BACKLOG P3-2/P3-3). Reactive `isPro` (a `PurchasesDelegate` pushes background customer-info updates;
   `refresh()` reads `awaitCustomerInfoResult()`); `offerings()` maps `Offerings.current` packages →
   `ProProduct` (`PackageType`→`ProPlan`, `Price.formatted`/`pricePerMonth`, trial via `introductoryDiscount`,
-  a "Save N%" yearly badge); `purchase(id)` resolves the cached `Package` and runs `awaitPurchaseResult(pkg)`,
-  mapping `PurchasesTransactionException.userCancelled` → `MonetizationError.UserCancelled`; `restore()` reads
-  `awaitRestoreResult()`. Exports the pure, SDK-free `isProFor(...)` mapper (unit-testable without the static
-  `Purchases.sharedInstance`). **It does NOT own the Free/Pro logic or god mode** — that's
+  a "Save N%" yearly badge); `purchase(id)` resolves the cached `Package` and runs `awaitPurchaseResult(pkg)`;
+  `restore()` reads `awaitRestoreResult()` and `syncPurchases()` reads `awaitSyncPurchasesResult()` (the
+  silent, no-store-UI receipt sync) — both compute the returned `isPro` from the call's **own**
+  `CustomerInfo`, not `_isPro.value`, so a pre-existing Pro state (e.g. god mode) can't masquerade as a
+  successful restore. RC failures map through the pure `monetizationErrorFor(code, userCancelled)`
+  (exported SDK-statics-free like `isProFor(...)`, unit-testable without `Purchases.sharedInstance`):
+  cancellation → `UserCancelled`, `ProductAlreadyPurchasedError`/`ReceiptAlreadyInUseError` →
+  `AlreadyOwned` (so the paywall can fall through to a restore), `NetworkError` → `NetworkUnavailable`,
+  else `Unknown`. **It does NOT own the Free/Pro logic or god mode** — that's
   `DefaultEntitlementManager` (`:monetization-api`), which wraps this provider.
 - `RevenueCatConfig.kt` — `data class RevenueCatConfig(proEntitlementId = "pro")`. The entitlement
   identifier that means "Pro" (`customerInfo.entitlements[proEntitlementId]?.isActive == true`). Hosts whose
@@ -26,7 +31,9 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
 The toolkit **never** calls `Purchases.configure(...)`. The host configures RevenueCat — platform
 context + public SDK key + the native iOS pod — before the gate is used (Android captures the context
 automatically via RevenueCat's `androidx.startup` initializer, so `Purchases.configure(apiKey)` in
-`Application.onCreate` is enough). Every SDK access in the manager is wrapped in `runCatching`, so an
+`Application.onCreate` is enough). Every SDK access in the manager is wrapped in the private `sdkCall`
+helper (a `runCatching`-alike that rethrows `CancellationException` so cancelled callers aren't handed
+a bogus `StoreUnavailable`), so an
 **unconfigured** `Purchases.sharedInstance` degrades to a safe no-op (`isPro` stays `false`) instead of
 throwing — the same defensive pattern `FirebaseCrashReporter` uses. The manager also won't clobber a
 `PurchasesDelegate` the host already set (such a host should call `refresh()` after entitlement changes).

@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.ui.mvi.ModelStateFactory
 import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 
 /**
  * The data-only layer behind [PaywallScreenState]: the loaded offerings, the current selection, and
@@ -21,7 +22,8 @@ data class PaywallModelState(
     val benefits: List<ProBenefit> = emptyList(),
     val selectedProductId: String? = null,
     val isLoading: Boolean = true,
-    val isPurchasing: Boolean = false
+    val isPurchasing: Boolean = false,
+    val isRestoring: Boolean = false
 ) : ModelState
 
 /** Seeds the paywall's initial model: empty + loading (offerings are fetched on first composition). */
@@ -52,7 +54,8 @@ data class PaywallScreenState(
     val benefits: List<ProBenefit> = emptyList(),
     val selectedProductId: String? = null,
     val isLoading: Boolean = true,
-    val isPurchasing: Boolean = false
+    val isPurchasing: Boolean = false,
+    val isRestoring: Boolean = false
 ) : UiState {
     val selectedProduct: ProProduct? get() = products.firstOrNull { it.id == selectedProductId }
 }
@@ -73,8 +76,12 @@ sealed interface PaywallEffect : UiEffect {
     /** Close the paywall (purchase/restore succeeded, or the user dismissed it). */
     data object Dismiss : PaywallEffect
 
-    /** Show a transient message (purchase failed/cancelled, nothing to restore). */
+    /**
+     * Show a transient message (purchase failed/cancelled, nothing to restore). Carried as a
+     * [FrnkStringSource] so toolkit copy stays a theme token (host overrides + locale re-resolve
+     * apply); hosts hold it in state and resolve at the rendering leaf via `resolve()`.
+     */
     data class Message(
-        val text: String
+        val text: FrnkStringSource
     ) : PaywallEffect
 }

@@ -7,11 +7,13 @@ Pure-interface monetization contract. No RevenueCat, no Play Billing, no StoreKi
 Two layers, so god mode + Pro logic stay independent of any billing SDK:
 
 - `monetization/EntitlementProvider.kt` — the **pluggable billing backend** (RC + the demo fake implement
-  it): `isPro: StateFlow<Boolean>` + `refresh()` + `offerings()` + `purchase(id)` + `restore()`, all
-  returning `AppResult` (never throw).
+  it): `isPro: StateFlow<Boolean>` + `refresh()` + `offerings()` + `purchase(id)` + `restore()` +
+  `syncPurchases()` (silent receipt sync — no store UI, safe to run opportunistically, e.g. before
+  selling), all returning `AppResult` (never throw).
 - `monetization/EntitlementManager.kt` — the **toolkit's canonical source of truth** feature code reads.
   Wraps a provider and overlays a persisted **god mode** override. `status: StateFlow<EntitlementStatus>`,
-  `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`.
+  `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`/
+  `syncPurchases`.
 - `monetization/Feature.kt` — the **open marker** `interface Feature { val id: String }`. Type-safe and
   host-extensible (Tier 3.1): hosts implement it (typically via their own enum:
   `enum class AppFeature(override val id: String) : Feature { … }`), so `Feature("typo")` no longer
@@ -29,7 +31,9 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode})`.
 - `monetization/ProProduct.kt` — SDK-free purchasable plan (`ProPlan{Weekly,Monthly,Yearly,Lifetime,Other}`,
   prices, `hasFreeTrial`, `badge`) the paywall renders.
-- `monetization/MonetizationError.kt` — typed offerings/purchase/restore failures.
+- `monetization/MonetizationError.kt` — typed offerings/purchase/restore failures. `AlreadyOwned`
+  means "the store says you already own this" — callers recover by falling through to a restore
+  instead of dead-ending (the paywall does exactly that).
 - `monetization/FeatureGate.kt` — gating helper over the manager: `canUse(feature)`, reactive
   `observe(feature)`, `requestUpgrade(source)` (emits `Paywall_Viewed`, returns `PAYWALL_ROUTE_KEY`),
   host-configurable `freeFeatures` (matched by `Feature.id`, so the check is correct across any `Feature`
@@ -40,7 +44,7 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   it threaded down through Compose. `DefaultObserveProStatusUseCase` re-exposes `EntitlementManager.isPro`.
   Consumed by `:ui-scaffolds`' `SettingsViewModel`.
 - `monetization/usecase/PaywallPurchaseUseCase.kt` — the paywall's **purchase use case**: an injectable
-  `interface` exposing `offerings()`/`purchase(id)`/`restore()` (all `AppResult`, never throw) so
+  `interface` exposing `offerings()`/`purchase(id)`/`restore()`/`sync()` (all `AppResult`, never throw) so
   `PaywallViewModel` runs the billing flow via Koin instead of depending on `EntitlementManager`
   directly. `DefaultPaywallPurchaseUseCase` delegates to `EntitlementManager` (which keeps the analytics
   funnel). Consumed by `:shared-monetization-ui`'s `PaywallViewModel`.
