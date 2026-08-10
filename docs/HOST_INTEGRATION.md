@@ -511,7 +511,11 @@ After `initializeFrnk(...)` (§4), **`FrnkApp`** (`:ui-app`) is the app root. It
 supply two lambdas: `onSavedStateConfiguration` (the root saved-state config, normally `frnkRootNavConfig()`)
 and `onNavigationModule(backStack)`, which returns a Koin `navigation<Route> { … }` module registering your
 root destinations (it's loaded via `loadKoinModules`). Brand the whole app by passing a `themeConfig`
-(`FrnkThemeConfig`, §2) — it flows into the `FrnkTheme` `FrnkApp` owns; omit it for the bundled palette:
+(`FrnkThemeConfig`, §2) — it flows into the `FrnkTheme` `FrnkApp` owns; omit it for the bundled palette.
+A single-appearance host additionally passes `initialAppearance = Appearance.Light` (or `.Dark`) to seed
+the `AppearanceController` once — theme palette, Android system-bar icon contrast, and the iOS interface
+style then stop following the OS dark-mode setting (omit it to keep following the system, or when the
+host restores a persisted appearance itself):
 
 ```kotlin
 setContent {
