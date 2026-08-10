@@ -1,6 +1,11 @@
 package dev.jdgarita.frnk.monetization.revenuecat
 
+import com.revenuecat.purchases.kmp.models.PurchasesError
+import com.revenuecat.purchases.kmp.models.PurchasesErrorCode
+import com.revenuecat.purchases.kmp.models.PurchasesException
+import com.revenuecat.purchases.kmp.models.PurchasesTransactionException
 import dev.jdgarita.frnk.monetization.EntitlementProvider
+import dev.jdgarita.frnk.monetization.MonetizationError
 import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,6 +35,67 @@ class RevenueCatEntitlementProviderTest {
     fun isProFor_honors_configurable_identifier() {
         assertTrue(isProFor(activeEntitlementIds = setOf("premium"), proEntitlementId = "premium"))
         assertFalse(isProFor(activeEntitlementIds = setOf("premium"), proEntitlementId = "pro"))
+    }
+
+    @Test
+    fun monetizationErrorFor_maps_cancellation_regardless_of_code() {
+        assertEquals(
+            MonetizationError.UserCancelled,
+            monetizationErrorFor(PurchasesErrorCode.UnknownError, userCancelled = true)
+        )
+        assertEquals(
+            MonetizationError.UserCancelled,
+            monetizationErrorFor(PurchasesErrorCode.PurchaseCancelledError, userCancelled = false)
+        )
+    }
+
+    @Test
+    fun monetizationErrorFor_maps_already_owned_codes() {
+        assertEquals(
+            MonetizationError.AlreadyOwned,
+            monetizationErrorFor(PurchasesErrorCode.ProductAlreadyPurchasedError, userCancelled = false)
+        )
+        assertEquals(
+            MonetizationError.AlreadyOwned,
+            monetizationErrorFor(PurchasesErrorCode.ReceiptAlreadyInUseError, userCancelled = false)
+        )
+    }
+
+    @Test
+    fun monetizationErrorFor_maps_network_error() {
+        assertEquals(
+            MonetizationError.NetworkUnavailable,
+            monetizationErrorFor(PurchasesErrorCode.NetworkError, userCancelled = false)
+        )
+    }
+
+    @Test
+    fun monetizationErrorFor_defaults_to_unknown() {
+        assertEquals(
+            MonetizationError.Unknown,
+            monetizationErrorFor(PurchasesErrorCode.StoreProblemError, userCancelled = false)
+        )
+    }
+
+    @Test
+    fun toMonetizationError_dispatches_on_exception_type() {
+        assertEquals(
+            MonetizationError.UserCancelled,
+            PurchasesTransactionException(
+                PurchasesError(PurchasesErrorCode.PurchaseCancelledError),
+                userCancelled = true
+            ).toMonetizationError()
+        )
+        assertEquals(
+            MonetizationError.AlreadyOwned,
+            PurchasesException(PurchasesError(PurchasesErrorCode.ProductAlreadyPurchasedError))
+                .toMonetizationError()
+        )
+        assertEquals(
+            MonetizationError.NetworkUnavailable,
+            PurchasesException(PurchasesError(PurchasesErrorCode.NetworkError)).toMonetizationError()
+        )
+        assertEquals(MonetizationError.Unknown, IllegalStateException("boom").toMonetizationError())
     }
 
     @Test

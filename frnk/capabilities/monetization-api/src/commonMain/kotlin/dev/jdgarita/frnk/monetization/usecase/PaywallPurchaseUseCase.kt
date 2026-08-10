@@ -28,4 +28,7 @@ interface PaywallPurchaseUseCase {
 
     /** Restore previous purchases; `true` if the customer is now Pro. */
     suspend fun restore(): AppResult<Boolean, MonetizationError>
+
+    /** Silently sync the store receipt (no store UI); `true` if the customer is now Pro. */
+    suspend fun sync(): AppResult<Boolean, MonetizationError>
 }

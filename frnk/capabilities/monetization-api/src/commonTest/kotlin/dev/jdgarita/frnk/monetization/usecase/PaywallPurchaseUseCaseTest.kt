@@ -78,6 +78,21 @@ class PaywallPurchaseUseCaseTest {
         }
 
     @Test
+    fun sync_delegates_to_sync_purchases() =
+        runTest {
+            val useCase = DefaultPaywallPurchaseUseCase(FakeManager(sync = AppResult.Success(true)))
+            assertEquals(AppResult.Success(true), useCase.sync())
+        }
+
+    @Test
+    fun sync_propagates_failure() =
+        runTest {
+            val failure = AppResult.Failure(MonetizationError.StoreUnavailable)
+            val useCase = DefaultPaywallPurchaseUseCase(FakeManager(sync = failure))
+            assertEquals(failure, useCase.sync())
+        }
+
+    @Test
     fun restore_propagates_failure() =
         runTest {
             val failure = AppResult.Failure(MonetizationError.NetworkUnavailable)
@@ -90,6 +105,7 @@ private class FakeManager(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
+    private val sync: AppResult<Boolean, MonetizationError> = AppResult.Success(false),
     private val metadata: AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
 ) : EntitlementManager {
     var purchasedId: String? = null
@@ -113,6 +129,8 @@ private class FakeManager(
     }
 
     override suspend fun restorePurchases() = restore
+
+    override suspend fun syncPurchases() = sync
 
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 

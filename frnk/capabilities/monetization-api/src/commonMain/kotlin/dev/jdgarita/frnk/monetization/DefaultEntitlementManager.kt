@@ -102,6 +102,11 @@ class DefaultEntitlementManager(
         return provider.restore()
     }
 
+    override suspend fun syncPurchases(): AppResult<Boolean, MonetizationError> {
+        analytics.trackCustom("sync_purchases")
+        return provider.syncPurchases()
+    }
+
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = provider.managementUrl()
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = provider.fetchMetadata()

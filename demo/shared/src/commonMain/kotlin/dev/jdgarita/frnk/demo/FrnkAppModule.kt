@@ -105,6 +105,8 @@ class FakeEntitlementProvider : EntitlementProvider {
 
     override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(_isPro.value)
 
+    override suspend fun syncPurchases(): AppResult<Boolean, MonetizationError> = AppResult.Success(_isPro.value)
+
     // The fake has no store-managed subscription, so there's nothing to open (real RC returns the
     // App Store / Play Store management URL after a real purchase).
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)

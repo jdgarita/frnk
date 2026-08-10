@@ -57,6 +57,7 @@ import dev.jdgarita.frnk.ui.theme.stringPaywallContinue
 import dev.jdgarita.frnk.ui.theme.stringPaywallEmpty
 import dev.jdgarita.frnk.ui.theme.stringPaywallFreeTrialBadge
 import dev.jdgarita.frnk.ui.theme.stringPaywallPrivacy
+import dev.jdgarita.frnk.ui.theme.stringPaywallRestoring
 import dev.jdgarita.frnk.ui.theme.stringPaywallStartTrial
 import dev.jdgarita.frnk.ui.theme.stringPaywallTerms
 import dev.jdgarita.frnk.ui.theme.stringPaywallTitlePrefix
@@ -191,7 +192,17 @@ fun PaywallScreenContent(
             verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingXxs])
         ) {
             FrnkButton(
-                state = FrnkButtonState.Content(text = Theme[strings][stringRestorePurchases], variant = FrnkButtonVariant.Ghost),
+                state =
+                    FrnkButtonState.Content(
+                        text =
+                            if (state.isRestoring) {
+                                Theme[strings][stringPaywallRestoring]
+                            } else {
+                                Theme[strings][stringRestorePurchases]
+                            },
+                        variant = FrnkButtonVariant.Ghost,
+                        enabled = !state.isRestoring
+                    ),
                 onClick = { onIntent(PaywallIntent.Restore) }
             )
             FrnkText(

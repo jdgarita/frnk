@@ -20,4 +20,6 @@ internal class DefaultPaywallPurchaseUseCase(
     override suspend fun purchase(productId: String) = entitlements.purchase(productId)
 
     override suspend fun restore() = entitlements.restorePurchases()
+
+    override suspend fun sync() = entitlements.syncPurchases()
 }

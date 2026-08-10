@@ -55,6 +55,11 @@ val stringPaywallFreeTrialBadge = ThemeToken<String>("string_paywall_free_trial_
 val stringPaywallTerms = ThemeToken<String>("string_paywall_terms")
 val stringPaywallPrivacy = ThemeToken<String>("string_paywall_privacy")
 val stringPaywallEmpty = ThemeToken<String>("string_paywall_empty")
+val stringPaywallRestoring = ThemeToken<String>("string_paywall_restoring")
+val stringPaywallRestored = ThemeToken<String>("string_paywall_restored")
+val stringPaywallNothingToRestore = ThemeToken<String>("string_paywall_nothing_to_restore")
+val stringPaywallAlreadyOwnedRestoring = ThemeToken<String>("string_paywall_already_owned_restoring")
+val stringPaywallIdentityError = ThemeToken<String>("string_paywall_identity_error")
 val stringPerMonthSuffix = ThemeToken<String>("string_per_month_suffix")
 val stringGodMode = ThemeToken<String>("string_god_mode")
 val stringGodModeSubtitle = ThemeToken<String>("string_god_mode_subtitle")
@@ -115,6 +120,11 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringPaywallTerms to "Terms",
         stringPaywallPrivacy to "Privacy",
         stringPaywallEmpty to "No plans available right now.",
+        stringPaywallRestoring to "Restoring…",
+        stringPaywallRestored to "Purchases restored",
+        stringPaywallNothingToRestore to "Nothing to restore",
+        stringPaywallAlreadyOwnedRestoring to "Already subscribed — restoring…",
+        stringPaywallIdentityError to "Couldn't verify your account — check your connection and try again",
         stringPerMonthSuffix to "/mo",
         stringGodMode to "God mode",
         stringGodModeSubtitle to "Force Pro on this device (testing)",

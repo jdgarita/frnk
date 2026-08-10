@@ -12,14 +12,25 @@ monetization domain (`:monetization-api`).
   (`Paywall_Viewed{source}`, `Purchase_*`, `Paywall_Dismissed`), and runs purchase/restore through the
   injectable `PaywallPurchaseUseCase` (`:monetization-api`, delegates to `EntitlementManager` — so the
   VM stays SDK/manager-agnostic); success → `PaywallEffect.Dismiss`, cancel/failure →
-  `PaywallEffect.Message` (never throws). UI is **stacked selectable plan cards** (radio + price + per-month + free-trial/best-value
+  `PaywallEffect.Message` (never throws). `PaywallEffect.Message` carries a **`FrnkStringSource`**
+  (not a raw `String`) so toolkit copy stays a theme token — hosts hold it in state and render via
+  `resolve()` so `stringOverrides`/locale apply. **Restore hardening:** every store interaction is
+  sequenced behind `SyncAuthUseCase.identify()` so the entitlement lands on the host's stable uid,
+  never RC's transient anonymous id (identity failure aborts restore with
+  `stringPaywallIdentityError`). On attach the VM also runs a best-effort **silent receipt sync**
+  (`PaywallPurchaseUseCase.sync()`) — a reinstalled Pro user is dismissed with Pro restored instead of
+  being sold to; sync failures are silent. A purchase failing with `MonetizationError.AlreadyOwned`
+  falls through to a restore automatically. `isRestoring` disables + relabels the Restore button
+  (`stringPaywallRestoring`) while a restore is in flight. UI is **stacked selectable plan cards** (radio + price + per-month + free-trial/best-value
   badge), a single CTA ("Start free trial" when the selected plan has a trial, else "Continue"), and
   Restore + Terms/Privacy. Product list shows a loading skeleton while offerings load.
 - `PaywallScaffoldModule.kt` — `paywallScaffoldModule` registers `PaywallViewModel` (`source` arrives at
-  attach time via `PaywallArguments`; `PaywallPurchaseUseCase` + `AnalyticsTracker` from the graph). Hosts
+  attach time via `PaywallArguments`; `PaywallPurchaseUseCase` + `AnalyticsTracker` + `SyncAuthUseCase`
+  from the graph). Hosts
   install it alongside `revenueCatModule` + `monetizationModule` in their `initializeFrnk(...)` list.
 - `PaywallNav.kt` — the Navigation3 paywall: a route-agnostic `@Composable FrnkPaywallDestination(features,
-  source, onMessage, onClose)` destination body **and** `Module.frnkPaywallNavigation(...)` which registers it
+  source, onMessage, onClose)` destination body (`onMessage: (FrnkStringSource) -> Unit` — hold it in
+  state, resolve at the rendering leaf) **and** `Module.frnkPaywallNavigation(...)` which registers it
   at `FrnkRootRoute.Paywall` via Koin's `navigation<Route> { }` DSL (resolved by `FrnkNavDisplay`'s default
   `koinEntryProvider()`). **The toolkit owns the paywall destination; the host owns the `NavBackStack`.** A host
   with its own paywall route just calls `FrnkPaywallDestination(...)` inside its own `navigation<MyRoute.Paywall>`

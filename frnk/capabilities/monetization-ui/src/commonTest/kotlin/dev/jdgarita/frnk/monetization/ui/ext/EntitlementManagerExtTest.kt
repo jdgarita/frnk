@@ -59,6 +59,8 @@ private class FakeEntitlementManager(
 
     override suspend fun restorePurchases(): AppResult<Boolean, MonetizationError> = AppResult.Success(false)
 
+    override suspend fun syncPurchases(): AppResult<Boolean, MonetizationError> = AppResult.Success(false)
+
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = managementUrlResult
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)

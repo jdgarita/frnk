@@ -45,6 +45,12 @@ interface EntitlementManager {
     /** Restore previous purchases. */
     suspend fun restorePurchases(): AppResult<Boolean, MonetizationError>
 
+    /**
+     * Silently sync the store receipt with the billing provider (no store UI) — see
+     * [EntitlementProvider.syncPurchases]. Returns whether the user is Pro afterwards.
+     */
+    suspend fun syncPurchases(): AppResult<Boolean, MonetizationError>
+
     /** The store's manage-subscriptions URL for the current customer, or `null` if none. */
     suspend fun managementUrl(): AppResult<String?, MonetizationError>
 
