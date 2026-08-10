@@ -30,6 +30,14 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Added
 
+- **`FrnkApp(initialAppearance)` (`:ui-app`).** New optional parameter that seeds the app-wide
+  `AppearanceController` once, at first composition. A single-appearance host (e.g. a light-only
+  app) passes `Appearance.Light` and the theme palette, the Android system-bar icon contrast, and
+  the iOS `overrideUserInterfaceStyle` all stop following the OS dark-mode setting — previously the
+  controller always started at `Appearance.System`, so such an app showed white status-bar icons
+  over light content whenever the device was in dark mode. Default `null` leaves the controller
+  untouched (hosts restoring a persisted appearance keep doing so), and the controller stays
+  mutable, so runtime toggles keep working.
 - **`:core-platform` host-service contracts.** Added an SDK-free KMP module for camera capture,
   image selection/decoding, application settings actions, and maps integrations.
 - **Silent receipt sync + already-owned recovery (`:monetization-api`/`-impl`/`-ui`).** New

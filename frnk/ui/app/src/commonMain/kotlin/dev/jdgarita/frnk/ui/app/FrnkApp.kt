@@ -50,6 +50,12 @@ import org.koin.core.module.Module
  *   [rememberFrnkRootStartRoute]) to skip onboarding for returning users.
  * @param themeConfig the host's [FrnkThemeConfig] (color/text/shape/string/icon/… token overrides) handed
  *   to [FrnkTheme]. Defaults to [FrnkThemeConfig.Default] (the toolkit's bundled palette unchanged).
+ * @param initialAppearance seeds the app-wide [AppearanceController] once, at first composition. Pass
+ *   [Appearance.Light] (or [Appearance.Dark]) from a single-appearance host so the theme palette, the
+ *   system-bar icon contrast, and the native interface style (iOS `overrideUserInterfaceStyle`) all stop
+ *   following the OS setting. The default `null` leaves the controller untouched — hosts that persist a
+ *   user-chosen appearance keep restoring it themselves, and runtime toggles keep working either way
+ *   (the controller stays mutable; this only seeds).
  * @param onNavigationModule returns the Koin navigation module registering the root destinations, given
  *   the root back stack to drive from effect handlers.
  */
@@ -59,9 +65,14 @@ fun FrnkApp(
     onSavedStateConfiguration: () -> SavedStateConfiguration,
     startRoute: FrnkRootRoute = FrnkRootRoute.Onboarding,
     themeConfig: FrnkThemeConfig = FrnkThemeConfig.Default,
+    initialAppearance: Appearance? = null,
     onNavigationModule: (backStack: NavBackStack<NavKey>) -> Module
 ) {
     val appearanceController: AppearanceController = koinInject()
+
+    remember(appearanceController) {
+        initialAppearance?.let { appearanceController.appearance = it }
+    }
 
     CompositionLocalProvider(
         LocalAppearanceController provides appearanceController
