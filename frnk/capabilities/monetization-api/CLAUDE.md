@@ -9,11 +9,16 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
 - `monetization/EntitlementProvider.kt` — the **pluggable billing backend** (RC + the demo fake implement
   it): `isPro: StateFlow<Boolean>` + `refresh()` + `offerings()` + `purchase(id)` + `restore()` +
   `syncPurchases()` (silent receipt sync — no store UI, safe to run opportunistically, e.g. before
-  selling), all returning `AppResult` (never throw).
+  selling), all returning `AppResult` (never throw). **Extends `IdentitySource`** (`:identity-api`)
+  for `identify(id)` — the same contract the observability sinks implement, so the log-in call is
+  shaped identically everywhere. An **unconfigured** SDK still returns `AppResult.Success`, so hosts
+  without billing keys are never blocked; a real login failure against a configured backend returns
+  `AppResult.Failure(IdentityError.Error)` so callers can gate on the sync having happened.
 - `monetization/EntitlementManager.kt` — the **toolkit's canonical source of truth** feature code reads.
   Wraps a provider and overlays a persisted **god mode** override. `status: StateFlow<EntitlementStatus>`,
   `isPro`, `isGodMode`, `setGodMode(...)`, + delegating `offerings`/`purchase`/`restorePurchases`/
-  `syncPurchases`.
+  `syncPurchases`. **Also extends `IdentitySource`**, delegating `identify(id)` straight to the
+  provider; this is the one sink `DefaultSyncAuthUseCase` gates on.
 - `monetization/Feature.kt` — the **open marker** `interface Feature { val id: String }`. Type-safe and
   host-extensible (Tier 3.1): hosts implement it (typically via their own enum:
   `enum class AppFeature(override val id: String) : Feature { … }`), so `Feature("typo")` no longer
@@ -50,10 +55,25 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   funnel). Consumed by `:shared-monetization-ui`'s `PaywallViewModel`.
 - `monetization/usecase/SyncAuthUseCase.kt` — the **auth-sync use case** (moved in from the Faint host):
   `identify()` ensures the anonymous identity exists (`:identity-api`'s `AnonymousIdentityProvider`)
-  and identifies it with the billing backend (`EntitlementManager.identify`), so a request never
-  leaves the device with a uid the billing backend doesn't know. Gate-on-sync callers stop on the
-  `AppResult.Failure`; best-effort callers (e.g. a bootstrap warmup) ignore the result.
-  `DefaultSyncAuthUseCase` chains `ensureSignedIn()` → `identify(uid)`.
+  and fans that uid out to every `IdentitySource` in the graph, so a request never leaves the device
+  with a uid the billing backend doesn't know. Gate-on-sync callers stop on the `AppResult.Failure`;
+  best-effort callers (e.g. a bootstrap warmup) ignore the result.
+
+  `DefaultSyncAuthUseCase` takes four dependencies — `AnonymousIdentityProvider`,
+  `EntitlementManager`, `CrashReporter`, `AnalyticsTracker` — and runs `ensureSignedIn()` →
+  `crashReporter.identify(id)` → `analyticsTracker.identify(id)` → `entitlementManager.identify(id)`.
+  Three rules are load-bearing and easy to break:
+  1. **Only the entitlement sink gates.** The two observability results are deliberately discarded
+     (each already logs its own failure), so an unconfigured Firebase degrades telemetry rather than
+     blocking a scan — the same graceful-degradation promise `EntitlementProvider` makes for a
+     missing billing key. `DefaultSyncAuthUseCaseTest` pins this; don't turn it into a checked call.
+  2. **`IdentitySynced` is emitted here, not in the analytics binding** — after the step that decides
+     success, so it can't report a sync that then failed in RevenueCat.
+  3. **Exactly one funnel event per call**: `IdentitySynced` xor `IdentitySyncFailed`. The failure
+     event carries `stage` (`sign_in` | `entitlement`) and `error_type`, both low-cardinality, so the
+     two failure modes — Firebase auth down vs. billing backend unreachable — stay distinguishable.
+     `IdentityError` collapses to `CommonError.Unknown` on the public contract, since it carries no
+     cause worth forwarding.
 - `monetization/MonetizationModule.kt` — `monetizationModule` binds `EntitlementManager`
   (`DefaultEntitlementManager`) + `FeatureGate` + `ObserveProStatusUseCase`
   (`DefaultObserveProStatusUseCase`) + `PaywallPurchaseUseCase` (`DefaultPaywallPurchaseUseCase`) +

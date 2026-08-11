@@ -1,5 +1,8 @@
 package dev.jdgarita.frnk.backend
 
+import dev.jdgarita.frnk.identity.IdentityError
+import dev.jdgarita.frnk.utils.AppResult
+
 /**
  * Recording test double for [AnalyticsTracker] — the canonical fake pattern for the toolkit. Captures
  * every tracked event + user property so a test can assert what was emitted, without a real SDK. Reused
@@ -13,6 +16,12 @@ class FakeAnalyticsTracker : AnalyticsTracker {
 
     val tracked = mutableListOf<Tracked>()
     val userProperties = mutableMapOf<String, String?>()
+    var identity: String? = null
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
+        identity = id
+        return AppResult.Success(Unit)
+    }
 
     override fun track(
         event: ToolkitEvent,

@@ -1375,3 +1375,52 @@ Verified on a physical iPhone (iOS 26.5) via Still iosApp: v4 fresh install → 
 
 ### Files
 - frnk/data/db-impl/src/iosMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.ios.kt
+
+## IdentitySource unifies identity fan-out; only the billing sink gates
+
+- id: identitysource-unifies-identity-fan-out-only-the-billing-sin-20260811-190002
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: capabilities/identity + analytics + monetization
+- date: 2026-08-11
+
+Every consumer of a user identity now implements one contract — `IdentitySource.identify(id): AppResult<Unit, IdentityError>` in `:identity-api` — instead of each inventing its own log-in signature. Implemented by `AnalyticsTracker` + `CrashReporter` (`:analytics-api`) and `EntitlementProvider` + `EntitlementManager` (`:monetization-api`).
+
+**Why `:identity-api`:** it already owns identity and depends on nothing but `shared-utils`, so hosting the contract there creates no cycle. The cost is one cross-capability api→api edge, `analytics-api ← identity-api`, accepted over duplicating the interface or adding a fifth module for one method.
+
+**The load-bearing rule:** `DefaultSyncAuthUseCase` fans the uid out to all three sinks but **only `entitlementManager.identify` shapes the returned AppResult**. The two observability results are deliberately discarded (each already logs its own failure via `PrintLogger`). Reason: `SyncAuthUseCase` gates the scanner in the Faint host, so propagating a telemetry failure would mean an unconfigured Crashlytics blocks scanning — contradicting the standing graceful-degradation promise that an unconfigured SDK never blocks a host. `DefaultSyncAuthUseCaseTest.a_failing_observability_sink_never_fails_the_sync` exists specifically to stop someone "fixing" the discarded results into a checked call.
+
+**Funnel placement:** `IdentitySynced` is emitted by the use case, not by `FirebaseAnalyticsTracker.identify`. The event has to follow the step that decides success, or it reports syncs that later failed in RevenueCat. Exactly one of `identity_synced` / `identity_sync_failed` fires per call; the failure carries `stage` (sign_in | entitlement) + `error_type`, both low-cardinality.
+
+**Identity in Analytics goes to the reserved User-ID field** (`Firebase.analytics.setUserId`), never a custom user property or event param — a uid is unbounded-cardinality, so GA4 collapses it into `(other)` and it would burn one of the 25 user-scoped custom dimension slots.
+
+### Files
+- frnk/capabilities/identity-api/src/commonMain/kotlin/dev/jdgarita/frnk/identity/IdentitySource.kt
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/usecase/DefaultSyncAuthUseCase.kt
+- frnk/capabilities/analytics-impl/src/commonMain/kotlin/dev/jdgarita/frnk/backend/firebase/IdentitySink.kt
+
+## frnk.android.firebase: toolkit owns the host's Firebase build wiring
+
+- id: frnk-android-firebase-toolkit-owns-the-host-s-firebase-build-20260811-190015
+- type: architecture_decision
+- status: active
+- platform: android
+- area: build-logic
+- date: 2026-08-11
+
+frnk supplies the Firebase *runtime* bindings (`firebaseObservabilityModule`), but two things only a host **application** module can do: apply `google-services` (generates the resources `FirebaseInitProvider` reads before `Application.onCreate`) and apply `firebase-crashlytics` (uploads R8 mapping files so minified release traces deobfuscate). A library module cannot do either for its host.
+
+`frnk.android.firebase` closes that gap as the first host-facing convention plugin. It is conditional on the host's `google-services.json` being present, so CI and fresh clones still build and the `runCatching`-wrapped bindings degrade to a logged no-op.
+
+**Deliberately configuration-free.** An earlier iteration had a `frnk.crashlytics.debug` Gradle property plus per-build-type `manifestPlaceholders` and `mappingFileUploadEnabled`. All of it was removed: Crashlytics collection already defaults to on for every build type, and mapping upload already defaults to on wherever a mapping exists (release only — debug is not minified, so the upload task is never even created). The SDK defaults were exactly the desired behaviour, so the config was pure surface area.
+
+**Host cost is one line**: `pluginManagement { includeBuild("frnk/build-logic") }`. Verified that this coexists with the top-level `includeBuild("frnk")` composite even though frnk also includes `build-logic` from its own `pluginManagement` — Gradle dedupes by build directory. This was the main risk and it was spiked before committing to the design.
+
+**Side benefit:** frnk's catalog becomes the single source of truth for the `google-services` / `firebase-crashlytics` plugin versions; hosts delete their own declarations, removing a drift bug.
+
+**Gotcha:** `uploadCrashlyticsMappingFileRelease` sits inside the `assembleRelease` task graph, so local release builds attempt a network upload. Use `-x uploadCrashlyticsMappingFileRelease` to skip.
+
+### Files
+- build-logic/src/main/kotlin/frnk.android.firebase.gradle.kts
+- build-logic/build.gradle.kts

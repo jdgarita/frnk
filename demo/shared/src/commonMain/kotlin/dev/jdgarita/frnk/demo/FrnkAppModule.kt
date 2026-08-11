@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.demo.notes.Note
 import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
 import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
@@ -79,7 +80,7 @@ class FakeEntitlementProvider : EntitlementProvider {
 
     override suspend fun refresh() = Unit
 
-    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> =
         AppResult.Success(
@@ -212,8 +213,13 @@ class LoggingAnalyticsTracker : AnalyticsTracker {
         PrintLogger.d(TAG, "user[$key] = $value")
     }
 
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
+        PrintLogger.d(TAG, "identify -> $id")
+        return AppResult.Success(Unit)
+    }
+
     companion object {
-        private const val TAG = "Analytics"
+        private const val TAG = "LoggingAnalytics"
     }
 }
 
@@ -225,8 +231,9 @@ class LoggingCrashReporter : CrashReporter {
         PrintLogger.e(TAG, "$extras", throwable)
     }
 
-    override fun setUserId(id: String?) {
-        PrintLogger.d(TAG, "userId=$id")
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
+        PrintLogger.d(TAG, "identify -> $id")
+        return AppResult.Success(Unit)
     }
 
     override fun log(message: String) {
@@ -234,6 +241,6 @@ class LoggingCrashReporter : CrashReporter {
     }
 
     companion object {
-        private const val TAG = "Crash"
+        private const val TAG = "LoggingCrashReporter"
     }
 }

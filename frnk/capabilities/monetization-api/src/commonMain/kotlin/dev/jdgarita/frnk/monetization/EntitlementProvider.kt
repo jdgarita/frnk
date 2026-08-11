@@ -1,7 +1,7 @@
 package dev.jdgarita.frnk.monetization
 
+import dev.jdgarita.frnk.identity.IdentitySource
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -11,20 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * Every method returns [AppResult] (or updates [isPro]); nothing throws.
  */
-interface EntitlementProvider {
+interface EntitlementProvider : IdentitySource {
     /** The provider's own purchased-entitlement state (no god-mode overlay). */
     val isPro: StateFlow<Boolean>
-
-    /**
-     * Log the current customer in to the billing backend under [userId] (the host's stable, opaque
-     * user id — e.g. its anonymous-identity uid; never an email or other PII). Purchases made before
-     * identification are aliased onto [userId] by the backend on first login. Safe to call on every
-     * launch: implementations skip the network call when [userId] is already the active identity.
-     * An **unconfigured** SDK (the documented graceful-degradation mode) returns [AppResult.Success],
-     * not failure, so hosts without billing keys are never blocked; a real login failure against a
-     * configured backend returns [AppResult.Failure] so callers can gate on the sync having happened.
-     */
-    suspend fun identify(userId: String): AppResult<Unit, CommonError>
 
     /** Re-fetch the latest customer info from the store/backend. */
     suspend fun refresh()

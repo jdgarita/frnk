@@ -15,29 +15,29 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
-### Fixed
-
-- **`FrnkApp` now hands its `AppearanceController` to `FrnkTheme` (`:ui-app`).** `FrnkApp` provided
-  the Koin-resolved controller via `LocalAppearanceController` but called `FrnkTheme` without
-  passing it, so the theme's default parameter instantiated a *second* controller (stuck at
-  `Appearance.System`) that shadowed the first for everything under the theme. Net effect: the
-  palette and the iOS interface-style pin always followed the OS — `initialAppearance` seeding
-  (and any host toggle mutating the Koin controller) moved only the system-bar icon contrast,
-  while chrome like the Settings footer kept flipping with device dark mode. One controller now
-  drives palette, system bars, and the native interface style together.
-
-- **Pro state now hydrates on cold launch (`:monetization-api`).** `DefaultEntitlementManager`
-  launches `provider.refresh()` in its injected scope at construction. Previously nothing triggered
-  a customer-info fetch on startup — the RevenueCat provider's `isPro` starts `false` and its
-  `PurchasesDelegate` installs lazily on the first monetization call — so an entitled user was
-  reported Free on every launch until they happened to reopen the paywall. Hosts need no wiring:
-  on the validated bootstrap path (`validate = true`, `Koin::validateFrnkBootstrap`) the manager is
-  resolved — and therefore hydrated — at `initializeFrnk` time; unvalidated hosts hydrate on the
-  first injection. The RevenueCat SDK answers the refresh from its local cache even offline.
-  (The manager binding is deliberately *not* `createdAtStart`: eager instantiation would crash
-  `startKoin` with a raw Koin error before `validateFrnkBootstrap` could name a missing module.)
+## [0.3.0] - 2026-08-11
 
 ### Added
+
+- **`frnk.android.firebase` convention plugin (`build-logic`).** The first convention plugin aimed at
+  a **host application** rather than a toolkit module. On a `com.android.application` project it
+  applies `google-services` (so `FirebaseInitProvider` auto-initializes Firebase before
+  `Application.onCreate`) and `firebase-crashlytics` (so R8-minified release stack traces
+  deobfuscate) — both **only when the host's `google-services.json` is present**, so CI and fresh
+  clones still configure and build, degrading to the existing logged no-op at runtime. It takes no
+  configuration, and frnk's catalog owns the two plugin versions so hosts stop duplicating them.
+  Opt in with `pluginManagement { includeBuild("frnk/build-logic") }` — see
+  `docs/HOST_INTEGRATION.md` §7.
+
+- **`IdentitySource` (`:identity-api`).** `suspend fun identify(id: String): AppResult<Unit, IdentityError>`
+  — one contract for every consumer of a user identity, implemented by `AnalyticsTracker`,
+  `CrashReporter`, `EntitlementProvider` and `EntitlementManager`. Crash reports and Analytics now
+  carry the host's uid (the reserved Firebase User-ID field, not a high-cardinality user property).
+
+- **`ToolkitEvent.IdentitySynced` / `IdentitySyncFailed`.** A complete identity funnel: exactly one of
+  the two is emitted per `SyncAuthUseCase.identify()` call. The failure event carries `stage`
+  (`sign_in` | `entitlement`) and `error_type`, both low-cardinality, so a Firebase-auth failure and a
+  billing-backend failure stay distinguishable.
 
 - **`FrnkApp(initialAppearance)` (`:ui-app`).** New optional parameter that seeds the app-wide
   `AppearanceController` once, at first composition. A single-appearance host (e.g. a light-only
@@ -65,6 +65,23 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Changed
 
+- **Breaking (`:analytics-api`):** `CrashReporter.setUserId(String?)` → `identify(String)` from
+  `IdentitySource`; `AnalyticsTracker` gains the same method. Both interfaces now extend
+  `IdentitySource`, so `:analytics-api` gains an `api(projects.identityApi)` dependency — the one
+  cross-capability api→api edge in the graph.
+- **Breaking (`:monetization-api`):** `EntitlementProvider.identify` / `EntitlementManager.identify`
+  move to the inherited `IdentitySource` signature — the parameter is now `id` (was `userId`) and the
+  error type is `IdentityError` (was `CommonError`). `DefaultSyncAuthUseCase` gains `CrashReporter`
+  and `AnalyticsTracker` constructor parameters.
+- **Breaking (`:analytics-api`):** `ToolkitEvent` keys are now lowercase `snake_case`
+  (`App_Opened` → `app_opened`, …), and `SignInStarted`/`SignInCompleted` were removed — nothing
+  emitted them. Firebase Analytics only accepts alphanumeric-plus-underscore names starting with a
+  letter and **silently drops** anything else, so keys that drift are invisible failures.
+- `DefaultSyncAuthUseCase` now fans a resolved uid out to all three sinks, but **only the entitlement
+  sink gates the result** — the observability results are deliberately discarded (each logs its own
+  failure), so an unconfigured Firebase degrades telemetry instead of blocking the host. Pinned by
+  `DefaultSyncAuthUseCaseTest`.
+
 - **Breaking: paywall messages are now `FrnkStringSource` (`:shared-monetization-ui`).**
   `PaywallEffect.Message.text` (and the `onMessage` callbacks of `FrnkPaywallDestination` /
   `frnkPaywallNavigation`) changed `String` → `FrnkStringSource`, so toolkit copy stays a theme
@@ -76,6 +93,28 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   sequences every store interaction behind `identify()`, so entitlements land on the host's stable
   uid, never RC's transient anonymous id. Custom `EntitlementProvider`/`EntitlementManager`
   implementations must add `syncPurchases()`.
+
+### Fixed
+
+- **`FrnkApp` now hands its `AppearanceController` to `FrnkTheme` (`:ui-app`).** `FrnkApp` provided
+  the Koin-resolved controller via `LocalAppearanceController` but called `FrnkTheme` without
+  passing it, so the theme's default parameter instantiated a *second* controller (stuck at
+  `Appearance.System`) that shadowed the first for everything under the theme. Net effect: the
+  palette and the iOS interface-style pin always followed the OS — `initialAppearance` seeding
+  (and any host toggle mutating the Koin controller) moved only the system-bar icon contrast,
+  while chrome like the Settings footer kept flipping with device dark mode. One controller now
+  drives palette, system bars, and the native interface style together.
+
+- **Pro state now hydrates on cold launch (`:monetization-api`).** `DefaultEntitlementManager`
+  launches `provider.refresh()` in its injected scope at construction. Previously nothing triggered
+  a customer-info fetch on startup — the RevenueCat provider's `isPro` starts `false` and its
+  `PurchasesDelegate` installs lazily on the first monetization call — so an entitled user was
+  reported Free on every launch until they happened to reopen the paywall. Hosts need no wiring:
+  on the validated bootstrap path (`validate = true`, `Koin::validateFrnkBootstrap`) the manager is
+  resolved — and therefore hydrated — at `initializeFrnk` time; unvalidated hosts hydrate on the
+  first injection. The RevenueCat SDK answers the refresh from its local cache even offline.
+  (The manager binding is deliberately *not* `createdAtStart`: eager instantiation would crash
+  `startKoin` with a raw Koin error before `validateFrnkBootstrap` could name a missing module.)
 
 ### Fixed (RevenueCat provider)
 
@@ -154,6 +193,7 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.2.0-alpha1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/jdgarita/frnk/releases/tag/v0.3.0
 [0.2.0-alpha1]: https://github.com/jdgarita/frnk/releases/tag/v0.2.0-alpha1
 [0.1.0]: https://github.com/jdgarita/frnk/releases/tag/v0.1.0

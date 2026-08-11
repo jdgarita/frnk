@@ -1,5 +1,8 @@
 package dev.jdgarita.frnk.backend
 
+import dev.jdgarita.frnk.identity.IdentityError
+import dev.jdgarita.frnk.utils.AppResult
+
 /**
  * No-op observability defaults. These are the safe fallback when an app opts out of analytics /
  * crash reporting (`noopObservabilityModule`) — every call is a silent `Unit`.
@@ -24,6 +27,8 @@ class NoopAnalyticsTracker : AnalyticsTracker {
         key: String,
         value: String?
     ) = Unit
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 }
 
 class NoopCrashReporter : CrashReporter {
@@ -32,7 +37,7 @@ class NoopCrashReporter : CrashReporter {
         extras: Map<String, String>
     ) = Unit
 
-    override fun setUserId(id: String?) = Unit
-
     override fun log(message: String) = Unit
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 }

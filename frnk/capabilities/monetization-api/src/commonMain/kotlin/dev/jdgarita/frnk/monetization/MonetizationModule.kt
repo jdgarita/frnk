@@ -49,5 +49,12 @@ val monetizationModule =
         single { FeatureGate(get(), get()) }
         single<ObserveProStatusUseCase> { DefaultObserveProStatusUseCase(get()) }
         single<PaywallPurchaseUseCase> { DefaultPaywallPurchaseUseCase(get()) }
-        single<SyncAuthUseCase> { DefaultSyncAuthUseCase(get(), get()) }
+        single<SyncAuthUseCase> {
+            DefaultSyncAuthUseCase(
+                identityProvider = get(),
+                entitlementManager = get(),
+                crashReporter = get(),
+                analyticsTracker = get()
+            )
+        }
     }

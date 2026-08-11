@@ -1,7 +1,7 @@
 package dev.jdgarita.frnk.monetization
 
+import dev.jdgarita.frnk.identity.IdentitySource
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
  * through here too. The default implementation is `DefaultEntitlementManager` (pure Kotlin), bound by
  * [monetizationModule].
  */
-interface EntitlementManager {
+interface EntitlementManager : IdentitySource {
     /** Combined Free/Pro snapshot (provider OR god mode), with its [ProSource]. */
     val status: StateFlow<EntitlementStatus>
 
@@ -22,13 +22,6 @@ interface EntitlementManager {
 
     /** Whether the local god-mode override is currently active. */
     val isGodMode: StateFlow<Boolean>
-
-    /**
-     * Identify the current customer with the billing provider under the host's stable [userId] —
-     * see [EntitlementProvider.identify]. Idempotent, so hosts call it on every launch; the result
-     * lets callers that must not proceed with an unsynced identity gate on it.
-     */
-    suspend fun identify(userId: String): AppResult<Unit, CommonError>
 
     /** Enable/disable the persisted god-mode override (forces Pro regardless of the provider). */
     fun setGodMode(enabled: Boolean)
