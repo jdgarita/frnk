@@ -3,6 +3,8 @@ package dev.jdgarita.frnk.backend.firebase
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.crashlytics.crashlytics
 import dev.jdgarita.frnk.backend.CrashReporter
+import dev.jdgarita.frnk.identity.IdentityError
+import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.PrintLogger
 
 /**
@@ -22,10 +24,8 @@ internal class FirebaseCrashReporter : CrashReporter {
         }.onFailure { PrintLogger.w(TAG, "recordException skipped: ${it.message}") }
     }
 
-    override fun setUserId(id: String?) {
-        runCatching { Firebase.crashlytics.setUserId(id.orEmpty()) }
-            .onFailure { PrintLogger.w(TAG, "setUserId skipped: ${it.message}") }
-    }
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> =
+        identitySinkResult(TAG) { Firebase.crashlytics.setUserId(id) }
 
     override fun log(message: String) {
         runCatching { Firebase.crashlytics.log(message) }

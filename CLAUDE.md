@@ -49,6 +49,19 @@ Day-to-day:
   - **`frnk.kmp.library.hosttest`** — `frnk.kmp.library` + `withHostTest {}` + the `commonTest` `kotlin-test`/`kotlinx-coroutines-test` deps. Applied by every standard tested module **except** `:ui-components`/`:ui-scaffolds` (they need the Compose-UI-test variant — see `.composehosttest` below).
   - **`frnk.kmp.library.composehosttest`** (restructure Stage 7b) — `frnk.kmp.library.compose` + the design-system test/preview wiring `:ui-components` and `:ui-scaffolds` share: `withHostTest { isIncludeAndroidResources = true }`, the `androidHostTest` bundle (`kotlin-test`/`coroutines-test`/`compose-ui-test`/`ui-test-manifest`/`robolectric`), and a `commonDebug` `@Preview` source set wired `dependsOn` androidMain + both iOS source sets (`compose-ui-tooling-preview`/`compose-ui-tooling`). Extracted from `:shared-ui-atoms`' former hand-written build.
   
+  - **`frnk.android.firebase`** — the one convention plugin aimed at a **host application** rather
+    than a toolkit module, and the only one a downstream app applies. On a `com.android.application`
+    project it applies `google-services` (so `FirebaseInitProvider` auto-inits Firebase before
+    `Application.onCreate`) and `firebase-crashlytics` (so R8-minified release stack traces
+    deobfuscate), **conditionally on the host's `google-services.json` being present** — CI and fresh
+    clones configure and build without it, and the `runCatching`-wrapped bindings in
+    `:analytics-impl` degrade to a logged no-op at runtime. The host passes nothing and there is
+    nothing to tune: Crashlytics collection defaults to on for every build type, and mapping upload
+    defaults to on wherever a mapping exists (release only — debug isn't minified, so the upload
+    task is never created). Consuming it needs `pluginManagement { includeBuild("frnk/build-logic") }`
+    in the host's `settings.gradle.kts`; see `docs/HOST_INTEGRATION.md`. This is why `build-logic`
+    carries the `google-services` + `firebase-crashlytics` plugin **markers**.
+
   (The old `frnk.backend.*` wrappers were retired at restructure Stage 5/OQ-6 — `:analytics-api`/`:analytics-impl` apply the standard plugins above and declare their namespaces/deps inline.)
   
   Each module then only declares what is specific to that module. **`build-logic` (not `buildSrc`) hosts the plugins** so their classpath attaches only to applying projects — a `buildSrc` would leak onto every project and clash with `alias(...) apply false`. **There is no `buildSrc` anymore** — it was deleted once its lone remaining constant (the Maven group id) moved into the version catalog (below); `build-logic` is now the single home for shared build logic. The remaining special module (`:demo-android` — `com.android.application`) keeps a hand-written build.
@@ -72,6 +85,18 @@ The point is swap-ability and parallel compilation. **Do not** add a third-party
 **Capability selection is an explicit Koin module list, not an enum.** The `BackendChoice`/`ObservabilityChoice`/`MonetizationChoice` axes and the old aggregator helper were retired at restructure Stage 1: hosts pass exactly the modules they want to `initializeFrnk(...)` (`firebaseObservabilityModule` XOR `noopObservabilityModule` — the latter now lives in `:analytics-api` — `remoteConfigModule` XOR `noopRemoteConfigModule`, `revenueCatModule` + `monetizationModule` + `paywallScaffoldModule`, `databaseModule`, `prefsModule`, …). Un-passed modules never appear in the graph.
 
 **Observability is a separate axis from the backend.** Analytics + crash reporting are selected independently of the data backend — a local-only app can still ship Firebase telemetry. Install `noopObservabilityModule` (`:analytics-api`, over `Noop{Analytics,Crash}`) or `firebaseObservabilityModule` (`:analytics-impl`), never both.
+
+**`IdentitySource` is the one contract every identity consumer shares.** Declared in `:identity-api`
+(`suspend fun identify(id: String): AppResult<Unit, IdentityError>`), it is implemented by
+`AnalyticsTracker` and `CrashReporter` (`:analytics-api`) **and** `EntitlementProvider` /
+`EntitlementManager` (`:monetization-api`) — so telemetry and billing take the host's uid through
+one identically-shaped call. That is the reason for the single cross-capability api→api edge
+`analytics-api ← identity-api`. `DefaultSyncAuthUseCase` (`:monetization-api`) is the orchestrator:
+it resolves the anonymous uid, fans it out to all three sinks, and emits the
+`IdentitySynced`/`IdentitySyncFailed` funnel. **Only the billing sink gates** — the two observability
+sinks are best-effort and their results are deliberately discarded, so an unconfigured Firebase
+degrades telemetry instead of blocking the app. Don't "fix" that into a blocking check;
+`DefaultSyncAuthUseCaseTest` pins it.
 
 **`shared-utils` is the root.** It owns coroutines + datetime + `BuildKonfig`-generated config, plus `PlatformInfo` (the module's only `expect/actual`: OS name/version + device model) and `FeedbackEmail` (pure-Kotlin `mailto:` draft builder). `AppResult<D, E : AppError>` (sealed `Success`/`Failure`, with `CommonError` + `fold(...)`) lives here too — it is the toolkit-wide result envelope, so any `*-api` (backend, database, monetization) returns it without a sibling `*-api`→`*-api` dependency. Every `*-api` interface returns `AppResult` rather than throwing — preserve this when adding new interfaces, because callers rely on exhaustive `when` for error handling.
 
@@ -119,7 +144,8 @@ The hook activates automatically: the root build registers an `installGitHooks` 
 ## Conventions to follow when adding code
 
 - **Extension functions live in their own file under an `ext/` subpackage** of the module they belong to (e.g. `dev.jdgarita.frnk.ui.scaffolds.settings.ext`, `frnk/ui/scaffolds/src/commonMain/.../ui/scaffolds/settings/ext/SettingsModelStateExt.kt`), **not** appended to the type's declaration file. Name the file `<Type>Ext.kt` (the extensions on `SettingsModelState` → `SettingsModelStateExt.kt`). Keeps data-class/type files declaration-only and makes extensions discoverable. Applies to every new extension function going forward.
-- New backend call: define the interface + DTOs in `:analytics-api`, add the concrete impl in `:analytics-impl`, register the binding in `FirebaseBackendModule.kt`. Return `AppResult`, never throw.
+- New backend call: define the interface + DTOs in `:analytics-api`, add the concrete impl in `:analytics-impl`, register the binding in `FirebaseObservabilityModule.kt`. Return `AppResult`, never throw.
+- New `ToolkitEvent`: the `key` must be alphanumeric-plus-underscore and start with a letter. Firebase Analytics rejects anything else (hyphens included) and **silently drops the event** — and `FirebaseAnalyticsTracker` wraps every SDK call in `runCatching`, so a malformed key fails invisibly with nothing in logcat. The vocabulary is lowercase `snake_case` (`app_opened`, `identity_synced`).
 - New persisted entity: **the toolkit owns no schema** (restructure Stage 4 / OQ-2) — relational entities belong to the consuming app. The host (or `demo/shared` for demo scaffolding) applies the SQLDelight plugin, owns the `.sq` files + database class, and builds it through `:data-db-api`'s `SqlDriverFactory` (bound by `databaseModule` in `:data-db-impl`); see `docs/HOST_INTEGRATION.md` §1 and the demo's `DemoDB`/`demoNotesModule` as the worked example.
 - New key-value preference: don't reach for raw `KeyValueStore` keys — use the typed `Preference<T>` layer in `:data-prefs-api` (`Preference.kt`, P4-3; coverage completed in Tier 3.4). `KeyValueStore.stringPreference/nullableStringPreference/booleanPreference/intPreference/longPreference/doublePreference/enumPreference(key, default)` return a `ReadWriteProperty`, so hosts write `var fooEnabled by store.booleanPreference("foo", false)`. Int/Long/Double/Enum encode losslessly over the String primitive (unknown/corrupt values fall back to the default; enum decode never throws); `nullableStringPreference` models `null` as key absence (writing `null` clears the key).
 - New screen: state/intent/effect types + a `MviViewModel` subclass in the feature module (depend on `:core-mvi`/`:core-nav` if no Compose is needed, or `:ui-scaffolds` for the composable bindings / `:ui-components` for atoms). Compose the UI with `Frnk*` atoms under a `FrnkTheme { ... }`. Prefer the toolkit's binding primitive **`FrnkScreen(viewModel, arguments, onEffect = { … }) { state -> … }`** (in `:ui-scaffolds`, `ui/mvi/`) — it attaches the VM (calls `attach`), collects state lifecycle-aware, consumes one-shot effects via `onEffect`, and renders your `content(state)`; wrap that content in `FrnkScreenScaffold` for the standard top-bar template (as `FrnkHomeScreen` does). The effect channel is single-consumer — collect it in exactly one place.

@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.monetization.ui
 
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProBenefit
 import dev.jdgarita.frnk.monetization.ProMetadata
@@ -44,9 +45,11 @@ class PaywallViewModelTest {
 
     private val metadata = ProMetadata("Go Pro", "Unlock everything", listOf(ProBenefit("SCANS", "Unlimited scans")))
 
-    @BeforeTest fun setUp() = Dispatchers.setMain(dispatcher)
+    @BeforeTest
+    fun setUp() = Dispatchers.setMain(dispatcher)
 
-    @AfterTest fun tearDown() = Dispatchers.resetMain()
+    @AfterTest
+    fun tearDown() = Dispatchers.resetMain()
 
     private fun viewModel(
         useCase: FakePaywallPurchaseUseCase,
@@ -197,7 +200,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 viewModel(
-                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), purchase = AppResult.Success(true))
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        purchase = AppResult.Success(true)
+                    )
                 )
             vm.attach(PaywallArguments("home_topbar"))
             runCurrent()
@@ -270,7 +276,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 viewModel(
-                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), restore = AppResult.Success(true))
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        restore = AppResult.Success(true)
+                    )
                 )
             vm.attach(PaywallArguments("settings"))
             runCurrent()
@@ -290,7 +299,10 @@ class PaywallViewModelTest {
         runTest(dispatcher) {
             val vm =
                 viewModel(
-                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), restore = AppResult.Success(false))
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        restore = AppResult.Success(false)
+                    )
                 )
             vm.attach(PaywallArguments("settings"))
             runCurrent()
@@ -411,6 +423,8 @@ private class FakeSyncAuthUseCase(
 
 private class FakeAnalytics : AnalyticsTracker {
     val tracked = mutableListOf<String>()
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 
     override fun track(
         event: ToolkitEvent,

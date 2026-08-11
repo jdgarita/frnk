@@ -2,8 +2,8 @@ package dev.jdgarita.frnk.monetization
 
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -83,7 +83,7 @@ private class FakeEntitlements(
 
     override suspend fun refresh() = Unit
 
-    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
 
@@ -117,4 +117,6 @@ private class RecordingAnalytics : AnalyticsTracker {
         key: String,
         value: String?
     ) = Unit
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 }

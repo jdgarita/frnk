@@ -1,5 +1,6 @@
 package dev.jdgarita.frnk.monetization.ui.ext
 
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.EntitlementStatus
 import dev.jdgarita.frnk.monetization.MonetizationError
@@ -7,7 +8,6 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.ui.platformManageSubscriptionsUrl
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
@@ -34,7 +34,8 @@ class EntitlementManagerExtTest {
     @Test
     fun falls_back_to_the_platform_url_on_provider_failure() =
         runTest {
-            val manager = FakeEntitlementManager(managementUrlResult = AppResult.Failure(MonetizationError.StoreUnavailable))
+            val manager =
+                FakeEntitlementManager(managementUrlResult = AppResult.Failure(MonetizationError.StoreUnavailable))
 
             assertEquals(platformManageSubscriptionsUrl(), manager.manageSubscriptionsUrl())
         }
@@ -47,7 +48,7 @@ private class FakeEntitlementManager(
     override val isPro: StateFlow<Boolean> = MutableStateFlow(false)
     override val isGodMode: StateFlow<Boolean> = MutableStateFlow(false)
 
-    override suspend fun identify(userId: String): AppResult<Unit, CommonError> = AppResult.Success(Unit)
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 
     override fun setGodMode(enabled: Boolean) = Unit
 

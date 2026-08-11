@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.monetization.revenuecat
 
 import com.revenuecat.purchases.kmp.Purchases
 import com.revenuecat.purchases.kmp.PurchasesDelegate
+import com.revenuecat.purchases.kmp.ktx.SuccessfulLogin
 import com.revenuecat.purchases.kmp.models.CustomerInfo
 import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
@@ -18,6 +19,7 @@ import com.revenuecat.purchases.kmp.result.awaitOfferingsResult
 import com.revenuecat.purchases.kmp.result.awaitPurchaseResult
 import com.revenuecat.purchases.kmp.result.awaitRestoreResult
 import com.revenuecat.purchases.kmp.result.awaitSyncPurchasesResult
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProBenefit
@@ -25,7 +27,7 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.CommonError
+import dev.jdgarita.frnk.utils.PrintLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +46,11 @@ internal class RevenueCatEntitlementProvider(
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
 
-    override suspend fun identify(userId: String): AppResult<Unit, CommonError> {
+    private companion object {
+        const val TAG = "EntitlementProvider"
+    }
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
         installListenerOnce()
         // An unconfigured SDK throws on the appUserID read — that's the documented
         // graceful-degradation mode (missing/placeholder key), so identify succeeds as a no-op
@@ -53,16 +59,22 @@ internal class RevenueCatEntitlementProvider(
             runCatching { Purchases.sharedInstance.appUserID }.getOrNull()
                 ?: return AppResult.Success(Unit)
         // Skip the network logIn when already identified as [userId].
-        if (activeUserId == userId) return AppResult.Success(Unit)
+        if (activeUserId == id) return AppResult.Success(Unit)
         val result =
-            sdkCall { Purchases.sharedInstance.awaitLogInResult(userId) }
-                ?: return AppResult.Failure(CommonError.Unknown)
+            sdkCall { Purchases.sharedInstance.awaitLogInResult(id) }
+                ?: return AppResult.Failure(IdentityError.Error)
         return result.fold(
-            onSuccess = {
-                updateFrom(customerInfo = it.customerInfo)
+            onSuccess = { successfulLogin ->
+                // todo: add analytics
+                printIdentityResult(successfulLogin)
+                updateFrom(customerInfo = successfulLogin.customerInfo)
                 AppResult.Success(Unit)
             },
-            onFailure = { AppResult.Failure(CommonError.Unknown) }
+            onFailure = {
+                // todo: add analytics
+                PrintLogger.w(TAG, "identify skipped: ${it.message}")
+                AppResult.Failure(IdentityError.Error)
+            }
         )
     }
 
@@ -70,6 +82,15 @@ internal class RevenueCatEntitlementProvider(
 
     /** Last fetched packages, keyed by identifier — so [purchase] can resolve the `Package` to buy. */
     private var packagesById: Map<String, Package> = emptyMap()
+
+    private fun printIdentityResult(successfulLogin: SuccessfulLogin) {
+        val message =
+            when {
+                successfulLogin.created -> "New user has been identified"
+                else -> "Existing user has been identified"
+            }
+        PrintLogger.w(TAG, message)
+    }
 
     override suspend fun refresh() {
         installListenerOnce()

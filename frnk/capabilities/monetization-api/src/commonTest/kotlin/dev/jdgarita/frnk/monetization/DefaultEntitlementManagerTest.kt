@@ -3,13 +3,14 @@ package dev.jdgarita.frnk.monetization
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.database.KeyValueStore
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.utils.AppResult
-import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -99,7 +100,7 @@ class DefaultEntitlementManagerTest {
         val analytics = FakeAnalytics()
         val mgr = manager(provider = FakeProvider(purchaseResult = AppResult.Success(true)), analytics = analytics)
         // Use a tiny blocking bridge: run the suspend call on Unconfined via a manual loop.
-        kotlinx.coroutines.test.runTest {
+        runTest {
             mgr.purchase("yearly")
         }
         assertTrue(analytics.tracked.contains(ToolkitEvent.PurchaseStarted.key))
@@ -108,10 +109,10 @@ class DefaultEntitlementManagerTest {
 
     @Test
     fun identify_delegates_to_provider_and_propagates_its_result() {
-        val provider = FakeProvider(identifyResult = AppResult.Failure(CommonError.Unknown))
+        val provider = FakeProvider(identifyResult = AppResult.Failure(IdentityError.Error))
         val mgr = manager(provider)
-        kotlinx.coroutines.test.runTest {
-            assertEquals(AppResult.Failure(CommonError.Unknown), mgr.identify("uid-1"))
+        runTest {
+            assertEquals(AppResult.Failure(IdentityError.Error), mgr.identify("uid-1"))
         }
         assertEquals(listOf("uid-1"), provider.identifiedUserIds)
     }
@@ -121,7 +122,7 @@ class DefaultEntitlementManagerTest {
         val provider = FakeProvider(syncResult = AppResult.Success(true))
         val analytics = FakeAnalytics()
         val mgr = manager(provider, analytics = analytics)
-        kotlinx.coroutines.test.runTest {
+        runTest {
             assertEquals(AppResult.Success(true), mgr.syncPurchases())
         }
         assertEquals(1, provider.syncCount)
@@ -136,7 +137,7 @@ class DefaultEntitlementManagerTest {
                 provider = FakeProvider(purchaseResult = AppResult.Failure(MonetizationError.UserCancelled)),
                 analytics = analytics
             )
-        kotlinx.coroutines.test.runTest { mgr.purchase("yearly") }
+        runTest { mgr.purchase("yearly") }
         assertTrue(analytics.tracked.contains(ToolkitEvent.PurchaseStarted.key))
         assertTrue(analytics.tracked.contains(ToolkitEvent.PurchaseFailed.key))
     }
@@ -144,7 +145,7 @@ class DefaultEntitlementManagerTest {
 
 private class FakeProvider(
     private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
-    private val identifyResult: AppResult<Unit, CommonError> = AppResult.Success(Unit),
+    private val identifyResult: AppResult<Unit, IdentityError> = AppResult.Success(Unit),
     private val syncResult: AppResult<Boolean, MonetizationError> = AppResult.Success(false)
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
@@ -166,8 +167,8 @@ private class FakeProvider(
         refreshCount++
     }
 
-    override suspend fun identify(userId: String): AppResult<Unit, CommonError> {
-        identifiedUserIds += userId
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
+        identifiedUserIds += id
         return identifyResult
     }
 
@@ -228,6 +229,7 @@ private class FakeAnalytics : AnalyticsTracker {
     val tracked = mutableListOf<String>()
     val customEvents = mutableListOf<String>()
     val userProperties = mutableMapOf<String, String?>()
+    var identity: String? = null
 
     override fun track(
         event: ToolkitEvent,
@@ -248,5 +250,10 @@ private class FakeAnalytics : AnalyticsTracker {
         value: String?
     ) {
         userProperties[key] = value
+    }
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
+        identity = id
+        return AppResult.Success(Unit)
     }
 }

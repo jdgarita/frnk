@@ -18,6 +18,9 @@ data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (
   db-api    ── db-impl     (SqlDriverFactory)     analytics-api     ── analytics-impl     (Firebase)
   prefs-api ── prefs-impl  (KeyValueStore)        remote-config-api ── remote-config-impl (Firebase Remote Config)
                                                   identity-api      ── identity-impl      (Firebase Auth)
+                                                    └─ IdentitySource: the shared identify(id) sink
+                                                       contract, implemented by AnalyticsTracker,
+                                                       CrashReporter, EntitlementProvider/Manager
                                                   monetization-api  ── monetization-impl  (RevenueCat)
                                                   haptics       (contract + multihaptic engine; UI-feedback, no api/impl split)
                                                   camera, permissions   (api-only no-op scaffolds — no impl yet)
@@ -99,7 +102,8 @@ core-mvi, core-nav, core-platform, core-di:  no Compose, no upward deps
 data-*-api ← data-*-impl                      # capabilities may depend on data-*-api, never on a *-impl
 haptics ← ui-theme ← ui-components ← ui-scaffolds ← ui-bottom-nav ← ui-app
 ui-app ← {monetization-ui, analytics-api}     # resolves impls via Koin at runtime, never at compile time
-monetization-api ← {analytics-api, data-prefs-api}
+analytics-api ← identity-api                  # IdentitySource — see below
+monetization-api ← {analytics-api, identity-api, data-prefs-api}
 monetization-ui  ← {ui-scaffolds, monetization-api}
 ui-scaffolds     ← monetization-api           # SettingsViewModel.ObserveProStatusUseCase (needs monetizationModule in graph)
 remote-config-api ← remote-config-impl        # sibling of analytics, never merged into it
@@ -112,6 +116,14 @@ The haptics direction is load-bearing: atoms call `LocalFrnkHaptics`, `FrnkTheme
 installs it — so `:haptics` (contract **and** engine) sits *below* `:ui-theme` and
 must not depend on any `ui` module.
 
+`analytics-api ← identity-api` is the one cross-capability api→api edge. It exists because
+**`IdentitySource`** (`suspend fun identify(id: String): AppResult<Unit, IdentityError>`) is a
+single contract implemented by four interfaces across two modules — `AnalyticsTracker` and
+`CrashReporter` in `:analytics-api`, `EntitlementProvider` and `EntitlementManager` in
+`:monetization-api`. Every consumer of a user identity implements the same method, so a host can
+hand the same uid to telemetry and billing without four differently-shaped calls. It lives in
+`:identity-api` because that module already owns identity and depends on nothing but `shared-utils`.
+
 ### Why api/impl split
 
 Each domain that pulls in a third-party SDK is split:
@@ -119,7 +131,7 @@ Each domain that pulls in a third-party SDK is split:
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
 - **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules.
 
-Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) is backed by **`:remote-config-impl`** (Firebase Remote Config), while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` and **`:identity-impl`** binds it to Firebase Auth through `firebaseIdentityModule`. **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
+Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) is backed by **`:remote-config-impl`** (Firebase Remote Config), while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — and **`:identity-impl`** binds the provider to Firebase Auth through `firebaseIdentityModule`. **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.

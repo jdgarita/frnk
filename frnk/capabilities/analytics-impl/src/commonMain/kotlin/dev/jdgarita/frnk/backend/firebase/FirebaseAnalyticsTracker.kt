@@ -4,6 +4,8 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
+import dev.jdgarita.frnk.identity.IdentityError
+import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.PrintLogger
 
 /**
@@ -14,6 +16,12 @@ import dev.jdgarita.frnk.utils.PrintLogger
  * instead of crashing (BACKLOG P1-5 — "no-op when Firebase isn't configured").
  */
 internal class FirebaseAnalyticsTracker : AnalyticsTracker {
+    // Sets the reserved Firebase User-ID field only. Emitting ToolkitEvent.IdentitySynced is
+    // deliberately left to DefaultSyncAuthUseCase: the entitlement backend decides whether a sync
+    // actually succeeded, so firing the success event here would report syncs that later failed,
+    // and would split the funnel across layers from its IdentitySyncFailed counterpart.
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = identitySinkResult(TAG) { Firebase.analytics.setUserId(id) }
+
     override fun track(
         event: ToolkitEvent,
         params: Map<String, Any?>

@@ -210,9 +210,19 @@ initializeFrnk(
 
 `firebaseIdentityModule` reuses `Firebase.auth.currentUser` or signs in anonymously and publishes
 the UID as `StateFlow<String?>`. The API module contains no Firebase types. Android hosts provide a
-`google-services.json`; iOS hosts link `FirebaseCore` and `FirebaseAuth`, call
-`FirebaseApp.configure()` before Kotlin bootstrap, and include the capability in their umbrella
-framework. Anonymous credentials normally persist across launches but are not recoverable after
+`google-services.json` and apply the `frnk.android.firebase` convention plugin (§7) so it is actually
+processed; iOS hosts link `FirebaseCore` and `FirebaseAuth`, call `FirebaseApp.configure()` before
+Kotlin bootstrap, and include the capability in their umbrella framework.
+
+**Propagating the identity.** `AnonymousIdentityProvider` only *produces* a uid. Everything that
+*consumes* one — `AnalyticsTracker`, `CrashReporter`, `EntitlementProvider`, `EntitlementManager` —
+implements `IdentitySource` (`suspend fun identify(id: String)`), and `SyncAuthUseCase` is what fans
+the uid out to all of them. Call it once at bootstrap (best-effort, ignore the result) and again
+wherever you must not proceed with an unsynced identity (gate on the `AppResult`). Crash reports then
+carry the uid automatically, and Analytics gets it in the reserved User-ID field.
+
+A telemetry sink failing **never** fails the sync — only the billing backend does — so an
+unconfigured Firebase degrades telemetry rather than blocking your app. Anonymous credentials normally persist across launches but are not recoverable after
 uninstall or cleared app data unless the host later links the user to a durable account.
 
 **iOS** (on launch, via a Kotlin bootstrap function your umbrella shared module exposes to Swift —
@@ -487,10 +497,47 @@ compileSdk = frnkLibs.versions.android.compileSdk.get().toInt()
 minSdk     = frnkLibs.versions.android.minSdk.get().toInt()
 ```
 
-**Convention plugin (optional).** frnk's standard KMP modules apply the `frnk.kmp.library` convention
-plugin from its `build-logic` included build (jvmToolchain 17 + Android SDK + bare iOS targets in one line).
-A host that adds its own KMP library modules can apply the same plugin by adding
-`includeBuild("frnk/build-logic")` to its `pluginManagement` and `plugins { id("frnk.kmp.library") }`.
+**Convention plugins.** frnk's `build-logic` included build publishes its Gradle convention plugins.
+A host opts in once, in `settings.gradle.kts`:
+
+```kotlin
+pluginManagement {
+    includeBuild("frnk/build-logic")   // path to the submodule's build-logic
+    // …repositories
+}
+```
+
+This coexists with the top-level `includeBuild("frnk")` composite — Gradle dedupes the build even
+though frnk also includes `build-logic` from its own `pluginManagement`.
+
+Two plugins are host-facing:
+
+- **`frnk.kmp.library`** *(optional)* — for host-owned KMP library modules: jvmToolchain 17 + Android
+  SDK levels + bare iOS targets in one line, identical to what frnk's own modules get.
+- **`frnk.android.firebase`** *(recommended for any Android host shipping Firebase)* — apply it in
+  the **application** module:
+
+  ```kotlin
+  plugins {
+      alias(libs.plugins.androidApplication)
+      id("frnk.android.firebase")
+  }
+  ```
+
+  It applies `google-services` (so `FirebaseInitProvider` auto-initializes Firebase *before*
+  `Application.onCreate`, which is what `firebaseIdentityModule` and `firebaseObservabilityModule`
+  depend on) and `firebase-crashlytics` (so **R8-minified release stack traces deobfuscate** —
+  without it a minified build reports unreadable frames). Both are applied **only when the host's
+  `google-services.json` is present**, so CI and fresh clones build without it and the toolkit's
+  `runCatching`-wrapped bindings degrade to a logged no-op at runtime.
+
+  The plugin takes no configuration, and the host does **not** declare the `google-services` or
+  `firebase-crashlytics` plugin versions — frnk's catalog owns them, which is the point: two
+  catalogs pinning the same plugin is a drift bug waiting to happen. Crashlytics collection defaults
+  to on for every build type; mapping upload defaults to on wherever a mapping exists (release only,
+  since debug isn't minified and the upload task is never created). Note that
+  `uploadCrashlyticsMappingFileRelease` sits **inside the `assembleRelease` task graph**, so local
+  release builds attempt a network upload — `-x uploadCrashlyticsMappingFileRelease` skips it.
 
 ## 8. Spin up the whole app with `FrnkApp`
 

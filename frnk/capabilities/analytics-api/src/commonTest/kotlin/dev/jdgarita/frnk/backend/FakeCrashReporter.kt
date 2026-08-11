@@ -1,5 +1,8 @@
 package dev.jdgarita.frnk.backend
 
+import dev.jdgarita.frnk.identity.IdentityError
+import dev.jdgarita.frnk.utils.AppResult
+
 /**
  * Recording test double for [CrashReporter] — captures recorded exceptions (with their extras),
  * breadcrumb logs, and the last user id so tests can assert crash-reporting wiring without a real
@@ -23,8 +26,9 @@ class FakeCrashReporter : CrashReporter {
         recorded += Recorded(throwable, extras)
     }
 
-    override fun setUserId(id: String?) {
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
         userId = id
+        return AppResult.Success(Unit)
     }
 
     override fun log(message: String) {
