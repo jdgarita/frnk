@@ -36,7 +36,7 @@ import androidx.compose.ui.graphics.Brush
  *
  * @see PlaceholderDefaults for default highlight implementations
  */
-internal interface PlaceholderHighlight {
+interface PlaceholderHighlight {
     /**
      * The animation specification for the highlight effect.
      *

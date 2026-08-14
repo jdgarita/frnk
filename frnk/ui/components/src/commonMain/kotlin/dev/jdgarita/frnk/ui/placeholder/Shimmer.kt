@@ -41,7 +41,7 @@ import kotlin.math.tan
  * @param dropOff Controls the size of the fading edge of the highlight. Values are typically between 0f and 1f.
  * @param tilt The angle at which the highlight is tilted, in degrees.
  */
-internal data class Shimmer(
+data class Shimmer(
     private val highlightColor: Color,
     override val animationSpec: InfiniteRepeatableSpec<Float> =
         infiniteRepeatable(
