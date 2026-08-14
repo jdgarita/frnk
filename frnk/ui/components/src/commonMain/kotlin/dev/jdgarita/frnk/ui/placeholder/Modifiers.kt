@@ -48,7 +48,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
  * @return A [Modifier] that draws the placeholder effect
  */
 @Composable
-internal fun Modifier.placeholder(
+fun Modifier.placeholder(
     enabled: Boolean = true,
     color: Color,
     shape: Shape = RectangleShape,
