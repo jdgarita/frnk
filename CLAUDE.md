@@ -139,7 +139,7 @@ The hook activates automatically: the root build registers an `installGitHooks` 
 
 **Validation is local until CI returns.** Before pushing, run the old gate yourself: `./gradlew compileAndroidMain :demo-android:compileDebugKotlin` then `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest` (both `--parallel --build-cache`). `compileAndroidMain` covers `commonMain`+`androidMain` for every KMP module (the AGP 9 KMP-Android task name — `compileDebugKotlinAndroid` doesn't exist for KMP modules); `testAndroidHostTest` covers `commonTest`+`androidHostTest` for every module that opted in via `kotlin { android { withHostTest {} } }` (KMP modules have no `testDebugUnitTest`; `:demo-android`, a `com.android.application`, does). Style is enforced by the pre-commit hook (above), not CI.
 
-**Foundation-complete plan:** once the toolkit's foundation is in place and the repo goes public (unlimited Actions minutes), re-add branch protection on `main`, enable PRs, and restore the `compile & test` job — and optionally `claude-code-review.yml`.
+**Branch protection and PRs are already back on `main`** — direct pushes are rejected and a PR needs one code-owner approval, which is why even a release-bookkeeping commit goes through a PR (`docs/RELEASING.md`). What is still pending: once the toolkit's foundation is in place and the repo goes public (unlimited Actions minutes), restore the `compile & test` job — and optionally `claude-code-review.yml`.
 
 ## Conventions to follow when adding code
 

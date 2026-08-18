@@ -277,4 +277,4 @@ Style is enforced **locally** via a git pre-commit hook (`.githooks/pre-commit`)
 
 `assemble` and `allTests` stay out of the local gate too: compile-only is enough to catch breakage, and downstream consumer apps (or a manual `./gradlew assemble`) cover full release assembly and the iOS link step.
 
-**When the foundation is in place and the repo goes public** (unlimited Actions minutes): re-add branch protection on `main`, enable PRs, and restore the `compile & test` job — optionally `claude-code-review.yml` too.
+Branch protection and PRs are **already back** on `main` (no direct pushes; one code-owner approval required). **When the foundation is in place and the repo goes public** (unlimited Actions minutes): restore the `compile & test` job — optionally `claude-code-review.yml` too.

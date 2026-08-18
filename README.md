@@ -164,9 +164,88 @@ Installation is automatic: the root build registers `installGitHooks`, wired to 
 
 ## 🏷️ Releases & versioning
 
-Releases are cut as Git tags (`vMAJOR.MINOR.PATCH` or prerelease tags like `vX.Y.Z-alphaN`) on `main`. There are no published artifacts — downstream apps pin via submodule checkout (see above). See [`docs/RELEASING.md`](docs/RELEASING.md) for the maintainer procedure and [`CHANGELOG.md`](CHANGELOG.md) for the history.
+Releases are cut as Git tags (`vMAJOR.MINOR.PATCH` or prerelease tags like `vX.Y.Z-alphaN`) on `main`. There are no published artifacts — downstream apps pin via submodule checkout (see above). [`docs/RELEASING.md`](docs/RELEASING.md) is the maintainer procedure in full and [`CHANGELOG.md`](CHANGELOG.md) is the history.
 
 Pre-1.0 versioning policy: `0.x.0` may break API, `0.x.y` is additive/fix-only. Once `1.0.0` ships, standard SemVer applies. The current version is exposed at runtime as `dev.jdgarita.frnk.utils.Frnk.VERSION`.
+
+### Cutting a release from the terminal
+
+All `git` + [`gh`](https://cli.github.com), from the repo root, with every wanted change already merged to `main`.
+
+**1. Validate locally.** Build/test CI is paused (see [CI](#-ci)), so a tag push is the first automation that ever touches the code — nothing else will catch a broken `main` for you.
+
+```bash
+git checkout main && git pull --ff-only origin main
+./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache
+./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache
+```
+
+**2. Pick the version.** Read the `## [Unreleased]` section of `CHANGELOG.md`: anything API-affecting under `Changed` / `Removed` means a `MINOR` bump while pre-1.0, otherwise `PATCH`. Confirm what actually shipped rather than trusting the CHANGELOG — a version can be written up, and even have `Frnk.VERSION` bumped, without ever being tagged:
+
+```bash
+git fetch origin --tags
+git tag --sort=-v:refname | head -5
+gh release list --limit 5
+export VER=0.3.1          # every command below reads $VER
+```
+
+**3. Write the release commit on a branch.** `main` is protected — a direct push is rejected — so the bookkeeping commit goes through a PR like any other change. Two files:
+
+- `frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt` → `VERSION = "$VER"`. `release.yml` hard-fails when this disagrees with the tag.
+- `CHANGELOG.md` → rename `## [Unreleased]` to `## [$VER] - YYYY-MM-DD`, drop that version's empty `### …` subsections, add a fresh empty `## [Unreleased]` above it, and update the link refs at the bottom (point `[Unreleased]` at `compare/v$VER...HEAD` and add `[$VER]: …/releases/tag/v$VER`).
+
+```bash
+git switch -c "release/v$VER"
+git add CHANGELOG.md frnk/core/util/src/commonMain/kotlin/dev/jdgarita/frnk/utils/Frnk.kt
+git commit -m "Release v$VER"
+git push -u origin "release/v$VER"
+gh pr create --base main --title "Release v$VER" --body "Cuts v$VER — see CHANGELOG.md."
+```
+
+**4. Merge it.** The `main` ruleset requires one **code-owner approval** (and re-approval after any further push), so a plain `gh pr merge` from the author will bounce until someone reviews it or an admin bypasses:
+
+```bash
+gh pr merge --squash --delete-branch      # --merge / --rebase are allowed too
+git checkout main && git pull --ff-only origin main
+```
+
+**5. Tag the merged commit — last, and as its own push.**
+
+```bash
+git log --oneline -1                    # this is the commit to tag
+git tag -a "v$VER" -m "v$VER"
+git push origin "v$VER"
+git branch --contains "v$VER"           # must print main
+```
+
+> **Tag after the merge, on its own push.** Two traps, both hit while cutting `v0.3.1`:
+>
+> - `git push origin main "v$VER"` is **not atomic** — if the ruleset rejects `main`, the tag lands anyway, `release.yml` fires, and you get a published Release for a commit on no branch.
+> - Tagging the pre-merge commit does not survive a **squash** merge, which rewrites the SHA. The tree is identical, so a consumer who pinned it gets the right code, but the tag points at an orphan and `git branch --contains` comes back empty.
+
+**6. Watch the release land.** `release.yml` fires on the `v*` tag push, verifies `Frnk.VERSION` against the tag, extracts the matching `## [$VER]` CHANGELOG section as the release body, and marks any hyphenated version (`-alpha1`, `-rc1`) as a prerelease:
+
+```bash
+gh run watch "$(gh run list --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+gh release view "v$VER" --web
+```
+
+**7. Bump the consumers.** A release is only real once a host pins it — in a downstream app, checking out the tag inside the submodule is what records the new gitlink:
+
+```bash
+cd frnk && git fetch --tags && git checkout "v$VER" && cd ..
+git add frnk && git commit -m "Pin frnk to v$VER"
+```
+
+### Undoing a bad tag
+
+For a tag on the wrong commit, or a `Frnk.VERSION` mismatch that failed the workflow: delete the release and the tag on both ends, fix, re-cut. Tags are outside the ruleset, so none of this needs a PR — but anyone who already pinned the tag keeps the old commit, so prefer a new patch version once a release has been out for more than a moment.
+
+```bash
+gh release delete "v$VER" --yes         # only if the workflow got far enough to publish one
+git push origin ":refs/tags/v$VER"
+git tag -d "v$VER"
+```
 
 ## 💖 Sponsor
 
@@ -174,7 +253,7 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 
 ## 🧪 CI
 
-**Build/test CI is paused while the repo is private** — free-tier GitHub Actions minutes are limited, and the per-push pipeline was exhausting them during foundation work. The only workflow that runs today is **`release.yml`** (fires on a `v*` tag push to publish the GitHub Release or prerelease — see [`docs/RELEASING.md`](docs/RELEASING.md)); an on-demand `@claude` assistant (`claude.yml`) is also kept. The build/test job returns — along with branch protection and PRs — once the foundation lands and the repo goes public.
+**Build/test CI is paused while the repo is private** — free-tier GitHub Actions minutes are limited, and the per-push pipeline was exhausting them during foundation work. The only workflow that runs today is **`release.yml`** (fires on a `v*` tag push to publish the GitHub Release or prerelease — see [`docs/RELEASING.md`](docs/RELEASING.md)); an on-demand `@claude` assistant (`claude.yml`) is also kept. Branch protection and PRs are already enforced on `main` (one code-owner approval, no direct pushes) — the build/test job itself returns once the foundation lands and the repo goes public.
 
 **Until then, validate locally before pushing** (this is what the old CI job ran):
 
