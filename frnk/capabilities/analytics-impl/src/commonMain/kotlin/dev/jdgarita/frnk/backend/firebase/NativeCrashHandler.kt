@@ -14,3 +14,19 @@ package dev.jdgarita.frnk.backend.firebase
  * calls `FirebaseApp.configure()`: the hook only needs Crashlytics live at crash time.
  */
 internal expect fun enableNativeCrashHandler()
+
+/**
+ * Records [throwable] as a Crashlytics **non-fatal** through the platform's native path, when that
+ * path preserves Kotlin stack frames. Returns `true` when it reported, so the caller can fall back
+ * to gitlive's `recordException` on `false`.
+ *
+ * iOS needs this because gitlive's actual is `FIRCrashlytics.recordError(throwable.asNSError())`:
+ * the Kotlin throwable goes into `userInfo["KotlinException"]` where Crashlytics cannot read it,
+ * and the report gets whatever Objective-C stack happened to be on the call site rather than the
+ * throw site. CrashKiOS builds a real `FIRExceptionModel` out of the Kotlin stack addresses
+ * instead, which the dSYM symbolicates server-side. Android returns `false`: the Crashlytics
+ * Android SDK already keeps the full JVM stack, so gitlive is the better path there.
+ *
+ * See [enableNativeCrashHandler] — the iOS actual reports only once that hook is installed.
+ */
+internal expect fun recordNativeHandledException(throwable: Throwable): Boolean
