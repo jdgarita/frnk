@@ -15,6 +15,16 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-18
+
+### Added
+
+- **`Modifier.placeholder()` is now public (`:ui-components`).** The placeholder/shimmer trio —
+  `Modifier.placeholder(...)`, the `PlaceholderHighlight` interface and its `Shimmer` implementation —
+  was `internal` and therefore unusable from a host, even though the components that consume it are
+  public. All three are now part of the consumer surface, so hosts can put skeleton loading states on
+  their own composables instead of reimplementing the effect.
+
 ### Changed
 
 - **iOS non-fatals now carry Kotlin stack frames (`:analytics-impl`).** `CrashReporter.recordException`
@@ -208,7 +218,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/jdgarita/frnk/releases/tag/v0.3.1
 [0.3.0]: https://github.com/jdgarita/frnk/releases/tag/v0.3.0
 [0.2.0-alpha1]: https://github.com/jdgarita/frnk/releases/tag/v0.2.0-alpha1
 [0.1.0]: https://github.com/jdgarita/frnk/releases/tag/v0.1.0
