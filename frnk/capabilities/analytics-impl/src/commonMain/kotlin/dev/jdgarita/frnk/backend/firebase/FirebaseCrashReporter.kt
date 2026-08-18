@@ -20,7 +20,11 @@ internal class FirebaseCrashReporter : CrashReporter {
     ) {
         runCatching {
             extras.forEach { (key, value) -> Firebase.crashlytics.setCustomKey(key, value) }
-            Firebase.crashlytics.recordException(throwable)
+            // Prefer the platform's native path where it keeps the Kotlin stack (iOS via CrashKiOS);
+            // gitlive is the fallback, and the only path on Android. See [recordNativeHandledException].
+            if (!recordNativeHandledException(throwable)) {
+                Firebase.crashlytics.recordException(throwable)
+            }
         }.onFailure { PrintLogger.w(TAG, "recordException skipped: ${it.message}") }
     }
 

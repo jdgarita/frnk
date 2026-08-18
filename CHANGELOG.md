@@ -15,6 +15,21 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Changed
+
+- **iOS non-fatals now carry Kotlin stack frames (`:analytics-impl`).** `CrashReporter.recordException`
+  used to go straight to gitlive, whose iOS actual is `FIRCrashlytics.recordError(throwable.asNSError())`
+  — the Kotlin throwable landed in `userInfo["KotlinException"]` where Crashlytics cannot read it, and
+  the report got the Objective-C stack at the *call* site instead of the throw site, so every iOS
+  non-fatal grouped by exception class with an unusable stack. A new
+  `internal expect fun recordNativeHandledException(throwable): Boolean` sits beside
+  `enableNativeCrashHandler()`: the iOS actual routes to CrashKiOS's
+  `CrashlyticsKotlin.sendHandledException(...)`, which builds a real `FIRExceptionModel` from the
+  Kotlin stack addresses for the consumer's dSYM to symbolicate. Android returns `false` and keeps
+  gitlive, which already hands the Crashlytics Android SDK a full JVM stack. No API change for hosts —
+  `recordException` behaves the same, it just reports usefully on iOS now. Consumers still need the
+  dSYM-upload build phase from `docs/HOST_INTEGRATION.md` §"Crashlytics setup".
+
 ## [0.3.0] - 2026-08-11
 
 ### Added
