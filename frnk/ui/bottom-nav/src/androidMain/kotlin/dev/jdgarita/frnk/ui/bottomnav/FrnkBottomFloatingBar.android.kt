@@ -84,7 +84,7 @@ private fun RowScope.NavBarItems(
         IconButton(onClick = { onItemSelected(index) }) {
             Icon(
                 imageVector = item.icon.resolve(),
-                contentDescription = item.label,
+                contentDescription = item.label.resolve(),
                 tint = Theme[colors][if (selected) colorPrimary else colorOnSurfaceVariant]
             )
         }

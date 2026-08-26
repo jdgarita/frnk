@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.EntitlementManager
@@ -17,6 +18,9 @@ import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.nav.navigateTo
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsAction
 import dev.jdgarita.frnk.ui.scaffolds.settings.SettingsEffect
+import dev.jdgarita.frnk.ui.theme.stringPaywallNothingToRestore
+import dev.jdgarita.frnk.ui.theme.stringPaywallRestored
+import dev.jdgarita.frnk.ui.theme.strings
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -48,7 +52,21 @@ fun rememberFrnkSettingsHandler(
     val scope: CoroutineScope = rememberCoroutineScope()
     val uriHandler: UriHandler = LocalUriHandler.current
     val haptics = LocalFrnkHaptics.current
-    return remember(backStack, entitlements, analytics, uriHandler, haptics, onMessage, fallback) {
+    // Resolved here (the handler lambda is not composable) and keyed below, so a locale or
+    // stringOverrides change rebuilds the handler with fresh copy — same tokens the paywall uses.
+    val restoredMessage = Theme[strings][stringPaywallRestored]
+    val nothingToRestoreMessage = Theme[strings][stringPaywallNothingToRestore]
+    return remember(
+        backStack,
+        entitlements,
+        analytics,
+        uriHandler,
+        haptics,
+        onMessage,
+        fallback,
+        restoredMessage,
+        nothingToRestoreMessage
+    ) {
         { effect ->
             when (effect) {
                 is SettingsEffect.ActionInvoked ->
@@ -60,7 +78,8 @@ fun rememberFrnkSettingsHandler(
                         SettingsAction.RestorePurchases ->
                             scope.launch {
                                 val restored = entitlements.restorePurchases()
-                                onMessage(restoreMessage(restored is AppResult.Success && restored.data))
+                                val restoredToPro = restored is AppResult.Success && restored.data
+                                onMessage(if (restoredToPro) restoredMessage else nothingToRestoreMessage)
                             }
                         SettingsAction.ManageSubscription -> {
                             analytics.trackCustom("manage_subscription_opened")
@@ -81,5 +100,3 @@ fun rememberFrnkSettingsHandler(
         }
     }
 }
-
-private fun restoreMessage(restoredToPro: Boolean): String = if (restoredToPro) "Purchases restored" else "Nothing to restore"

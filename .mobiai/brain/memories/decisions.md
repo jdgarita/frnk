@@ -1424,3 +1424,12 @@ frnk supplies the Firebase *runtime* bindings (`firebaseObservabilityModule`), b
 ### Files
 - build-logic/src/main/kotlin/frnk.android.firebase.gradle.kts
 - build-logic/build.gradle.kts
+
+## Language-aware string catalogs via FrnkLanguage in the theme
+
+- id: language-aware-string-catalogs-via-frnklanguage-in-the-theme-20260826-145258
+- type: architecture_decision
+- status: active
+- date: 2026-08-26
+
+The string axis resolves per-language default catalogs (DefaultFrnkStrings + EsFrnkStrings overlay) selected by FrnkThemeConfig.language, defaulting to the device language via systemFrnkLanguage() (platformLanguageTag() expect/actual in shared-utils, the module's third narrow data-only expect/actual). ES overlays EN so missing translations fall back per token. Host stringOverrides still win. Billing errors localize through MonetizationError.toStringSource() (monetization-ui ext) mapping to stringError* tokens - AppError.message stays a diagnostic and must not be rendered. Faint-branded paywall fallback copy was evicted from RevenueCatEntitlementProvider into RevenueCatConfig.paywallFallback (default ProMetadata.GENERIC) + savingsBadgeTemplate. FrnkNavBarItem/FrnkCustomTab labels and FrnkTopAppBarAction.contentDescription became FrnkStringSource (String secondary constructors keep old call sites compiling); dead tokens stringNavHome/stringSettings/stringSearch/stringBack/stringAppName/stringUpgradeToPro are now wired.

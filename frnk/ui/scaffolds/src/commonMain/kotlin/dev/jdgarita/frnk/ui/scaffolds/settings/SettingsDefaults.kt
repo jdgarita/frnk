@@ -16,6 +16,7 @@ import dev.jdgarita.frnk.ui.theme.iconRate
 import dev.jdgarita.frnk.ui.theme.iconRestore
 import dev.jdgarita.frnk.ui.theme.iconTerms
 import dev.jdgarita.frnk.ui.theme.iconUpgrade
+import dev.jdgarita.frnk.ui.theme.stringAppName
 import dev.jdgarita.frnk.ui.theme.stringAppearance
 import dev.jdgarita.frnk.ui.theme.stringHaptics
 import dev.jdgarita.frnk.ui.theme.stringHapticsSubtitle
@@ -254,7 +255,9 @@ fun defaultSettingsState(
     return SettingsScreenState(
         topBar =
             FrnkTopAppBarState(
-                title = FrnkStringSource.Raw("Frnk")
+                // The app-name token, not a literal — hosts already override stringAppName for the
+                // paywall title, so the Settings top bar follows the same override for free.
+                title = FrnkStringSource.Token(stringAppName)
             ),
         sections = sections,
         footer =

@@ -6,7 +6,9 @@ import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarAction
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.iconUpgrade
+import dev.jdgarita.frnk.ui.theme.stringUpgradeToPro
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -60,7 +62,7 @@ private fun homeScreenState(modelState: HomeModelState): HomeScreenState =
                         listOf(
                             FrnkTopAppBarAction(
                                 icon = FrnkIconSource.Token(iconUpgrade),
-                                contentDescription = "Upgrade to Pro",
+                                contentDescription = FrnkStringSource.Token(stringUpgradeToPro),
                                 key = "upgrade"
                             )
                         )

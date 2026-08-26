@@ -123,6 +123,19 @@ to the `FrnkTheme` it owns, so the whole app picks them up (default `FrnkThemeCo
 bundled palette unchanged). Only hosts that hand-wire the nav primitives without `FrnkApp` wrap their own
 `FrnkTheme(config) { … }`.
 
+**Language.** The string axis is language-aware: the toolkit ships default catalogs per `FrnkLanguage`
+(English + Spanish today), and `FrnkTheme` picks the catalog from `FrnkThemeConfig.language` — or, when
+that is `null` (the default), from the device language (`systemFrnkLanguage()`). Your `stringOverrides`
+are applied on top and always win per token, so override values should already be in the language you
+want shown. A host with an in-app language selector persists its choice and passes
+`FrnkThemeConfig(language = …)`; the theme re-reads the config every composition, so switching re-renders
+all toolkit copy immediately. A missing translation in a non-English catalog falls back to English per
+token, never to a blank. Billing errors surface through the same axis: `PaywallViewModel` maps
+`MonetizationError` to the `stringError*` tokens (`MonetizationError.toStringSource()`), so never render
+`AppError.message` directly — it is the enum's English diagnostic. RevenueCat hosts localize the offline
+paywall fallback via `RevenueCatConfig(paywallFallback = ProMetadata(…), savingsBadgeTemplate = "…%1$d…")`
+— that copy is the host's, not the toolkit's.
+
 **Custom icon pack.** The toolkit ships a default Lucide-backed icon registry (`iconBack`, `iconClose`,
 `iconSearch`, `iconSettings`, …). A host overrides any or all of them — **or adds brand-specific icons** —
 through `iconOverrides`. `Theme[icons][token]` resolves overrides transparently at every call site, so

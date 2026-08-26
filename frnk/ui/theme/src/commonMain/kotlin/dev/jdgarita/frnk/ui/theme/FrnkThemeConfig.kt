@@ -26,6 +26,14 @@ data class FrnkThemeConfig(
     val textStyleOverrides: Map<ThemeToken<TextStyle>, TextStyle> = emptyMap(),
     val shapeOverrides: Map<ThemeToken<Shape>, Shape> = emptyMap(),
     val stringOverrides: Map<ThemeToken<String>, String> = emptyMap(),
+    /**
+     * The language whose bundled string catalog the theme resolves before applying
+     * [stringOverrides] (which always win per token). `null` (the default) follows the device
+     * language via [systemFrnkLanguage]. A host with an in-app language selector persists the
+     * choice and passes it here — the theme re-reads the config every composition, so switching
+     * re-renders all toolkit copy immediately.
+     */
+    val language: FrnkLanguage? = null,
     val iconOverrides: Map<ThemeToken<ImageVector>, ImageVector> = emptyMap(),
     /**
      * Per-token overrides for the spacing/padding axis (`Theme[spacing][spacingMd]`, …). Defaults

@@ -40,5 +40,18 @@ data class ProMetadata(
                 subtitle = "subtitle",
                 benefits = emptyList()
             )
+
+        /**
+         * Brand-free English fallback for when the provider supplies no paywall metadata (offline,
+         * or a dashboard without the `title`/`subtitle`/`benefits` entries). Hosts should inject
+         * their own localized copy instead of shipping this (RevenueCat hosts via
+         * `RevenueCatConfig.paywallFallback`).
+         */
+        val GENERIC =
+            ProMetadata(
+                title = "Pro",
+                subtitle = "Unlock the full experience.",
+                benefits = emptyList()
+            )
     }
 }

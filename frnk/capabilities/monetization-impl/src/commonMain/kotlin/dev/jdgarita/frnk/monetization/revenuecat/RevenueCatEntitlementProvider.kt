@@ -107,7 +107,7 @@ internal class RevenueCatEntitlementProvider(
             onSuccess = { offerings ->
                 val packages = offerings.current?.availablePackages.orEmpty()
                 packagesById = packages.associateBy { it.identifier }
-                AppResult.Success(mapProducts(packages))
+                AppResult.Success(mapProducts(packages, config.savingsBadgeTemplate))
             },
             onFailure = { AppResult.Failure(MonetizationError.NoOfferings) }
         )
@@ -198,22 +198,14 @@ internal class RevenueCatEntitlementProvider(
     }
 
     private fun extractPaywallMetadata(offering: Offering): ProMetadata {
-        // 1. Define your offline fallbacks
-        val defaultTitle = "Faint Pro"
-        val defaultSubtitle = "Elevate your coffee journal."
-        val defaultBenefits =
-            listOf(
-                ProBenefit("SCANS", "Unlimited label scans"),
-                ProBenefit("NOTES", "AI-read tasting notes from any bag"),
-                ProBenefit("PRIVACY", "Your cards stay on-device, always")
-            )
+        // Offline / unconfigured-dashboard copy is the HOST's (RevenueCatConfig.paywallFallback) —
+        // app copy must never live in the toolkit.
+        val fallback = config.paywallFallback
 
         return try {
-            // 2. Extract Title and Subtitle Strings
-            val title = offering.metadata["title"] as? String ?: defaultTitle
-            val subtitle = offering.metadata["subtitle"] as? String ?: defaultSubtitle
+            val title = offering.metadata["title"] as? String ?: fallback.title
+            val subtitle = offering.metadata["subtitle"] as? String ?: fallback.subtitle
 
-            // 3. Extract the Benefits Array
             @Suppress("UNCHECKED_CAST")
             val metadataList = offering.metadata["benefits"] as? List<Map<String, String>>
 
@@ -223,13 +215,13 @@ internal class RevenueCatEntitlementProvider(
                         val id = item["key"]
                         val text = item["value"]
                         if (id != null && text != null) ProBenefit(id, text) else null
-                    }?.takeIf { it.isNotEmpty() } ?: defaultBenefits
+                    }?.takeIf { it.isNotEmpty() } ?: fallback.benefits
 
             ProMetadata(title, subtitle, benefits)
         } catch (e: Exception) {
             // todo: add crashlytics logging
             // Safe fallback if the JSON is malformed
-            ProMetadata(defaultTitle, defaultSubtitle, defaultBenefits)
+            fallback
         }
     }
 
@@ -261,7 +253,10 @@ private class EntitlementDelegate(
     ) = Unit
 }
 
-private fun mapProducts(packages: List<Package>): List<ProProduct> {
+private fun mapProducts(
+    packages: List<Package>,
+    savingsBadgeTemplate: String
+): List<ProProduct> {
     // Per-month price of the annual plan vs the monthly plan → savings badge.
     val monthlyMicros =
         packages
@@ -280,7 +275,7 @@ private fun mapProducts(packages: List<Package>): List<ProProduct> {
             priceFormatted = product.price.formatted,
             pricePerMonthFormatted = product.pricePerMonth?.formatted,
             hasFreeTrial = product.introductoryDiscount != null,
-            badge = savingsBadge(plan, monthlyMicros, perMonthMicros)
+            badge = savingsBadge(plan, monthlyMicros, perMonthMicros, savingsBadgeTemplate)
         )
     }
 }
@@ -288,11 +283,12 @@ private fun mapProducts(packages: List<Package>): List<ProProduct> {
 private fun savingsBadge(
     plan: ProPlan,
     monthlyMicros: Long?,
-    perMonthMicros: Long?
+    perMonthMicros: Long?,
+    template: String
 ): String? {
     if (plan != ProPlan.Yearly || monthlyMicros == null || perMonthMicros == null || monthlyMicros <= 0L) return null
     val savings = ((1.0 - perMonthMicros.toDouble() / monthlyMicros.toDouble()) * 100).toInt()
-    return if (savings in 1..99) "Save $savings%" else null
+    return if (savings in 1..99) template.replace("%1\$d", savings.toString()) else null
 }
 
 private fun PackageType.toProPlan(): ProPlan =

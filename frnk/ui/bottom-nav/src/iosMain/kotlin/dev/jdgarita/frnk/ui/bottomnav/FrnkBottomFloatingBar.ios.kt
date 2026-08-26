@@ -15,6 +15,7 @@ import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colorPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorSurface
 import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.ext.resolve
 
 /**
  * **iOS** [FrnkBottomFloatingBar] — the toolkit's **vendored** `AdaptiveNavigationBar` (a native glassy
@@ -45,11 +46,14 @@ actual fun FrnkBottomFloatingBar(
     val indicatorColor = Theme[colors][colorPrimaryContainer]
     val containerColor = Theme[colors][colorSurface]
 
+    // Resolved in composition (resolve() is @Composable — it cannot run inside remember's calculation),
+    // and passed as a remember key so a locale/override change rebuilds the native items.
+    val labels = items.map { item -> item.label.resolve() }
     val navItems =
-        remember(items) {
-            items.map { item ->
+        remember(items, labels) {
+            items.mapIndexed { index, item ->
                 NavigationItem(
-                    title = item.label,
+                    title = labels[index],
                     // Placeholder for the vendored bar's non-null DrawableResource; the visible iOS 26+ icon
                     // is the SF-Symbol below. ImageVector cannot feed the native UITabBar, so item.icon is
                     // intentionally unused on iOS.
@@ -59,7 +63,7 @@ actual fun FrnkBottomFloatingBar(
                     // UITabBar's stacked icon+label overlapping when the bar is in a custom narrow frame.
                     // `title`/`contentDescription` stay for accessibility.
                     showLabel = false,
-                    contentDescription = item.label
+                    contentDescription = labels[index]
                 )
             }
         }

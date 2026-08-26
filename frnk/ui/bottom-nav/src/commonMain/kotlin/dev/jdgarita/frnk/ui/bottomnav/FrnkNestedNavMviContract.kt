@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.ui.mvi.UiEffect
 import dev.jdgarita.frnk.ui.mvi.UiIntent
 import dev.jdgarita.frnk.ui.mvi.UiState
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 
 @Immutable
 data class FrnkNestedNavScreenState(
@@ -21,7 +22,7 @@ data class FrnkNavBarItemModel(
     val key: String,
     val icon: FrnkIconSource,
     val iosSystemIcon: String,
-    val label: String,
+    val label: FrnkStringSource,
     val route: NavKey
 )
 
