@@ -69,6 +69,21 @@ val stringDeveloper = ThemeToken<String>("string_developer")
 // "<appName> <stringFeedbackSubject>"; the body hint is the editable prompt above the diagnostics.
 val stringFeedbackSubject = ThemeToken<String>("string_feedback_subject")
 val stringFeedbackBodyHint = ThemeToken<String>("string_feedback_body_hint")
+
+// Search-mode a11y labels for FrnkTopAppBar's close/clear buttons.
+val stringSearchClose = ThemeToken<String>("string_search_close")
+val stringSearchClear = ThemeToken<String>("string_search_clear")
+
+// User-facing texts for the MonetizationError vocabulary (see MonetizationError.toStringSource()
+// in :shared-monetization-ui) — kept as tokens so billing failures localize/override like any
+// other toolkit copy instead of leaking the enum's diagnostic `message`. `Unknown` maps to
+// [stringGenericError] rather than a token of its own.
+val stringErrorPurchaseCancelled = ThemeToken<String>("string_error_purchase_cancelled")
+val stringErrorStoreUnavailable = ThemeToken<String>("string_error_store_unavailable")
+val stringErrorNetworkUnavailable = ThemeToken<String>("string_error_network_unavailable")
+val stringErrorNoOfferings = ThemeToken<String>("string_error_no_offerings")
+val stringErrorPurchaseNotAllowed = ThemeToken<String>("string_error_purchase_not_allowed")
+val stringErrorAlreadyOwned = ThemeToken<String>("string_error_already_owned")
 // endregion
 
 internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
@@ -128,5 +143,96 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringPerMonthSuffix to "/mo",
         stringGodMode to "God mode",
         stringGodModeSubtitle to "Force Pro on this device (testing)",
-        stringDeveloper to "Developer"
+        stringDeveloper to "Developer",
+        stringSearchClose to "Close search",
+        stringSearchClear to "Clear search",
+        stringErrorPurchaseCancelled to "Purchase cancelled",
+        stringErrorStoreUnavailable to "Store unavailable",
+        stringErrorNetworkUnavailable to "Network unavailable",
+        stringErrorNoOfferings to "No products available",
+        stringErrorPurchaseNotAllowed to "Purchases are not allowed on this device",
+        stringErrorAlreadyOwned to "Already subscribed"
     )
+
+/**
+ * Spanish catalog, applied as an **overlay** on [DefaultFrnkStrings] by [frnkStringsFor] — a token
+ * missing here falls back to English rather than to a blank, so adding a token without its ES
+ * translation degrades gracefully. Brand-like values ([stringAppName], [stringProName]) stay
+ * identical on purpose.
+ */
+internal val EsFrnkStrings: Map<ThemeToken<String>, String> =
+    mapOf(
+        stringSignIn to "Iniciar sesión",
+        stringSignOut to "Cerrar sesión",
+        stringUpgrade to "Mejorar",
+        stringCancel to "Cancelar",
+        stringRetry to "Reintentar",
+        stringConfirm to "Confirmar",
+        stringClose to "Cerrar",
+        stringBack to "Atrás",
+        stringNext to "Siguiente",
+        stringGetStarted to "Comenzar",
+        stringSearch to "Buscar",
+        stringGenericError to "Algo salió mal.",
+        stringNavHome to "Inicio",
+        stringSettings to "Ajustes",
+        stringAppearance to "Apariencia",
+        stringPreferences to "Preferencias",
+        stringHaptics to "Vibración háptica",
+        stringHapticsSubtitle to "Vibrar al interactuar",
+        stringNotifications to "Notificaciones",
+        stringSectionSubscription to "Suscripción",
+        stringSectionSupport to "Soporte",
+        stringSectionLegal to "Legal",
+        stringThemeSystem to "Sistema",
+        stringThemeLight to "Claro",
+        stringThemeDark to "Oscuro",
+        stringUpgradeToPro to "Mejorar a Pro",
+        stringRestorePurchases to "Restaurar compras",
+        stringManageSubscription to "Gestionar suscripción",
+        stringProMember to "Miembro Pro",
+        stringProBadge to "PRO",
+        stringShowOnboarding to "Ver introducción",
+        stringSendFeedback to "Enviar comentarios",
+        stringRateApp to "Calificar la app",
+        stringPrivacyPolicy to "Política de privacidad",
+        stringTermsOfService to "Términos del servicio",
+        stringSettingsFooter to "Hecho por JD en 🇨🇷",
+        stringFeedbackSubject to "Comentarios",
+        stringFeedbackBodyHint to "Cuéntanos qué piensas:",
+        stringPaywallTitlePrefix to "Mejora a",
+        stringPaywallContinue to "Continuar",
+        stringPaywallStartTrial to "Iniciar prueba gratis",
+        stringPaywallFreeTrialBadge to "PRUEBA GRATIS",
+        stringPaywallTerms to "Términos",
+        stringPaywallPrivacy to "Privacidad",
+        stringPaywallEmpty to "No hay planes disponibles en este momento.",
+        stringPaywallRestoring to "Restaurando…",
+        stringPaywallRestored to "Compras restauradas",
+        stringPaywallNothingToRestore to "Nada que restaurar",
+        stringPaywallAlreadyOwnedRestoring to "Ya estás suscrito — restaurando…",
+        stringPaywallIdentityError to "No pudimos verificar tu cuenta — revisa tu conexión e inténtalo de nuevo",
+        stringPerMonthSuffix to "/mes",
+        stringGodMode to "Modo dios",
+        stringGodModeSubtitle to "Forzar Pro en este dispositivo (pruebas)",
+        stringDeveloper to "Desarrollador",
+        stringSearchClose to "Cerrar búsqueda",
+        stringSearchClear to "Borrar búsqueda",
+        stringErrorPurchaseCancelled to "Compra cancelada",
+        stringErrorStoreUnavailable to "Tienda no disponible",
+        stringErrorNetworkUnavailable to "Sin conexión",
+        stringErrorNoOfferings to "No hay productos disponibles",
+        stringErrorPurchaseNotAllowed to "Las compras no están permitidas en este dispositivo",
+        stringErrorAlreadyOwned to "Ya estás suscrito"
+    )
+
+/**
+ * The default catalog for [language]: English as the base, other languages overlaid on it so a
+ * missing translation falls back to English per token. Host `stringOverrides` are applied on top
+ * of this by `FrnkTheme`.
+ */
+internal fun frnkStringsFor(language: FrnkLanguage): Map<ThemeToken<String>, String> =
+    when (language) {
+        FrnkLanguage.En -> DefaultFrnkStrings
+        FrnkLanguage.Es -> DefaultFrnkStrings + EsFrnkStrings
+    }

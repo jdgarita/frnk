@@ -57,6 +57,7 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnPrimaryContainer
 import dev.jdgarita.frnk.ui.theme.colorOnSuccess
@@ -76,6 +77,8 @@ import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapes
+import dev.jdgarita.frnk.ui.theme.stringSearch
+import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
 import org.koin.compose.viewmodel.koinViewModel
@@ -268,9 +271,24 @@ private fun ComponentGallery(
             FrnkBottomFloatingBar(
                 items =
                     listOf(
-                        FrnkNavBarItem("a", FrnkIconSource.Token(iconSearch), "magnifyingglass", "Search"),
-                        FrnkNavBarItem("b", FrnkIconSource.Token(iconCheck), "checkmark", "Check"),
-                        FrnkNavBarItem("c", FrnkIconSource.Token(iconNavSettings), "gearshape", "Settings")
+                        FrnkNavBarItem(
+                            "a",
+                            FrnkIconSource.Token(iconSearch),
+                            "magnifyingglass",
+                            FrnkStringSource.Token(stringSearch)
+                        ),
+                        FrnkNavBarItem(
+                            "b",
+                            FrnkIconSource.Token(iconCheck),
+                            "checkmark",
+                            FrnkStringSource.Raw("Check")
+                        ),
+                        FrnkNavBarItem(
+                            "c",
+                            FrnkIconSource.Token(iconNavSettings),
+                            "gearshape",
+                            FrnkStringSource.Token(stringSettings)
+                        )
                     ),
                 selectedIndex = state.galleryNavIndex,
                 onItemSelected = { onIntent(DemoHomeIntent.GalleryNavChanged(it)) },

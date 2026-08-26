@@ -35,6 +35,7 @@ import dev.jdgarita.frnk.ui.theme.colorOnBackground
 import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.colorPrimary
 import dev.jdgarita.frnk.ui.theme.colors
+import dev.jdgarita.frnk.ui.theme.ext.resolve
 import dev.jdgarita.frnk.ui.theme.iconBack
 import dev.jdgarita.frnk.ui.theme.iconClose
 import dev.jdgarita.frnk.ui.theme.icons
@@ -42,17 +43,32 @@ import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingSm
 import dev.jdgarita.frnk.ui.theme.spacingXs
 import dev.jdgarita.frnk.ui.theme.spacingXxs
+import dev.jdgarita.frnk.ui.theme.stringBack
+import dev.jdgarita.frnk.ui.theme.stringSearch
+import dev.jdgarita.frnk.ui.theme.stringSearchClear
+import dev.jdgarita.frnk.ui.theme.stringSearchClose
+import dev.jdgarita.frnk.ui.theme.strings
 import dev.jdgarita.frnk.ui.theme.textStyles
 
 /** A single trailing action rendered as an icon button on the right of [FrnkTopAppBar]. */
 @Immutable
 data class FrnkTopAppBarAction(
     val icon: FrnkIconSource,
-    /** Doubles as the icon button's accessibility label. */
-    val contentDescription: String,
-    /** Stable identifier the host switches on in `onActionClick`. Defaults to [contentDescription]. */
-    val key: String = contentDescription
-)
+    /** Doubles as the icon button's accessibility label; resolved at the bar, so tokens localize. */
+    val contentDescription: FrnkStringSource,
+    /** Stable identifier the host switches on in `onActionClick`. */
+    val key: String
+) {
+    /**
+     * Raw-string convenience mirroring [FrnkTextState]'s String constructors; [key] keeps its old
+     * defaults-to-the-description behavior here, where the description is still a plain String.
+     */
+    constructor(
+        icon: FrnkIconSource,
+        contentDescription: String,
+        key: String = contentDescription
+    ) : this(icon, FrnkStringSource.Raw(contentDescription), key)
+}
 
 /**
  * View state for [FrnkTopAppBar].
@@ -82,8 +98,8 @@ data class FrnkTopAppBarState(
      */
     val isSearchActive: Boolean = false,
     val searchQuery: String = "",
-    /** Placeholder shown in the search field while [searchQuery] is empty. */
-    val searchPlaceholder: String = "Search"
+    /** Placeholder shown while [searchQuery] is empty; `null` uses the [stringSearch] token. */
+    val searchPlaceholder: String? = null
 )
 
 /** Shared layout metrics for [FrnkTopAppBar]. */
@@ -145,7 +161,7 @@ fun FrnkTopAppBar(
             if (state.isSearchActive) {
                 SearchRow(
                     query = state.searchQuery,
-                    placeholder = state.searchPlaceholder,
+                    placeholder = state.searchPlaceholder ?: Theme[strings][stringSearch],
                     onQueryChange = onSearchQueryChange,
                     onClose = onSearchClose
                 )
@@ -155,7 +171,7 @@ fun FrnkTopAppBar(
                         state =
                             FrnkIconButtonState.Content(
                                 icon = icon,
-                                contentDescription = state.navigationContentDescription ?: "Back",
+                                contentDescription = state.navigationContentDescription ?: Theme[strings][stringBack],
                                 tint = colorOnBackground
                             ),
                         onClick = onNavigationClick
@@ -181,7 +197,7 @@ fun FrnkTopAppBar(
                         state =
                             FrnkIconButtonState.Content(
                                 icon = action.icon,
-                                contentDescription = action.contentDescription,
+                                contentDescription = action.contentDescription.resolve(),
                                 tint = colorOnBackground
                             ),
                         onClick = { onActionClick(action) }
@@ -208,7 +224,7 @@ private fun RowScope.SearchRow(
         state =
             FrnkIconButtonState.Content(
                 imageVector = Theme[icons][iconBack],
-                contentDescription = "Close search",
+                contentDescription = Theme[strings][stringSearchClose],
                 tint = colorOnBackground
             ),
         onClick = onClose
@@ -250,7 +266,7 @@ private fun RowScope.SearchRow(
             state =
                 FrnkIconButtonState.Content(
                     imageVector = Theme[icons][iconClose],
-                    contentDescription = "Clear search",
+                    contentDescription = Theme[strings][stringSearchClear],
                     tint = colorOnSurfaceVariant
                 ),
             onClick = { onQueryChange("") }

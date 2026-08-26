@@ -7,8 +7,11 @@ import dev.jdgarita.frnk.ui.nav.FrnkTabRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.nav.clearAndNavigateTo
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.iconNavHome
 import dev.jdgarita.frnk.ui.theme.iconNavSettings
+import dev.jdgarita.frnk.ui.theme.stringNavHome
+import dev.jdgarita.frnk.ui.theme.stringSettings
 
 /**
  * Owns the bar's view state (`items` + `selectedIndex`) **and** the per-tab navigation state for
@@ -43,11 +46,11 @@ class FrnkNestedNavViewModel :
                     key = "Home",
                     icon = FrnkIconSource.Token(iconNavHome),
                     iosSystemIcon = "house",
-                    label = "Home",
+                    label = FrnkStringSource.Token(stringNavHome),
                     route = FrnkTabRoute.Home
                 ),
                 FrnkNavBarItemModel(
-                    key = arguments.customTab.label,
+                    key = arguments.customTab.key,
                     icon = arguments.customTab.icon,
                     iosSystemIcon = arguments.customTab.iosSystemIcon,
                     label = arguments.customTab.label,
@@ -57,7 +60,7 @@ class FrnkNestedNavViewModel :
                     key = "Settings",
                     icon = FrnkIconSource.Token(iconNavSettings),
                     iosSystemIcon = "gearshape",
-                    label = "Settings",
+                    label = FrnkStringSource.Token(stringSettings),
                     route = FrnkTabRoute.Settings
                 )
             )

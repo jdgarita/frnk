@@ -6,6 +6,7 @@ import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.ui.ext.toStringSource
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
 import dev.jdgarita.frnk.monetization.usecase.SyncAuthUseCase
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
@@ -96,7 +97,7 @@ class PaywallViewModel(
                 val error =
                     (metadata as? AppResult.Failure)?.error
                         ?: (products as AppResult.Failure).error
-                emit(PaywallEffect.Message(FrnkStringSource.Raw(error.message)))
+                emit(PaywallEffect.Message(error.toStringSource()))
             }
         }
 
@@ -129,7 +130,7 @@ class PaywallViewModel(
                         restore()
                     }
 
-                    else -> emit(PaywallEffect.Message(FrnkStringSource.Raw(result.error.message)))
+                    else -> emit(PaywallEffect.Message(result.error.toStringSource()))
                 }
             }
         }
@@ -154,7 +155,7 @@ class PaywallViewModel(
                     emit(PaywallEffect.Message(FrnkStringSource.Token(stringPaywallNothingToRestore)))
                 }
 
-            is AppResult.Failure -> emit(PaywallEffect.Message(FrnkStringSource.Raw(result.error.message)))
+            is AppResult.Failure -> emit(PaywallEffect.Message(result.error.toStringSource()))
         }
     }
 

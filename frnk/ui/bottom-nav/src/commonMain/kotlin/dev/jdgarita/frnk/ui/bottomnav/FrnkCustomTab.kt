@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.bottomnav
 import androidx.compose.runtime.Immutable
 import androidx.navigation3.runtime.NavKey
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 
 /**
  * Host-provided descriptor for [FrnkNestedNavScaffold]'s **middle tab** — the one tab the toolkit does
@@ -12,12 +13,22 @@ import dev.jdgarita.frnk.ui.theme.FrnkIconSource
  *    `NavKey`); the host registers the destination behind it via `onNestedNavigationModule`,
  *  - [icon] — a theme [FrnkIconSource.Token] or a host-owned [FrnkIconSource.Vector] (Android bar),
  *  - [iosSystemIcon] — the SF-Symbol name for the native iOS bar,
- *  - [label] — the tab label.
+ *  - [label] — the tab label, a [FrnkStringSource] so a token localizes with the theme,
+ *  - [key] — the stable identity the bar uses for this item (must differ from "Home"/"Settings").
  */
 @Immutable
 data class FrnkCustomTab(
     val route: NavKey,
     val icon: FrnkIconSource,
     val iosSystemIcon: String,
-    val label: String
-)
+    val label: FrnkStringSource,
+    val key: String = "custom"
+) {
+    /** Raw-string convenience; [key] keeps its old defaults-to-the-label behavior here. */
+    constructor(
+        route: NavKey,
+        icon: FrnkIconSource,
+        iosSystemIcon: String,
+        label: String
+    ) : this(route, icon, iosSystemIcon, FrnkStringSource.Raw(label), label)
+}
