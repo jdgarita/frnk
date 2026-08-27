@@ -15,6 +15,23 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-27
+
+### Changed
+
+- **Paywall offering metadata is now locale-aware (`:monetization-impl`).** `RevenueCatEntitlementProvider`
+  resolves the offering's paywall copy through the new pure `resolvePaywallMetadata(metadata, languageTag,
+  fallback)`: an optional additive `localizations` object in the offering metadata carries per-language
+  overrides (`"localizations": { "es": { "title": …, "subtitle": …, "benefits": [ … ] } }`), matched against
+  `platformLanguageTag()` — exact tag first, then primary-language prefix (`es-MX` → `es`). Each field
+  resolves locale override → flat key → host fallback; the flat keys stay the canonical copy, so dashboards
+  that never add `localizations` (and older clients that never read it) behave exactly as before.
+- **BREAKING — `RevenueCatConfig.paywallFallback` and `savingsBadgeTemplate` are now suspend providers**
+  (`suspend () -> ProMetadata` / `suspend () -> String`, defaults unchanged in content). Both are resolved
+  per call, so hosts can localize them from suspending resource APIs (e.g. compose-resource `getString`)
+  against the current locale instead of baking one language in at DI time. Value-style overrides migrate by
+  wrapping in a lambda: `paywallFallback = { myMetadata }`.
+
 ## [0.3.1] - 2026-08-18
 
 ### Added
