@@ -22,12 +22,12 @@ import com.revenuecat.purchases.kmp.result.awaitSyncPurchasesResult
 import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
-import dev.jdgarita.frnk.monetization.ProBenefit
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.PrintLogger
+import dev.jdgarita.frnk.utils.platformLanguageTag
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -107,7 +107,7 @@ internal class RevenueCatEntitlementProvider(
             onSuccess = { offerings ->
                 val packages = offerings.current?.availablePackages.orEmpty()
                 packagesById = packages.associateBy { it.identifier }
-                AppResult.Success(mapProducts(packages, config.savingsBadgeTemplate))
+                AppResult.Success(mapProducts(packages, config.savingsBadgeTemplate()))
             },
             onFailure = { AppResult.Failure(MonetizationError.NoOfferings) }
         )
@@ -197,33 +197,14 @@ internal class RevenueCatEntitlementProvider(
         _isPro.value = isProFor(customerInfo.entitlements.active.keys, config.proEntitlementId)
     }
 
-    private fun extractPaywallMetadata(offering: Offering): ProMetadata {
-        // Offline / unconfigured-dashboard copy is the HOST's (RevenueCatConfig.paywallFallback) —
-        // app copy must never live in the toolkit.
-        val fallback = config.paywallFallback
-
-        return try {
-            val title = offering.metadata["title"] as? String ?: fallback.title
-            val subtitle = offering.metadata["subtitle"] as? String ?: fallback.subtitle
-
-            @Suppress("UNCHECKED_CAST")
-            val metadataList = offering.metadata["benefits"] as? List<Map<String, String>>
-
-            val benefits =
-                metadataList
-                    ?.mapNotNull { item ->
-                        val id = item["key"]
-                        val text = item["value"]
-                        if (id != null && text != null) ProBenefit(id, text) else null
-                    }?.takeIf { it.isNotEmpty() } ?: fallback.benefits
-
-            ProMetadata(title, subtitle, benefits)
-        } catch (e: Exception) {
-            // todo: add crashlytics logging
-            // Safe fallback if the JSON is malformed
-            fallback
-        }
-    }
+    private suspend fun extractPaywallMetadata(offering: Offering): ProMetadata =
+        resolvePaywallMetadata(
+            metadata = offering.metadata,
+            languageTag = platformLanguageTag(),
+            // Offline / unconfigured-dashboard copy is the HOST's (RevenueCatConfig.paywallFallback) —
+            // app copy must never live in the toolkit.
+            fallback = config.paywallFallback()
+        )
 
     /** Install the delegate once, lazily — see [RevenueCatConfig] / P3-2 notes. Doesn't clobber a host delegate. */
     private fun installListenerOnce() {

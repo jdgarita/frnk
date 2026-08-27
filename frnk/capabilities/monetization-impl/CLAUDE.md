@@ -18,10 +18,20 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
   `AlreadyOwned` (so the paywall can fall through to a restore), `NetworkError` → `NetworkUnavailable`,
   else `Unknown`. **It does NOT own the Free/Pro logic or god mode** — that's
   `DefaultEntitlementManager` (`:monetization-api`), which wraps this provider.
-- `RevenueCatConfig.kt` — `data class RevenueCatConfig(proEntitlementId = "pro")`. The entitlement
-  identifier that means "Pro" (`customerInfo.entitlements[proEntitlementId]?.isActive == true`). Hosts whose
-  dashboard uses a different id override `single { RevenueCatConfig(...) }` via Koin. Dashboard display name
-  should be `"<App> Pro"`.
+- `RevenueCatConfig.kt` — `data class RevenueCatConfig(proEntitlementId = "pro", paywallFallback, savingsBadgeTemplate)`.
+  The entitlement identifier that means "Pro" (`customerInfo.entitlements[proEntitlementId]?.isActive == true`).
+  Hosts whose dashboard uses a different id override `single { RevenueCatConfig(...) }` via Koin. Dashboard
+  display name should be `"<App> Pro"`. `paywallFallback` (`suspend () -> ProMetadata`) and
+  `savingsBadgeTemplate` (`suspend () -> String`, applied via literal `replace("%1$d", …)`) are **suspend
+  providers resolved per call** so hosts localize them from suspending resource APIs against the current
+  locale — never bake one language in at DI time.
+- `ResolvePaywallMetadata.kt` — the pure, SDK-free paywall-metadata resolver (exported for tests like
+  `isProFor`). Offering metadata schema is **additive**: flat `title`/`subtitle`/`benefits[{key,value}]`
+  are the canonical copy (what older clients read — never restructure them), and an optional
+  `localizations` object keyed by language code carries per-locale overrides. The device's
+  `platformLanguageTag()` matches a key exact-tag-first, then by primary-language prefix (`es-MX` → `es`);
+  each field resolves locale override → flat key → `paywallFallback`, benefits at whole-list granularity,
+  malformed nodes degrading a tier instead of throwing. Pinned by `ResolvePaywallMetadataTest`.
 - `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`**
   (+ `RevenueCatConfig`) **only**; `EntitlementManager` + `FeatureGate` come from `monetizationModule`.
   The host's `initializeFrnk(...)` module list installs both.
