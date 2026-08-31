@@ -101,3 +101,39 @@ Surfaced as a regression while implementing [[reactive-settings-home-vm-config-s
 ### Files
 - frnk/ui/scaffolds/src/commonMain/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModel.kt
 - frnk/ui/scaffolds/src/androidHostTest/kotlin/dev/jdgarita/frnk/ui/scaffolds/SettingsViewModelTest.kt
+
+## Demo Home dropped every DemoHomeEffect (dead paywall button + no toasts)
+
+- id: demo-home-dropped-every-demohomeeffect-dead-paywall-button-n-20260831-180516
+- type: bug_fix
+- status: active
+- platform: kmp
+- area: demo
+- date: 2026-08-31
+
+## Symptom
+Demo Home: "Open Paywall" did nothing and no toast ever appeared. The top-bar crown still opened the paywall, which masked the bug.
+
+## Root cause
+**Two ViewModels meet on the Home tab, each with its own single-consumer effect channel — only one was collected.**
+- `FrnkHomeScreen` (toolkit scaffold) owns a pass-through `HomeViewModel`; its `HomeEffect`s reached `HomeScreen(onEffect)` ✅
+- `DemoHomeViewModel` was resolved with `koinViewModel()` and only `state` collected — **nothing ever collected `viewModel.effects`**, so every `DemoHomeEffect.Navigate`/`.Toast` was buffered and dropped ❌
+
+Effects use `Channel(capacity = Channel.BUFFERED)` (64), so they buffer rather than jam the intent loop — the failure is silent: no crash, no log. (The intent collector starts in `MviViewModel.init`, not `attach`, so intents always worked; only effects were lost.)
+
+Likely lost when `FrnkDemoApp` became the unified shared entry point: `demo-android`s `ContextExt.toast` KDoc still points at a `MainActivity.handleEffect` that no longer exists, and the helper now has zero usages.
+
+## Fix
+Bind the VM through **`FrnkScreen(viewModel, arguments, onEffect) { state -> … }`** instead of hand-rolling `koinViewModel()` + `collectAsStateWithLifecycle()`. It attaches the VM, collects state lifecycle-aware, and consumes the effect channel. `attach()` is idempotent and `DemoHomeViewModel` does not override `onAttached`, so the switch is behaviour-safe.
+
+`FeatureGate.requestUpgrade()` returns a route **key** (`PAYWALL_ROUTE_KEY = "toolkit/paywall"`), not a route, so `:monetization-api` stays Compose/nav-free — the host maps the key onto its own graph (`onOpenPaywall` -> `nav.openPaywall()`).
+
+## Transient messages: shared overlay, not a platform toast
+`DemoMessageOverlay` is built from toolkit atoms in **commonMain**, because `FrnkDemoApp` is the one composable both `demo-android` and `iosDemoApp` mount — so both platforms get the same feedback with no `expect`/`actual`, and DemoKit stays cinterop-free. Carries a monotonic `id` so the same text twice re-triggers, and retains the last text so it does not blank mid-fade.
+
+## Still broken (verified pre-existing, NOT this bug)
+"God mode" and "Add note" do nothing — confirmed by reverting the fix, rebuilding and re-testing. Related: "Restore" reports "Purchases restored" (provider `_isPro` true) while the header reads `Pro = false via None`. Points at the entitlement/notes layer.
+
+### Files
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/ui/home/DemoHomeScreen.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/ui/home/DemoMessageOverlay.kt
