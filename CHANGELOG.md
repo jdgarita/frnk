@@ -20,6 +20,38 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - **`:core-platform` host-service contracts.** Added an SDK-free KMP module for camera capture,
   image selection/decoding, application settings actions, and maps integrations.
 
+### Changed
+
+- **Breaking (host build config): `compileSdk` 36 → 37.** `compose-unstyled` 2.9.2 declares
+  `minCompileSdk=37` in its AAR metadata, so anything lower fails `checkAarMetadata` on
+  `:ui-components`/`:ui-scaffolds`. AGP 9.3.2 supports API 37 (`sdklib` `HIGHEST_SUPPORTED_API`); the
+  previous "AGP 9 caps `compileSdk` at 36" note was true only of AGP 9.2.1. Because the version
+  catalog is the single source of truth for SDK levels, **composite-build host apps inherit this** and
+  need the `android-37` platform installed. Note this check does **not** run under
+  `compileAndroidMain` — only under the test/assemble tasks — so a compile-only gate will not catch it.
+- **Toolchain and library versions bumped to latest.** Kotlin 2.4.0 → 2.4.10, AGP 9.2.1 → 9.3.2,
+  Compose Multiplatform 1.11.1 → 1.12.0, compose-unstyled 2.5.0 → 2.9.2, Koin 4.2.1 → 4.2.2,
+  lifecycle/ViewModel 2.11.0-beta01 → 2.11.0, navigation3-viewmodel 2.10.0 → 2.11.0, GitLive Firebase
+  2.4.0 → 2.6.0, Firebase BOM 34.14.0 → 34.18.0, google-services 4.4.4 → 4.5.0, Crashlytics Gradle
+  3.0.7 → 3.0.8, RevenueCat 3.0.5 → 3.6.0, and the hand-pinned `androidx-compose-ui` 1.11.2 → 1.12.0
+  (re-resolved against `androidCompileClasspath` to match what CMP 1.12.0 pulls in).
+- **Navigation3 now uses one version ref per coordinate group.** `navigation3-ui` (JetBrains' CMP
+  port, `org.jetbrains.androidx.navigation3`) and `navigation3-runtime` (AndroidX,
+  `androidx.navigation3`) are versioned independently and do **not** release in lockstep, but shared a
+  single `navigation3UI` catalog ref — so bumping it to a version only AndroidX had published broke
+  dependency resolution. They are now split into `navigation3UI` (1.1.1, the CMP port's latest stable)
+  and `navigation3Runtime` (1.1.7). Bump each against its own `maven-metadata.xml`.
+
+### Fixed
+
+- **`EntitlementProvider.fetchMetadata()` was missing from two fakes.** The method was added to the
+  interface alongside the RevenueCat paywall-metadata work but two implementations were never updated,
+  leaving `:demo-shared` and `:ui-app`'s `commonTest` uncompilable. Internal only — no public-API change.
+- **Demo Home dropped every `DemoHomeEffect` (internal demo harness).** `DemoHomeViewModel`'s effect
+  channel had no collector, so "Open Paywall" navigated nowhere and no transient message ever appeared.
+  The screen now binds the ViewModel through the toolkit's `FrnkScreen` primitive, which consumes the
+  effect channel. No toolkit change.
+
 ## [0.2.0-alpha1] - 2026-07-08
 
 ### Changed

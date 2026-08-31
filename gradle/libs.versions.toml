@@ -4,48 +4,49 @@
 # (`libs.versions.frnk.groupId.get()`). Lives here because the catalog is the one thing visible to BOTH
 # the build-logic included build and the module build scripts — buildSrc was visible only to the latter.
 frnk-groupId = "dev.jdgarita.frnk"
-agp = "9.2.1"
-kotlin = "2.4.0"
-compose-multiplatform = "1.11.1"
-compose-unstyled = "2.5.0"
+agp = "9.3.2"
+kotlin = "2.4.10"
+compose-multiplatform = "1.12.0"
+compose-unstyled = "2.9.2"
 ripple-indication = "1.1.0"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 datetime = "0.8.0"
-koin = "4.2.1"
+koin = "4.2.2"
 sqldelight = "2.3.2"
 settings = "1.3.0"
-viewmodel = "2.11.0-beta01"
+viewmodel = "2.11.0"
 # Navigation3 (the toolkit's navigation engine). `navigation3-ui` is JetBrains' CMP port
 # (org.jetbrains.androidx.navigation3); `navigation3-runtime` is the AndroidX pure-Kotlin/MP runtime
 # (androidx.navigation3) that ships NavKey/NavBackStack. The lifecycle-viewmodel-navigation3 decorator
-# tracks the lifecycle line (2.10.0). Host apps (Still) build on the SAME coordinates/versions.
-# ⚠️ These are two INDEPENDENTLY-versioned coordinate groups that share this one ref, so it must stay
-# at the highest version BOTH publish — they don't release in lockstep. AndroidX shipped 1.1.2 but the
-# JetBrains CMP port stops at 1.1.1, so bumping this past 1.1.1 fails to resolve `navigation3-ui` until
-# JetBrains catches up (or split this into two refs). Verify both before bumping:
+# tracks the lifecycle line (2.11.0). Host apps (Still) build on the SAME coordinates/versions.
+# ⚠️ These are two INDEPENDENTLY-versioned coordinate groups — they do NOT release in lockstep, so they
+# now get one ref EACH. They shared a single ref until the 2026-08 bump, where "1.1.7" resolved for the
+# AndroidX runtime but not for the CMP port (which stops at 1.1.1, then jumps to 1.2.0-alpha02) and the
+# build failed. Bump each against its OWN metadata; never assume one group published what the other did:
 #   navigation3-ui:      https://repo.maven.apache.org/maven2/org/jetbrains/androidx/navigation3/navigation3-ui/maven-metadata.xml
 #   navigation3-runtime: https://dl.google.com/dl/android/maven2/androidx/navigation3/navigation3-runtime/maven-metadata.xml
-navigation3UI = "1.1.1"
-navigation3ViewModel = "2.10.0"
-gitlive-firebase = "2.4.0"
-firebase-bom = "34.14.0"
-google-services = "4.4.4"
-firebase-crashlytics-gradle = "3.0.7"
+navigation3UI = "1.1.1"        # org.jetbrains.androidx.navigation3 (JetBrains CMP port)
+navigation3Runtime = "1.1.7"   # androidx.navigation3 (AndroidX pure-Kotlin/MP runtime)
+navigation3ViewModel = "2.11.0"
+gitlive-firebase = "2.6.0"
+firebase-bom = "34.18.0"
+google-services = "4.5.0"
+firebase-crashlytics-gradle = "3.0.8"
 crashkios = "0.9.0"
-revenuecat = "3.0.5"
+revenuecat = "3.6.0"
 multihaptic = "0.3.2"
 robolectric = "4.16.1"
-# AndroidX Compose UI version that compose-multiplatform 1.11.1 resolves to on Android — used only to
+# AndroidX Compose UI version that compose-multiplatform 1.12.0 resolves to on Android — used only to
 # pin the matching ui-test-manifest artifact (provides the ComponentActivity the Compose test host launches).
 # ⚠️ BUMP TOGETHER WITH `compose-multiplatform`: this is the lone hand-pinned AndroidX Compose version in
 # the catalog (everything else routes through the CMP plugin). On a CMP upgrade, re-resolve the value via
-# `./gradlew :shared-ui-atoms:dependencies --configuration androidHostTestRuntimeClasspath | grep 'compose.ui:ui:'`
+# `./gradlew :ui-components:dependencies --configuration androidHostTestRuntimeClasspath | grep 'compose.ui:ui:'`
 # and update this to match, or ui-test-manifest can lag the rest of the compose-ui graph (obscure
 # ComponentActivity/test-host failures rather than a clear version conflict).
-androidx-compose-ui = "1.11.2"  # re-resolved for CMP 1.11.1
-# Material3 *Expressive* — pinned ABOVE the version compose-multiplatform 1.11.1 resolves (material3
-# 1.9.0, which ships FloatingToolbar tokens only). HorizontalFloatingToolbar first appears in
+androidx-compose-ui = "1.12.0"  # re-resolved for CMP 1.12.0
+# Material3 *Expressive* — pinned ABOVE the material3 version the compose-multiplatform plugin
+# resolves on its own (which ships FloatingToolbar tokens only). HorizontalFloatingToolbar first appears in
 # 1.10.0-alpha05 (@ExperimentalMaterial3ExpressiveApi). Used by :ui-bottom-nav's androidMain ONLY — the
 # toolkit's sole, deliberate Material3 dependency. Bump when CMP's bundled material3 catches up.
 compose-material3-expressive = "1.10.0-alpha05"
@@ -56,9 +57,12 @@ androidx-activity = "1.13.0"
 # toolkit's SDK floor/ceiling from the shared catalog (see HOST_ALIGNMENT.md → "Inherit build config").
 # This is the SINGLE source of truth for SDK targets — the `frnk.kmp.library` convention plugin, the
 # special modules' build scripts (via `libs.versions.android.compileSdk.get().toInt()`), and composite-
-# build host apps all read these. compileSdk is 36 because AGP 9 caps compileSdk at 36.
+# build host apps all read these. compileSdk is 37: compose-unstyled 2.9.2+ sets minCompileSdk=37 in
+# its AAR metadata, so anything lower fails `checkAarMetadata` on :ui-components/:ui-scaffolds (a check
+# `compileAndroidMain` does NOT run — it only surfaces on the test/assemble tasks). AGP 9.3.2 supports
+# up to API 37 (sdklib HIGHEST_SUPPORTED_API); the old "AGP 9 caps compileSdk at 36" was true of 9.2.1.
 android-minSdk = "26"
-android-compileSdk = "36"
+android-compileSdk = "37"
 android-targetSdk = "36"
 
 [libraries]
@@ -81,7 +85,7 @@ androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycl
 # viewmodel (rememberViewModelStoreNavEntryDecorator). Koin's nav3 integration provides koinEntryProvider()
 # + the navigation<Route> { } DSL.
 androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3UI" }
-androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3UI" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3Runtime" }
 androidx-navigation3-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "navigation3ViewModel" }
 koin-navigation3 = { module = "io.insert-koin:koin-compose-navigation3", version.ref = "koin" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
