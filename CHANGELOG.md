@@ -15,6 +15,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-08-31
+
 ### Changed
 
 - **Toolchain and library versions bumped.** AGP 9.3.1 → 9.3.2, Compose Multiplatform 1.11.1 → 1.12.0,
@@ -275,7 +277,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/jdgarita/frnk/releases/tag/v0.4.2
 [0.4.1]: https://github.com/jdgarita/frnk/releases/tag/v0.4.1
 [0.4.0]: https://github.com/jdgarita/frnk/releases/tag/v0.4.0
 [0.3.1]: https://github.com/jdgarita/frnk/releases/tag/v0.3.1
