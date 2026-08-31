@@ -15,6 +15,32 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Changed
+
+- **Toolchain and library versions bumped.** AGP 9.3.1 → 9.3.2, Compose Multiplatform 1.11.1 → 1.12.0,
+  `compose-unstyled` 2.9.0 → 2.9.2, RevenueCat 3.5.0 → 3.6.0, and `navigation3Runtime` 1.1.6 → 1.1.7
+  (the AndroidX runtime only — the JetBrains CMP port `navigation3UI` stays at 1.1.1, its latest
+  stable, because the two coordinate groups do not release in lockstep). The hand-pinned
+  `androidx-compose-ui` stays at 1.12.0, re-resolved against `androidCompileClasspath` to confirm it
+  still matches what CMP 1.12.0 pulls in.
+- **Corrected three stale version-catalog comments** that had drifted from the values beside them: the
+  navigation3 block still described the pre-split single-ref rule, the SDK block still claimed
+  `compileSdk` was 36 (it is 37) "because AGP 9 caps compileSdk at 36" (true of AGP 9.2.1 only), and
+  the compose-ui pin referenced CMP 1.11.1 plus a `:shared-ui-atoms` module that no longer exists.
+  These comments are load-bearing — the navigation3 one is what documents the two-coordinate-group
+  trap. Also recorded that `compose-unstyled` 2.9.2+ declares `minCompileSdk=37`, which is enforced by
+  `checkAarMetadata` and therefore **not** caught by `compileAndroidMain`.
+
+### Fixed
+
+- **Demo Home dropped every `DemoHomeEffect` (internal demo harness).** Two ViewModels meet on the Home
+  tab, each with its own single-consumer effect channel, and only one was collected: the toolkit's
+  pass-through `HomeViewModel` reached `HomeScreen(onEffect)`, while `DemoHomeViewModel` had its
+  `state` collected but never its `effects`. Every `Navigate`/`Toast` was buffered and dropped, so
+  "Open Paywall" navigated nowhere and no transient message ever appeared (the top-bar crown still
+  worked, which masked it). The screen now binds the ViewModel through the toolkit's `FrnkScreen`
+  primitive, which consumes the effect channel. No toolkit change — demo only.
+
 ## [0.4.1] - 2026-08-31
 
 ### Fixed

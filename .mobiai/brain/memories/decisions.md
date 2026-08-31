@@ -1433,3 +1433,42 @@ frnk supplies the Firebase *runtime* bindings (`firebaseObservabilityModule`), b
 - date: 2026-08-26
 
 The string axis resolves per-language default catalogs (DefaultFrnkStrings + EsFrnkStrings overlay) selected by FrnkThemeConfig.language, defaulting to the device language via systemFrnkLanguage() (platformLanguageTag() expect/actual in shared-utils, the module's third narrow data-only expect/actual). ES overlays EN so missing translations fall back per token. Host stringOverrides still win. Billing errors localize through MonetizationError.toStringSource() (monetization-ui ext) mapping to stringError* tokens - AppError.message stays a diagnostic and must not be rendered. Faint-branded paywall fallback copy was evicted from RevenueCatEntitlementProvider into RevenueCatConfig.paywallFallback (default ProMetadata.GENERIC) + savingsBadgeTemplate. FrnkNavBarItem/FrnkCustomTab labels and FrnkTopAppBarAction.contentDescription became FrnkStringSource (String secondary constructors keep old call sites compiling); dead tokens stringNavHome/stringSettings/stringSearch/stringBack/stringAppName/stringUpgradeToPro are now wired.
+
+## Version catalog: navigation3 two-group rule and compose-unstyled compileSdk floor
+
+- id: version-catalog-navigation3-two-group-rule-and-compose-unsty-20260831-180532
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: build
+- date: 2026-08-31
+
+Two catalog constraints that are easy to trip over on a dependency bump.
+
+## navigation3 is TWO independently-versioned coordinate groups
+- `org.jetbrains.androidx.navigation3:navigation3-ui` — JetBrains CMP port. Trails: stable stops at **1.1.1**, then jumps to 1.2.0-alpha02.
+- `androidx.navigation3:navigation3-runtime` — AndroidX runtime, at **1.1.7**.
+
+They do NOT release in lockstep, so they get one catalog ref each (`navigation3UI`, `navigation3Runtime`). A single shared ref breaks resolution the moment one group publishes ahead of the other — `Could not find org.jetbrains.androidx.navigation3:navigation3-ui:<v>`. Bump each against its own metadata:
+- ui:      https://repo.maven.apache.org/maven2/org/jetbrains/androidx/navigation3/navigation3-ui/maven-metadata.xml
+- runtime: https://dl.google.com/dl/android/maven2/androidx/navigation3/navigation3-runtime/maven-metadata.xml
+
+Runtime 1.1.7 paired with CMP-port UI 1.1.1 is exercised and fine (root nav, nested tab nav, cross-level paywall push/pop on device).
+
+## compose-unstyled sets a compileSdk floor in its AAR metadata
+2.9.0 declares `minCompileSdk=1`; **2.9.2 declares `minCompileSdk=37`**. Below that, `:ui-components`/`:ui-scaffolds` fail `checkAarMetadata`.
+
+⚠️ **`compileAndroidMain` does NOT run `checkAarMetadata`** — it only surfaces on the test/assemble tasks, so a compile-only pre-push gate ships it green. Run `testAndroidHostTest` too.
+
+Check any version before taking it:
+
+    curl -s -o p.aar https://repo.maven.apache.org/maven2/com/composables/composeunstyled-primitives-android/<v>/composeunstyled-primitives-android-<v>.aar
+    unzip -p p.aar META-INF/com/android/build/gradle/aar-metadata.properties | grep minCompileSdk
+
+AGP 9.3.2 supports API 37 (`sdklib` `HIGHEST_SUPPORTED_API`); the "AGP 9 caps compileSdk at 36" note was 9.2.1-era. The catalog is the single source of SDK levels, so composite-build **host apps inherit compileSdk** and need that platform installed.
+
+## Also: fetch before diagnosing a "sudden" build break
+A local `main` that is many commits stale will reproduce failures already fixed upstream. `git fetch` first.
+
+### Files
+- gradle/libs.versions.toml
