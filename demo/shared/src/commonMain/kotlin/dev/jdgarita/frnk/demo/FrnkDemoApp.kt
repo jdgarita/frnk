@@ -54,7 +54,12 @@ fun FrnkDemoApp() {
                 }
 
                 home { nav ->
-                    HomeScreen { uiEffect ->
+                    HomeScreen(
+                        // DemoHomeEffect.Navigate (the "Open Paywall" button) lands here; the crown in
+                        // the toolkit top bar arrives below as HomeEffect.ActionInvoked. Same destination,
+                        // two different ViewModels' effect channels.
+                        onOpenPaywall = { nav.openPaywall() }
+                    ) { uiEffect ->
                         when (uiEffect) {
                             is HomeEffect.ActionInvoked -> nav.openPaywall()
                             HomeEffect.NavigationInvoked -> Unit
