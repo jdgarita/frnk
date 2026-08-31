@@ -162,7 +162,7 @@ internal class RevenueCatEntitlementProvider(
 
             ProMetadata(title, subtitle, benefits)
         } catch (e: Exception) {
-            //todo: add crashlytics logging
+            // todo: add crashlytics logging
             // Safe fallback if the JSON is malformed
             ProMetadata(defaultTitle, defaultSubtitle, defaultBenefits)
         }

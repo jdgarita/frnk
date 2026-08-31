@@ -10,6 +10,8 @@ import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProBenefit
+import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.monetizationModule
@@ -101,6 +103,22 @@ class FakeEntitlementProvider : EntitlementProvider {
     // The fake has no store-managed subscription, so there's nothing to open (real RC returns the
     // App Store / Play Store management URL after a real purchase).
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+
+    // Real RC reads this off the current offering's `metadata` map; the fake hardcodes it so the demo
+    // paywall renders a populated title/subtitle/benefit list without a store round-trip.
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> =
+        AppResult.Success(
+            ProMetadata(
+                title = "frnk Pro",
+                subtitle = "Everything in the toolkit, unlocked.",
+                benefits =
+                    listOf(
+                        ProBenefit("COMPONENTS", "Every atom, molecule and organism"),
+                        ProBenefit("SYNC", "Your notes on all your devices"),
+                        ProBenefit("SUPPORT", "Priority support from the maintainers")
+                    )
+            )
+        )
 }
 
 /** In-memory [KeyValueStore] for the demo (god-mode persistence) — keeps DemoKit free of the settings impl. */
