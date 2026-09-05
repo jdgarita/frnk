@@ -15,6 +15,15 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-05
+
+### Changed
+
+- **Toolchain and library versions bumped.** Gradle 9.5.1 → 9.6.0, AGP 9.3.2 → 9.4.0, GitLive Firebase
+  (`dev.gitlive:firebase-*`) 2.6.0 → 2.7.0, and RevenueCat (`purchases-kmp`) 3.6.0 → 3.7.0. Routine
+  currency, no API change. The `README.md`/`CLAUDE.md`/`REQUIREMENTS.md` toolchain lines, which still
+  quoted AGP 9.2.1 / Gradle 9.5.1 / Kotlin 2.4.0, now match the catalog.
+
 ## [0.4.2] - 2026-08-31
 
 ### Changed
@@ -277,7 +286,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/jdgarita/frnk/releases/tag/v0.4.3
 [0.4.2]: https://github.com/jdgarita/frnk/releases/tag/v0.4.2
 [0.4.1]: https://github.com/jdgarita/frnk/releases/tag/v0.4.1
 [0.4.0]: https://github.com/jdgarita/frnk/releases/tag/v0.4.0

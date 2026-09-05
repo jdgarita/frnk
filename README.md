@@ -56,12 +56,12 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **DI:** Koin 4.2.1
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
-- **Remote Config:** GitLive Firebase Remote Config 2.4.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
-- **Identity:** GitLive Firebase Auth 2.4.0 (`dev.gitlive:firebase-auth`) — opt in by installing `firebaseIdentityModule` from `:identity-impl`
-- **Observability:** GitLive Firebase Analytics + Crashlytics 2.4.0 — opt in by installing `firebaseObservabilityModule`, independent of every other capability
-- **Monetization:** RevenueCat 3.0.5
+- **Remote Config:** GitLive Firebase Remote Config 2.7.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
+- **Identity:** GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) — opt in by installing `firebaseIdentityModule` from `:identity-impl`
+- **Observability:** GitLive Firebase Analytics + Crashlytics 2.7.0 — opt in by installing `firebaseObservabilityModule`, independent of every other capability
+- **Monetization:** RevenueCat 3.7.0
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
-- **Build:** AGP 9.2.1, Gradle 9.5.1, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
+- **Build:** AGP 9.4.0, Gradle 9.6.0, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
 
 ## 🚀 Consume as a composite build
 

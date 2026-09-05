@@ -4,7 +4,7 @@
 # (`libs.versions.frnk.groupId.get()`). Lives here because the catalog is the one thing visible to BOTH
 # the build-logic included build and the module build scripts — buildSrc was visible only to the latter.
 frnk-groupId = "dev.jdgarita.frnk"
-agp = "9.3.2"
+agp = "9.4.0"
 kotlin = "2.4.10"
 compose-multiplatform = "1.12.0"
 compose-unstyled = "2.9.2"
@@ -30,12 +30,12 @@ viewmodel = "2.11.0"
 navigation3Runtime = "1.1.7"
 navigation3UI = "1.1.1"
 navigation3ViewModel = "2.11.0"
-gitlive-firebase = "2.6.0"
+gitlive-firebase = "2.7.0"
 firebase-bom = "34.18.0"
 google-services = "4.5.0"
 firebase-crashlytics-gradle = "3.0.8"
 crashkios = "0.9.0"
-revenuecat = "3.6.0"
+revenuecat = "3.7.0"
 multihaptic = "0.3.2"
 robolectric = "4.16.1"
 # AndroidX Compose UI version that compose-multiplatform 1.12.0 resolves to on Android — used only to

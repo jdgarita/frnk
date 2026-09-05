@@ -121,7 +121,7 @@ descriptions.
 
 - **JDK 17** everywhere (Foojay resolver auto-provisions; every KMP module calls
   `jvmToolchain(17)`).
-- **Kotlin 2.4.0 + AGP 9.2.1 + Gradle 9.5.1.**
+- **Kotlin 2.4.10 + AGP 9.4.0 + Gradle 9.6.0.**
 - KMP-Android modules apply `com.android.kotlin.multiplatform.library` and
   configure Android via `kotlin { android { … } }` — **not** a top-level
   `android {}` block, and **not** `kotlin.android`.
