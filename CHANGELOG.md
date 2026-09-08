@@ -15,6 +15,30 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-08
+
+### Added
+
+- **Web-purchase redemption.** `EntitlementProvider.redeemWebPurchase(url)` and
+  `EntitlementManager.redeemWebPurchase(url)` attach a RevenueCat Web Billing purchase to the
+  current app user from a Redemption Link (`rc-<app>://redeem_web_purchase?redemption_token=…`),
+  returning `AppResult<Boolean, WebPurchaseRedemptionError>` — the Boolean is "Pro now", the new
+  sealed error names `NotARedemptionLink` / `InvalidToken` / `Expired(obfuscatedEmail)` /
+  `BelongsToOtherUser` / `NetworkUnavailable` / `StoreUnavailable` / `Unknown`. The RevenueCat
+  provider wraps `Purchases.parseAsWebPurchaseRedemption` + `Purchases.redeemWebPurchase`
+  (purchases-kmp 3.7.0) and updates `isPro` from the returned `CustomerInfo`; the manager records
+  `ToolkitEvent.WebPurchaseRedeemed` (`web_purchase_redeemed{result}`) for every outcome except
+  `NotARedemptionLink`, so hosts can hand every incoming deep link through without pre-parsing.
+  The deep-link plumbing (URL scheme registration, `onNewIntent` / `onOpenURL`) stays with the host —
+  see `docs/HOST_INTEGRATION.md`.
+
+### Changed
+
+- **Breaking for custom `EntitlementProvider` / `EntitlementManager` implementations:** both
+  interfaces gained the abstract `redeemWebPurchase(url)` member, so hosts with their own fake or
+  provider must add an override (the demo's `FakeEntitlementProvider` answers
+  `Failure(NotARedemptionLink)`). Hence the MINOR bump.
+
 ## [0.4.3] - 2026-09-05
 
 ### Changed
@@ -286,7 +310,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/jdgarita/frnk/releases/tag/v0.5.0
 [0.4.3]: https://github.com/jdgarita/frnk/releases/tag/v0.4.3
 [0.4.2]: https://github.com/jdgarita/frnk/releases/tag/v0.4.2
 [0.4.1]: https://github.com/jdgarita/frnk/releases/tag/v0.4.1

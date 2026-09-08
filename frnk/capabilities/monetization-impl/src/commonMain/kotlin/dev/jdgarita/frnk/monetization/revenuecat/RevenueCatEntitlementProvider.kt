@@ -11,6 +11,7 @@ import com.revenuecat.purchases.kmp.models.PurchasesError
 import com.revenuecat.purchases.kmp.models.PurchasesErrorCode
 import com.revenuecat.purchases.kmp.models.PurchasesException
 import com.revenuecat.purchases.kmp.models.PurchasesTransactionException
+import com.revenuecat.purchases.kmp.models.RedeemWebPurchaseListener
 import com.revenuecat.purchases.kmp.models.StoreProduct
 import com.revenuecat.purchases.kmp.models.StoreTransaction
 import com.revenuecat.purchases.kmp.result.awaitCustomerInfoResult
@@ -25,6 +26,7 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.PrintLogger
 import dev.jdgarita.frnk.utils.platformLanguageTag
@@ -32,6 +34,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 /**
  * [EntitlementProvider] backed by the RevenueCat KMP SDK.
@@ -193,6 +197,35 @@ internal class RevenueCatEntitlementProvider(
         )
     }
 
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> {
+        installListenerOnce()
+        // The parse is a static on the SDK (no `sharedInstance`), so a null here means "not a
+        // redemption link", not "unconfigured" — that surfaces from the redeem call below.
+        val redemption =
+            sdkCall { Purchases.parseAsWebPurchaseRedemption(url) }
+                ?: return AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
+        val result =
+            sdkCall {
+                suspendCancellableCoroutine<RedeemWebPurchaseListener.Result> { continuation ->
+                    Purchases.sharedInstance.redeemWebPurchase(redemption) { result ->
+                        // The SDK request outlives a cancelled caller: RevenueCat may have already
+                        // attached the purchase to this user by the time the callback lands. Apply
+                        // the state here, not in the awaiting coroutine, so a redemption that
+                        // succeeded remotely never leaves `isPro` stale until some later refresh —
+                        // only the answer to the caller is conditional on it still listening.
+                        if (result is RedeemWebPurchaseListener.Result.Success) updateFrom(result.customerInfo)
+                        if (continuation.isActive) continuation.resume(result)
+                    }
+                }
+            } ?: return AppResult.Failure(WebPurchaseRedemptionError.StoreUnavailable)
+        return when (result) {
+            is RedeemWebPurchaseListener.Result.Success ->
+                AppResult.Success(isProFor(result.customerInfo.entitlements.active.keys, config.proEntitlementId))
+
+            else -> AppResult.Failure(requireNotNull(webPurchaseRedemptionErrorFor(result)))
+        }
+    }
+
     private fun updateFrom(customerInfo: CustomerInfo) {
         _isPro.value = isProFor(customerInfo.entitlements.active.keys, config.proEntitlementId)
     }
@@ -320,6 +353,24 @@ internal fun monetizationErrorFor(
         code == PurchasesErrorCode.ReceiptAlreadyInUseError -> MonetizationError.AlreadyOwned
         code == PurchasesErrorCode.NetworkError -> MonetizationError.NetworkUnavailable
         else -> MonetizationError.Unknown
+    }
+
+/**
+ * Pure, statics-free redemption-result → [WebPurchaseRedemptionError] mapping, split out (like
+ * [monetizationErrorFor]) so it is unit-testable without `Purchases.sharedInstance`. `null` for a
+ * successful redemption, which carries a `CustomerInfo` rather than an error.
+ */
+internal fun webPurchaseRedemptionErrorFor(result: RedeemWebPurchaseListener.Result): WebPurchaseRedemptionError? =
+    when (result) {
+        is RedeemWebPurchaseListener.Result.Success -> null
+        RedeemWebPurchaseListener.Result.InvalidToken -> WebPurchaseRedemptionError.InvalidToken
+        is RedeemWebPurchaseListener.Result.Expired -> WebPurchaseRedemptionError.Expired(result.obfuscatedEmail)
+        RedeemWebPurchaseListener.Result.PurchaseBelongsToOtherUser -> WebPurchaseRedemptionError.BelongsToOtherUser
+        is RedeemWebPurchaseListener.Result.Error ->
+            when (result.error.code) {
+                PurchasesErrorCode.NetworkError -> WebPurchaseRedemptionError.NetworkUnavailable
+                else -> WebPurchaseRedemptionError.Unknown
+            }
     }
 
 /**

@@ -48,4 +48,10 @@ interface EntitlementManager : IdentitySource {
     suspend fun managementUrl(): AppResult<String?, MonetizationError>
 
     suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError>
+
+    /**
+     * Redeem a RevenueCat web-purchase link for the current user — see
+     * [EntitlementProvider.redeemWebPurchase]. Records the outcome as `web_purchase_redeemed`.
+     */
+    suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError>
 }

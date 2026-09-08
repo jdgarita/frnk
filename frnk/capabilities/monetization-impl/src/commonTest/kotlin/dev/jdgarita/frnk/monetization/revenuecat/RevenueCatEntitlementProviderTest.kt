@@ -4,8 +4,10 @@ import com.revenuecat.purchases.kmp.models.PurchasesError
 import com.revenuecat.purchases.kmp.models.PurchasesErrorCode
 import com.revenuecat.purchases.kmp.models.PurchasesException
 import com.revenuecat.purchases.kmp.models.PurchasesTransactionException
+import com.revenuecat.purchases.kmp.models.RedeemWebPurchaseListener
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -96,6 +98,34 @@ class RevenueCatEntitlementProviderTest {
             PurchasesException(PurchasesError(PurchasesErrorCode.NetworkError)).toMonetizationError()
         )
         assertEquals(MonetizationError.Unknown, IllegalStateException("boom").toMonetizationError())
+    }
+
+    @Test
+    fun webPurchaseRedemptionErrorFor_maps_each_sdk_outcome() {
+        assertEquals(
+            WebPurchaseRedemptionError.InvalidToken,
+            webPurchaseRedemptionErrorFor(RedeemWebPurchaseListener.Result.InvalidToken)
+        )
+        assertEquals(
+            WebPurchaseRedemptionError.Expired("j***@example.com"),
+            webPurchaseRedemptionErrorFor(RedeemWebPurchaseListener.Result.Expired("j***@example.com"))
+        )
+        assertEquals(
+            WebPurchaseRedemptionError.BelongsToOtherUser,
+            webPurchaseRedemptionErrorFor(RedeemWebPurchaseListener.Result.PurchaseBelongsToOtherUser)
+        )
+        assertEquals(
+            WebPurchaseRedemptionError.NetworkUnavailable,
+            webPurchaseRedemptionErrorFor(
+                RedeemWebPurchaseListener.Result.Error(PurchasesError(PurchasesErrorCode.NetworkError))
+            )
+        )
+        assertEquals(
+            WebPurchaseRedemptionError.Unknown,
+            webPurchaseRedemptionErrorFor(
+                RedeemWebPurchaseListener.Result.Error(PurchasesError(PurchasesErrorCode.StoreProblemError))
+            )
+        )
     }
 
     @Test

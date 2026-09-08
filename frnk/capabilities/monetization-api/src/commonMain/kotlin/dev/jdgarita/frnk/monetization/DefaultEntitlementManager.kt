@@ -111,6 +111,28 @@ class DefaultEntitlementManager(
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = provider.fetchMetadata()
 
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> {
+        val result = provider.redeemWebPurchase(url)
+        val outcome =
+            when (result) {
+                is AppResult.Success -> "success"
+                is AppResult.Failure ->
+                    when (result.error) {
+                        // Not a redemption attempt at all — hosts hand every deep link through —
+                        // so there is nothing to count.
+                        WebPurchaseRedemptionError.NotARedemptionLink -> return result
+                        WebPurchaseRedemptionError.InvalidToken -> "invalid_token"
+                        is WebPurchaseRedemptionError.Expired -> "expired"
+                        WebPurchaseRedemptionError.BelongsToOtherUser -> "other_user"
+                        WebPurchaseRedemptionError.NetworkUnavailable -> "network_unavailable"
+                        WebPurchaseRedemptionError.StoreUnavailable -> "store_unavailable"
+                        WebPurchaseRedemptionError.Unknown -> "unknown"
+                    }
+            }
+        analytics.track(ToolkitEvent.WebPurchaseRedeemed, mapOf("result" to outcome))
+        return result
+    }
+
     private fun compute(
         providerPro: Boolean,
         god: Boolean
