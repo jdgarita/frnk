@@ -42,4 +42,12 @@ interface EntitlementProvider : IdentitySource {
     suspend fun managementUrl(): AppResult<String?, MonetizationError>
 
     suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError>
+
+    /**
+     * Attach a web purchase to the current app user from a RevenueCat redemption link
+     * (`rc-<app>://redeem_web_purchase?redemption_token=…`). Returns whether the user is now Pro;
+     * a URL that is not a redemption link fails with [WebPurchaseRedemptionError.NotARedemptionLink]
+     * so hosts can hand every incoming deep link through without pre-parsing it.
+     */
+    suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError>
 }

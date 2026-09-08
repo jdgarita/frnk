@@ -15,6 +15,7 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
@@ -113,6 +114,9 @@ class FakeEntitlementProvider : EntitlementProvider {
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
+
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> =
+        AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
 }
 
 /** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path without Firebase. */

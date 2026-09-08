@@ -215,6 +215,19 @@ initializeFrnk(
 - **Monetization opt-out:** don't pass the three monetization modules. A host using a different
   provider passes its own `EntitlementProvider` (optionally with the toolkit's `monetizationModule` /
   `paywallScaffoldModule` over it).
+- **Web purchases (RevenueCat Web Billing + Redemption Links).** A purchase made on the web reaches
+  the phone as a one-time deep link, `rc-<rc-app-id>://redeem_web_purchase?redemption_token=…`
+  (each RevenueCat *app* has its own scheme — copy it from the dashboard). The toolkit owns the
+  redemption (`EntitlementManager.redeemWebPurchase(url)` → `AppResult<Boolean,
+  WebPurchaseRedemptionError>`, `isPro` updated on success, `web_purchase_redeemed{result}` tracked)
+  but **not** the plumbing: the host registers the scheme (an `android.intent.action.VIEW` +
+  `BROWSABLE` intent filter on the launcher Activity with `launchMode="singleTop"`, forwarding
+  `intent.data` from both `onCreate` and `onNewIntent`; `CFBundleURLTypes` in `Info.plist` plus
+  SwiftUI's `.onOpenURL`) and hands the URL string through. Gate the call on `SyncAuthUseCase.identify()`
+  first, exactly like a restore — the purchase attaches to whatever app user is current, and an
+  offline launch may have left RevenueCat on its transient anonymous id. `Expired` carries the
+  obfuscated address RevenueCat re-mailed a fresh link to; `NotARedemptionLink` means the URL was
+  something else and is not tracked, so it is safe to route every incoming link through.
 - Install **exactly one** observability module (`firebaseObservabilityModule` XOR
   `noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`. Remote Config follows the
   same XOR rule (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are

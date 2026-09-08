@@ -130,6 +130,37 @@ class DefaultEntitlementManagerTest {
     }
 
     @Test
+    fun redeemWebPurchase_delegates_and_tracks_outcome() {
+        val analytics = FakeAnalytics()
+        val expired = WebPurchaseRedemptionError.Expired("j***@example.com")
+        val mgr = manager(provider = FakeProvider(redeemResult = AppResult.Failure(expired)), analytics = analytics)
+        runTest {
+            assertEquals(AppResult.Failure(expired), mgr.redeemWebPurchase("rc-abc://redeem_web_purchase?redemption_token=t"))
+        }
+        assertEquals(mapOf<String, Any?>("result" to "expired"), analytics.trackedParams[ToolkitEvent.WebPurchaseRedeemed.key])
+    }
+
+    @Test
+    fun redeemWebPurchase_success_tracks_success() {
+        val analytics = FakeAnalytics()
+        val mgr = manager(provider = FakeProvider(redeemResult = AppResult.Success(true)), analytics = analytics)
+        runTest { assertEquals(AppResult.Success(true), mgr.redeemWebPurchase("rc-abc://redeem_web_purchase?redemption_token=t")) }
+        assertEquals(mapOf<String, Any?>("result" to "success"), analytics.trackedParams[ToolkitEvent.WebPurchaseRedeemed.key])
+    }
+
+    @Test
+    fun redeemWebPurchase_ignores_non_redemption_links_in_analytics() {
+        val analytics = FakeAnalytics()
+        val mgr =
+            manager(
+                provider = FakeProvider(redeemResult = AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)),
+                analytics = analytics
+            )
+        runTest { mgr.redeemWebPurchase("https://faint.coffee/") }
+        assertFalse(analytics.tracked.contains(ToolkitEvent.WebPurchaseRedeemed.key))
+    }
+
+    @Test
     fun purchase_failure_emits_failed_event() {
         val analytics = FakeAnalytics()
         val mgr =
@@ -146,7 +177,8 @@ class DefaultEntitlementManagerTest {
 private class FakeProvider(
     private val purchaseResult: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val identifyResult: AppResult<Unit, IdentityError> = AppResult.Success(Unit),
-    private val syncResult: AppResult<Boolean, MonetizationError> = AppResult.Success(false)
+    private val syncResult: AppResult<Boolean, MonetizationError> = AppResult.Success(false),
+    private val redeemResult: AppResult<Boolean, WebPurchaseRedemptionError> = AppResult.Success(true)
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
@@ -189,6 +221,8 @@ private class FakeProvider(
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
+
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> = redeemResult
 }
 
 private class FakeKeyValueStore : KeyValueStore {
@@ -227,6 +261,7 @@ private class FakeKeyValueStore : KeyValueStore {
 
 private class FakeAnalytics : AnalyticsTracker {
     val tracked = mutableListOf<String>()
+    val trackedParams = mutableMapOf<String, Map<String, Any?>>()
     val customEvents = mutableListOf<String>()
     val userProperties = mutableMapOf<String, String?>()
     var identity: String? = null
@@ -236,6 +271,7 @@ private class FakeAnalytics : AnalyticsTracker {
         params: Map<String, Any?>
     ) {
         tracked += event.key
+        trackedParams[event.key] = params
     }
 
     override fun trackCustom(
