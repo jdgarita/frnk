@@ -207,14 +207,20 @@ internal class RevenueCatEntitlementProvider(
         val result =
             sdkCall {
                 suspendCancellableCoroutine<RedeemWebPurchaseListener.Result> { continuation ->
-                    Purchases.sharedInstance.redeemWebPurchase(redemption) { continuation.resume(it) }
+                    Purchases.sharedInstance.redeemWebPurchase(redemption) { result ->
+                        // The SDK request outlives a cancelled caller: RevenueCat may have already
+                        // attached the purchase to this user by the time the callback lands. Apply
+                        // the state here, not in the awaiting coroutine, so a redemption that
+                        // succeeded remotely never leaves `isPro` stale until some later refresh —
+                        // only the answer to the caller is conditional on it still listening.
+                        if (result is RedeemWebPurchaseListener.Result.Success) updateFrom(result.customerInfo)
+                        if (continuation.isActive) continuation.resume(result)
+                    }
                 }
             } ?: return AppResult.Failure(WebPurchaseRedemptionError.StoreUnavailable)
         return when (result) {
-            is RedeemWebPurchaseListener.Result.Success -> {
-                updateFrom(result.customerInfo)
+            is RedeemWebPurchaseListener.Result.Success ->
                 AppResult.Success(isProFor(result.customerInfo.entitlements.active.keys, config.proEntitlementId))
-            }
 
             else -> AppResult.Failure(requireNotNull(webPurchaseRedemptionErrorFor(result)))
         }
