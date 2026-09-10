@@ -25,6 +25,7 @@ import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
+import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.utils.AppResult
@@ -289,7 +290,8 @@ private fun mapProducts(
             priceFormatted = product.price.formatted,
             pricePerMonthFormatted = product.pricePerMonth?.formatted,
             hasFreeTrial = product.introductoryDiscount != null,
-            badge = savingsBadge(plan, monthlyMicros, perMonthMicros, savingsBadgeTemplate)
+            badge = savingsBadge(plan, monthlyMicros, perMonthMicros, savingsBadgeTemplate),
+            price = ProPrice(amountMicros = product.price.amountMicros, currencyCode = product.price.currencyCode)
         )
     }
 }

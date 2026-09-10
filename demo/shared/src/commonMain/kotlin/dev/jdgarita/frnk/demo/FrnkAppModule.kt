@@ -14,6 +14,7 @@ import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
+import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
@@ -86,7 +87,14 @@ class FakeEntitlementProvider : EntitlementProvider {
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> =
         AppResult.Success(
             listOf(
-                ProProduct("monthly", ProPlan.Monthly, "Monthly", "$4.99", pricePerMonthFormatted = "$4.99"),
+                ProProduct(
+                    "monthly",
+                    ProPlan.Monthly,
+                    "Monthly",
+                    "$4.99",
+                    pricePerMonthFormatted = "$4.99",
+                    price = ProPrice(amountMicros = 4_990_000, currencyCode = "USD")
+                ),
                 ProProduct(
                     "yearly",
                     ProPlan.Yearly,
@@ -94,9 +102,16 @@ class FakeEntitlementProvider : EntitlementProvider {
                     "$39.99",
                     pricePerMonthFormatted = "$3.33",
                     hasFreeTrial = true,
-                    badge = "Save 33%"
+                    badge = "Save 33%",
+                    price = ProPrice(amountMicros = 39_990_000, currencyCode = "USD")
                 ),
-                ProProduct("lifetime", ProPlan.Lifetime, "Lifetime", "$99.99")
+                ProProduct(
+                    "lifetime",
+                    ProPlan.Lifetime,
+                    "Lifetime",
+                    "$99.99",
+                    price = ProPrice(amountMicros = 99_990_000, currencyCode = "USD")
+                )
             )
         )
 

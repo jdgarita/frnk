@@ -115,10 +115,18 @@ class PaywallViewModel(
     }
 
     private suspend fun purchase() {
-        val id = currentModel().selectedProductId ?: return
+        val model = currentModel()
+        val id = model.selectedProductId ?: return
         updateModel { copy(isPurchasing = true) }
         when (val result = paywallPurchaseUseCase.purchase(id)) {
-            is AppResult.Success -> emit(PaywallEffect.Dismiss) // manager flips status reactively
+            is AppResult.Success -> {
+                // Only a purchase that activated the entitlement is a sale worth reporting; the
+                // store accepting one it left pending still closes the sheet, silently.
+                val product = model.products.firstOrNull { it.id == id }
+                if (result.data && product != null) emit(PaywallEffect.Purchased(product))
+                emit(PaywallEffect.Dismiss) // manager flips status reactively
+            }
+
             is AppResult.Failure -> {
                 updateModel { copy(isPurchasing = false) }
                 when (result.error) {

@@ -1472,3 +1472,22 @@ A local `main` that is many commits stale will reproduce failures already fixed 
 
 ### Files
 - gradle/libs.versions.toml
+
+## PaywallEffect.Purchased is the host's conversion hook; frnk's purchase_* events stay id-only
+
+- id: paywalleffect-purchased-is-the-host-s-conversion-hook-frnk-s-20260910-000137
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization
+- date: 2026-09-10
+
+Hosts wanted plan type and price on their conversion event. Rather than enriching `purchase_completed` (`DefaultEntitlementManager.purchase(productId)` only has the id, and the event has production history), the paywall now emits `PaywallEffect.Purchased(product)` immediately before `Dismiss` — only when `purchase()` returned `Success(true)`, i.e. the entitlement activated. `Success(false)` (a pending store transaction) and every restore/silent-sync path dismiss without it, so a host's revenue event never fires for money that did not change hands.
+
+`ProProduct.price: ProPrice?` (`amountMicros` + `currencyCode`, `amount` in whole units) carries the raw store price beside the display string; the RevenueCat mapper reads `StoreProduct.price.amountMicros`/`currencyCode`, which it already had for the savings badge. Nullable so fake providers need no price.
+
+Trial semantics stay with the host (Faint books `value = 0` on `hasFreeTrial`) — frnk reports the fact, not the accounting.
+
+### Files
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModel.kt
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ProProduct.kt
