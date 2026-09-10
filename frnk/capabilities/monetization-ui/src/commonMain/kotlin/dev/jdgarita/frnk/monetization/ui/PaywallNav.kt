@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.monetization.ui
 
 import androidx.compose.runtime.Composable
+import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -20,17 +21,21 @@ import org.koin.dsl.navigation3.navigation
  * @param onClose called when the paywall should be dismissed (purchase/restore succeeded or user closed it).
  * @param onMessage surfaces transient messages (e.g. "Nothing to restore", purchase failure) — hold it in
  * state and render via `FrnkStringSource.resolve()` (a toast/snackbar/dialog under the ambient `FrnkTheme`).
+ * @param onPurchased a purchase activated the entitlement, with the [ProProduct] bought — the host's hook
+ * for its own conversion event (plan + `price`); [onClose] follows immediately after.
  */
 @Composable
 fun FrnkPaywallDestination(
     features: List<String> = emptyList(),
     source: String = "paywall",
     onMessage: (FrnkStringSource) -> Unit = {},
+    onPurchased: (ProProduct) -> Unit = {},
     onClose: () -> Unit
 ) {
     PaywallScreen(source = source, features = features) { effect ->
         when (effect) {
             PaywallEffect.Dismiss -> onClose()
+            is PaywallEffect.Purchased -> onPurchased(effect.product)
             is PaywallEffect.Message -> onMessage(effect.text)
         }
     }
@@ -50,9 +55,16 @@ fun Module.frnkPaywallNavigation(
     features: List<String> = emptyList(),
     source: String = "paywall",
     onMessage: (FrnkStringSource) -> Unit = {},
+    onPurchased: (ProProduct) -> Unit = {},
     onClose: () -> Unit
 ) {
     navigation<FrnkRootRoute.Paywall> {
-        FrnkPaywallDestination(features = features, source = source, onMessage = onMessage, onClose = onClose)
+        FrnkPaywallDestination(
+            features = features,
+            source = source,
+            onMessage = onMessage,
+            onPurchased = onPurchased,
+            onClose = onClose
+        )
     }
 }

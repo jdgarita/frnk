@@ -638,6 +638,10 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
   (`backStack.navigateTo` / `back` / `clearAndNavigateTo`) — collect it in exactly one place (single-consumer channel).
 - The **batteries are yours to wire** — paywall (`FrnkPaywallDestination` from `:shared-monetization-ui`),
   onboarding, and the entitlement-driven Settings are registered by your navigation module, not auto-mounted.
+  `FrnkPaywallDestination`'s optional `onPurchased: (ProProduct) -> Unit` (backed by
+  `PaywallEffect.Purchased`, emitted right before the `Dismiss` of a purchase that activated the
+  entitlement) is where a host records its own conversion event — the `ProProduct` carries the plan
+  and, from a store-backed provider, `price` (`ProPrice`: `amountMicros` + `currencyCode`).
 - `:demo-shared`'s `FrnkDemoApp` is the reference integration — the single shared composable both
   `demo-android` and `iosDemoApp` call. Its `RootNavigationModule` (root) + `NestedNavigationModule` (tabs)
   are the canonical example of this shape: a Home / Components / Settings tabbed surface, with the demo wiring

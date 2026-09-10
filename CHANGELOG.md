@@ -15,6 +15,25 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-09
+
+### Added
+
+- **`ProProduct.price`** — the store price as a number: a new `ProPrice(amountMicros, currencyCode)`
+  value (with an `amount` in whole units) beside the localized `priceFormatted`, filled by the
+  RevenueCat provider from `StoreProduct.price`. For analytics and revenue reporting; hosts keep
+  rendering `priceFormatted`. `null` from a provider without a store price (the demo's fake).
+- **`PaywallEffect.Purchased(product)`** — emitted by `PaywallViewModel` immediately before the
+  `Dismiss` that follows a purchase which activated the entitlement, carrying the `ProProduct`
+  bought, so a host can record its own conversion event with the plan and price at hand. Restores,
+  the silent receipt sync and a purchase the store left pending still dismiss without it.
+  `FrnkPaywallDestination` / `frnkPaywallNavigation` expose it as an optional `onPurchased` callback.
+
+### Changed
+
+- **Breaking for hosts with an exhaustive `when` over `PaywallEffect`:** the sealed interface gained
+  `Purchased`, so such a `when` needs a branch (or an `else`). Hence the MINOR bump.
+
 ## [0.5.0] - 2026-09-08
 
 ### Added
@@ -310,7 +329,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/jdgarita/frnk/releases/tag/v0.6.0
 [0.5.0]: https://github.com/jdgarita/frnk/releases/tag/v0.5.0
 [0.4.3]: https://github.com/jdgarita/frnk/releases/tag/v0.4.3
 [0.4.2]: https://github.com/jdgarita/frnk/releases/tag/v0.4.2

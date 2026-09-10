@@ -7,7 +7,8 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
 - `RevenueCatEntitlementProvider.kt` — **`EntitlementProvider`** backed by the RevenueCat KMP SDK
   (BACKLOG P3-2/P3-3). Reactive `isPro` (a `PurchasesDelegate` pushes background customer-info updates;
   `refresh()` reads `awaitCustomerInfoResult()`); `offerings()` maps `Offerings.current` packages →
-  `ProProduct` (`PackageType`→`ProPlan`, `Price.formatted`/`pricePerMonth`, trial via `introductoryDiscount`,
+  `ProProduct` (`PackageType`→`ProPlan`, `Price.formatted`/`pricePerMonth`, the raw `Price.amountMicros` +
+  `currencyCode` as `ProPrice`, trial via `introductoryDiscount`,
   a "Save N%" yearly badge); `purchase(id)` resolves the cached `Package` and runs `awaitPurchaseResult(pkg)`;
   `restore()` reads `awaitRestoreResult()` and `syncPurchases()` reads `awaitSyncPurchasesResult()` (the
   silent, no-store-UI receipt sync) — both compute the returned `isPro` from the call's **own**
