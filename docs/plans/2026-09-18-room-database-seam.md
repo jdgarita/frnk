@@ -79,9 +79,9 @@
 
 ### Task 7: Faint (the host side, in the superproject)
 
-- [ ] `:core:data` depends on `frnk-data-db-api` in place of Room runtime + bundled driver directly; the Room compiler and plugins resolve from `frnkLibs`.
-- [ ] Delete `core/data/.../FaintDatabase.android.kt`, `FaintDatabase.ios.kt`, `buildFaintDatabase`, and the two `shared` wrappers.
-- [ ] `faintDataModule()` includes frnk's `databaseModule` and `databaseSingle<FaintDatabase>("faint.db")`; `faintFrnkModules` / `initializeFaintFrnkIfNeeded` lose their database parameters; `FaintApplication` and `MainViewController` stop building the database.
-- [ ] `RoomTastingCardRepositoryHostTest` builds its in-memory database inline.
-- [ ] `app/scripts/verify.sh`, then `--android` and `--ios` compiles; docs updated (`docs/06`, `docs/07`, `ARCHITECTURE.md`, `CONVENTIONS.md`, `app/CLAUDE.md`, root `CLAUDE.md`).
+- [x] `:core:data` depends on `frnk-data-db-api` in place of Room runtime + bundled driver directly; the Room compiler and plugins resolve from `frnkLibs`.
+- [x] Delete `core/data/.../FaintDatabase.android.kt`, `FaintDatabase.ios.kt`, `buildFaintDatabase`, and the two `shared` wrappers.
+- [x] `faintDataModule()` includes frnk's `databaseModule` and `databaseSingle<FaintDatabase>("faint.db")`; `faintFrnkModules` / `initializeFaintFrnkIfNeeded` lose their database parameters; `FaintApplication` and `MainViewController` stop building the database.
+- [x] `RoomTastingCardRepositoryHostTest` builds its in-memory database inline.
+- [x] `app/scripts/verify.sh`, then `--android` and `--ios` compiles; docs updated (`docs/06`, `docs/07`, `ARCHITECTURE.md`, `CONVENTIONS.md`, `app/CLAUDE.md`, root `CLAUDE.md`).
 - [ ] Release: frnk PR → tag → Faint gitlink bump to the tag (never a branch tip).
