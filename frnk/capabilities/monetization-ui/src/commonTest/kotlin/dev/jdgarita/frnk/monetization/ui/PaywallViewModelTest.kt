@@ -7,6 +7,7 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProBenefit
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
+import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
 import dev.jdgarita.frnk.monetization.usecase.SyncAuthUseCase
@@ -40,7 +41,16 @@ class PaywallViewModelTest {
     private val products =
         listOf(
             ProProduct("monthly", ProPlan.Monthly, "Monthly", "$4.99", "$4.99"),
-            ProProduct("yearly", ProPlan.Yearly, "Yearly", "$39.99", "$3.33", hasFreeTrial = true, badge = "Save 33%")
+            ProProduct(
+                "yearly",
+                ProPlan.Yearly,
+                "Yearly",
+                "$39.99",
+                "$3.33",
+                hasFreeTrial = true,
+                badge = "Save 33%",
+                price = ProPrice(amountMicros = 39_990_000, currencyCode = "USD")
+            )
         )
 
     private val metadata = ProMetadata("Go Pro", "Unlock everything", listOf(ProBenefit("SCANS", "Unlimited scans")))
@@ -215,6 +225,78 @@ class PaywallViewModelTest {
             runCurrent()
 
             assertTrue(effects.any { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun purchase_success_emits_purchased_with_the_bought_product_before_dismiss() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        purchase = AppResult.Success(true)
+                    )
+                )
+            vm.attach(PaywallArguments("home_topbar"))
+            runCurrent()
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            assertEquals(
+                listOf<UiEffect>(PaywallEffect.Purchased(products[1]), PaywallEffect.Dismiss),
+                effects
+            )
+            job.cancel()
+        }
+
+    @Test
+    fun purchase_accepted_without_entitlement_dismisses_without_purchased() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        purchase = AppResult.Success(false)
+                    )
+                )
+            vm.attach(PaywallArguments("home_topbar"))
+            runCurrent()
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            assertEquals(listOf<UiEffect>(PaywallEffect.Dismiss), effects)
+            job.cancel()
+        }
+
+    @Test
+    fun restore_to_pro_never_emits_purchased() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(
+                    FakePaywallPurchaseUseCase(
+                        offerings = AppResult.Success(products),
+                        restore = AppResult.Success(true)
+                    )
+                )
+            vm.attach(PaywallArguments("settings"))
+            runCurrent()
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(PaywallIntent.Restore)
+            runCurrent()
+
+            assertTrue(effects.none { it is PaywallEffect.Purchased })
             job.cancel()
         }
 

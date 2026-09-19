@@ -1,12 +1,13 @@
 # :data-db-api
 
-Pure-interface SQL persistence SPI (restructure Stage 4 split — the old `shared-database-api` minus key-value, minus NoteStore). **The toolkit owns no schema**: this module is only the seam a host bridges platform driver creation through.
+The Room persistence seam (Room replaced SQLDelight here on 2026-09-18 — `docs/plans/2026-09-18-room-database-seam.md`). **The toolkit owns no schema**: this module is only what a host cannot write in `commonMain` to open its own `@Database`.
 
 ## Contents
 
-- `SqlDriverFactory.kt` — `interface` returning a `SqlDriver` for a host-supplied `SqlSchema` + db name + `SchemaUpgrade`. Bound by `databaseModule` (`:data-db-impl`); consumed by the host's own schema module — `demo/shared`'s `demoNotesModule`/`DemoDB` is the worked example (OQ-2). **Was a `fun interface`** until the wipe hook added the defaulted `upgrade` param (a SAM can't carry it) — construct via `object : SqlDriverFactory` now.
-- `SchemaUpgrade.kt` — `sealed interface SchemaUpgrade` (`None` | `WipeOnVersionBump(version)`) + the pure `shouldWipe(persisted, current, dbFileExists)` decision (tested by `ShouldWipeTest`). `WipeOnVersionBump` is the pre-launch delete-and-recreate alternative to `.sqm` migrations; the impl persists the version through the host's `KeyValueStore` (so it needs `prefsModule`).
-- `ext/SqlDriverFactoryExt.kt` — `databaseSingle(schema, name, upgrade = SchemaUpgrade.None) { driver -> Db(driver) }` (Tier 2.4), an `inline reified` Koin `Module` extension that registers a `single<T>` resolving the `SqlDriverFactory` and forwarding to `create(...)`, replacing the hand-written `single { Db(get<SqlDriverFactory>().create(Db.Schema, "x.db")) }`. The raw long form stays valid.
+- `DatabaseFactory.kt` — `interface DatabaseFactory { fun <T : RoomDatabase> open(name, upgrade, builder: (location) -> RoomDatabase.Builder<T>, configure) : T }` plus the reified `DatabaseFactory.open<T>(name, upgrade, configure)` extension that supplies the platform builder. Bound by `databaseModule` (`:data-db-impl`); consumed by the host's own entity module — `demo/shared`'s `demoNotesModule`/`DemoDatabase` is the worked example (OQ-2). The member overload takes the builder as a lambda so a test fake never has to produce a real `RoomDatabase`.
+- `RoomDatabaseBuilder.kt` (+ `androidMain`/`iosMain` actuals) — `expect inline fun <reified T : RoomDatabase> roomDatabaseBuilder(location): RoomDatabase.Builder<T>`. The one line of Room a host cannot write in common code: `Room.databaseBuilder` takes a `Context` on Android (read from `:core-di`'s `DatabaseContext`) and only a name on iOS. Room's builder constructor is internal, so this has to be reified — a `KClass` seam cannot reach it.
+- `SchemaUpgrade.kt` — `sealed interface SchemaUpgrade` (`None` | `WipeOnVersionBump(version)`) + the pure `shouldWipe(persisted, current, dbFileExists)` decision (tested by `ShouldWipeTest`). `WipeOnVersionBump` is the pre-launch delete-and-recreate alternative to writing migrations; the impl persists the version through the host's `KeyValueStore` (so it needs `prefsModule`). `None` leaves the schema to Room's own migrations (or `fallbackToDestructiveMigration`, passed through `configure`).
+- `ext/DatabaseSingle.kt` — `databaseSingle<T>(name, upgrade = SchemaUpgrade.None, configure = {})`, an `inline reified` Koin `Module` extension that registers a `single<T>` resolving the `DatabaseFactory` and forwarding to `open(...)`, replacing the hand-written `single { get<DatabaseFactory>().open<Db>("x.db") }`. The raw long form stays valid.
 
 What moved out at Stage 4:
 
@@ -15,9 +16,9 @@ What moved out at Stage 4:
 
 ## Rules
 
-- `sqldelight-runtime` is an `api` dep (the `SqlDriverFactory` signature uses `SqlDriver`/`SqlSchema`), but **no `.sq` files and no generated code here** — schemas belong to hosts (and the demo).
-- No Koin *bindings* here — driver wiring lives in `:data-db-impl` (`databaseModule`). The only Koin in this module is the `databaseSingle` **DSL helper** (above), which is why `koin-core` is an `api` dep.
+- `room-runtime` is an `api` dep (the `DatabaseFactory` signature uses `RoomDatabase`/`RoomDatabase.Builder`), but **no entities, no DAOs, no `@Database` and no KSP here** — schemas belong to hosts (and the demo), which apply the Room + KSP plugins themselves. Room's runtime is pure Kotlin on every target, so exporting this module into a host's umbrella framework adds no native cinterop; the bundled SQLite driver stays in `:data-db-impl`.
+- No Koin *bindings* here — factory wiring lives in `:data-db-impl` (`databaseModule`). The only Koin in this module is the `databaseSingle` **DSL helper** (above), which is why `koin-core` is an `api` dep.
 
 ## Dependencies
 
-- `api(libs.sqldelight.runtime)` + `api(libs.koin.core)` (the `Module` receiver of `databaseSingle` is in its public signature). The plugin is `frnk.kmp.library.hosttest` for the `databaseSingle` `commonTest` (`DatabaseSingleTest`; run with `./gradlew :data-db-api:testAndroidHostTest`).
+- `api(libs.androidx.room.runtime)` + `api(libs.koin.core)` (the `Module` receiver of `databaseSingle` is in its public signature); `androidMain` `implementation(projects.coreDi)` for `DatabaseContext`. The plugin is `frnk.kmp.library.hosttest` for the `commonTest`s (`DatabaseSingleTest`, `ShouldWipeTest`; run with `./gradlew :data-db-api:testAndroidHostTest`).

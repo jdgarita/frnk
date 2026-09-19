@@ -77,6 +77,18 @@ sealed interface PaywallEffect : UiEffect {
     data object Dismiss : PaywallEffect
 
     /**
+     * A purchase went through *and* the customer is Pro for it — emitted immediately before the
+     * [Dismiss] that closes the sheet, carrying the [ProProduct] that was bought so a host can
+     * record its own conversion event with the plan and price at hand. Restores and the silent
+     * receipt sync never emit this: they recover an entitlement, they do not sell one. Nor does a
+     * purchase the store accepted without activating the entitlement (a pending transaction) —
+     * that one still dismisses, but reports nothing.
+     */
+    data class Purchased(
+        val product: ProProduct
+    ) : PaywallEffect
+
+    /**
      * Show a transient message (purchase failed/cancelled, nothing to restore). Carried as a
      * [FrnkStringSource] so toolkit copy stays a theme token (host overrides + locale re-resolve
      * apply); hosts hold it in state and resolve at the rendering leaf via `resolve()`.

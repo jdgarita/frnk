@@ -12,6 +12,9 @@ enum class ProPlan { Weekly, Monthly, Yearly, Lifetime, Other }
  * @param pricePerMonthFormatted localized per-month price for comparison, e.g. "$3.33" (null for lifetime).
  * @param hasFreeTrial whether the product has an introductory free trial.
  * @param badge optional short marketing badge, e.g. "BEST VALUE" / "Save 33%".
+ * @param price the same total as [priceFormatted], as a number with its currency — for analytics
+ * and revenue reporting, never for display. `null` when the provider has no store price (a fake
+ * provider, or a product the store answered without one).
  */
 data class ProProduct(
     val id: String,
@@ -20,8 +23,29 @@ data class ProProduct(
     val priceFormatted: String,
     val pricePerMonthFormatted: String? = null,
     val hasFreeTrial: Boolean = false,
-    val badge: String? = null
+    val badge: String? = null,
+    val price: ProPrice? = null
 )
+
+/**
+ * A store price as a number: what [ProProduct.priceFormatted] renders, in a shape an analytics
+ * event can carry as `value` + `currency`.
+ *
+ * @param amountMicros the total in micro-units of [currencyCode] (1,000,000 = one unit), the
+ * store SDKs' lossless representation — `39_990_000` for "$39.99".
+ * @param currencyCode ISO 4217 code of the storefront's currency, e.g. `USD`.
+ */
+data class ProPrice(
+    val amountMicros: Long,
+    val currencyCode: String
+) {
+    /** [amountMicros] in whole currency units — `39.99` for "$39.99". The shape Firebase's `value` takes. */
+    val amount: Double get() = amountMicros / MICROS_PER_UNIT
+
+    private companion object {
+        const val MICROS_PER_UNIT = 1_000_000.0
+    }
+}
 
 data class ProBenefit(
     val key: String,

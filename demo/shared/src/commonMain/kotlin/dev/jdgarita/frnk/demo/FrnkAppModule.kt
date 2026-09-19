@@ -14,7 +14,9 @@ import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
+import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
@@ -65,10 +67,10 @@ val frnkAppModule =
         single<KeyValueStore> { FakeKeyValueStore() }
         single<AnalyticsTracker> { LoggingAnalyticsTracker() }
         single<CrashReporter> { LoggingCrashReporter() }
-        // In-memory NoteStore default so DemoKit/iOS stays free of the SQLite driver.
+        // In-memory NoteStore default so DemoKit/iOS stays free of the bundled SQLite driver.
         // androidDemoApp overrides it with the REAL path — databaseModule (:data-db-impl) +
-        // demoNotesModule (demo-owned DemoDB over SqlDriverFactory, OQ-2) — and the JVM
-        // round-trip is covered by NoteStoreRoundTripTest.
+        // demoNotesModule (demo-owned DemoDatabase over DatabaseFactory, OQ-2) — and the
+        // Robolectric round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
         viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
@@ -85,7 +87,14 @@ class FakeEntitlementProvider : EntitlementProvider {
     override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> =
         AppResult.Success(
             listOf(
-                ProProduct("monthly", ProPlan.Monthly, "Monthly", "$4.99", pricePerMonthFormatted = "$4.99"),
+                ProProduct(
+                    "monthly",
+                    ProPlan.Monthly,
+                    "Monthly",
+                    "$4.99",
+                    pricePerMonthFormatted = "$4.99",
+                    price = ProPrice(amountMicros = 4_990_000, currencyCode = "USD")
+                ),
                 ProProduct(
                     "yearly",
                     ProPlan.Yearly,
@@ -93,9 +102,16 @@ class FakeEntitlementProvider : EntitlementProvider {
                     "$39.99",
                     pricePerMonthFormatted = "$3.33",
                     hasFreeTrial = true,
-                    badge = "Save 33%"
+                    badge = "Save 33%",
+                    price = ProPrice(amountMicros = 39_990_000, currencyCode = "USD")
                 ),
-                ProProduct("lifetime", ProPlan.Lifetime, "Lifetime", "$99.99")
+                ProProduct(
+                    "lifetime",
+                    ProPlan.Lifetime,
+                    "Lifetime",
+                    "$99.99",
+                    price = ProPrice(amountMicros = 99_990_000, currencyCode = "USD")
+                )
             )
         )
 
@@ -113,6 +129,9 @@ class FakeEntitlementProvider : EntitlementProvider {
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
+
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> =
+        AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
 }
 
 /** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path without Firebase. */
@@ -169,8 +188,8 @@ class FakeKeyValueStore : KeyValueStore {
 
 /**
  * In-memory [NoteStore] for the demo — same role as [FakeEntitlementProvider]: it lets the demo
- * exercise the persistence api surface without the SQLite native driver, keeping DemoKit
- * cinterop-free. The real relational path is `demoNotesModule`'s `SqlDelightNoteStore`
+ * exercise the persistence api surface without the bundled SQLite driver, keeping DemoKit
+ * cinterop-free. The real relational path is `demoNotesModule`'s `RoomNoteStore`
  * (`dev.jdgarita.frnk.demo.notes`), which androidDemoApp installs over this.
  */
 class FakeNoteStore : NoteStore {

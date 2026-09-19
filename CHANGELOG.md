@@ -16,11 +16,82 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 ## [Unreleased]
 
 ### Added
+
 - Root `AGENTS.md` (cross-agent guide), `ARCHITECTURE.md` (layered system map) and `CONVENTIONS.md` (coding rules) standardization files.
 - Root `Makefile` (`make help`) wrapping the Gradle build/test/lint gates, a `clean` scoped to this checkout's Xcode DerivedData, and a read-only `release-check VERSION=x.y.z` preflight; `scripts/doctor.sh` verifies the machine-local files and tools. `AGENTS.md` gains a Quick Commands section pointing agents at it.
 
 ### Changed
+
 - `local.properties.template` is now `local.properties.example`; it drops the `FIREBASE_*` and `BUILD_VARIANT` keys, which no build logic reads (there is no BuildKonfig plugin), and documents the optional demo-only `REVENUECAT_ANDROID_API_KEY` and companion Firebase files.
+
+## [0.7.0] - 2026-09-18
+
+### Changed
+
+- **Breaking: Room KMP replaces SQLDelight as the relational persistence seam** (`:data-db-api` /
+  `:data-db-impl`; `docs/plans/2026-09-18-room-database-seam.md`). The toolkit still owns no
+  schema. `SqlDriverFactory` and the SQLDelight-typed `databaseSingle(schema, name) { driver -> }`
+  are gone; in their place `DatabaseFactory.open<MyDb>(name, upgrade, configure)` opens a
+  host-named file at the platform location (Android `context.getDatabasePath(name)`, iOS
+  `<Application Support>/<name>`), reconciles `SchemaUpgrade`, applies the toolkit defaults (the
+  bundled SQLite driver, `Dispatchers.Default` as the query context), runs the host's `configure`
+  and builds — and `databaseSingle<MyDb>(name)` registers that as a Koin `single`. The reified
+  `roomDatabaseBuilder<T>(location)` hides the one platform difference in `Room.databaseBuilder`.
+  Hosts own their `@Entity`/`@Dao`/`@Database` classes and apply the Room + KSP plugins in that
+  module; `docs/HOST_INTEGRATION.md` §1 has the build snippet. `SchemaUpgrade.None` now leaves
+  migrations to Room's own; `WipeOnVersionBump` is unchanged.
+- The catalog (`frnkLibs`) carries `room` 2.8.4, `sqlite` 2.7.0 and `ksp` 2.3.11 (and the
+  `androidx-room` / `ksp` plugin aliases) in place of the five `sqldelight` entries, so a host's
+  Room compiler pins to the runtime `:data-db-api` exports.
+- The demo's `DemoDB`/`Note.sq` is now `DemoDatabase` (`NoteEntity`, `NoteDao`, `RoomNoteStore`),
+  its schema exported under `demo/shared/schemas/`; the round-trip test runs under Robolectric.
+
+### Removed
+
+- All SQLDelight dependencies and the `app.cash.sqldelight` Gradle plugin.
+
+## [0.6.0] - 2026-09-09
+
+### Added
+
+- **`ProProduct.price`** — the store price as a number: a new `ProPrice(amountMicros, currencyCode)`
+  value (with an `amount` in whole units) beside the localized `priceFormatted`, filled by the
+  RevenueCat provider from `StoreProduct.price`. For analytics and revenue reporting; hosts keep
+  rendering `priceFormatted`. `null` from a provider without a store price (the demo's fake).
+- **`PaywallEffect.Purchased(product)`** — emitted by `PaywallViewModel` immediately before the
+  `Dismiss` that follows a purchase which activated the entitlement, carrying the `ProProduct`
+  bought, so a host can record its own conversion event with the plan and price at hand. Restores,
+  the silent receipt sync and a purchase the store left pending still dismiss without it.
+  `FrnkPaywallDestination` / `frnkPaywallNavigation` expose it as an optional `onPurchased` callback.
+
+### Changed
+
+- **Breaking for hosts with an exhaustive `when` over `PaywallEffect`:** the sealed interface gained
+  `Purchased`, so such a `when` needs a branch (or an `else`). Hence the MINOR bump.
+
+## [0.5.0] - 2026-09-08
+
+### Added
+
+- **Web-purchase redemption.** `EntitlementProvider.redeemWebPurchase(url)` and
+  `EntitlementManager.redeemWebPurchase(url)` attach a RevenueCat Web Billing purchase to the
+  current app user from a Redemption Link (`rc-<app>://redeem_web_purchase?redemption_token=…`),
+  returning `AppResult<Boolean, WebPurchaseRedemptionError>` — the Boolean is "Pro now", the new
+  sealed error names `NotARedemptionLink` / `InvalidToken` / `Expired(obfuscatedEmail)` /
+  `BelongsToOtherUser` / `NetworkUnavailable` / `StoreUnavailable` / `Unknown`. The RevenueCat
+  provider wraps `Purchases.parseAsWebPurchaseRedemption` + `Purchases.redeemWebPurchase`
+  (purchases-kmp 3.7.0) and updates `isPro` from the returned `CustomerInfo`; the manager records
+  `ToolkitEvent.WebPurchaseRedeemed` (`web_purchase_redeemed{result}`) for every outcome except
+  `NotARedemptionLink`, so hosts can hand every incoming deep link through without pre-parsing.
+  The deep-link plumbing (URL scheme registration, `onNewIntent` / `onOpenURL`) stays with the host —
+  see `docs/HOST_INTEGRATION.md`.
+
+### Changed
+
+- **Breaking for custom `EntitlementProvider` / `EntitlementManager` implementations:** both
+  interfaces gained the abstract `redeemWebPurchase(url)` member, so hosts with their own fake or
+  provider must add an override (the demo's `FakeEntitlementProvider` answers
+  `Failure(NotARedemptionLink)`). Hence the MINOR bump.
 
 ## [0.4.3] - 2026-09-05
 
@@ -293,7 +364,10 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/jdgarita/frnk/releases/tag/v0.7.0
+[0.6.0]: https://github.com/jdgarita/frnk/releases/tag/v0.6.0
+[0.5.0]: https://github.com/jdgarita/frnk/releases/tag/v0.5.0
 [0.4.3]: https://github.com/jdgarita/frnk/releases/tag/v0.4.3
 [0.4.2]: https://github.com/jdgarita/frnk/releases/tag/v0.4.2
 [0.4.1]: https://github.com/jdgarita/frnk/releases/tag/v0.4.1

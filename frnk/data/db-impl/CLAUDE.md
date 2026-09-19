@@ -1,26 +1,19 @@
 # :data-db-impl
 
-Platform SQLDelight **driver** wiring for `:data-db-api` (restructure Stage 4 split — the old `shared-database-impl` minus key-value, minus the NoteStore/FrnkDB schema). The toolkit owns no schema: hosts (and the demo) define their own SQLDelight database and build it through the bound `SqlDriverFactory`.
+Platform Room wiring for `:data-db-api` (Room replaced SQLDelight here on 2026-09-18 — `docs/plans/2026-09-18-room-database-seam.md`). The toolkit owns no schema: hosts (and the demo) define their own Room `@Database` and open it through the bound `DatabaseFactory`.
 
 ## Contents
 
-- `DatabaseModule.kt` — exports `val databaseModule = module { single<SqlDriverFactory> { defaultSqlDriverFactory(versionStore = getOrNull<KeyValueStore>()) } }`. Drivers only; the `KeyValueStore` is resolved **leniently** (needed only for `SchemaUpgrade.WipeOnVersionBump`, which persists the schema generation through it — so wipe hosts also install `prefsModule`; `None` hosts don't).
-- `Defaults.kt` (`commonMain`) — the common `DefaultSqlDriverFactory` (honors `SchemaUpgrade`: for `WipeOnVersionBump` it reads the persisted version from the `KeyValueStore` key `frnk.db.<name>.schema_version`, runs `shouldWipe`, deletes the file *before* opening, then records the version *after* a successful open) + the internal `DbPlatform` SPI (`createDriver`/`databaseFileExists`/`deleteDatabaseFiles`) it drives.
-- `Defaults.android.kt` / `Defaults.ios.kt` — `actual fun dbPlatform()`: Android `AndroidSqliteDriver` + `context.getDatabasePath(name)` exists/delete (reads the Android `Context` from `:core-di`'s `DatabaseContext`); iOS `NativeSqliteDriver` + `NSApplicationSupportDirectory/databases` exists/delete. The iOS actual pins that one base dir for **all three** ops — it injects it into `NativeSqliteDriver` via `onConfiguration` (`extendedConfig.basePath`) and resolves exists/delete against the same `databasesDir()` helper, so **delete-path == create-path by construction** (the wipe is deterministic; closes the former m2 follow-up). The dir mirrors SQLiter's own default so an existing on-disk DB is still found, and is created in-helper because an explicit `basePath` bypasses SQLiter's auto-create.
-
-What moved out at Stage 4:
-
-- `SettingsKeyValueStore` + `defaultKeyValueStore` → **`:data-prefs-impl`**.
-- `Note.sq` + `SqlDelightNoteStore` + the FrnkDB schema + `NoteStoreRoundTripTest` → **`demo/shared`** (demo-owned `DemoDB`, OQ-2). This module no longer applies the SQLDelight Gradle plugin — there is nothing to generate.
-- `DatabaseContext` → **`:core-di`** androidMain (`dev.jdgarita.frnk.di`), so `:data-prefs-impl` can read it too without depending on this module. The dependency direction inverted: this module's androidMain now depends on `:core-di`.
+- `DatabaseModule.kt` — exports `val databaseModule = module { single<DatabaseFactory> { defaultDatabaseFactory(versionStore = getOrNull<KeyValueStore>()) } }`. The `KeyValueStore` is resolved **leniently** (needed only for `SchemaUpgrade.WipeOnVersionBump`, which persists the schema generation through it — so wipe hosts also install `prefsModule`; `None` hosts don't).
+- `Defaults.kt` (`commonMain`) — the common `DefaultDatabaseFactory`: resolves the platform location, honours `SchemaUpgrade` (for `WipeOnVersionBump` it reads the persisted version from the `KeyValueStore` key `frnk.db.<name>.schema_version`, runs `shouldWipe`, deletes the file *before* Room sees it, then records the version *after* a successful build), hands the location to the host's builder lambda, applies the toolkit defaults — `BundledSQLiteDriver()` and `Dispatchers.Default` as the query context — then the host's `configure`, then `build()`. Plus the internal `DbPlatform` SPI (`databaseLocation`/`databaseFileExists`/`deleteDatabaseFiles`) it drives.
+- `Defaults.android.kt` / `Defaults.ios.kt` — `actual fun dbPlatform()`: Android `context.getDatabasePath(name)` for all three ops (reads the Android `Context` from `:core-di`'s `DatabaseContext`); iOS `<Application Support>/<name>` for all three ops. One helper resolves the location for the build path **and** exists/delete, so delete-path == create-path by construction. The iOS location is Application Support itself, **not** the `databases/` subfolder the SQLDelight driver used: it is where the blueprint host (Faint) has kept its Room file since launch, so a host moving onto the seam finds its existing data.
 
 ## Rules
 
-- Drivers only. If you're tempted to add a `.sq` file here, it belongs in the consuming host/demo module instead — see `docs/HOST_INTEGRATION.md` §1.
-- No tests today: the module is two one-line driver actuals (the schema round-trip test moved to `demo/shared`'s `androidHostTest`, run via `./gradlew :demo-shared:testAndroidHostTest`).
+- Locations and driver defaults only. If you're tempted to add an entity here, it belongs in the consuming host/demo module instead — see `docs/HOST_INTEGRATION.md` §1.
+- No tests today: the module is two short platform actuals over a pure decision that `:data-db-api` already tests (`ShouldWipeTest`); the schema round-trip lives in `demo/shared`'s `androidHostTest` (`./gradlew :demo-shared:testAndroidHostTest`).
 
 ## Dependencies
 
-- `api(projects.dataDbApi)`; `implementation(libs.koin.core)`; `implementation(projects.dataPrefsApi)` (the `KeyValueStore` the factory persists the schema generation through, for `WipeOnVersionBump`).
-- `androidMain`: `sqldelight-android-driver` + `implementation(projects.coreDi)` (for `DatabaseContext`).
-- `iosMain`: `sqldelight-native-driver`.
+- `api(projects.dataDbApi)`; `implementation(libs.koin.core)`; `implementation(libs.kotlinx.coroutines.core)` (`Dispatchers.Default`); `implementation(libs.androidx.sqlite.bundled)` (the driver default — the one native cinterop, which is why the module stays out of `DemoKit`'s common surface); `implementation(projects.dataPrefsApi)` (the `KeyValueStore` the factory persists the schema generation through, for `WipeOnVersionBump`).
+- `androidMain`: `implementation(projects.coreDi)` (for `DatabaseContext`).

@@ -10,6 +10,7 @@ import dev.jdgarita.frnk.monetization.EntitlementStatus
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -259,4 +260,7 @@ private class RecordingEntitlementManager(
     override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
 
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
+
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> =
+        AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
 }

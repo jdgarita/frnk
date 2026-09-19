@@ -40,6 +40,9 @@ enum class ToolkitEvent(
     PurchaseStarted("purchase_started"),
     PurchaseCompleted("purchase_completed"),
     PurchaseFailed("purchase_failed"),
+
+    /** A RevenueCat web-purchase redemption link was redeemed; `result` says how it went. */
+    WebPurchaseRedeemed("web_purchase_redeemed"),
     IdentitySynced("identity_synced"),
     IdentitySyncFailed("identity_sync_failed")
 }

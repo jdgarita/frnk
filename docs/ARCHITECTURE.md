@@ -15,7 +15,7 @@ core/   (no upward deps; util is the root everything depends on)
   di    ── initializeFrnk(modules) + requireFrnkKoin()
 
 data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (impl installed via Koin):
-  db-api    ── db-impl     (SqlDriverFactory)     analytics-api     ── analytics-impl     (Firebase)
+  db-api    ── db-impl     (DatabaseFactory)      analytics-api     ── analytics-impl     (Firebase)
   prefs-api ── prefs-impl  (KeyValueStore)        remote-config-api ── remote-config-impl (Firebase Remote Config)
                                                   identity-api      ── identity-impl      (Firebase Auth)
                                                     └─ IdentitySource: the shared identify(id) sink
@@ -60,11 +60,11 @@ references that would otherwise force iosDemoApp to ship `PurchasesHybridCommon`
 + Firebase pods just to launch. The demo binds fakes (`FakeEntitlementProvider`,
 `FakeKeyValueStore`, `FakeNoteStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never
 touches a real SDK, so it boots on a clean simulator with no extra setup. The demo
-also owns its own SQLDelight schema (`DemoDB` + `Note.sq` + the
+also owns its own Room schema (`DemoDatabase` + `NoteEntity`/`NoteDao` + the
 `dev.jdgarita.frnk.demo.notes` NoteStore) — the toolkit owns no schema (Stage 4 /
-OQ-2), and the generated code is driver-free, so DemoKit stays clean; `demo-android`
-overrides the fake with the real path (`databaseModule` + `demoNotesModule`) to
-exercise `SqlDriverFactory` on a device exactly like a host would.
+OQ-2), and Room's runtime plus the KSP-generated code are driver-free, so DemoKit
+stays clean; `demo-android` overrides the fake with the real path (`databaseModule` +
+`demoNotesModule`) to exercise `DatabaseFactory` on a device exactly like a host would.
 
 **Entitlement layering (P3-3).** Free/Pro is frnk-owned and independent of any
 billing SDK: an `EntitlementProvider` (RevenueCat, or the demo fake) supplies
@@ -128,7 +128,7 @@ hand the same uid to telemetry and billing without four differently-shaped calls
 
 Each domain that pulls in a third-party SDK is split:
 
-- **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLDelight. Domain code depends only on these.
+- **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLite driver. Domain code depends only on these.
 - **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules.
 
 Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) is backed by **`:remote-config-impl`** (Firebase Remote Config), while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — and **`:identity-impl`** binds the provider to Firebase Auth through `firebaseIdentityModule`. **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
@@ -164,7 +164,7 @@ On iOS, `firebaseObservabilityModule` additionally installs the CrashKiOS unhand
 Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller explicitly
 `recordException`s (BACKLOG P1-5b).
 
-The Android `initializeFrnk(context, modules)` overload also sets `DatabaseContext.application` (the shared Context seam, owned by `:core-di` androidMain since Stage 4) and registers `androidContext(...)`. **The toolkit owns no SQLDelight schema** (restructure Stage 4 / OQ-2): `databaseModule` (`:data-db-impl`) binds only the platform `SqlDriverFactory`, and the host's own schema module builds its database through it (`MyDb(factory.create(MyDb.Schema, "my.db"))` — the demo's `DemoDB`/`demoNotesModule` is the worked example). Key-value persistence is the separate `prefsModule` (`:data-prefs-impl`, binds `KeyValueStore`). The full copy-paste snippet lives in `docs/HOST_INTEGRATION.md` §4.
+The Android `initializeFrnk(context, modules)` overload also sets `DatabaseContext.application` (the shared Context seam, owned by `:core-di` androidMain since Stage 4) and registers `androidContext(...)`. **The toolkit owns no Room schema** (restructure Stage 4 / OQ-2): `databaseModule` (`:data-db-impl`) binds only the `DatabaseFactory` (platform file location + the bundled SQLite driver defaults), and the host's own entity module opens its database through it (`databaseSingle<MyDb>("my.db")` — the demo's `DemoDatabase`/`demoNotesModule` is the worked example). Key-value persistence is the separate `prefsModule` (`:data-prefs-impl`, binds `KeyValueStore`). The full copy-paste snippet lives in `docs/HOST_INTEGRATION.md` §4.
 
 ## Module communication flow
 
@@ -212,7 +212,7 @@ Then declare the modules you use:
 // In MyApp/app/build.gradle.kts
 dependencies {
     implementation("dev.jdgarita.frnk:ui-app")            // FrnkApp + frnkUiModules() (+ core-di transitively)
-    implementation("dev.jdgarita.frnk:data-db-impl")      // databaseModule (SqlDriverFactory)
+    implementation("dev.jdgarita.frnk:data-db-impl")      // databaseModule (DatabaseFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")   // prefsModule (KeyValueStore)
     // + the impl modules you install (observability, monetization, backend)
 }
@@ -227,7 +227,7 @@ import dev.jdgarita.frnk.ui.app.frnkUiModules
 initializeFrnk(
     context = this,
     modules = frnkUiModules() + databaseModule + prefsModule + firebaseObservabilityModule +
-        listOf(myAppModule, sqlDelightSchemaModule),
+        listOf(myAppModule, myRoomDatabaseModule),
 )
 ```
 

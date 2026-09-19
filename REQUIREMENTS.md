@@ -58,7 +58,7 @@ descriptions.
   `BuildKonfig` config, `PlatformInfo` (the only `expect/actual` there), and
   pure-Kotlin helpers. It depends on nothing else in the graph.
 - Every domain that pulls in a **third-party SDK** is split into:
-  - **`*-api`** — pure-interface module. **No** Firebase / SQLDelight / RevenueCat
+  - **`*-api`** — pure-interface module. **No** Firebase / SQLite-driver / RevenueCat
     dependency may ever appear here.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
@@ -169,11 +169,13 @@ gaps against these targets is tracked as open-work entries in the MobiAI brain
 
 ### 3.4 Local data sources
 
-- **SQLDelight** for relational/structured persistence. The toolkit owns the
-  `SqlDriverFactory` SPI (`:data-db-api`, drivers bound by `databaseModule` in
-  `:data-db-impl`) — **never a schema** (restructure Stage 4 / OQ-2): each host
-  (and the demo, via its `DemoDB`) defines its own SQLDelight database and
-  builds it through the factory.
+- **Room KMP** for relational/structured persistence (it replaced SQLDelight on
+  2026-09-18 so the toolkit and the blueprint host share one path). The toolkit
+  owns the `DatabaseFactory` seam (`:data-db-api`, bound by `databaseModule` in
+  `:data-db-impl` over the bundled SQLite driver) — **never a schema**
+  (restructure Stage 4 / OQ-2): each host (and the demo, via its `DemoDatabase`)
+  owns its entities, DAOs and `@Database`, applies the Room + KSP plugins in that
+  module, and opens the database through the factory.
 - **Local preferences** (key-value) via the `KeyValueStore` abstraction +
   typed `Preference<T>` layer (`:data-prefs-api`), backed by
   `multiplatform-settings` (`:data-prefs-impl`, bound by `prefsModule`).
