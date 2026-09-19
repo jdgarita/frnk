@@ -6,6 +6,14 @@ Instructions for AI coding agents (Claude Code, Codex, Gemini CLI, Cursor, …) 
 cross-agent summary: scope, commands, working rules, and Git rules. `ARCHITECTURE.md` (system map)
 and `CONVENTIONS.md` (coding rules) sit next to it at the repo root.
 
+## Quick Commands
+
+For all build, test, and deployment tasks, strictly use the commands defined in the `Makefile`
+(run `make help` to see available options). Every target wraps a Gradle task or script named in
+the sections below; frnk ships as source, so "deployment" here is the tag-based release flow in
+`docs/RELEASING.md` — `make release-check VERSION=x.y.z` is its read-only preflight, and nothing
+in the `Makefile` pushes or tags. Secret template: `local.properties.example`.
+
 ## Scope
 
 `frnk` is a **reusable Kotlin Multiplatform + Compose Multiplatform starter toolkit**, not a
@@ -39,10 +47,10 @@ Before starting any new task, agents must always check the `docs/plans/` directo
 
 ## Commands
 
-One-time bootstrap per checkout (`BuildKonfig` fails at configuration time without it):
+One-time bootstrap per checkout:
 
 ```bash
-cp local.properties.template local.properties   # then fill in FIREBASE_* + BUILD_VARIANT
+cp local.properties.example local.properties   # then set sdk.dir (+ optional REVENUECAT_ANDROID_API_KEY for the Android demo)
 ```
 
 Build:

@@ -20,7 +20,7 @@ This repo keeps a clean split between **stable rules/reference** (these CLAUDE.m
 
 Bootstrap (one-time per checkout):
 ```bash
-cp local.properties.template local.properties   # then fill in Firebase keys; BuildKonfig reads from this
+cp local.properties.example local.properties   # then set sdk.dir (+ optional REVENUECAT_ANDROID_API_KEY for the Android demo)
 ```
 
 Day-to-day:

@@ -1,0 +1,29 @@
+# frnk — local.properties (TEMPLATE, safe to commit; contains no values).
+#
+# Copy to local.properties (gitignored) and fill in:
+#
+#     cp local.properties.example local.properties
+#
+# The toolkit modules under frnk/ need nothing from this file. Only the Android SDK location is
+# required to configure the build at all; everything else is optional and only feeds the demo
+# harnesses, which degrade to their fake/no-op paths when a value is absent.
+# Never commit this file, google-services.json, or GoogleService-Info.plist.
+
+# --- Android SDK (required by Gradle) -----------------------------------------------------------
+# Android Studio writes this on first sync; the ANDROID_HOME environment variable is the fallback.
+sdk.dir=/Users/<you>/Library/Android/sdk
+
+# --- RevenueCat, Android demo (optional; read by demo/android-app/build.gradle.kts) --------------
+# PUBLIC Android SDK key of the demo's RevenueCat app: RevenueCat → Project settings → API keys →
+# App-specific keys. Starts with `goog_` (an iOS `appl_` key will not work). Exposed to
+# :demo-android as BuildConfig.REVENUECAT_ANDROID_API_KEY for the real-path purchase smoke test.
+# Blank or absent = the demo falls back to the in-memory fake EntitlementManager.
+REVENUECAT_ANDROID_API_KEY=
+
+# --- Companion machine-local files (all gitignored, not properties in this file) ----------------
+#   demo/android-app/google-services.json             Firebase console → Android app for the demo
+#                                                      project. Optional: the frnk.android.firebase
+#                                                      plugin (google-services + Crashlytics) applies
+#                                                      only when the file exists.
+#   demo/ios-app/iosDemoApp/GoogleService-Info.plist   Firebase console → iOS app for the demo project.
+#                                                      Required to build/run iosDemoApp in Xcode.
