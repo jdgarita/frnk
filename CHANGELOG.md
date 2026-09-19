@@ -15,6 +15,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-09-19
+
 ### Added
 
 - Root `AGENTS.md` (cross-agent guide), `ARCHITECTURE.md` (layered system map) and `CONVENTIONS.md` (coding rules) standardization files.
@@ -26,8 +28,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ### Fixed
 
-- `demo/shared`'s `check` (and so a host gate that runs `gradle -p frnk check`) failed Gradle's task
-  validation after 0.7.0: AGP's host-test lint tasks read Room's KSP-generated source directories
+- `demo/shared` failed Gradle's task validation under the root `check` (and so under a host gate
+  that runs `gradle -p frnk check`) after 0.7.0: AGP's host-test lint tasks read Room's KSP-generated source directories
   without a declared dependency on `kspAndroidHostTest`. The build script now declares it;
   `docs/HOST_INTEGRATION.md` §1 shows the same two lines for a host module with host tests.
 
@@ -371,7 +373,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/jdgarita/frnk/releases/tag/v0.7.1
 [0.7.0]: https://github.com/jdgarita/frnk/releases/tag/v0.7.0
 [0.6.0]: https://github.com/jdgarita/frnk/releases/tag/v0.6.0
 [0.5.0]: https://github.com/jdgarita/frnk/releases/tag/v0.5.0
