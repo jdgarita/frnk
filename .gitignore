@@ -23,7 +23,6 @@ keystore.properties
 *.jks
 google-services.json
 GoogleService-Info.plist
-fastlane/.env*
 
 # OS
 .DS_Store
