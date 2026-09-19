@@ -15,6 +15,9 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Added
+- Root `AGENTS.md` (cross-agent guide), `ARCHITECTURE.md` (layered system map) and `CONVENTIONS.md` (coding rules) standardization files.
+
 ## [0.4.3] - 2026-09-05
 
 ### Changed
