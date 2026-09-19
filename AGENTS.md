@@ -33,6 +33,10 @@ consumes as a Git submodule through a Gradle composite build (`includeBuild("../
   integration changes; save new decisions there, not in the docs.
 - **Per-module `CLAUDE.md`** files under `frnk/**` — module-specific rules.
 
+## Task Management & Plans
+
+Before starting any new task, agents must always check the `docs/plans/` directory for active architectural plans, testing strategies, or pending work sessions to ensure alignment with ongoing migrations.
+
 ## Commands
 
 One-time bootstrap per checkout (`BuildKonfig` fails at configuration time without it):
