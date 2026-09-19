@@ -67,10 +67,10 @@ val frnkAppModule =
         single<KeyValueStore> { FakeKeyValueStore() }
         single<AnalyticsTracker> { LoggingAnalyticsTracker() }
         single<CrashReporter> { LoggingCrashReporter() }
-        // In-memory NoteStore default so DemoKit/iOS stays free of the SQLite driver.
+        // In-memory NoteStore default so DemoKit/iOS stays free of the bundled SQLite driver.
         // androidDemoApp overrides it with the REAL path — databaseModule (:data-db-impl) +
-        // demoNotesModule (demo-owned DemoDB over SqlDriverFactory, OQ-2) — and the JVM
-        // round-trip is covered by NoteStoreRoundTripTest.
+        // demoNotesModule (demo-owned DemoDatabase over DatabaseFactory, OQ-2) — and the
+        // Robolectric round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
         viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
@@ -188,8 +188,8 @@ class FakeKeyValueStore : KeyValueStore {
 
 /**
  * In-memory [NoteStore] for the demo — same role as [FakeEntitlementProvider]: it lets the demo
- * exercise the persistence api surface without the SQLite native driver, keeping DemoKit
- * cinterop-free. The real relational path is `demoNotesModule`'s `SqlDelightNoteStore`
+ * exercise the persistence api surface without the bundled SQLite driver, keeping DemoKit
+ * cinterop-free. The real relational path is `demoNotesModule`'s `RoomNoteStore`
  * (`dev.jdgarita.frnk.demo.notes`), which androidDemoApp installs over this.
  */
 class FakeNoteStore : NoteStore {

@@ -1,54 +1,42 @@
 package dev.jdgarita.frnk.database.impl
 
-import app.cash.sqldelight.db.QueryResult
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.db.SqlSchema
-import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.UnsafeNumber
 import platform.Foundation.NSApplicationSupportDirectory
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
 
-@OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
+@OptIn(ExperimentalForeignApi::class)
 internal actual fun dbPlatform(): DbPlatform =
     object : DbPlatform {
         private val fileManager get() = NSFileManager.defaultManager
 
-        override fun createDriver(
-            schema: SqlSchema<QueryResult.Value<Unit>>,
-            name: String
-        ): SqlDriver =
-            NativeSqliteDriver(
-                schema = schema,
-                name = name,
-                onConfiguration = { config ->
-                    config.copy(extendedConfig = config.extendedConfig.copy(basePath = databasesDir()))
-                }
-            )
+        override fun databaseLocation(name: String): String = "${databasesDir()}/$name"
 
-        override fun databaseFileExists(name: String): Boolean = fileManager.fileExistsAtPath("${databasesDir()}/$name")
+        override fun databaseFileExists(name: String): Boolean = fileManager.fileExistsAtPath(databaseLocation(name))
 
         override fun deleteDatabaseFiles(name: String) {
-            val dir = databasesDir()
             listOf(name, "$name-wal", "$name-shm").forEach { fileName ->
-                fileManager.removeItemAtPath("$dir/$fileName", error = null)
+                fileManager.removeItemAtPath(databaseLocation(fileName), error = null)
             }
         }
 
-        // Single base dir for the DB file — injected into NativeSqliteDriver (create path) AND used by
-        // exists/delete (wipe path), so delete-path == create-path by construction (closes m2). Mirrors
-        // SQLiter's own default (NSApplicationSupportDirectory/databases) so an existing on-disk DB is still
-        // found; created here because passing an explicit basePath bypasses SQLiter's auto-create.
+        // One base dir for the file — used by the build path AND by exists/delete (the wipe path),
+        // so delete-path == create-path by construction. Application Support itself, no `databases/`
+        // subfolder: that is where the blueprint host (Faint) has kept its Room file since launch,
+        // so a host moving onto this seam finds its existing data. Backed up by iCloud/iTunes like
+        // the rest of Application Support; created on demand because URLForDirectory only creates
+        // the directory it names.
         private fun databasesDir(): String {
-            val appSupport =
-                NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, true)
-                    .first() as String
-            val dir = "$appSupport/databases"
-            if (!fileManager.fileExistsAtPath(dir)) {
-                fileManager.createDirectoryAtPath(dir, withIntermediateDirectories = true, attributes = null, error = null)
-            }
-            return dir
+            val directory =
+                checkNotNull(
+                    fileManager.URLForDirectory(
+                        directory = NSApplicationSupportDirectory,
+                        inDomain = NSUserDomainMask,
+                        appropriateForURL = null,
+                        create = true,
+                        error = null
+                    )
+                ) { "Application Support directory unavailable" }
+            return checkNotNull(directory.path) { "Application Support directory has no path" }
         }
     }

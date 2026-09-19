@@ -4,7 +4,7 @@
 // bare iOS targets. A module applies `plugins { id("frnk.kmp.library") }` and then declares only what
 // is module-specific: its Android `namespace`, `withHostTest {}` opt-in (or the
 // `frnk.kmp.library.hosttest` variant), any extra plugins (compose via `frnk.kmp.library.compose` /
-// serialization / sqldelight), and its source-set dependencies.
+// serialization / Room + KSP for a schema-owning module), and its source-set dependencies.
 //
 // No per-module iOS framework is declared (restructure OQ-3/OQ-4): iOS consumption is umbrella-only —
 // the demo links DemoKit (an explicit `XCFramework` in the demo shared module), and each host builds

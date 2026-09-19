@@ -20,7 +20,7 @@ import org.koin.core.error.InstanceCreationException
  * **Required** (missing ⇒ throw): one observability module (`AnalyticsTracker` + `CrashReporter`), one
  * remote-config module (`RemoteConfigService`), and the monetization stack (`ObserveProStatusUseCase` +
  * `EntitlementManager` — the always-installed Settings scaffold reads pro-status). **Optional** (never
- * checked): `KeyValueStore` / `SqlDriverFactory`, which a local-only host legitimately omits.
+ * checked): `KeyValueStore` / `DatabaseFactory`, which a local-only host legitimately omits.
  *
  * This runs **after** `startKoin`, so it can only detect *missing* bindings — it cannot see a *duplicate*
  * observability install (two modules collapse to one binding). Preventing that double-install is

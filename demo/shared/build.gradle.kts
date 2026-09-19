@@ -5,9 +5,11 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    // Demo-owned SQLDelight schema (restructure Stage 4 / OQ-2): the demo carries its own DemoDB,
-    // built through :data-db-api's SqlDriverFactory exactly the way a real host injects a schema.
-    alias(libs.plugins.sqldelight)
+    // Demo-owned Room schema (restructure Stage 4 / OQ-2): the demo carries its own DemoDatabase,
+    // opened through :data-db-api's DatabaseFactory exactly the way a real host opens its schema.
+    // The Room + KSP plugins belong to whichever module owns the entities — here, as in a host.
+    alias(libs.plugins.androidx.room)
+    alias(libs.plugins.ksp)
 }
 
 // Demo-bundled drawable for the Components tab icon: the adaptive bottom bar takes resource-based icons
@@ -31,7 +33,8 @@ kotlin {
             isStatic = true
             // Only api-only toolkit modules are exported. The demo's common surface deliberately
             // avoids the *-impl modules (monetization-impl / :data-db-impl and their
-            // native cinterops), so DemoKit stays free of RevenueCat / SQLite symbols.
+            // native cinterops), so DemoKit stays free of RevenueCat / bundled-SQLite symbols
+            // (:data-db-api carries only Room's pure-Kotlin runtime).
             // EXCEPTION (BACKLOG P1-5b): the iosMain set adds the lightweight CrashKiOS cinterop so
             // the demo's "Force crash" panic button can be reported to Firebase Crashlytics. That
             // makes iosDemoApp require the native Firebase Crashlytics SDK (via SPM/CocoaPods) +
@@ -129,16 +132,18 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
-        // The NoteStore round-trip test runs on the JVM host, so it uses the JDBC SQLite driver
-        // (JdbcSqliteDriver.IN_MEMORY). The android/native drivers can't run in a host test.
-        getByName("androidHostTest").dependencies { implementation(libs.sqldelight.sqlite.driver) }
+        // The NoteStore round-trip test opens an in-memory Room database under Robolectric (Room's
+        // Android builder needs a Context) on the framework driver, which runs on the JVM.
+        getByName("androidHostTest").dependencies { implementation(libs.robolectric) }
     }
 }
 
-sqldelight {
-    databases {
-        create("DemoDB") {
-            packageName.set("${libs.versions.frnk.groupId.get()}.demo.sql")
-        }
-    }
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }

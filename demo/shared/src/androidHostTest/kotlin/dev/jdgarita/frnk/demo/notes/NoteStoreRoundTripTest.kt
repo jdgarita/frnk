@@ -1,36 +1,42 @@
 package dev.jdgarita.frnk.demo.notes
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import dev.jdgarita.frnk.demo.sql.DemoDB
+import androidx.room.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import dev.jdgarita.frnk.utils.AppResult
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineScheduler
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Exercises the REAL SQLDelight path for the demo-owned [DemoDB] end-to-end against an in-memory
- * JDBC SQLite driver — proof that the generated schema, the `Note.sq` queries, and
- * [SqlDelightNoteStore]'s row→domain mapping actually round-trip. JVM host test: the
- * android/native drivers can't run here (on a device, `demoNotesModule` + `databaseModule`
- * provide the real driver instead).
+ * Exercises the REAL Room path for the demo-owned [DemoDatabase] end-to-end against an in-memory
+ * database — proof that the generated schema, the [NoteDao] queries, and [RoomNoteStore]'s
+ * row→domain mapping actually round-trip. Robolectric host test: Room's Android builder needs a
+ * `Context`, and the framework driver is the one that runs on the JVM (the bundled driver the
+ * toolkit's `DatabaseFactory` installs ships Android/iOS binaries; on a device `demoNotesModule` +
+ * `databaseModule` provide that real path instead).
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
 class NoteStoreRoundTripTest {
-    private fun newStore(scheduler: TestCoroutineScheduler): SqlDelightNoteStore {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        DemoDB.Schema.create(driver)
-        return SqlDelightNoteStore(DemoDB(driver), UnconfinedTestDispatcher(scheduler))
+    private val database =
+        Room
+            .inMemoryDatabaseBuilder<DemoDatabase>(RuntimeEnvironment.getApplication())
+            .setDriver(AndroidSQLiteDriver())
+            .build()
+    private val store = RoomNoteStore(database)
+
+    @AfterTest
+    fun closeDatabase() {
+        database.close()
     }
 
     @Test
     fun insert_then_query_round_trips_newest_first() =
         runTest {
-            val store = newStore(testScheduler)
-
             val first = store.add("first note")
             val second = store.add("second note")
 
@@ -49,7 +55,6 @@ class NoteStoreRoundTripTest {
     @Test
     fun clear_removes_all_notes() =
         runTest {
-            val store = newStore(testScheduler)
             store.add("doomed")
 
             val cleared = store.clear()

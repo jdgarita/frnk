@@ -13,7 +13,9 @@ coroutines = "1.11.0"
 serialization = "1.11.0"
 datetime = "0.8.0"
 koin = "4.2.2"
-sqldelight = "2.3.2"
+room = "2.8.4"
+sqlite = "2.7.0"
+ksp = "2.3.11"
 settings = "1.3.0"
 viewmodel = "2.11.0"
 # Navigation3 (the toolkit's navigation engine). `navigation3-ui` is JetBrains' CMP port
@@ -91,11 +93,9 @@ androidx-navigation3-viewmodel = { module = "org.jetbrains.androidx.lifecycle:li
 koin-navigation3 = { module = "io.insert-koin:koin-compose-navigation3", version.ref = "koin" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 
-sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
-sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
-sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
-sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
-sqldelight-sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 
 settings-core = { module = "com.russhwolf:multiplatform-settings", version.ref = "settings" }
 settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "settings" }
@@ -151,7 +151,8 @@ kotlin-serialization               = { id = "org.jetbrains.kotlin.plugin.seriali
 compose-multiplatform              = { id = "org.jetbrains.compose",                    version.ref = "compose-multiplatform" }
 android-application                = { id = "com.android.application",                  version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
-sqldelight                         = { id = "app.cash.sqldelight",                      version.ref = "sqldelight" }
+androidx-room                      = { id = "androidx.room",                            version.ref = "room" }
+ksp                                = { id = "com.google.devtools.ksp",                  version.ref = "ksp" }
 ktlint                             = { id = "org.jlleitschuh.gradle.ktlint",            version.ref = "ktlint" }
 google-services                    = { id = "com.google.gms.google-services",           version.ref = "google-services" }
 firebase-crashlytics               = { id = "com.google.firebase.crashlytics",          version.ref = "firebase-crashlytics-gradle" }

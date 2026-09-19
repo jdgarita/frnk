@@ -27,8 +27,8 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:ui-scaffolds` | `ui-scaffolds` | `projects.uiScaffolds` | Page templates + Compose MVI/nav bindings. |
 | `:ui-bottom-nav` | `ui-bottom-nav` | `projects.uiBottomNav` | Adaptive bottom nav + `FrnkNestedNavScaffold` (the multiple-back-stack tabbed scaffold). **Sole Material3 module.** |
 | `:ui-app` | `ui-app` | `projects.uiApp` | `FrnkApp` + `frnkUiModules()` + `frnkModules { }` builder + `Koin::validateFrnkBootstrap`/`checkFrnkModules()` (§4.1). The app-root apex. |
-| `:data-db-api` | `data-db-api` | `projects.dataDbApi` | `SqlDriverFactory` SPI (toolkit owns no schema). |
-| `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform SQLDelight drivers → `databaseModule`. |
+| `:data-db-api` | `data-db-api` | `projects.dataDbApi` | Room `DatabaseFactory` seam + `databaseSingle` (toolkit owns no schema). |
+| `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform locations + bundled SQLite driver → `databaseModule`. |
 | `:data-prefs-api` | `data-prefs-api` | `projects.dataPrefsApi` | `KeyValueStore` + typed `Preference<T>`. |
 | `:data-prefs-impl` | `data-prefs-impl` | `projects.dataPrefsImpl` | multiplatform-settings → `prefsModule`. |
 | `:analytics-api` | `analytics-api` | `projects.analyticsApi` | `AnalyticsTracker`/`CrashReporter` + `noopObservabilityModule`. |
@@ -46,45 +46,92 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 (`:demo-shared` / `:demo-android` and the `iosDemoApp` Xcode target are internal smoke harnesses —
 never host-consumable.)
 
-## 1. Inject your SQLDelight schema
+## 1. Bring your own Room schema
 
-The toolkit owns the **driver factory** (`SqlDriverFactory`, `:data-db-api`, bound by
-`databaseModule` from `:data-db-impl`), never a schema. In your host app's DI graph, use the
-`databaseSingle` Koin helper (`:data-db-api`) — it resolves the `SqlDriverFactory`, calls
-`create(schema, name)`, and registers the result as a `single<MyHostDatabase>`:
+The toolkit owns the **database factory** (`DatabaseFactory`, `:data-db-api`, bound by
+`databaseModule` from `:data-db-impl`), never a schema. Your entities, DAOs and `@Database` class
+live in a module of yours, which applies the Room and KSP Gradle plugins — the toolkit cannot do
+that for you (its convention plugins are not consumable through the composite build), so the
+schema-owning module's build script looks like this:
+
+```kotlin
+plugins {
+    // … your KMP + Android plugins …
+    alias(frnkLibs.plugins.androidx.room)
+    alias(frnkLibs.plugins.ksp)
+}
+
+kotlin.sourceSets.commonMain.dependencies {
+    api("dev.jdgarita.frnk:data-db-api")          // RoomDatabase + DatabaseFactory + databaseSingle
+}
+
+dependencies {
+    add("kspAndroid", frnkLibs.androidx.room.compiler)
+    add("kspIosArm64", frnkLibs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", frnkLibs.androidx.room.compiler)
+}
+
+room { schemaDirectory("$projectDir/schemas") }   // commit the exported schemas; review every bump
+```
+
+The database class is ordinary Room KMP — `@ConstructedBy` plus the `expect object` constructor
+KSP fills in per target:
+
+```kotlin
+@Database(entities = [MyEntity::class], version = 1, exportSchema = true)
+@ConstructedBy(MyDbConstructor::class)
+abstract class MyDb : RoomDatabase() {
+    abstract fun myDao(): MyDao
+}
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect object MyDbConstructor : RoomDatabaseConstructor<MyDb> {
+    override fun initialize(): MyDb
+}
+```
+
+In your host app's DI graph, use the `databaseSingle` Koin helper (`:data-db-api`) — it resolves
+the `DatabaseFactory`, opens the file at the platform location, applies the toolkit defaults (the
+bundled SQLite driver, `Dispatchers.Default` as the query context) and registers the built
+database as a `single<MyDb>`:
 
 ```kotlin
 val hostDatabaseModule = module {
-    databaseSingle(MyHostDatabase.Schema, "host.db") { driver -> MyHostDatabase(driver) }
+    databaseSingle<MyDb>("host.db")
+    single<MyRepository> { RoomMyRepository(get<MyDb>().myDao()) }
 }
 ```
 
-(`demo/shared`'s `demoNotesModule` + `DemoDB` is the worked example.) The raw long form stays valid
-for anything the helper doesn't cover:
+(`demo/shared`'s `demoNotesModule` + `DemoDatabase` is the worked example.) The trailing lambda
+adjusts the builder after the defaults — callbacks, a different query context, Room's own
+`fallbackToDestructiveMigration` — and the raw long form stays valid for anything the helper
+doesn't cover:
 
 ```kotlin
-single<MyHostDatabase> { MyHostDatabase(get<SqlDriverFactory>().create(MyHostDatabase.Schema, "host.db")) }
+single<MyDb> { get<DatabaseFactory>().open<MyDb>("host.db") { setQueryCoroutineContext(Dispatchers.IO) } }
 ```
 
-**Wipe-on-version-bump (pre-launch alternative to `.sqm` migrations).** Pass a `SchemaUpgrade` to drop
+**Where the file lives.** Android: `context.getDatabasePath(name)` (Room's own default). iOS:
+`<Application Support>/<name>`. Both are what the blueprint host has shipped since its first
+release, so a host moving onto the seam finds its existing data.
+
+**Wipe-on-version-bump (pre-launch alternative to writing migrations).** Pass a `SchemaUpgrade` to drop
 and recreate the database when your schema generation changes — no migration files:
 
 ```kotlin
-databaseSingle(MyHostDatabase.Schema, "host.db", SchemaUpgrade.WipeOnVersionBump(4)) { driver ->
-    MyHostDatabase(driver)
-}
+databaseSingle<MyDb>("host.db", SchemaUpgrade.WipeOnVersionBump(4))
 ```
 
-`version` is *your* schema generation counter (bump it on any schema-shape change; independent of
-SQLDelight's `Schema.version`). When the value persisted for that db name differs from `version` **and**
-a file already exists, the factory deletes the file (+ `-wal`/`-shm`) before opening, then records the
-new version. The factory persists the version through the host's `KeyValueStore`, so
+`version` is *your* schema generation counter (bump it on any schema-shape change; independent of the
+`@Database(version = …)` Room tracks). When the value persisted for that db name differs from `version`
+**and** a file already exists, the factory deletes the file (+ `-wal`/`-shm`) before Room opens it, then
+records the new version. The factory persists the version through the host's `KeyValueStore`, so
 **`WipeOnVersionBump` requires `prefsModule`** in the graph (it throws otherwise). The default
-`SchemaUpgrade.None` opens the file as-is.
+`SchemaUpgrade.None` opens the file as-is and leaves migrations to Room.
 
 On Android, before `startKoin { ... }`, point the toolkit at your `Application` context
-(`DatabaseContext` lives in `:core-di`, package `dev.jdgarita.frnk.di` — both the SQL driver and
-the SharedPreferences-backed `KeyValueStore` resolve through it):
+(`DatabaseContext` lives in `:core-di`, package `dev.jdgarita.frnk.di` — Room's builder and the
+SharedPreferences-backed `KeyValueStore` both resolve through it):
 
 ```kotlin
 DatabaseContext.application = applicationContext
@@ -192,7 +239,7 @@ initializeFrnk(
     context = this,
     modules = frnkUiModules() +                  // :ui-app — scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
-            databaseModule,                      // :data-db-impl — platform SqlDriverFactory (bring your own schema, §1)
+            databaseModule,                      // :data-db-impl — Room DatabaseFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
             firebaseObservabilityModule,         // or noopObservabilityModule (:analytics-api)
             firebaseIdentityModule,              // :identity-impl — AnonymousIdentityProvider
@@ -209,7 +256,7 @@ initializeFrnk(
 ```
 
 - **Host modules** go in the same list, **after** the toolkit's — so with `allowOverride(true)` a
-  host can override a toolkit binding (a custom `SqlDriver` schema, a custom `EntitlementProvider`).
+  host can override a toolkit binding (a custom `DatabaseFactory`, a custom `EntitlementProvider`).
 - The Android overload also sets `DatabaseContext.application` and registers `androidContext(...)`,
   so the §1 context line is only needed if you bypass `initializeFrnk`.
 - **Monetization opt-out:** don't pass the three monetization modules. A host using a different
@@ -291,7 +338,7 @@ initializeFrnk(
   Settings scaffold needs). This catches the *missing-module* footgun on **either** path — it works with a raw
   `initializeFrnk(modules = …)` list too. Note it runs after start, so it can detect a *missing* module but **not**
   a *duplicate* one (two observability modules collapse to one binding) — that's what the builder's single slots
-  prevent. `KeyValueStore`/`SqlDriverFactory` are treated as optional (a local-only host omits them).
+  prevent. `KeyValueStore`/`DatabaseFactory` are treated as optional (a local-only host omits them).
 
 ## 5. Custom analytics
 
