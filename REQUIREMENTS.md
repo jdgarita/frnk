@@ -261,7 +261,7 @@ review regardless of other merits.
   `kotlin { android { withHostTest {} } }`. The shared `FakeAnalyticsTracker` /
   `FakeCrashReporter` test doubles in `:analytics-api`'s `commonTest` are the
   canonical fake pattern for `*-api` interfaces.
-- **Bootstrap:** `cp local.properties.template local.properties` (only
+- **Bootstrap:** `cp local.properties.example local.properties` (only
   `sdk.dir` is required; demo extras like `REVENUECAT_ANDROID_API_KEY` are
   optional).
 

@@ -15,6 +15,15 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Added
+
+- Root `AGENTS.md` (cross-agent guide), `ARCHITECTURE.md` (layered system map) and `CONVENTIONS.md` (coding rules) standardization files.
+- Root `Makefile` (`make help`) wrapping the Gradle build/test/lint gates, a `clean` scoped to this checkout's Xcode DerivedData, and a read-only `release-check VERSION=x.y.z` preflight; `scripts/doctor.sh` verifies the machine-local files and tools. `AGENTS.md` gains a Quick Commands section pointing agents at it.
+
+### Changed
+
+- `local.properties.template` is now `local.properties.example`; it drops the `FIREBASE_*` and `BUILD_VARIANT` keys, which no build logic reads (there is no BuildKonfig plugin), and documents the optional demo-only `REVENUECAT_ANDROID_API_KEY` and companion Firebase files.
+
 ## [0.7.0] - 2026-09-18
 
 ### Changed

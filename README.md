@@ -132,7 +132,7 @@ The toolkit itself has no required secrets — backend credentials are supplied 
 `local.properties` is gitignored and only needs `sdk.dir`, which Android Studio writes automatically on first open. From the CLI, copy the template:
 
 ```bash
-cp local.properties.template local.properties   # then point sdk.dir at your Android SDK
+cp local.properties.example local.properties   # then point sdk.dir at your Android SDK
 ```
 
 Demo apps (the internal smoke harnesses) additionally need:
