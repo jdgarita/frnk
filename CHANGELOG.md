@@ -24,6 +24,13 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 - `local.properties.template` is now `local.properties.example`; it drops the `FIREBASE_*` and `BUILD_VARIANT` keys, which no build logic reads (there is no BuildKonfig plugin), and documents the optional demo-only `REVENUECAT_ANDROID_API_KEY` and companion Firebase files.
 
+### Fixed
+
+- `demo/shared`'s `check` (and so a host gate that runs `gradle -p frnk check`) failed Gradle's task
+  validation after 0.7.0: AGP's host-test lint tasks read Room's KSP-generated source directories
+  without a declared dependency on `kspAndroidHostTest`. The build script now declares it;
+  `docs/HOST_INTEGRATION.md` §1 shows the same two lines for a host module with host tests.
+
 ## [0.7.0] - 2026-09-18
 
 ### Changed

@@ -147,3 +147,12 @@ dependencies {
 room {
     schemaDirectory("$projectDir/schemas")
 }
+
+// Room's KSP task for the host-test compilation writes the generated source directories that
+// AGP's lint tasks for that variant read as inputs, but nothing wires the two under the KMP
+// Android plugin's `withHostTest {}`, so `check` fails Gradle's task validation ("property has
+// implicit dependency"). Declare it; a host applying Room + KSP to a module with host tests and
+// running `check` (not just `testAndroidHostTest`) needs the same two lines.
+tasks
+    .matching { it.name == "generateAndroidHostTestLintModel" || it.name == "lintAnalyzeAndroidHostTest" }
+    .configureEach { dependsOn("kspAndroidHostTest") }

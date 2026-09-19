@@ -72,6 +72,13 @@ dependencies {
 }
 
 room { schemaDirectory("$projectDir/schemas") }   // commit the exported schemas; review every bump
+
+// Only if the module has `withHostTest {}` AND you run `check`/`lint` on it: AGP's host-test lint
+// reads the KSP-generated dirs without depending on the task that writes them, and Gradle's task
+// validation fails the build. (`testAndroidHostTest` alone never trips it.)
+tasks
+    .matching { it.name == "generateAndroidHostTestLintModel" || it.name == "lintAnalyzeAndroidHostTest" }
+    .configureEach { dependsOn("kspAndroidHostTest") }
 ```
 
 The database class is ordinary Room KMP — `@ConstructedBy` plus the `expect object` constructor
