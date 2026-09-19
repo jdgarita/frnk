@@ -1491,3 +1491,32 @@ Trial semantics stay with the host (Faint books `value = 0` on `hasFreeTrial`) �
 ### Files
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallViewModel.kt
 - frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ProProduct.kt
+
+## Room KMP replaces SQLDelight as the toolkit's relational seam (:data-db-api / :data-db-impl)
+
+- id: room-kmp-replaces-sqldelight-as-the-toolkit-s-relational-sea-20260919-041218
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: persistence
+- date: 2026-09-19
+
+**Why.** Faint — the blueprint every new app is cut from — has shipped on Room KMP since its first release and never used the toolkit's SQLDelight seam, so the toolkit's only persistence path was one no host exercised. One unified path wins: Room moved into frnk, SQLDelight left.
+
+**What the seam is now.** Still no schema in the toolkit. `:data-db-api` = `DatabaseFactory` (open a host-named file at the platform location, reconcile `SchemaUpgrade`, apply the driver defaults, run the host's `configure`, `build()`), the `expect inline reified roomDatabaseBuilder<T>(location)` and the `databaseSingle<T>(name)` Koin helper. `:data-db-impl` = `DefaultDatabaseFactory` over `BundledSQLiteDriver` + `Dispatchers.Default`, with the platform `DbPlatform` for location/exists/delete.
+
+**Why reified expect/actual and not a `KClass` seam.** `Room.databaseBuilder` is `inline reified` on every platform and `RoomDatabase.Builder`'s constructor is internal, so nothing non-reified can reach it; the Android overload also needs a `Context`, which is why the actual lives in `:data-db-api` androidMain reading `:core-di`'s `DatabaseContext` (the module's one platform dep).
+
+**Why `Dispatchers.Default`, not IO.** `Dispatchers.IO` is not in `commonMain`; Faint already ran Room on Default. A host overrides it through `configure`.
+
+**File locations are Faint's, deliberately.** Android `context.getDatabasePath(name)`; iOS `<Application Support>/<name>` — NOT the `databases/` subfolder the SQLDelight native driver used (the earlier m2 basePath decision is superseded). Faint's live vaults are found unchanged when it moves onto the seam.
+
+**Host build wiring cannot be absorbed.** The Room + KSP plugins must be applied in the host's entity module (frnk's convention plugins aren't consumable through the composite build) — same boundary SQLDelight's plugin had. `docs/HOST_INTEGRATION.md` §1 shows the snippet; `frnkLibs` now carries `room`/`sqlite`/`ksp` so hosts pin one version.
+
+**Demo.** `DemoDB`/`Note.sq` → `DemoDatabase`/`NoteEntity`/`NoteDao`/`RoomNoteStore`; the round-trip test moved from the JDBC driver to Robolectric + `AndroidSQLiteDriver` (the bundled driver ships no JVM-host binaries in the Android variant). `DemoKit` still exports `:data-db-api` — Room's runtime is pure Kotlin, no cinterop.
+
+### Files
+- frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/DatabaseFactory.kt
+- frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/RoomDatabaseBuilder.kt
+- frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt
+- docs/plans/2026-09-18-room-database-seam.md

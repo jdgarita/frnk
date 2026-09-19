@@ -14,15 +14,15 @@ import dev.jdgarita.frnk.ui.app.frnkModules
 class DemoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        // The real SQL driver path resolves the Application context through this seam; hosts on
+        // The real Room path resolves the Application context through this seam; hosts on
         // initializeFrnk(context, …) get it set automatically, but the demo boots bootstrapDemoKoin().
         DatabaseContext.application = this
         // Demo wiring uses logging/in-memory fakes everywhere (so DemoKit/iOS stay SDK-free), but on
         // Android we override selected bindings with the REAL toolkit modules to smoke-test the SDKs
         // on a device:
         //  - firebaseObservabilityModule — real Firebase Analytics + Crashlytics (BACKLOG P1-5).
-        //  - databaseModule + demoNotesModule — the real SQLDelight path: the toolkit's
-        //    SqlDriverFactory (:data-db-impl) building the demo-owned DemoDB schema, replacing
+        //  - databaseModule + demoNotesModule — the real Room path: the toolkit's
+        //    DatabaseFactory (:data-db-impl) opening the demo-owned DemoDatabase, replacing
         //    the in-memory FakeNoteStore (restructure Stage 4 / OQ-2).
         //  - remoteConfigModule — real Firebase Remote Config (restructure Stage 11), replacing the
         //    no-op default so the demo's "Capabilities" section shows a live fetched value when a

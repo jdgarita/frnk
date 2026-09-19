@@ -113,13 +113,13 @@ fun HomeScreen(
 
                 FrnkDivider(state = FrnkDividerState.Horizontal())
 
-                Section(title = "2. Persistence (DemoDB — ${state.notes.size} saved)") {
+                Section(title = "2. Persistence (DemoDatabase — ${state.notes.size} saved)") {
                     FrnkText(
                         state =
                             FrnkTextState.Body(
                                 text =
-                                    "Demo-owned NoteStore over the demo's SQLDelight DemoDB, built through " +
-                                        ":data-db-api's SqlDriverFactory like a real host schema. Android runs the " +
+                                    "Demo-owned NoteStore over the demo's Room DemoDatabase, opened through " +
+                                        ":data-db-api's DatabaseFactory like a real host schema. Android runs the " +
                                         "real driver (databaseModule + demoNotesModule); DemoKit/iOS binds an " +
                                         "in-memory fake so the framework stays cinterop-free.",
                                 color = colorOnSurfaceVariant

@@ -1,22 +1,23 @@
 package dev.jdgarita.frnk.database.impl
 
-import app.cash.sqldelight.db.QueryResult
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.db.SqlSchema
+import androidx.room.RoomDatabase
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import dev.jdgarita.frnk.database.DatabaseFactory
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.database.SchemaUpgrade
-import dev.jdgarita.frnk.database.SqlDriverFactory
 import dev.jdgarita.frnk.database.shouldWipe
+import kotlinx.coroutines.Dispatchers
 
 /**
- * Platform database file + driver operations. The wipe policy ([DefaultSqlDriverFactory]) is common;
- * only these primitives differ per platform.
+ * Platform database file operations. The open policy ([DefaultDatabaseFactory]) is common; only
+ * these primitives differ per platform.
  */
 internal interface DbPlatform {
-    fun createDriver(
-        schema: SqlSchema<QueryResult.Value<Unit>>,
-        name: String
-    ): SqlDriver
+    /**
+     * Where the platform keeps the database file [name] — an absolute path, handed to the host's
+     * builder as its location. The directory exists once this returns; the file need not.
+     */
+    fun databaseLocation(name: String): String
 
     fun databaseFileExists(name: String): Boolean
 
@@ -28,37 +29,55 @@ internal interface DbPlatform {
 internal expect fun dbPlatform(): DbPlatform
 
 /**
- * Default [SqlDriverFactory]: opens the SQLDelight driver for the host's schema, honoring [SchemaUpgrade].
+ * Default [DatabaseFactory]: opens the host's Room database at the platform location, honouring
+ * [SchemaUpgrade], over the toolkit defaults — the bundled SQLite driver (one SQLite build on
+ * every platform, so a query behaves the same on Android and iOS) and [Dispatchers.Default] as the
+ * query context (the one background dispatcher common code can name; Room suspends over it, so
+ * a DAO call never blocks the caller). The host's `configure` runs after both, so either can be
+ * overridden per database.
  *
- * For [SchemaUpgrade.WipeOnVersionBump] it tracks the host's schema generation per database name in
- * [versionStore] (key `frnk.db.<name>.schema_version`): on a mismatch with an existing file it deletes
- * the file *before* opening, then records the new version *after* a successful open (so a crash mid-wipe
- * can't strand a stale version). [SchemaUpgrade.None] just opens the file.
+ * For [SchemaUpgrade.WipeOnVersionBump] it tracks the host's schema generation per database name
+ * in [versionStore] (key `frnk.db.<name>.schema_version`): on a mismatch with an existing file it
+ * deletes the file *before* Room sees it, then records the new version once the database is built
+ * (so a crash mid-wipe can't strand a stale version). [SchemaUpgrade.None] just builds.
  *
  * @param versionStore the host's [KeyValueStore] (frnk's `prefsModule`); required only for
  *   [SchemaUpgrade.WipeOnVersionBump]. `null` is fine for [SchemaUpgrade.None].
  */
-fun defaultSqlDriverFactory(versionStore: KeyValueStore?): SqlDriverFactory = DefaultSqlDriverFactory(dbPlatform(), versionStore)
+fun defaultDatabaseFactory(versionStore: KeyValueStore?): DatabaseFactory = DefaultDatabaseFactory(dbPlatform(), versionStore)
 
-internal class DefaultSqlDriverFactory(
+internal class DefaultDatabaseFactory(
     private val platform: DbPlatform,
     private val versionStore: KeyValueStore?
-) : SqlDriverFactory {
-    override fun create(
-        schema: SqlSchema<QueryResult.Value<Unit>>,
+) : DatabaseFactory {
+    override fun <T : RoomDatabase> open(
         name: String,
-        upgrade: SchemaUpgrade
-    ): SqlDriver =
+        upgrade: SchemaUpgrade,
+        builder: (location: String) -> RoomDatabase.Builder<T>,
+        configure: RoomDatabase.Builder<T>.() -> Unit
+    ): T =
         when (upgrade) {
-            SchemaUpgrade.None -> platform.createDriver(schema, name)
-            is SchemaUpgrade.WipeOnVersionBump -> createWithWipe(schema, name, upgrade.version)
+            SchemaUpgrade.None -> build(name, builder, configure)
+            is SchemaUpgrade.WipeOnVersionBump -> buildWithWipe(name, upgrade.version, builder, configure)
         }
 
-    private fun createWithWipe(
-        schema: SqlSchema<QueryResult.Value<Unit>>,
+    private fun <T : RoomDatabase> build(
         name: String,
-        version: Int
-    ): SqlDriver {
+        builder: (location: String) -> RoomDatabase.Builder<T>,
+        configure: RoomDatabase.Builder<T>.() -> Unit
+    ): T =
+        builder(platform.databaseLocation(name))
+            .setDriver(BundledSQLiteDriver())
+            .setQueryCoroutineContext(Dispatchers.Default)
+            .apply(configure)
+            .build()
+
+    private fun <T : RoomDatabase> buildWithWipe(
+        name: String,
+        version: Int,
+        builder: (location: String) -> RoomDatabase.Builder<T>,
+        configure: RoomDatabase.Builder<T>.() -> Unit
+    ): T {
         val store =
             versionStore
                 ?: error("SchemaUpgrade.WipeOnVersionBump requires a KeyValueStore — install prefsModule.")
@@ -69,12 +88,12 @@ internal class DefaultSqlDriverFactory(
                 platform.deleteDatabaseFiles(name)
             }
         }
-        val driver = platform.createDriver(schema, name)
-        // Persist only after a successful open, and only when it changed (m1: no stale-version window).
+        val database = build(name, builder, configure)
+        // Persist only after a successful build, and only when it changed (no stale-version window).
         if (persisted != version) {
             store.putString(key, version.toString())
         }
-        return driver
+        return database
     }
 
     private fun versionKey(name: String): String = "frnk.db.$name.schema_version"

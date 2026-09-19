@@ -9,7 +9,7 @@ import org.koin.core.module.Module
 /**
  * Android one-shot bootstrap: [initializeFrnk] plus the two Android-only wiring steps every host
  * used to hand-roll in `Application.onCreate` — setting [DatabaseContext.application] (so the
- * SQLDelight driver and SharedPreferences-backed `KeyValueStore` can resolve) and registering
+ * Room builder and SharedPreferences-backed `KeyValueStore` can resolve) and registering
  * `androidContext(...)` on the Koin application.
  *
  * Call from `Application.onCreate()`:

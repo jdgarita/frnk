@@ -1,22 +1,26 @@
 package dev.jdgarita.frnk.database
 
 /**
- * How [SqlDriverFactory.create] reconciles an existing on-disk database with the current schema
- * *before* the driver opens it.
+ * How [DatabaseFactory.open] reconciles an existing on-disk database with the current schema
+ * *before* Room opens it.
  */
 sealed interface SchemaUpgrade {
-    /** Open the database as-is — no pre-open wipe (SQLDelight default; use `.sqm` migrations if any). */
+    /**
+     * Open the database as-is — no pre-open wipe. The default: Room's own `@AutoMigration`s and
+     * `Migration`s (or `fallbackToDestructiveMigration`, passed through `configure`) handle the
+     * schema from here.
+     */
     data object None : SchemaUpgrade
 
     /**
-     * Wipe-on-version-bump: a pre-launch alternative to `.sqm` migrations. The factory persists [version]
+     * Wipe-on-version-bump: a pre-launch alternative to writing migrations. The factory persists [version]
      * per database name (via the host's [KeyValueStore]); when the persisted value differs from [version]
      * **and** a database file already exists, the factory deletes the file (+ `-wal`/`-shm`) before opening,
      * then records [version]. A bumped [version] therefore drops the old data and recreates the schema fresh.
      *
      * [version] is the host's own schema *generation* counter (bump it on any schema-shape change) — it is
-     * independent of SQLDelight's `Schema.version`. Requires a `KeyValueStore` in the graph (install
-     * `prefsModule`); the factory throws if one is absent.
+     * independent of the `@Database(version = …)` Room tracks. Requires a `KeyValueStore` in the graph
+     * (install `prefsModule`); the factory throws if one is absent.
      */
     data class WipeOnVersionBump(
         val version: Int

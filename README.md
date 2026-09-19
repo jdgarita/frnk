@@ -15,7 +15,7 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (SQLDelight, Firebase, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent (a local-only app with no backend can still install Firebase telemetry).
+Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Room's bundled SQLite driver, Firebase, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent (a local-only app with no backend can still install Firebase telemetry).
 
 ### Module map
 
@@ -39,8 +39,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
 | `remote-config-impl` | Firebase Remote Config impl. Exposes `remoteConfigModule`. |
 | `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
-| `data-db-api` | The SQL persistence SPI: `SqlDriverFactory` (the toolkit owns no schema — hosts bring their own SQLDelight database; the demo's `DemoDB` is the worked example). |
-| `data-db-impl` | Platform SQLDelight drivers (Android/Native). Exposes `databaseModule`. |
+| `data-db-api` | The Room persistence seam: `DatabaseFactory` + the reified `roomDatabaseBuilder`/`databaseSingle` helpers (the toolkit owns no schema — hosts bring their own Room `@Database`; the demo's `DemoDatabase` is the worked example). |
+| `data-db-impl` | Platform database locations + the bundled SQLite driver defaults. Exposes `databaseModule`. |
 | `data-prefs-api` | Key-value contracts: `KeyValueStore` + the typed `Preference<T>` accessors. |
 | `data-prefs-impl` | Multiplatform Settings impl — `SettingsKeyValueStore`. Exposes `prefsModule`. |
 | `monetization-api` | Entitlement / feature-gate interfaces. |
@@ -55,7 +55,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **UI:** Compose Multiplatform 1.11.1 + `compose-unstyled` 2.5.0 (the granular `com.composables:composeunstyled-*` artifacts — **not** `com.composables:core`, **not** Material3) + Lucide icons (`icons-lucide-cmp` 2.2.1). The lone exception to the no-Material3 rule is `ui-bottom-nav`'s adaptive bottom bar (adaptive-nav-bar 1.0.1, `io.github.narendraanjana09:adaptive-nav-bar`), which pulls Material3 for a native glassy `UITabBar` on iOS 26+ — isolated to that one module.
 - **DI:** Koin 4.2.1
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
-- **Persistence:** SQLDelight 2.3.2, Multiplatform Settings 1.3.0
+- **Persistence:** Room KMP 2.8.4 (androidx.sqlite bundled driver 2.7.0, KSP 2.3.11), Multiplatform Settings 1.3.0
 - **Remote Config:** GitLive Firebase Remote Config 2.7.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
 - **Identity:** GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) — opt in by installing `firebaseIdentityModule` from `:identity-impl`
 - **Observability:** GitLive Firebase Analytics + Crashlytics 2.7.0 — opt in by installing `firebaseObservabilityModule`, independent of every other capability
@@ -94,7 +94,7 @@ include(":app")
 ```kotlin
 dependencies {
     implementation("dev.jdgarita.frnk:ui-app")                          // FrnkApp + frnkUiModules() (pulls ui/nav/theme + core-di)
-    implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (SqlDriverFactory)
+    implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (DatabaseFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:monetization-impl")  // revenueCatModule (optional)
     // + any other impl modules you install (e.g. dev.jdgarita.frnk:analytics-impl for firebaseObservabilityModule)
@@ -112,14 +112,14 @@ initializeFrnk(
     context = this,
     modules = frnkUiModules() +                  // scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
-            databaseModule, prefsModule,         // SQLDelight driver factory / KeyValueStore
+            databaseModule, prefsModule,         // Room DatabaseFactory / KeyValueStore
             firebaseObservabilityModule,         // or noopObservabilityModule for no telemetry
             revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization stack
         ) + listOf(hostDatabaseModule) + hostFeatureModules, // host-defined; see docs/HOST_INTEGRATION.md
 )
 ```
 
-> The toolkit owns the driver factory, not the schema. The host defines `hostDatabaseModule` against the injected `SqlDriverFactory` — see [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) for the full pattern.
+> The toolkit owns the database factory, not the schema. The host owns its Room entities, DAOs and `@Database` (and applies the Room + KSP plugins in that module) and opens it with `databaseSingle<MyDb>("my.db")` in `hostDatabaseModule` — see [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) for the full pattern.
 
 For iOS, there is no prebuilt toolkit framework: the host adds a small KMP shared module that `api()`-depends on the frnk modules it uses and bundles them into its own umbrella `XCFramework` — the demo's `DemoKit` (`demo/shared/build.gradle.kts`) is the worked example, and [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) §6 has the recipe.
 
@@ -154,7 +154,7 @@ Demo apps (the internal smoke harnesses) additionally need:
 
 > Under the AGP 9 KMP-Android plugin (`com.android.kotlin.multiplatform.library`), the per-module compile task is `compileAndroidMain` — `compileDebugKotlinAndroid` is the AGP 8 name and no longer exists for KMP-Android modules. The host unit-test task is likewise `testAndroidHostTest` (not `testDebugUnitTest`), and a module only gets it after opting in with `kotlin { android { withHostTest {} } }`. The demo app is a plain `com.android.application`, so it keeps `compileDebugKotlin` / `testDebugUnitTest`.
 
-Shared constants live in `gradle/libs.versions.toml` (there is no `buildSrc`): the `dev.jdgarita.frnk` group id is the `frnk-groupId` catalog entry (read via `libs.versions.frnk.groupId.get()` in build scripts, `findVersion("frnk-groupId")` in the convention plugin), and min/compile/target SDK live there too — read from the catalog rather than hardcoding. (The toolkit owns no SQLDelight schema since restructure Stage 4 — the demo's `DemoDB` is configured inline in `demo/shared/build.gradle.kts`.)
+Shared constants live in `gradle/libs.versions.toml` (there is no `buildSrc`): the `dev.jdgarita.frnk` group id is the `frnk-groupId` catalog entry (read via `libs.versions.frnk.groupId.get()` in build scripts, `findVersion("frnk-groupId")` in the convention plugin), and min/compile/target SDK live there too — read from the catalog rather than hardcoding. (The toolkit owns no Room schema since restructure Stage 4 — the demo's `DemoDatabase` applies the Room + KSP plugins inline in `demo/shared/build.gradle.kts`.)
 
 ## 🎨 Style: pre-commit hook, not CI
 
