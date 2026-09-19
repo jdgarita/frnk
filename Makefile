@@ -72,8 +72,9 @@ release-check: ## Read-only preflight before tagging VERSION=x.y.z: Frnk.VERSION
 	else echo "FAIL  Frnk.VERSION is '$$actual', expected '$(VERSION)' ($(VERSION_FILE))" >&2; exit 1; fi
 	@if grep -qF '## [$(VERSION)]' CHANGELOG.md; then echo "ok    CHANGELOG.md has a [$(VERSION)] section"; \
 	else echo "FAIL  CHANGELOG.md has no '## [$(VERSION)]' section" >&2; exit 1; fi
-	@if git rev-parse -q --verify "refs/tags/v$(VERSION)" >/dev/null; then echo "FAIL  tag v$(VERSION) already exists" >&2; exit 1; \
-	else echo "ok    tag v$(VERSION) is free"; fi
+	@if git rev-parse -q --verify "refs/tags/v$(VERSION)" >/dev/null; then echo "FAIL  tag v$(VERSION) already exists locally" >&2; exit 1; \
+	elif [[ -n "$$(git ls-remote --tags origin "refs/tags/v$(VERSION)" 2>/dev/null)" ]]; then echo "FAIL  tag v$(VERSION) already exists on origin (run: git fetch --tags origin)" >&2; exit 1; \
+	else echo "ok    tag v$(VERSION) is free (locally and on origin)"; fi
 	@echo "next: docs/RELEASING.md — PR the bookkeeping commit, merge, then tag the merge commit on main and push the tag (only when asked)"
 
 release-beta: ## Not applicable: frnk has no beta channel. Prints the release flow and exits non-zero
