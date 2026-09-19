@@ -15,6 +15,32 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-18
+
+### Changed
+
+- **Breaking: Room KMP replaces SQLDelight as the relational persistence seam** (`:data-db-api` /
+  `:data-db-impl`; `docs/plans/2026-09-18-room-database-seam.md`). The toolkit still owns no
+  schema. `SqlDriverFactory` and the SQLDelight-typed `databaseSingle(schema, name) { driver -> }`
+  are gone; in their place `DatabaseFactory.open<MyDb>(name, upgrade, configure)` opens a
+  host-named file at the platform location (Android `context.getDatabasePath(name)`, iOS
+  `<Application Support>/<name>`), reconciles `SchemaUpgrade`, applies the toolkit defaults (the
+  bundled SQLite driver, `Dispatchers.Default` as the query context), runs the host's `configure`
+  and builds — and `databaseSingle<MyDb>(name)` registers that as a Koin `single`. The reified
+  `roomDatabaseBuilder<T>(location)` hides the one platform difference in `Room.databaseBuilder`.
+  Hosts own their `@Entity`/`@Dao`/`@Database` classes and apply the Room + KSP plugins in that
+  module; `docs/HOST_INTEGRATION.md` §1 has the build snippet. `SchemaUpgrade.None` now leaves
+  migrations to Room's own; `WipeOnVersionBump` is unchanged.
+- The catalog (`frnkLibs`) carries `room` 2.8.4, `sqlite` 2.7.0 and `ksp` 2.3.11 (and the
+  `androidx-room` / `ksp` plugin aliases) in place of the five `sqldelight` entries, so a host's
+  Room compiler pins to the runtime `:data-db-api` exports.
+- The demo's `DemoDB`/`Note.sq` is now `DemoDatabase` (`NoteEntity`, `NoteDao`, `RoomNoteStore`),
+  its schema exported under `demo/shared/schemas/`; the round-trip test runs under Robolectric.
+
+### Removed
+
+- All SQLDelight dependencies and the `app.cash.sqldelight` Gradle plugin.
+
 ## [0.6.0] - 2026-09-09
 
 ### Added
@@ -329,7 +355,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/jdgarita/frnk/releases/tag/v0.7.0
 [0.6.0]: https://github.com/jdgarita/frnk/releases/tag/v0.6.0
 [0.5.0]: https://github.com/jdgarita/frnk/releases/tag/v0.5.0
 [0.4.3]: https://github.com/jdgarita/frnk/releases/tag/v0.4.3
