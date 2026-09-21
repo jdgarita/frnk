@@ -48,11 +48,12 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - **Breaking: `AnonymousIdentityProvider.idToken()` is removed.** The contract is an id, not a
   credential; whether a backend can trust that id is the host's concern. `FirebaseAuthGateway`
   loses its token method with it.
-- `revenueCatModule` now also binds `AnonymousIdentityProvider` over the RevenueCat app user id
-  (`RevenueCatIdentityProvider`, `:monetization-impl`) — a local read, no network, and never
-  `logOut()`, so an install identified under another id keeps it. An accountless host needs no
-  identity module beyond `monetization(provider = revenueCatModule)`; `validateFrnkBootstrap` now
-  checks the identity binding whenever the monetization stack is installed.
+- **Breaking: `frnkModules { }` gains an `identity` slot** (`AnonymousIdentityProvider`), required
+  whenever `monetization(provider)` is set — `validateFrnkBootstrap` names it when missing. New
+  `revenueCatIdentityModule` (`:monetization-impl`) binds the RevenueCat app user id
+  (`RevenueCatIdentityProvider`): a local read, no network, never `logOut()`, so an install
+  identified under another id keeps it. `firebaseIdentityModule` is the other option; one per host,
+  never both.
 
 ## [0.7.1] - 2026-09-19
 

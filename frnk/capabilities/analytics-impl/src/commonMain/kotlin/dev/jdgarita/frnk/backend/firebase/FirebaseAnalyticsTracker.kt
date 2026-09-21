@@ -36,7 +36,7 @@ internal class FirebaseAnalyticsTracker : AnalyticsTracker {
     override fun screen(
         name: String,
         params: Map<String, Any?>
-    ) = logEvent(SCREEN_VIEW_EVENT, mapOf(SCREEN_NAME_PARAM to name) + params)
+    ) = logEvent(SCREEN_VIEW_EVENT, params + mapOf(SCREEN_NAME_PARAM to name))
 
     override fun setUserProperty(
         key: String,

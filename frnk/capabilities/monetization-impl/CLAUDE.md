@@ -39,9 +39,11 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
   install that once ran `logIn(otherId)` keeps that id, which is what lets a host move off another
   identity system without migrating entitlements or backend keys. Handing the same id to
   `EntitlementProvider.identify` is a no-op (the provider skips `logIn` when it already matches).
-- `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`** and **`AnonymousIdentityProvider`**
-  (+ `RevenueCatConfig`) **only**; `EntitlementManager` + `FeatureGate` come from `monetizationModule`.
-  The host's `initializeFrnk(...)` module list installs both.
+- `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`**
+  (+ `RevenueCatConfig`) **only**, and `val revenueCatIdentityModule` binding **`AnonymousIdentityProvider`**
+  for the `frnkModules { identity = … }` slot — separate so RevenueCat monetization can pair with
+  `firebaseIdentityModule` without two modules binding one type. `EntitlementManager` + `FeatureGate`
+  come from `monetizationModule`.
 
 ## Configuration is the host's job (not the toolkit's)
 

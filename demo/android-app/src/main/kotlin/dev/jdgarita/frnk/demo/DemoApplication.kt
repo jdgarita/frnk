@@ -12,6 +12,7 @@ import dev.jdgarita.frnk.backend.sentry.sentryCrashReportingModule
 import dev.jdgarita.frnk.database.impl.databaseModule
 import dev.jdgarita.frnk.demo.notes.demoNotesModule
 import dev.jdgarita.frnk.di.DatabaseContext
+import dev.jdgarita.frnk.monetization.revenuecat.revenueCatIdentityModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import dev.jdgarita.frnk.remoteconfig.firebase.remoteConfigModule
 import dev.jdgarita.frnk.ui.app.frnkModules
@@ -78,7 +79,12 @@ class DemoApplication : Application() {
                         firebaseCrashReportingModule
                     }
                 remoteConfig = remoteConfigModule
-                if (rcConfigured) monetization(provider = revenueCatModule)
+                if (rcConfigured) {
+                    monetization(provider = revenueCatModule)
+                    // The app user id as the identity; the demo's FakeAnonymousIdentityProvider stays
+                    // in place when RevenueCat isn't configured.
+                    identity = revenueCatIdentityModule
+                }
                 modules(databaseModule, demoNotesModule)
             }
         bootstrapDemoKoin {

@@ -46,8 +46,8 @@ class RevenueCatIdentityProviderTest {
         }
 
     @Test
-    fun `revenuecat module binds the anonymous identity provider`() {
-        val application = koinApplication { modules(revenueCatModule) }
+    fun `revenuecat identity module binds the anonymous identity provider`() {
+        val application = koinApplication { modules(revenueCatIdentityModule) }
 
         try {
             // Construction never touches Purchases.sharedInstance, so an unconfigured SDK still resolves.

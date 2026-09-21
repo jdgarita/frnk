@@ -63,8 +63,8 @@ fun Koin.validateFrnkBootstrap() {
                 // sole toolkit consumer, and a host without monetization has no need for an identity.
                 add(
                     "identity — monetizationModule's SyncAuthUseCase needs an AnonymousIdentityProvider; " +
-                        "revenueCatModule (:monetization-impl) binds one over the RevenueCat app user id, " +
-                        "or install firebaseIdentityModule (:identity-impl)"
+                        "assign frnkModules { identity = … } revenueCatIdentityModule (:monetization-impl, " +
+                        "the RevenueCat app user id) or firebaseIdentityModule (:identity-impl)"
                 )
             }
         }

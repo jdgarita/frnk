@@ -254,7 +254,8 @@ initializeFrnk(
             sentryCrashReportingModule(sentryConfig),    // CrashReporter — or firebaseCrashReportingModule / noopCrashReportingModule
             remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
             // Monetization stack (optional — omit all three to run without entitlements):
-            revenueCatModule,                    // :monetization-impl — EntitlementProvider + AnonymousIdentityProvider
+            revenueCatModule,                    // :monetization-impl — EntitlementProvider
+            revenueCatIdentityModule,            // :monetization-impl — AnonymousIdentityProvider (or firebaseIdentityModule)
             monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
             paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
         ) + hostModules,                         // your repositories, feature VMs, schema module — after the toolkit's
@@ -291,16 +292,17 @@ initializeFrnk(
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
   real impl ships.
 
-**Identity.** `revenueCatModule` binds `AnonymousIdentityProvider` over the RevenueCat app user id: a
-local read, no network, minted the moment the host calls `Purchases.configure(...)` and persisted by
-the SDK across launches. An accountless host therefore installs nothing extra for identity. The toolkit
-never calls `Purchases.logOut()`, so an install that once identified RevenueCat with another id (a
-Firebase uid, say) keeps it. The alternative, `firebaseIdentityModule` (`:identity-impl`), reuses
-`Firebase.auth.currentUser` or signs in anonymously; it needs `google-services.json` plus the
-`frnk.android.firebase` convention plugin (§7) on Android and `FirebaseCore` + `FirebaseAuth` with
-`FirebaseApp.configure()` before Kotlin bootstrap on iOS. If you install it next to `revenueCatModule`,
-list it later so its binding wins. The API module contains no SDK types, and no longer exposes a
-signed token — a backend credential is the host's concern.
+**Identity is one slot, one binding.** `revenueCatIdentityModule` binds `AnonymousIdentityProvider`
+over the RevenueCat app user id: a local read, no network, minted the moment the host calls
+`Purchases.configure(...)` and persisted by the SDK across launches — the natural choice for an
+accountless host on RevenueCat. The toolkit never calls `Purchases.logOut()`, so an install that once
+identified RevenueCat with another id (a Firebase uid, say) keeps it. The alternative,
+`firebaseIdentityModule` (`:identity-impl`), reuses `Firebase.auth.currentUser` or signs in
+anonymously; it needs `google-services.json` plus the `frnk.android.firebase` convention plugin (§7)
+on Android and `FirebaseCore` + `FirebaseAuth` with `FirebaseApp.configure()` before Kotlin bootstrap
+on iOS. Install exactly one of the two (`frnkModules { identity = … }` makes a second one
+unrepresentable; on the raw list, two would silently shadow each other). The API module contains no
+SDK types, and no longer exposes a signed token — a backend credential is the host's concern.
 
 **Propagating the identity.** `AnonymousIdentityProvider` only *produces* a uid. Everything that
 *consumes* one — `AnalyticsTracker`, `CrashReporter`, `EntitlementProvider`, `EntitlementManager` —
@@ -337,6 +339,7 @@ initializeFrnk(
         crashReporting = sentryCrashReportingModule(SentryCrashReportingConfig(dsn = keys.sentryDsn, environment = env))
         remoteConfig = remoteConfigModule             // single slot ⇒ XOR by construction
         monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
+        identity = revenueCatIdentityModule           // single slot; or firebaseIdentityModule
         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
     },
     validate = true,
@@ -344,8 +347,8 @@ initializeFrnk(
 )
 ```
 
-- **`frnkModules { }`** assembles the list. `analytics`/`crashReporting`/`remoteConfig` are single slots (default to the
-  no-op modules), so installing two — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)`
+- **`frnkModules { }`** assembles the list. `analytics`/`crashReporting`/`remoteConfig`/`identity` are single slots (the first three default to the
+  no-op modules; `identity` is unset until you choose), so installing two — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)`
   auto-bundles the trio so you can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is
   always included. You still import the impl `val`s yourself and assign them (the builder never references an
   `*-impl` module, so the toolkit stays cinterop-clean).

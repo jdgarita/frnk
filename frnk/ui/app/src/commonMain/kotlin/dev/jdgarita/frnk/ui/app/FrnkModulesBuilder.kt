@@ -14,10 +14,12 @@ import org.koin.core.module.Module
  * the impl `val` it wants and assigns it to a slot, so the toolkit stays cinterop-clean).
  *
  * What it buys over a raw `listOf(...)`:
- * - **XOR by construction.** [analytics], [crashReporting] and [remoteConfig] are single slots, so
- *   installing two bindings for one of them — the silent-shadowing footgun — is unrepresentable.
- *   Analytics and crash reporting are separate slots because they are separate vendors now: a
- *   host can ship PostHog with no crash reporter, Sentry with no analytics, or either with Firebase.
+ * - **XOR by construction.** [analytics], [crashReporting], [remoteConfig] and [identity] are single
+ *   slots, so installing two bindings for one of them — the silent-shadowing footgun — is
+ *   unrepresentable. Analytics and crash reporting are separate slots because they are separate
+ *   vendors now: a host can ship PostHog with no crash reporter, Sentry with no analytics, or either
+ *   with Firebase; identity is its own slot because RevenueCat monetization with Firebase identity is
+ *   a legitimate pairing too.
  * - **No forgotten monetization trio.** [monetization] takes only the provider; [build] auto-adds
  *   `monetizationModule` + `paywallScaffoldModule` so the stack is always complete.
  * - **Scaffold VMs included.** [build] always prepends [frnkUiModules].
@@ -30,6 +32,7 @@ import org.koin.core.module.Module
  *         crashReporting = sentryCrashReportingModule(…) // likewise
  *         remoteConfig = remoteConfigModule             // host imports the :remote-config-impl val
  *         monetization(provider = revenueCatModule)     // + monetizationModule + paywallScaffoldModule
+ *         identity = revenueCatIdentityModule           // the app user id as the anonymous identity
  *         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
  *     },
  *     validate = true,
@@ -39,7 +42,8 @@ import org.koin.core.module.Module
  *
  * Defaults are the no-op modules ([noopAnalyticsModule] / [noopCrashReportingModule] /
  * [noopRemoteConfigModule]), so an `frnkModules { }` with no overrides yields a runnable
- * telemetry-free graph.
+ * telemetry-free graph. [identity] has no no-op: a host without monetization needs none, and one
+ * with it must choose (the validator says so if it forgets).
  */
 class FrnkModulesScope internal constructor() {
     /** Product-analytics binding (`AnalyticsTracker`) — one slot enforces the provider XOR no-op rule. */
@@ -51,14 +55,20 @@ class FrnkModulesScope internal constructor() {
     /** Remote-config binding — one slot enforces the provider XOR no-op rule. Defaults to no-op. */
     var remoteConfig: Module = noopRemoteConfigModule
 
+    /**
+     * Anonymous-identity binding (`AnonymousIdentityProvider`) — `revenueCatIdentityModule`
+     * (`:monetization-impl`, the RevenueCat app user id) or `firebaseIdentityModule` (`:identity-impl`).
+     * Required whenever [monetization] is set: its `SyncAuthUseCase` reads it. Unset by default.
+     */
+    var identity: Module? = null
+
     private var monetizationProvider: Module? = null
     private val extras = mutableListOf<Module>()
 
     /**
      * Installs the monetization stack over [provider] (the `EntitlementProvider` binding, e.g.
-     * `revenueCatModule` from `:monetization-impl`, which also binds the `AnonymousIdentityProvider`
-     * the stack's `SyncAuthUseCase` needs). [build] bundles `monetizationModule` +
-     * `paywallScaffoldModule` so the host can't forget either half.
+     * `revenueCatModule` from `:monetization-impl`). [build] bundles `monetizationModule` +
+     * `paywallScaffoldModule` so the host can't forget either half. Pair it with an [identity].
      */
     fun monetization(provider: Module) {
         monetizationProvider = provider
@@ -80,6 +90,7 @@ class FrnkModulesScope internal constructor() {
             add(analytics)
             add(crashReporting)
             add(remoteConfig)
+            identity?.let(::add)
             monetizationProvider?.let {
                 add(it)
                 add(monetizationModule)

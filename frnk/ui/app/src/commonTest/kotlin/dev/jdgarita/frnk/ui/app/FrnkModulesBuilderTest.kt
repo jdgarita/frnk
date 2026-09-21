@@ -31,6 +31,13 @@ class FrnkModulesBuilderTest {
     }
 
     @Test
+    fun identity_slot_is_unset_by_default_and_carried_when_assigned() {
+        val identityModule = module { single { "fake-identity" } }
+        assertFalse(identityModule in frnkModules { }, "no identity unless assigned")
+        assertTrue(identityModule in frnkModules { identity = identityModule }, "assigned identity slot")
+    }
+
+    @Test
     fun monetization_provider_auto_bundles_the_trio() {
         val modules =
             frnkModules {

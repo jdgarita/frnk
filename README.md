@@ -37,7 +37,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`). Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key binds the no-op. |
 | `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`). Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN binds the no-op. |
 | `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`, plus `IdentitySource` — the shared `identify(id)` contract implemented by the analytics, crash and billing sinks. |
-| `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule` — the alternative to the RevenueCat-backed identity `revenueCatModule` binds by default. |
+| `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule` — the alternative to `revenueCatIdentityModule`; one of the two goes in `frnkModules { identity = … }`. |
 | `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
 | `remote-config-impl` | Firebase Remote Config impl. Exposes `remoteConfigModule`. |
 | `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
@@ -46,7 +46,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `data-prefs-api` | Key-value contracts: `KeyValueStore` + the typed `Preference<T>` accessors. |
 | `data-prefs-impl` | Multiplatform Settings impl — `SettingsKeyValueStore`. Exposes `prefsModule`. |
 | `monetization-api` | Entitlement / feature-gate interfaces. |
-| `monetization-impl` | RevenueCat impl. Exposes `revenueCatModule`, which binds the `EntitlementProvider` and the `AnonymousIdentityProvider` (the RevenueCat app user id is the app's anonymous identity). |
+| `monetization-impl` | RevenueCat impl. Exposes `revenueCatModule` (`EntitlementProvider`) and `revenueCatIdentityModule` (`AnonymousIdentityProvider` over the RevenueCat app user id — the app's anonymous identity, a local read). |
 | `shared-monetization-ui` | frnk-owned monetization **UI** (no RevenueCat dep): the `PaywallScreen`/`PaywallViewModel` MVI paywall wired via `frnkPaywallDestination(...)` + `paywallScaffoldModule`, plus the host-facing `rememberFrnkSettingsHandler()` (backed by an internal `platformManageSubscriptionsUrl()` `expect/actual` supplying the native subscription-management URL). |
 | `demo-shared` | Demo-only KMP module — bundles `FrnkDemoApp` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `ui-theme`/`ui-components`/`ui-scaffolds`/`ui-app`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
 | `demo-android` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |

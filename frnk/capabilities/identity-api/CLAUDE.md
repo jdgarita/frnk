@@ -1,8 +1,9 @@
 # :identity-api
 
-Pure-interface identity contract. **No SDK of any kind.** Two bindings exist: `revenueCatModule`
-(`:monetization-impl`) over the RevenueCat app user id — the default for an accountless host, a local
-read with no network — and `firebaseIdentityModule` (`:identity-impl`) over Firebase Anonymous Auth.
+Pure-interface identity contract. **No SDK of any kind.** Two bindings exist for the
+`frnkModules { identity = … }` slot: `revenueCatIdentityModule` (`:monetization-impl`) over the
+RevenueCat app user id — the natural choice for an accountless host, a local read with no network —
+and `firebaseIdentityModule` (`:identity-impl`) over Firebase Anonymous Auth. One per host, never both.
 
 ## Contents
 

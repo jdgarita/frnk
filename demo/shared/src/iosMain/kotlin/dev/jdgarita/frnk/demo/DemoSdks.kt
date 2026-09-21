@@ -6,6 +6,7 @@ import dev.jdgarita.frnk.backend.posthog.PostHogAnalyticsConfig
 import dev.jdgarita.frnk.backend.posthog.postHogAnalyticsModule
 import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
 import dev.jdgarita.frnk.backend.sentry.sentryCrashReportingModule
+import dev.jdgarita.frnk.monetization.revenuecat.revenueCatIdentityModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
 import org.koin.core.KoinApplication
 import org.koin.core.module.Module
@@ -15,7 +16,8 @@ import kotlin.experimental.ExperimentalNativeApi
  * iOS real-SDK demo entry point — RevenueCat plus, when a key is passed, Sentry and PostHog. The
  * parity partner of `DemoApplication` on Android: the same `revenueCatModule` override as
  * [bootstrapDemoKoinWithRevenueCat], plus the toolkit's `sentryCrashReportingModule` /
- * `postHogAnalyticsModule` over the demo's logging fakes. A blank key leaves that slot on the fake.
+ * `postHogAnalyticsModule` over the demo's logging fakes, and `revenueCatIdentityModule` over its fake
+ * identity. A blank key leaves that slot on the fake.
  *
  * The native SDKs (SPM products `RevenueCat`, `Sentry`, `PostHog`) must be linked by `iosDemoApp`;
  * DemoKit defers their symbols under `dynamic_lookup`. When [sentryDsn] is set, do **not** also
@@ -34,6 +36,7 @@ fun bootstrapDemoKoinWithSdks(
     val overrides =
         buildList<Module> {
             add(revenueCatModule)
+            add(revenueCatIdentityModule)
             if (sentryDsn.isNotBlank()) {
                 add(sentryCrashReportingModule(SentryCrashReportingConfig(dsn = sentryDsn, environment = environment)))
             }

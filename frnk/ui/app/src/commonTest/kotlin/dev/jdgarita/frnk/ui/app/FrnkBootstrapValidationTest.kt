@@ -29,19 +29,18 @@ import kotlin.test.assertFailsWith
  */
 class FrnkBootstrapValidationTest {
     // monetizationModule needs an EntitlementProvider + KeyValueStore in the graph to construct, and
-    // its SyncAuthUseCase an AnonymousIdentityProvider — a real provider module (revenueCatModule)
-    // binds the identity alongside the entitlements, so the fake plays both parts too.
+    // its SyncAuthUseCase an AnonymousIdentityProvider from the identity slot.
     private val identityModule = module { single<AnonymousIdentityProvider> { FakeIdentityProvider() } }
     private val fakesModule =
         module {
             single<EntitlementProvider> { FakeEntitlementProvider() }
             single<KeyValueStore> { FakeKeyValueStore() }
-            includes(identityModule)
         }
 
     private fun validModules(): List<Module> =
         frnkModules {
             monetization(provider = fakesModule)
+            identity = identityModule
         }.plus(fakesModule)
 
     private fun validateMissing(modules: List<Module>): IllegalStateException {
@@ -81,15 +80,11 @@ class FrnkBootstrapValidationTest {
     }
 
     @Test
-    fun missing_identity_under_monetization_names_the_module() {
-        val withoutIdentity =
-            module {
-                single<EntitlementProvider> { FakeEntitlementProvider() }
-                single<KeyValueStore> { FakeKeyValueStore() }
-            }
-        val failure = validateMissing(frnkModules { monetization(provider = withoutIdentity) })
+    fun missing_identity_under_monetization_names_the_slot() {
+        // The slot left unset: the stack is there, its identity is not.
+        val failure = validateMissing(frnkModules { monetization(provider = fakesModule) })
         assertEquals(true, failure.message?.contains("identity"), "names the missing axis")
-        assertEquals(true, failure.message?.contains("revenueCatModule"), "names the module that binds it")
+        assertEquals(true, failure.message?.contains("revenueCatIdentityModule"), "names the module to assign")
         assertEquals(false, failure.message?.contains("monetization —"), "the stack itself is present")
     }
 
