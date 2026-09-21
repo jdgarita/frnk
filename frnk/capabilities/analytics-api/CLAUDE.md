@@ -6,15 +6,15 @@ Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no 
 
 - `AppResult.kt` — **moved to `shared-utils`** (BACKLOG P1-1). The toolkit-wide `sealed interface AppResult<out D, out E : AppError>` (`Success(data)` / `Failure(error)`), the `AppError` interface, the `CommonError` enum (`Network`, `Unauthorized`, `NotFound`, `Unknown`), and `fold(...)` now live in `dev.jdgarita.frnk.utils` so non-backend `*-api` modules (and the demo's `NoteStore`) can return `AppResult` without depending on this module. Import from `dev.jdgarita.frnk.utils`.
 - (`RemoteData.kt` was deleted at restructure Stage 11 — Remote Config became its own capability pair, `:remote-config-api`/`:remote-config-impl`, sibling of analytics. `Auth.kt` was deleted in restructure Stage 2.)
-- `Analytics.kt` — analytics + crash-reporting interfaces (`AnalyticsTracker`, `CrashReporter`, `ToolkitEvent`). **Both interfaces extend `IdentitySource`** (`:identity-api`), so each is an identity sink: `suspend fun identify(id: String): AppResult<Unit, IdentityError>` maps to the SDK's *reserved* user-id field (Firebase's `setUserId`, not a custom user property — a uid as a user property or event param is unbounded-cardinality and unusable in reports). This is the sole reason this module depends on `:identity-api`.
-  - **`ToolkitEvent.key` must be alphanumeric-plus-underscore and start with a letter.** Firebase Analytics rejects anything else — hyphens included — and silently drops the event; since `FirebaseAnalyticsTracker` wraps every SDK call in `runCatching`, a malformed key fails with no trace anywhere. The vocabulary is lowercase `snake_case`.
+- `Analytics.kt` — analytics + crash-reporting interfaces (`AnalyticsTracker`, `CrashReporter`, `ToolkitEvent`). `AnalyticsTracker.screen(name, params)` is the screen-view primitive: providers map it onto their native one (PostHog `screen`, Firebase's `screen_view` event) so hosts never spell a provider's event name. `CrashReporter.log` is the breadcrumb primitive (context for the next report), `recordException(throwable, extras)` the non-fatal, with `extras` scoped to that one report. **Both interfaces extend `IdentitySource`** (`:identity-api`), so each is an identity sink: `suspend fun identify(id: String): AppResult<Unit, IdentityError>` maps to the SDK's *reserved* user-id field (Firebase's `setUserId`, not a custom user property — a uid as a user property or event param is unbounded-cardinality and unusable in reports). This is the sole reason this module depends on `:identity-api`.
+  - **`ToolkitEvent.key` is lowercase `snake_case`: letters, digits, underscores, starting with a letter.** That is the intersection every provider accepts — Firebase Analytics silently drops anything else (hyphens included) and PostHog reserves the `$` prefix; since every tracker wraps its SDK calls in `runCatching`, a malformed key fails with no trace anywhere.
   - The identity funnel is `IdentitySynced` / `IdentitySyncFailed`, emitted by `DefaultSyncAuthUseCase` (`:monetization-api`) — **not** by the tracker binding, which only writes the user id. The event has to follow the step that decides success, or it reports syncs that later failed. (`SignInStarted`/`SignInCompleted` were removed: nothing emitted them.)
 - `NoopObservability.kt` — `NoopAnalyticsTracker` / `NoopCrashReporter`, the SDK-free no-op defaults
   (BACKLOG P1-5). They live here rather than in a backend impl because observability is a
   **backend-independent axis**.
-- `NoopObservabilityModule.kt` — `val noopObservabilityModule`, the Koin binding of the `Noop*`
-  defaults (moved here from the deleted `:shared` aggregator at restructure Stage 1). Hosts install
-  it XOR `firebaseObservabilityModule`.
+- `NoopObservabilityModule.kt` — `noopAnalyticsModule` and `noopCrashReportingModule`, the defaults
+  of the two `frnkModules { }` slots (`analytics` / `crashReporting`), plus `noopObservabilityModule`
+  bundling both for the raw-list path and tests. One binding per slot, never two.
 
 ## Rules
 
@@ -23,12 +23,12 @@ Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no 
 - DTOs that need `@Serializable` go in the impl module, not here. This module keeps `kotlin.serialization` off its classpath on purpose.
 - Adding a new analytics/crash capability:
   1. Define the interface + domain models here.
-  2. Implement it in `:analytics-impl`.
-  3. Register in `FirebaseObservabilityModule.kt`.
+  2. Implement it in every provider module (`:analytics-impl` today) and in the `Noop*`/`Fake*` here.
+  3. Register in each provider's Koin module.
 
 ## Dependencies
 
-- `api(projects.sharedUtils)`, `api(libs.kotlinx.coroutines.core)`, `api(libs.koin.core)` (for `noopObservabilityModule`), `api(projects.identityApi)` (for `IdentitySource`/`IdentityError`, which appear in the public signatures of both interfaces). That's it — still no SDK.
+- `api(projects.sharedUtils)`, `api(libs.kotlinx.coroutines.core)`, `api(libs.koin.core)` (for the no-op modules), `api(projects.identityApi)` (for `IdentitySource`/`IdentityError`, which appear in the public signatures of both interfaces). That's it — still no SDK.
 - `commonTest`: `kotlin-test` + `kotlinx-coroutines-test` (host tests opted in via
   `kotlin { android { withHostTest {} } }`; run with `./gradlew :analytics-api:testAndroidHostTest`).
 

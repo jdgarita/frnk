@@ -281,6 +281,11 @@ private class FakeAnalytics : AnalyticsTracker {
         customEvents += name
     }
 
+    override fun screen(
+        name: String,
+        params: Map<String, Any?>
+    ) = Unit
+
     override fun setUserProperty(
         key: String,
         value: String?

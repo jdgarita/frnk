@@ -1,13 +1,16 @@
 # :identity-api
 
-Pure-interface identity contract. **No Firebase, no SDK of any kind** — the Firebase Auth binding
-lives in `:identity-impl` (`firebaseIdentityModule`).
+Pure-interface identity contract. **No SDK of any kind.** Two bindings exist for the
+`frnkModules { identity = … }` slot: `revenueCatIdentityModule` (`:monetization-impl`) over the
+RevenueCat app user id — the natural choice for an accountless host, a local read with no network —
+and `firebaseIdentityModule` (`:identity-impl`) over Firebase Anonymous Auth. One per host, never both.
 
 ## Contents
 
-- `AnonymousIdentityProvider.kt` — the **producer** of an identity: `uid: StateFlow<String?>`,
-  `ensureSignedIn()`, and `idToken(forceRefresh)` (the signed JWT a backend verifies to derive the
-  uid). Bound to Firebase Auth by `:identity-impl`; hosts that don't want Firebase bind their own.
+- `AnonymousIdentityProvider.kt` — the **producer** of an identity: `uid: StateFlow<String?>` and
+  `ensureSignedIn()`. There is deliberately **no token API**: whether the id can also serve as a
+  credential a backend trusts is a host concern (a signed Firebase JWT once lived here as
+  `idToken()`; a RevenueCat id is not signed, and a backend proves it by asking RevenueCat).
 - `IdentitySource.kt` — the **consumers** of an identity:
   `suspend fun identify(id: String): AppResult<Unit, IdentityError>`, plus the `IdentityError` enum
   (single `Error` variant — the sinks cannot distinguish causes, so pretending otherwise would be
@@ -30,7 +33,8 @@ that edge was preferred over duplicating the contract or inventing a fifth modul
 
 ## Rules
 
-- **No SDK dependencies.** Anything touching `dev.gitlive.firebase.*` belongs in `:identity-impl`.
+- **No SDK dependencies.** Anything touching `dev.gitlive.firebase.*` belongs in `:identity-impl`,
+  anything touching `com.revenuecat.*` in `:monetization-impl`.
 - Every method returns `AppResult`, never throws — the toolkit-wide `*-api` rule.
 - `identify(id)` takes a **non-null** id: there is deliberately no logout/clear path yet, because no
   frnk host has a real account system. Adding one means widening this signature, and note the
@@ -47,4 +51,5 @@ that edge was preferred over duplicating the contract or inventing a fifth modul
 
 No tests of its own — it is interfaces and one enum. The contract is exercised where it is
 implemented: `ObservabilityTest` (`:analytics-api`), `DefaultSyncAuthUseCaseTest` and
-`DefaultEntitlementManagerTest` (`:monetization-api`), `FirebaseAuthManagerTest` (`:identity-impl`).
+`DefaultEntitlementManagerTest` (`:monetization-api`), `FirebaseAuthManagerTest` (`:identity-impl`),
+`RevenueCatIdentityProviderTest` (`:monetization-impl`).

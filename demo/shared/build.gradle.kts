@@ -123,10 +123,15 @@ kotlin {
         //  - RevenueCat (P3-3): so DemoKit can install the REAL revenueCatModule over the fake and
         //    iosDemoApp exercises the same RevenueCat Test Store path demo-android does. The native
         //    purchases-ios SDK is supplied by the consumer (iosDemoApp) via SPM under dynamic_lookup.
+        //  - Sentry + PostHog: the real crash-reporting / analytics providers, installed by
+        //    bootstrapDemoKoinWithSdks when iosDemoApp passes keys. Their native SDKs (SPM products
+        //    `Sentry` and `PostHog`) are supplied by iosDemoApp under dynamic_lookup, like RevenueCat.
         iosMain.dependencies {
             implementation(libs.crashkios.crashlytics)
             implementation(projects.monetizationImpl)
             implementation(libs.revenuecat.core)
+            implementation(projects.crashSentry)
+            implementation(projects.analyticsPosthog)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

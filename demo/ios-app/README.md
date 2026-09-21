@@ -22,8 +22,15 @@ app via SPM under `dynamic_lookup`):
   (real `RevenueCatEntitlementProvider`, parity with `demo-android`), via
   `DemoRevenueCatKt.bootstrapDemoKoinWithRevenueCat(apiKey:)` in `iosDemoAppApp.swift`.
 
-So this app links the **native Firebase + RevenueCat SDKs** (added via SPM, below) and
-ships `GoogleService-Info.plist`.
+- **Sentry + PostHog** — the toolkit's crash-reporting and analytics providers
+  (`sentryCrashReportingModule` / `postHogAnalyticsModule`), installed by
+  `DemoSdksKt.bootstrapDemoKoinWithSdks(...)` when the Swift constants at the top of
+  `iosDemoAppApp.swift` carry a DSN / API key. Blank keys leave that slot on the logging fake, but
+  the `Sentry` and `PostHog` SPM products must be linked regardless — DemoKit references their
+  symbols under `dynamic_lookup`.
+
+So this app links the **native Firebase + RevenueCat + Sentry + PostHog SDKs** (added via SPM,
+below) and ships `GoogleService-Info.plist`.
 
 For apps that need real backends, build your own umbrella XCFramework over the frnk
 modules you use (this demo's `DemoKit` is the worked example) and follow the
@@ -58,6 +65,14 @@ tester needed. The native RevenueCat Apple SDK must be linked into this Xcode pr
    project; swap it (and the dashboard products/offering) for your own to use a different store.
 
 `Purchases.configure(...)` runs inside the Kotlin bootstrap helper — no Swift configure call needed.
+
+## Sentry + PostHog setup (one-time)
+
+Both packages are already declared in `iosDemoApp.xcodeproj` (`sentry-cocoa` 8.58.x, product
+`Sentry`; `posthog-ios` 3.64+, product `PostHog`) — Xcode resolves them on first open. To send
+real data, paste a Sentry project DSN and a PostHog project API key into the constants at the top
+of `iosDemoAppApp.swift`. With a DSN set the app skips the CrashKiOS hook: Sentry installs its own,
+and two hooks double-report.
 
 ## Run
 

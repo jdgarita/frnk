@@ -20,6 +20,16 @@ sdk.dir=/Users/<you>/Library/Android/sdk
 # Blank or absent = the demo falls back to the in-memory fake EntitlementManager.
 REVENUECAT_ANDROID_API_KEY=
 
+# --- Sentry + PostHog, Android demo (optional; read by demo/android-app/build.gradle.kts) -------
+# Public client keys: the Sentry project DSN (Settings → Client Keys) and the PostHog project API
+# key (`phc_…`) + region host. Exposed to :demo-android as BuildConfig.SENTRY_DSN /
+# POSTHOG_API_KEY / POSTHOG_HOST; blank = the demo keeps the Firebase binding for that slot.
+# The Sentry AUTH token (mapping upload) is not a property here — it is the `SENTRY_AUTH_TOKEN`
+# environment variable on the machine that builds releases (see frnk.android.sentry).
+SENTRY_DSN=
+POSTHOG_API_KEY=
+POSTHOG_HOST=https://us.i.posthog.com
+
 # --- Companion machine-local files (all gitignored, not properties in this file) ----------------
 #   demo/android-app/google-services.json             Firebase console → Android app for the demo
 #                                                      project. Optional: the frnk.android.firebase

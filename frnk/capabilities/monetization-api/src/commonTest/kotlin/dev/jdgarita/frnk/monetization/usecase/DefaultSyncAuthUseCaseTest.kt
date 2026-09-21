@@ -209,6 +209,11 @@ private class RecordingAnalyticsTracker(
         tracked += TrackedEvent(name, params)
     }
 
+    override fun screen(
+        name: String,
+        params: Map<String, Any?>
+    ) = Unit
+
     override fun setUserProperty(
         key: String,
         value: String?
@@ -228,8 +233,6 @@ private class ResultIdentityProvider(
     override val uid: StateFlow<String?> = MutableStateFlow(null)
 
     override suspend fun ensureSignedIn(): AppResult<String, CommonError> = signInResult
-
-    override suspend fun idToken(forceRefresh: Boolean): AppResult<String, CommonError> = AppResult.Failure(CommonError.Unauthorized)
 }
 
 private class RecordingEntitlementManager(

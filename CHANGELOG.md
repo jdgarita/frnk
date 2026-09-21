@@ -15,6 +15,46 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Added
+
+- **`:crash-sentry`** — `CrashReporter` over the official Sentry KMP SDK (`sentry-kotlin-multiplatform`
+  0.27.0, pairs with sentry-cocoa 8.58.2). `sentryCrashReportingModule(SentryCrashReportingConfig(dsn,
+  environment, release, …))` starts the SDK inside `startKoin` (`createdAtStart`); a blank DSN binds
+  the no-op. Non-fatal extras are scoped per event, `log` is a breadcrumb, `identify` sets the Sentry
+  user. No CrashKiOS: Sentry installs its own Kotlin unhandled-exception hook on Apple.
+- **`:analytics-posthog`** — `AnalyticsTracker` over the official PostHog KMP SDK (`posthog-kmp`
+  0.5.1). `postHogAnalyticsModule(PostHogAnalyticsConfig(apiKey, environment, host, …))` sets the SDK
+  up inside `startKoin`; a blank key binds the no-op. `environment` is a super property,
+  `personProfiles = IDENTIFIED_ONLY`, screens go through PostHog's `screen`.
+- **`frnk.android.sentry`** convention plugin (build-logic): applies Sentry's Android Gradle plugin
+  6.22.0 to an application host with `autoInstallation` off and the R8 mapping upload gated on
+  `SENTRY_AUTH_TOKEN`, so CI and fresh clones build without a secret.
+- Demo hosts install PostHog and Sentry when `local.properties` (Android) or the Swift constants
+  (iOS, `bootstrapDemoKoinWithSdks`) carry keys, falling back to the Firebase pair otherwise;
+  `iosDemoApp` links the `Sentry` and `PostHog` SPM products.
+
+### Changed
+
+- **Breaking: `frnkModules { }`'s `observability` slot is now two slots, `analytics` and
+  `crashReporting`**, defaulting to the new `noopAnalyticsModule` / `noopCrashReportingModule`
+  (`:analytics-api`; `noopObservabilityModule` still bundles both for the raw-list path). Analytics
+  and crash reporting are different vendors, so a host can bind one without the other.
+  `:analytics-impl` splits to match: `firebaseAnalyticsModule` + `firebaseCrashReportingModule`
+  (`firebaseObservabilityModule` includes both). `validateFrnkBootstrap` reports each slot
+  separately.
+- **Breaking: `AnalyticsTracker` gains `screen(name, params)`**, the screen-view primitive every
+  provider maps onto its native one (Firebase: `screen_view` + `firebase_screen`). Implementers
+  and fakes must add it; hosts stop spelling `screen_view` themselves.
+- **Breaking: `AnonymousIdentityProvider.idToken()` is removed.** The contract is an id, not a
+  credential; whether a backend can trust that id is the host's concern. `FirebaseAuthGateway`
+  loses its token method with it.
+- **Breaking: `frnkModules { }` gains an `identity` slot** (`AnonymousIdentityProvider`), required
+  whenever `monetization(provider)` is set — `validateFrnkBootstrap` names it when missing. New
+  `revenueCatIdentityModule` (`:monetization-impl`) binds the RevenueCat app user id
+  (`RevenueCatIdentityProvider`): a local read, no network, never `logOut()`, so an install
+  identified under another id keeps it. `firebaseIdentityModule` is the other option; one per host,
+  never both.
+
 ## [0.7.1] - 2026-09-19
 
 ### Added

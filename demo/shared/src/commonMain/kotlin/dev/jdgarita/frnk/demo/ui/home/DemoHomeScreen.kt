@@ -162,9 +162,10 @@ fun HomeScreen(
                         state =
                             FrnkTextState.Body(
                                 text =
-                                    "AnalyticsTracker + CrashReporter (:shared:backend:api), a backend-independent " +
-                                        "axis (ObservabilityChoice). The demo binds logging fakes so DemoKit stays " +
-                                        "SDK-free; androidDemoApp installs the real firebaseObservabilityModule.",
+                                    "AnalyticsTracker + CrashReporter (:analytics-api), two backend-independent slots. " +
+                                        "The demo binds logging fakes so DemoKit stays SDK-free; the device demos " +
+                                        "install the real postHogAnalyticsModule / sentryCrashReportingModule when " +
+                                        "keys are set (else the Firebase pair).",
                                 color = colorOnSurfaceVariant
                             )
                     )
@@ -196,9 +197,9 @@ fun HomeScreen(
                         state =
                             FrnkTextState.BodySmall(
                                 text =
-                                    "Force crash throws an UNHANDLED Kotlin exception — on iOS the CrashKiOS hook " +
-                                        "(installed with firebaseObservabilityModule) reports it symbolicated; on Android " +
-                                        "the Crashlytics SDK catches it. This terminates the app.",
+                                    "Force crash throws an UNHANDLED Kotlin exception — on iOS the provider's hook " +
+                                        "(Sentry.init's own, or CrashKiOS with Firebase) reports it symbolicated; on " +
+                                        "Android the SDK's handler catches it. This terminates the app.",
                                 color = colorOnSurfaceVariant
                             )
                     )

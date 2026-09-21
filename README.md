@@ -32,10 +32,12 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `ui-components` | The **component tier** on `compose-unstyled`: `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`), molecules (`FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (`FrnkListSection`, `FrnkProfileHeader`), and the built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`). |
 | `ui-scaffolds` | The **page templates** + the Compose binding layer for the MVI/nav engines: scaffolds (`OnboardingScreen`, `SettingsScreen`, `HomeScreen`, `FrnkScreenScaffold`), `FrnkScreen` (the MVI Compose binding), and `FrnkNavDisplay` + `rememberFrnkNavBackStack` + the slide animations. |
 | `ui-bottom-nav` | **Platform-adaptive bottom navigation** — `FrnkBottomFloatingBar`, an `expect`/`actual` composable: a Material3 *Expressive* `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS (via [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)), both themed from `FrnkTheme` tokens. It also owns `FrnkNestedNavScaffold(customTab, onNestedNavigationModule)` (replaced `FrnkTabbedNavScaffold`) — a fixed `Home · <custom> · Settings` multiple-back-stack tabbed scaffold (Home + Settings toolkit-fixed; the host supplies the middle `customTab` + the nested-nav Koin module registering the destinations behind the three routes), and the bar's view state **and per-tab back stacks** live in the MVI `FrnkNestedNavViewModel` (`frnkNestedNavModule`) — each tab keeps its own in-memory back stack. Icons are `FrnkIconSource` (Android) + SF-Symbol string (iOS). **The toolkit's sole Material3 dependency**, deliberately isolated here so `ui-theme`/`ui-components`/`ui-scaffolds` stay `compose-unstyled`-only. Android never touches `DrawableResource`, so there's **no host-side asset step**. |
-| `analytics-api` | Analytics / CrashReporter interfaces, the no-op observability defaults (`Noop{Analytics,Crash}`), and `noopObservabilityModule`. |
-| `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseObservabilityModule` (analytics + crash). |
+| `analytics-api` | `AnalyticsTracker` (events, screens, user properties) / `CrashReporter` (non-fatals, breadcrumbs) interfaces and their no-op defaults: `noopAnalyticsModule`, `noopCrashReportingModule` (one per `frnkModules { }` slot) and `noopObservabilityModule` (both). |
+| `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseAnalyticsModule` + `firebaseCrashReportingModule` (and `firebaseObservabilityModule`, both together). |
+| `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`). Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key binds the no-op. |
+| `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`). Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN binds the no-op. |
 | `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`, plus `IdentitySource` — the shared `identify(id)` contract implemented by the analytics, crash and billing sinks. |
-| `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule`. |
+| `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule` — the alternative to `revenueCatIdentityModule`; one of the two goes in `frnkModules { identity = … }`. |
 | `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
 | `remote-config-impl` | Firebase Remote Config impl. Exposes `remoteConfigModule`. |
 | `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
@@ -44,7 +46,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `data-prefs-api` | Key-value contracts: `KeyValueStore` + the typed `Preference<T>` accessors. |
 | `data-prefs-impl` | Multiplatform Settings impl — `SettingsKeyValueStore`. Exposes `prefsModule`. |
 | `monetization-api` | Entitlement / feature-gate interfaces. |
-| `monetization-impl` | RevenueCat impl. Exposes `revenueCatModule`. |
+| `monetization-impl` | RevenueCat impl. Exposes `revenueCatModule` (`EntitlementProvider`) and `revenueCatIdentityModule` (`AnonymousIdentityProvider` over the RevenueCat app user id — the app's anonymous identity, a local read). |
 | `shared-monetization-ui` | frnk-owned monetization **UI** (no RevenueCat dep): the `PaywallScreen`/`PaywallViewModel` MVI paywall wired via `frnkPaywallDestination(...)` + `paywallScaffoldModule`, plus the host-facing `rememberFrnkSettingsHandler()` (backed by an internal `platformManageSubscriptionsUrl()` `expect/actual` supplying the native subscription-management URL). |
 | `demo-shared` | Demo-only KMP module — bundles `FrnkDemoApp` / `DemoViewModel` / `demoModule` + fakes for the smoke harnesses. Depends only on `*-api` modules + `ui-theme`/`ui-components`/`ui-scaffolds`/`ui-app`, so `DemoKit.xcframework` is free of native cinterops (no Pods required to run `iosDemoApp`). |
 | `demo-android` / `iosDemoApp` | Internal smoke harnesses — not the shipping product. |
@@ -57,8 +59,9 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** Room KMP 2.8.4 (androidx.sqlite bundled driver 2.7.0, KSP 2.3.11), Multiplatform Settings 1.3.0
 - **Remote Config:** GitLive Firebase Remote Config 2.7.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
-- **Identity:** GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) — opt in by installing `firebaseIdentityModule` from `:identity-impl`
-- **Observability:** GitLive Firebase Analytics + Crashlytics 2.7.0 — opt in by installing `firebaseObservabilityModule`, independent of every other capability
+- **Identity:** the RevenueCat app user id, bound by `revenueCatModule` — or GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) via `firebaseIdentityModule` from `:identity-impl`
+- **Analytics:** PostHog (`posthog-kmp` 0.5.1) via `postHogAnalyticsModule` — or GitLive Firebase Analytics 2.7.0 via `firebaseAnalyticsModule`
+- **Crash reporting:** Sentry (`sentry-kotlin-multiplatform` 0.27.0, pairs with sentry-cocoa 8.58.2) via `sentryCrashReportingModule` + the `frnk.android.sentry` convention plugin — or GitLive Firebase Crashlytics 2.7.0 via `firebaseCrashReportingModule`
 - **Monetization:** RevenueCat 3.7.0
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
 - **Build:** AGP 9.4.0, Gradle 9.6.0, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
@@ -113,7 +116,7 @@ initializeFrnk(
     modules = frnkUiModules() +                  // scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
             databaseModule, prefsModule,         // Room DatabaseFactory / KeyValueStore
-            firebaseObservabilityModule,         // or noopObservabilityModule for no telemetry
+            postHogAnalyticsModule(postHogConfig), sentryCrashReportingModule(sentryConfig), // or the noop*Module pair
             revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization stack
         ) + listOf(hostDatabaseModule) + hostFeatureModules, // host-defined; see docs/HOST_INTEGRATION.md
 )

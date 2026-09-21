@@ -395,7 +395,7 @@ One maintained library covers both platforms with a genuine iOS feel; the cost (
 
 - id: open-work-posthog-analytics-tracker-planned-not-yet-implemen-20260612-031749
 - type: architecture_decision
-- status: active
+- status: done (2026-09-21 — built as `:analytics-posthog`, `postHogAnalyticsModule(config)`, alongside `:crash-sentry`; the `observability` slot split into `analytics`/`crashReporting`)
 - platform: kmp
 - area: analytics
 - date: 2026-06-12

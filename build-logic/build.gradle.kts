@@ -12,6 +12,7 @@ repositories {
 //  - frnk.kmp.library         → Kotlin Multiplatform + AGP-9 KMP-Android-library
 //  - frnk.kmp.library.compose → + Compose Multiplatform plugin pair
 //  - frnk.android.firebase    → google-services + Crashlytics for an application host
+//  - frnk.android.sentry      → Sentry's Android Gradle plugin (R8 mapping upload) for an application host
 // Versions resolve from the shared catalog (imported via settings.gradle.kts) — no version duplication.
 dependencies {
     implementation(libs.plugins.kotlin.multiplatform.toMarker())
@@ -21,6 +22,7 @@ dependencies {
     implementation(libs.plugins.kotlin.serialization.toMarker())
     implementation(libs.plugins.google.services.toMarker())
     implementation(libs.plugins.firebase.crashlytics.toMarker())
+    implementation(libs.plugins.sentry.android.gradle.toMarker())
 }
 
 // A plugin id `x.y.z` is published with the marker artifact `x.y.z:x.y.z.gradle.plugin:<version>`.
