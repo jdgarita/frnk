@@ -35,13 +35,15 @@ fun Koin.validateFrnkBootstrap() {
             if (!isBound<AnalyticsTracker>()) {
                 add(
                     "analytics — assign a provider to frnkModules { analytics = … } " +
-                        "(firebaseAnalyticsModule from :analytics-impl) or noopAnalyticsModule (:analytics-api)"
+                        "(postHogAnalyticsModule from :analytics-posthog, firebaseAnalyticsModule from :analytics-impl) " +
+                        "or noopAnalyticsModule (:analytics-api)"
                 )
             }
             if (!isBound<CrashReporter>()) {
                 add(
                     "crash reporting — assign a provider to frnkModules { crashReporting = … } " +
-                        "(firebaseCrashReportingModule from :analytics-impl) or noopCrashReportingModule (:analytics-api)"
+                        "(sentryCrashReportingModule from :crash-sentry, firebaseCrashReportingModule from :analytics-impl) " +
+                        "or noopCrashReportingModule (:analytics-api)"
                 )
             }
             if (!isBound<RemoteConfigService>()) {

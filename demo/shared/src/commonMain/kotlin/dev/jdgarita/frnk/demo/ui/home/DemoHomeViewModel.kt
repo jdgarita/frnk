@@ -135,9 +135,10 @@ class DemoHomeViewModel(
             DemoHomeIntent.ForceUnhandledCrash -> {
                 // Throw an *uncaught* Kotlin exception on a background dispatcher with no handler, so it
                 // escapes to the platform's uncaught-exception handler. On iOS that path is what the
-                // CrashKiOS hook (installed by firebaseObservabilityModule) intercepts and forwards to
-                // Crashlytics symbolicated — unlike RecordTestCrash above, which is an explicitly-caught
-                // non-fatal. On Android the Crashlytics SDK's own handler catches it. The demo's logging
+                // provider's hook (Sentry.init's own under sentryCrashReportingModule, CrashKiOS under
+                // firebaseCrashReportingModule) intercepts and forwards symbolicated — unlike
+                // RecordTestCrash above, which is an explicitly-caught non-fatal. On Android the SDK's
+                // own handler catches it. The demo's logging
                 // fakes have no such hook, so under DemoKit this simply terminates the process.
                 emit(DemoHomeEffect.Toast("Forcing an unhandled crash…"))
                 CoroutineScope(Dispatchers.Default).launch {

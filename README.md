@@ -34,6 +34,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `ui-bottom-nav` | **Platform-adaptive bottom navigation** — `FrnkBottomFloatingBar`, an `expect`/`actual` composable: a Material3 *Expressive* `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS (via [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)), both themed from `FrnkTheme` tokens. It also owns `FrnkNestedNavScaffold(customTab, onNestedNavigationModule)` (replaced `FrnkTabbedNavScaffold`) — a fixed `Home · <custom> · Settings` multiple-back-stack tabbed scaffold (Home + Settings toolkit-fixed; the host supplies the middle `customTab` + the nested-nav Koin module registering the destinations behind the three routes), and the bar's view state **and per-tab back stacks** live in the MVI `FrnkNestedNavViewModel` (`frnkNestedNavModule`) — each tab keeps its own in-memory back stack. Icons are `FrnkIconSource` (Android) + SF-Symbol string (iOS). **The toolkit's sole Material3 dependency**, deliberately isolated here so `ui-theme`/`ui-components`/`ui-scaffolds` stay `compose-unstyled`-only. Android never touches `DrawableResource`, so there's **no host-side asset step**. |
 | `analytics-api` | `AnalyticsTracker` (events, screens, user properties) / `CrashReporter` (non-fatals, breadcrumbs) interfaces and their no-op defaults: `noopAnalyticsModule`, `noopCrashReportingModule` (one per `frnkModules { }` slot) and `noopObservabilityModule` (both). |
 | `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseAnalyticsModule` + `firebaseCrashReportingModule` (and `firebaseObservabilityModule`, both together). |
+| `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`). Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key binds the no-op. |
+| `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`). Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN binds the no-op. |
 | `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`, plus `IdentitySource` — the shared `identify(id)` contract implemented by the analytics, crash and billing sinks. |
 | `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule` — the alternative to the RevenueCat-backed identity `revenueCatModule` binds by default. |
 | `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
@@ -58,7 +60,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **Persistence:** Room KMP 2.8.4 (androidx.sqlite bundled driver 2.7.0, KSP 2.3.11), Multiplatform Settings 1.3.0
 - **Remote Config:** GitLive Firebase Remote Config 2.7.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
 - **Identity:** the RevenueCat app user id, bound by `revenueCatModule` — or GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) via `firebaseIdentityModule` from `:identity-impl`
-- **Observability:** two independent slots, `analytics` and `crashReporting`; GitLive Firebase Analytics + Crashlytics 2.7.0 fill them today via `firebaseAnalyticsModule` / `firebaseCrashReportingModule`
+- **Analytics:** PostHog (`posthog-kmp` 0.5.1) via `postHogAnalyticsModule` — or GitLive Firebase Analytics 2.7.0 via `firebaseAnalyticsModule`
+- **Crash reporting:** Sentry (`sentry-kotlin-multiplatform` 0.27.0, pairs with sentry-cocoa 8.58.2) via `sentryCrashReportingModule` + the `frnk.android.sentry` convention plugin — or GitLive Firebase Crashlytics 2.7.0 via `firebaseCrashReportingModule`
 - **Monetization:** RevenueCat 3.7.0
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
 - **Build:** AGP 9.4.0, Gradle 9.6.0, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
@@ -113,7 +116,7 @@ initializeFrnk(
     modules = frnkUiModules() +                  // scaffold VMs (Home/Settings/Onboarding/BottomNav)
         listOf(
             databaseModule, prefsModule,         // Room DatabaseFactory / KeyValueStore
-            firebaseAnalyticsModule, firebaseCrashReportingModule, // or the noop*Module pair for no telemetry
+            postHogAnalyticsModule(postHogConfig), sentryCrashReportingModule(sentryConfig), // or the noop*Module pair
             revenueCatModule, monetizationModule, paywallScaffoldModule, // optional monetization stack
         ) + listOf(hostDatabaseModule) + hostFeatureModules, // host-defined; see docs/HOST_INTEGRATION.md
 )

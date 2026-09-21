@@ -38,6 +38,15 @@ google-services = "4.5.0"
 firebase-crashlytics-gradle = "3.0.8"
 crashkios = "0.9.0"
 revenuecat = "3.7.0"
+# Sentry KMP bundles sentry-android 8.41.0 and pairs with sentry-cocoa 8.58.2 (its compat table). The
+# Android Gradle plugin uploads R8 mappings; keep its `autoInstallation` OFF or it raises sentry-android
+# past what the KMP SDK expects (sentry-kotlin-multiplatform #450). AGP stays 9.4.0 until the plugin's
+# 9.4.1 breakage (sentry-android-gradle-plugin #1455) is fixed.
+sentry-kmp = "0.27.0"
+sentry-android-gradle = "6.22.0"
+# PostHog's KMP SDK wraps posthog-android 3.62 / posthog-ios 3.64; the consuming Xcode project links
+# posthog-ios (SPM product `PostHog`), matching the Firebase/RevenueCat native-framework contract.
+posthog-kmp = "0.5.1"
 multihaptic = "0.3.2"
 robolectric = "4.16.1"
 # AndroidX Compose UI version that compose-multiplatform 1.12.0 resolves to on Android — used only to
@@ -110,6 +119,8 @@ crashkios-crashlytics = { module = "co.touchlab.crashkios:crashlytics", version.
 
 revenuecat-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "revenuecat" }
 revenuecat-result = { module = "com.revenuecat.purchases:purchases-kmp-result", version.ref = "revenuecat" }
+sentry-kmp = { module = "io.sentry:sentry-kotlin-multiplatform", version.ref = "sentry-kmp" }
+posthog-kmp = { module = "com.posthog:posthog-kmp", version.ref = "posthog-kmp" }
 
 # Robolectric: runs Compose UI tests (runComposeUiTest) on the JVM host (testAndroidHostTest),
 # so the design-system tests gate in CI without a device/emulator. Test-only, androidHostTest source set.
@@ -156,3 +167,4 @@ ksp                                = { id = "com.google.devtools.ksp",          
 ktlint                             = { id = "org.jlleitschuh.gradle.ktlint",            version.ref = "ktlint" }
 google-services                    = { id = "com.google.gms.google-services",           version.ref = "google-services" }
 firebase-crashlytics               = { id = "com.google.firebase.crashlytics",          version.ref = "firebase-crashlytics-gradle" }
+sentry-android-gradle              = { id = "io.sentry.android.gradle",                version.ref = "sentry-android-gradle" }

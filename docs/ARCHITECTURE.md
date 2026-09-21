@@ -129,7 +129,7 @@ hand the same uid to telemetry and billing without four differently-shaped calls
 Each domain that pulls in a third-party SDK is split:
 
 - **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLite driver. Domain code depends only on these.
-- **`*-impl`** (e.g. `:analytics-impl`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules.
+- **`*-impl`** (e.g. `:analytics-impl`, `:analytics-posthog`, `:crash-sentry`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules. One api can have several impls (`:analytics-api` has three); the host picks per slot.
 
 Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) is backed by **`:remote-config-impl`** (Firebase Remote Config), while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — and **`:identity-impl`** binds the provider to Firebase Auth through `firebaseIdentityModule` — though the default binding is `revenueCatModule`'s, over the RevenueCat app user id, so an accountless host needs no identity module at all. **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
 
@@ -158,9 +158,13 @@ fun frnkUiModules(): List<Module>   // the SDK-free scaffold VM modules (Home/Se
 Analytics and crash reporting are **two slots** (`frnkModules { analytics = …; crashReporting = … }`),
 each a separate axis from the data backend (BACKLOG P1-5) and from each other, since they are
 different vendors: a local-storage-only app can still ship telemetry, and a host can take one
-without the other. `:analytics-impl` offers `firebaseAnalyticsModule` / `firebaseCrashReportingModule`
-(`firebaseObservabilityModule` bundles both for the raw-list path); `noopAnalyticsModule` /
-`noopCrashReportingModule` (`:analytics-api`) are the defaults. Install exactly one binding per slot.
+without the other. `:analytics-posthog` (`postHogAnalyticsModule(config)`) and `:crash-sentry`
+(`sentryCrashReportingModule(config)`) are the providers; `:analytics-impl` still offers
+`firebaseAnalyticsModule` / `firebaseCrashReportingModule` (`firebaseObservabilityModule` bundles both
+for the raw-list path); `noopAnalyticsModule` / `noopCrashReportingModule` (`:analytics-api`) are the
+defaults, and a provider config with a blank key binds that no-op itself. Install exactly one binding
+per slot. Both providers start their SDK inside `startKoin` (`createdAtStart`), so early crashes and
+the launch's lifecycle events are captured on every bootstrap path.
 On iOS, `firebaseCrashReportingModule` additionally installs the CrashKiOS unhandled-exception hook
 (`:analytics-impl`'s `enableNativeCrashHandler`, iOS-only — no-op on Android) so *uncaught*
 Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller explicitly

@@ -11,9 +11,11 @@ import org.koin.core.context.startKoin
  *
  * The device demos override selected bindings with real SDKs to smoke-test them (Koin
  * `allowOverride(true)`): `androidDemoApp` assembles its override list with `frnkModules { }` and installs
- * `firebaseObservabilityModule` + `remoteConfigModule` + (when a key is set) `revenueCatModule`;
- * `iosDemoApp` calls [bootstrapDemoKoinWithRevenueCat] for the real RevenueCat Test Store path and
- * configures Firebase + the CrashKiOS hook ([enableDemoCrashlytics]) in Swift (BACKLOG P1-5b/P3-3).
+ * the analytics/crash providers (PostHog + Sentry when keys are set, else the Firebase pair) +
+ * `remoteConfigModule` + (when a key is set) `revenueCatModule`; `iosDemoApp` calls
+ * `bootstrapDemoKoinWithSdks` for the real RevenueCat Test Store path plus Sentry/PostHog when keys
+ * are passed, and configures Firebase + the CrashKiOS hook ([enableDemoCrashlytics]) in Swift only
+ * when Sentry is off (BACKLOG P1-5b/P3-3).
  * Apps that want real backends pass an explicit toolkit-module list to `initializeFrnk(...)` (`:core-di`)
  * instead — see docs/HOST_INTEGRATION.md.
  *
