@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.backend.noopObservabilityModule
+import dev.jdgarita.frnk.backend.noopAnalyticsModule
+import dev.jdgarita.frnk.backend.noopCrashReportingModule
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
@@ -13,8 +14,10 @@ import org.koin.core.module.Module
  * the impl `val` it wants and assigns it to a slot, so the toolkit stays cinterop-clean).
  *
  * What it buys over a raw `listOf(...)`:
- * - **XOR by construction.** [observability] and [remoteConfig] are single slots, so installing two
- *   observability (or two remote-config) modules — the silent-shadowing footgun — is unrepresentable.
+ * - **XOR by construction.** [analytics], [crashReporting] and [remoteConfig] are single slots, so
+ *   installing two bindings for one of them — the silent-shadowing footgun — is unrepresentable.
+ *   Analytics and crash reporting are separate slots because they are separate vendors now: a
+ *   host can ship PostHog with no crash reporter, Sentry with no analytics, or either with Firebase.
  * - **No forgotten monetization trio.** [monetization] takes only the provider; [build] auto-adds
  *   `monetizationModule` + `paywallScaffoldModule` so the stack is always complete.
  * - **Scaffold VMs included.** [build] always prepends [frnkUiModules].
@@ -23,7 +26,8 @@ import org.koin.core.module.Module
  * initializeFrnk(
  *     context = this,
  *     modules = frnkModules {
- *         observability = firebaseObservabilityModule   // host imports the :analytics-impl val
+ *         analytics = postHogAnalyticsModule(…)         // host imports the provider's val
+ *         crashReporting = sentryCrashReportingModule(…) // likewise
  *         remoteConfig = remoteConfigModule             // host imports the :remote-config-impl val
  *         monetization(provider = revenueCatModule)     // + monetizationModule + paywallScaffoldModule
  *         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
@@ -33,14 +37,18 @@ import org.koin.core.module.Module
  * )
  * ```
  *
- * Defaults are the no-op modules ([noopObservabilityModule]/[noopRemoteConfigModule]), so an
- * `frnkModules { }` with no overrides yields a runnable telemetry-free graph.
+ * Defaults are the no-op modules ([noopAnalyticsModule] / [noopCrashReportingModule] /
+ * [noopRemoteConfigModule]), so an `frnkModules { }` with no overrides yields a runnable
+ * telemetry-free graph.
  */
 class FrnkModulesScope internal constructor() {
-    /** Observability binding — one slot enforces the `firebase` XOR `noop` rule. Defaults to no-op. */
-    var observability: Module = noopObservabilityModule
+    /** Product-analytics binding (`AnalyticsTracker`) — one slot enforces the provider XOR no-op rule. */
+    var analytics: Module = noopAnalyticsModule
 
-    /** Remote-config binding — one slot enforces the `firebase` XOR `noop` rule. Defaults to no-op. */
+    /** Crash-reporting binding (`CrashReporter`) — one slot enforces the provider XOR no-op rule. */
+    var crashReporting: Module = noopCrashReportingModule
+
+    /** Remote-config binding — one slot enforces the provider XOR no-op rule. Defaults to no-op. */
     var remoteConfig: Module = noopRemoteConfigModule
 
     private var monetizationProvider: Module? = null
@@ -48,7 +56,8 @@ class FrnkModulesScope internal constructor() {
 
     /**
      * Installs the monetization stack over [provider] (the `EntitlementProvider` binding, e.g.
-     * `revenueCatModule` from `:monetization-impl`). [build] bundles `monetizationModule` +
+     * `revenueCatModule` from `:monetization-impl`, which also binds the `AnonymousIdentityProvider`
+     * the stack's `SyncAuthUseCase` needs). [build] bundles `monetizationModule` +
      * `paywallScaffoldModule` so the host can't forget either half.
      */
     fun monetization(provider: Module) {
@@ -68,7 +77,8 @@ class FrnkModulesScope internal constructor() {
     internal fun build(): List<Module> =
         buildList {
             addAll(frnkUiModules())
-            add(observability)
+            add(analytics)
+            add(crashReporting)
             add(remoteConfig)
             monetizationProvider?.let {
                 add(it)

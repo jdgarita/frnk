@@ -32,6 +32,12 @@ internal class FirebaseAnalyticsTracker : AnalyticsTracker {
         params: Map<String, Any?>
     ) = logEvent(name, params)
 
+    // GA4's screen_view event, keyed the way its reports and BigQuery export spell the parameters.
+    override fun screen(
+        name: String,
+        params: Map<String, Any?>
+    ) = logEvent(SCREEN_VIEW_EVENT, mapOf(SCREEN_NAME_PARAM to name) + params)
+
     override fun setUserProperty(
         key: String,
         value: String?
@@ -69,5 +75,7 @@ internal class FirebaseAnalyticsTracker : AnalyticsTracker {
 
     private companion object {
         const val TAG = "FirebaseAnalytics"
+        const val SCREEN_VIEW_EVENT = "screen_view"
+        const val SCREEN_NAME_PARAM = "firebase_screen"
     }
 }

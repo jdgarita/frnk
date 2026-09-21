@@ -3,7 +3,8 @@ package dev.jdgarita.frnk.demo
 import android.app.Application
 import com.revenuecat.purchases.kmp.Purchases
 import com.revenuecat.purchases.kmp.configure
-import dev.jdgarita.frnk.backend.firebase.firebaseObservabilityModule
+import dev.jdgarita.frnk.backend.firebase.firebaseAnalyticsModule
+import dev.jdgarita.frnk.backend.firebase.firebaseCrashReportingModule
 import dev.jdgarita.frnk.database.impl.databaseModule
 import dev.jdgarita.frnk.demo.notes.demoNotesModule
 import dev.jdgarita.frnk.di.DatabaseContext
@@ -20,7 +21,8 @@ class DemoApplication : Application() {
         // Demo wiring uses logging/in-memory fakes everywhere (so DemoKit/iOS stay SDK-free), but on
         // Android we override selected bindings with the REAL toolkit modules to smoke-test the SDKs
         // on a device:
-        //  - firebaseObservabilityModule — real Firebase Analytics + Crashlytics (BACKLOG P1-5).
+        //  - firebaseAnalyticsModule + firebaseCrashReportingModule — real Firebase Analytics +
+        //    Crashlytics (BACKLOG P1-5), one per slot.
         //  - databaseModule + demoNotesModule — the real Room path: the toolkit's
         //    DatabaseFactory (:data-db-impl) opening the demo-owned DemoDatabase, replacing
         //    the in-memory FakeNoteStore (restructure Stage 4 / OQ-2).
@@ -33,7 +35,7 @@ class DemoApplication : Application() {
         //    before the override so the manager reads a configured SDK; the Android context is captured
         //    automatically by RevenueCat's androidx.startup initializer before onCreate.
         // Assemble the real-SDK override list with the toolkit's own frnkModules { } builder (Tier 2.2):
-        // single observability/remoteConfig slots make the XOR explicit, and monetization(provider)
+        // single analytics/crashReporting/remoteConfig slots make the XOR explicit, and monetization(provider)
         // bundles the trio. The host still imports the impl vals and assigns them here.
         val rcKey = BuildConfig.REVENUECAT_ANDROID_API_KEY
         val rcConfigured = rcKey.isNotBlank()
@@ -42,7 +44,8 @@ class DemoApplication : Application() {
         }
         val overrides =
             frnkModules {
-                observability = firebaseObservabilityModule
+                analytics = firebaseAnalyticsModule
+                crashReporting = firebaseCrashReportingModule
                 remoteConfig = remoteConfigModule
                 if (rcConfigured) monetization(provider = revenueCatModule)
                 modules(databaseModule, demoNotesModule)

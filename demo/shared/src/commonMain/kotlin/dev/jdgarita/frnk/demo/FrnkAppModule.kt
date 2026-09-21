@@ -144,8 +144,6 @@ class FakeAnonymousIdentityProvider : AnonymousIdentityProvider {
         return AppResult.Success(DEMO_UID)
     }
 
-    override suspend fun idToken(forceRefresh: Boolean): AppResult<String, CommonError> = AppResult.Success("demo-id-token")
-
     companion object {
         private const val DEMO_UID = "demo-anonymous-uid"
     }
@@ -223,6 +221,13 @@ class LoggingAnalyticsTracker : AnalyticsTracker {
         params: Map<String, Any?>
     ) {
         PrintLogger.d(TAG, "$name $params")
+    }
+
+    override fun screen(
+        name: String,
+        params: Map<String, Any?>
+    ) {
+        PrintLogger.d(TAG, "screen $name $params")
     }
 
     override fun setUserProperty(

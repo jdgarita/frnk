@@ -2,6 +2,7 @@ package dev.jdgarita.frnk.ui.app
 
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
+import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
 import dev.jdgarita.frnk.remoteconfig.RemoteConfigService
@@ -17,22 +18,30 @@ import org.koin.core.error.InstanceCreationException
  * Wire it via `initializeFrnk(modules = …, validate = true, validator = Koin::validateFrnkBootstrap)`,
  * or call [KoinApplication.checkFrnkModules] on the returned application.
  *
- * **Required** (missing ⇒ throw): one observability module (`AnalyticsTracker` + `CrashReporter`), one
- * remote-config module (`RemoteConfigService`), and the monetization stack (`ObserveProStatusUseCase` +
- * `EntitlementManager` — the always-installed Settings scaffold reads pro-status). **Optional** (never
- * checked): `KeyValueStore` / `DatabaseFactory`, which a local-only host legitimately omits.
+ * **Required** (missing ⇒ throw): an analytics module (`AnalyticsTracker`), a crash-reporting module
+ * (`CrashReporter`), a remote-config module (`RemoteConfigService`), and the monetization stack
+ * (`ObserveProStatusUseCase` + `EntitlementManager` — the always-installed Settings scaffold reads
+ * pro-status) together with the `AnonymousIdentityProvider` its `SyncAuthUseCase` fans out from.
+ * **Optional** (never checked): `KeyValueStore` / `DatabaseFactory`, which a local-only host
+ * legitimately omits.
  *
  * This runs **after** `startKoin`, so it can only detect *missing* bindings — it cannot see a *duplicate*
- * observability install (two modules collapse to one binding). Preventing that double-install is
- * [frnkModules]'s job (its single-slot `observability`/`remoteConfig` make it unrepresentable).
+ * install (two modules collapse to one binding). Preventing that double-install is [frnkModules]'s
+ * job (its single-slot `analytics`/`crashReporting`/`remoteConfig` make it unrepresentable).
  */
 fun Koin.validateFrnkBootstrap() {
     val missing =
         buildList {
-            if (!isBound<AnalyticsTracker>() || !isBound<CrashReporter>()) {
+            if (!isBound<AnalyticsTracker>()) {
                 add(
-                    "observability — install firebaseObservabilityModule (:analytics-impl) " +
-                        "or noopObservabilityModule (:analytics-api)"
+                    "analytics — assign a provider to frnkModules { analytics = … } " +
+                        "(firebaseAnalyticsModule from :analytics-impl) or noopAnalyticsModule (:analytics-api)"
+                )
+            }
+            if (!isBound<CrashReporter>()) {
+                add(
+                    "crash reporting — assign a provider to frnkModules { crashReporting = … } " +
+                        "(firebaseCrashReportingModule from :analytics-impl) or noopCrashReportingModule (:analytics-api)"
                 )
             }
             if (!isBound<RemoteConfigService>()) {
@@ -46,6 +55,14 @@ fun Koin.validateFrnkBootstrap() {
                     "monetization — the Settings scaffold needs ObserveProStatusUseCase; install " +
                         "monetizationModule (:monetization-api) over an EntitlementProvider " +
                         "(e.g. revenueCatModule from :monetization-impl) + paywallScaffoldModule"
+                )
+            } else if (!isBound<AnonymousIdentityProvider>()) {
+                // Only reported once the stack is there: SyncAuthUseCase (monetizationModule) is the
+                // sole toolkit consumer, and a host without monetization has no need for an identity.
+                add(
+                    "identity — monetizationModule's SyncAuthUseCase needs an AnonymousIdentityProvider; " +
+                        "revenueCatModule (:monetization-impl) binds one over the RevenueCat app user id, " +
+                        "or install firebaseIdentityModule (:identity-impl)"
                 )
             }
         }
@@ -65,7 +82,7 @@ fun KoinApplication.checkFrnkModules() = koin.validateFrnkBootstrap()
  * Whether [T] has a binding the host installed. A definition that is present but fails to construct
  * because a *transitive* dep is missing ([InstanceCreationException]) counts as bound — the missing
  * leaf dep is reported by its own check, so we don't double-report (e.g. a missing `AnalyticsTracker`
- * surfaces as "observability", not as a misleading "monetization missing" when `monetizationModule`
+ * surfaces as "analytics", not as a misleading "monetization missing" when `monetizationModule`
  * is in fact installed). Only a truly absent definition (`getOrNull` returns `null`) is unbound.
  */
 private inline fun <reified T : Any> Koin.isBound(): Boolean =

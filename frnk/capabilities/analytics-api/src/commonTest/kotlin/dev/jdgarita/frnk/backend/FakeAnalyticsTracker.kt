@@ -5,7 +5,7 @@ import dev.jdgarita.frnk.utils.AppResult
 
 /**
  * Recording test double for [AnalyticsTracker] — the canonical fake pattern for the toolkit. Captures
- * every tracked event + user property so a test can assert what was emitted, without a real SDK. Reused
+ * every tracked event, screen + user property so a test can assert what was emitted, without a real SDK. Reused
  * by downstream analytics work (BACKLOG P1-5 / P3). Lives in `commonTest`, never ships.
  */
 class FakeAnalyticsTracker : AnalyticsTracker {
@@ -15,6 +15,7 @@ class FakeAnalyticsTracker : AnalyticsTracker {
     )
 
     val tracked = mutableListOf<Tracked>()
+    val screens = mutableListOf<Tracked>()
     val userProperties = mutableMapOf<String, String?>()
     var identity: String? = null
 
@@ -35,6 +36,13 @@ class FakeAnalyticsTracker : AnalyticsTracker {
         params: Map<String, Any?>
     ) {
         tracked += Tracked(name, params)
+    }
+
+    override fun screen(
+        name: String,
+        params: Map<String, Any?>
+    ) {
+        screens += Tracked(name, params)
     }
 
     override fun setUserProperty(

@@ -18,6 +18,7 @@ class ObservabilityTest {
             NoopAnalyticsTracker().apply {
                 track(ToolkitEvent.AppOpened, mapOf("source" to "test"))
                 trackCustom("custom", mapOf("n" to 1))
+                screen("home")
                 setUserProperty("tier", "pro")
                 identify("uid")
             }
@@ -34,6 +35,7 @@ class ObservabilityTest {
 
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "test"))
         analytics.trackCustom("custom_event", mapOf("count" to 3))
+        analytics.screen("home", mapOf("tab" to "vault"))
         analytics.setUserProperty("tier", "pro")
 
         assertEquals(
@@ -41,6 +43,8 @@ class ObservabilityTest {
             analytics.tracked.map { it.name }
         )
         assertEquals(3, analytics.tracked[1].params["count"])
+        assertEquals(listOf("home"), analytics.screens.map { it.name }, "screens are recorded apart from events")
+        assertEquals("vault", analytics.screens.single().params["tab"])
         assertEquals("pro", analytics.userProperties["tier"])
     }
 

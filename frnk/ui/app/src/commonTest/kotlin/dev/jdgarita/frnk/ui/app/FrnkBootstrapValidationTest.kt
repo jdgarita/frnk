@@ -1,7 +1,9 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.backend.noopObservabilityModule
+import dev.jdgarita.frnk.backend.noopAnalyticsModule
+import dev.jdgarita.frnk.backend.noopCrashReportingModule
 import dev.jdgarita.frnk.database.KeyValueStore
+import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
 import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
@@ -10,6 +12,7 @@ import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import dev.jdgarita.frnk.utils.AppResult
+import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.core.module.Module
@@ -25,11 +28,15 @@ import kotlin.test.assertFailsWith
  * `FrnkInitializerTest`'s "the error must name the fix" contract.
  */
 class FrnkBootstrapValidationTest {
-    // monetizationModule needs an EntitlementProvider + KeyValueStore in the graph to construct.
+    // monetizationModule needs an EntitlementProvider + KeyValueStore in the graph to construct, and
+    // its SyncAuthUseCase an AnonymousIdentityProvider — a real provider module (revenueCatModule)
+    // binds the identity alongside the entitlements, so the fake plays both parts too.
+    private val identityModule = module { single<AnonymousIdentityProvider> { FakeIdentityProvider() } }
     private val fakesModule =
         module {
             single<EntitlementProvider> { FakeEntitlementProvider() }
             single<KeyValueStore> { FakeKeyValueStore() }
+            includes(identityModule)
         }
 
     private fun validModules(): List<Module> =
@@ -57,11 +64,33 @@ class FrnkBootstrapValidationTest {
     }
 
     @Test
-    fun missing_observability_names_the_module() {
-        val failure = validateMissing(validModules().filterNot { it === noopObservabilityModule })
-        assertEquals(true, failure.message?.contains("observability"), "names the missing axis")
-        assertEquals(true, failure.message?.contains("noopObservabilityModule"), "names the module to install")
+    fun missing_analytics_names_the_module() {
+        val failure = validateMissing(validModules().filterNot { it === noopAnalyticsModule })
+        assertEquals(true, failure.message?.contains("analytics"), "names the missing axis")
+        assertEquals(true, failure.message?.contains("noopAnalyticsModule"), "names the module to install")
+        assertEquals(false, failure.message?.contains("crash reporting"), "the other slot is still bound")
         assertEquals(true, failure.message?.contains("initializeFrnk"), "names the bootstrap call")
+    }
+
+    @Test
+    fun missing_crash_reporting_names_the_module() {
+        val failure = validateMissing(validModules().filterNot { it === noopCrashReportingModule })
+        assertEquals(true, failure.message?.contains("crash reporting"), "names the missing axis")
+        assertEquals(true, failure.message?.contains("noopCrashReportingModule"), "names the module to install")
+        assertEquals(false, failure.message?.contains("analytics —"), "the other slot is still bound")
+    }
+
+    @Test
+    fun missing_identity_under_monetization_names_the_module() {
+        val withoutIdentity =
+            module {
+                single<EntitlementProvider> { FakeEntitlementProvider() }
+                single<KeyValueStore> { FakeKeyValueStore() }
+            }
+        val failure = validateMissing(frnkModules { monetization(provider = withoutIdentity) })
+        assertEquals(true, failure.message?.contains("identity"), "names the missing axis")
+        assertEquals(true, failure.message?.contains("revenueCatModule"), "names the module that binds it")
+        assertEquals(false, failure.message?.contains("monetization —"), "the stack itself is present")
     }
 
     @Test
@@ -78,7 +107,14 @@ class FrnkBootstrapValidationTest {
         assertEquals(true, failure.message?.contains("monetization"), "names the missing axis")
         assertEquals(true, failure.message?.contains("monetizationModule"), "names the module to install")
         assertEquals(true, failure.message?.contains("Settings"), "explains why it's required")
+        assertEquals(false, failure.message?.contains("identity"), "identity is only required once the stack is")
     }
+}
+
+private class FakeIdentityProvider : AnonymousIdentityProvider {
+    override val uid: StateFlow<String?> = MutableStateFlow("fake-uid")
+
+    override suspend fun ensureSignedIn(): AppResult<String, CommonError> = AppResult.Success("fake-uid")
 }
 
 private class FakeEntitlementProvider : EntitlementProvider {

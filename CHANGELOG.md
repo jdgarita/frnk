@@ -15,6 +15,27 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: `frnkModules { }`'s `observability` slot is now two slots, `analytics` and
+  `crashReporting`**, defaulting to the new `noopAnalyticsModule` / `noopCrashReportingModule`
+  (`:analytics-api`; `noopObservabilityModule` still bundles both for the raw-list path). Analytics
+  and crash reporting are different vendors, so a host can bind one without the other.
+  `:analytics-impl` splits to match: `firebaseAnalyticsModule` + `firebaseCrashReportingModule`
+  (`firebaseObservabilityModule` includes both). `validateFrnkBootstrap` reports each slot
+  separately.
+- **Breaking: `AnalyticsTracker` gains `screen(name, params)`**, the screen-view primitive every
+  provider maps onto its native one (Firebase: `screen_view` + `firebase_screen`). Implementers
+  and fakes must add it; hosts stop spelling `screen_view` themselves.
+- **Breaking: `AnonymousIdentityProvider.idToken()` is removed.** The contract is an id, not a
+  credential; whether a backend can trust that id is the host's concern. `FirebaseAuthGateway`
+  loses its token method with it.
+- `revenueCatModule` now also binds `AnonymousIdentityProvider` over the RevenueCat app user id
+  (`RevenueCatIdentityProvider`, `:monetization-impl`) — a local read, no network, and never
+  `logOut()`, so an install identified under another id keeps it. An accountless host needs no
+  identity module beyond `monetization(provider = revenueCatModule)`; `validateFrnkBootstrap` now
+  checks the identity binding whenever the monetization stack is installed.
+
 ## [0.7.1] - 2026-09-19
 
 ### Added

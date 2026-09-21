@@ -33,7 +33,13 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
   `platformLanguageTag()` matches a key exact-tag-first, then by primary-language prefix (`es-MX` → `es`);
   each field resolves locale override → flat key → `paywallFallback`, benefits at whole-list granularity,
   malformed nodes degrading a tier instead of throwing. Pinned by `ResolvePaywallMetadataTest`.
-- `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`**
+- `RevenueCatIdentityProvider.kt` — **`AnonymousIdentityProvider`** over `Purchases.sharedInstance.appUserID`,
+  behind the `RevenueCatIdentityGateway` seam so `RevenueCatIdentityProviderTest` runs without the SDK.
+  A local read: no network, fails only when `Purchases` is unconfigured. **Never calls `logOut()`** — an
+  install that once ran `logIn(otherId)` keeps that id, which is what lets a host move off another
+  identity system without migrating entitlements or backend keys. Handing the same id to
+  `EntitlementProvider.identify` is a no-op (the provider skips `logIn` when it already matches).
+- `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`** and **`AnonymousIdentityProvider`**
   (+ `RevenueCatConfig`) **only**; `EntitlementManager` + `FeatureGate` come from `monetizationModule`.
   The host's `initializeFrnk(...)` module list installs both.
 

@@ -248,11 +248,11 @@ initializeFrnk(
         listOf(
             databaseModule,                      // :data-db-impl — Room DatabaseFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
-            firebaseObservabilityModule,         // or noopObservabilityModule (:analytics-api)
-            firebaseIdentityModule,              // :identity-impl — AnonymousIdentityProvider
+            firebaseAnalyticsModule,             // AnalyticsTracker — or noopAnalyticsModule (:analytics-api)
+            firebaseCrashReportingModule,        // CrashReporter — or noopCrashReportingModule (:analytics-api)
             remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
             // Monetization stack (optional — omit all three to run without entitlements):
-            revenueCatModule,                    // :monetization-impl — EntitlementProvider
+            revenueCatModule,                    // :monetization-impl — EntitlementProvider + AnonymousIdentityProvider
             monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
             paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
         ) + hostModules,                         // your repositories, feature VMs, schema module — after the toolkit's
@@ -282,17 +282,22 @@ initializeFrnk(
   offline launch may have left RevenueCat on its transient anonymous id. `Expired` carries the
   obfuscated address RevenueCat re-mailed a fresh link to; `NotARedemptionLink` means the URL was
   something else and is not tracked, so it is safe to route every incoming link through.
-- Install **exactly one** observability module (`firebaseObservabilityModule` XOR
-  `noopObservabilityModule`) — both bind `AnalyticsTracker`/`CrashReporter`. Remote Config follows the
-  same XOR rule (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
+- Install **exactly one** `AnalyticsTracker` binding (`firebaseAnalyticsModule` XOR `noopAnalyticsModule`)
+  and **exactly one** `CrashReporter` binding (`firebaseCrashReportingModule` XOR
+  `noopCrashReportingModule`) — they are independent slots. Remote Config follows the same XOR rule (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
   real impl ships.
 
-`firebaseIdentityModule` reuses `Firebase.auth.currentUser` or signs in anonymously and publishes
-the UID as `StateFlow<String?>`. The API module contains no Firebase types. Android hosts provide a
-`google-services.json` and apply the `frnk.android.firebase` convention plugin (§7) so it is actually
-processed; iOS hosts link `FirebaseCore` and `FirebaseAuth`, call `FirebaseApp.configure()` before
-Kotlin bootstrap, and include the capability in their umbrella framework.
+**Identity.** `revenueCatModule` binds `AnonymousIdentityProvider` over the RevenueCat app user id: a
+local read, no network, minted the moment the host calls `Purchases.configure(...)` and persisted by
+the SDK across launches. An accountless host therefore installs nothing extra for identity. The toolkit
+never calls `Purchases.logOut()`, so an install that once identified RevenueCat with another id (a
+Firebase uid, say) keeps it. The alternative, `firebaseIdentityModule` (`:identity-impl`), reuses
+`Firebase.auth.currentUser` or signs in anonymously; it needs `google-services.json` plus the
+`frnk.android.firebase` convention plugin (§7) on Android and `FirebaseCore` + `FirebaseAuth` with
+`FirebaseApp.configure()` before Kotlin bootstrap on iOS. If you install it next to `revenueCatModule`,
+list it later so its binding wins. The API module contains no SDK types, and no longer exposes a
+signed token — a backend credential is the host's concern.
 
 **Propagating the identity.** `AnonymousIdentityProvider` only *produces* a uid. Everything that
 *consumes* one — `AnalyticsTracker`, `CrashReporter`, `EntitlementProvider`, `EntitlementManager` —
@@ -325,7 +330,8 @@ two footguns it leaves to host discipline:
 initializeFrnk(
     context = this,
     modules = frnkModules {
-        observability = firebaseObservabilityModule   // single slot ⇒ XOR by construction
+        analytics = firebaseAnalyticsModule           // single slot ⇒ XOR by construction
+        crashReporting = firebaseCrashReportingModule // its own slot: a different vendor is fine
         remoteConfig = remoteConfigModule             // single slot ⇒ XOR by construction
         monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
@@ -335,16 +341,16 @@ initializeFrnk(
 )
 ```
 
-- **`frnkModules { }`** assembles the list. `observability`/`remoteConfig` are single slots (default to the
+- **`frnkModules { }`** assembles the list. `analytics`/`crashReporting`/`remoteConfig` are single slots (default to the
   no-op modules), so installing two — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)`
   auto-bundles the trio so you can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is
   always included. You still import the impl `val`s yourself and assign them (the builder never references an
   `*-impl` module, so the toolkit stays cinterop-clean).
 - **`validate = true` + `validator = Koin::validateFrnkBootstrap`** runs a post-`startKoin` check that throws a
-  message naming the exact missing module (one observability, one remote-config, the monetization stack the
-  Settings scaffold needs). This catches the *missing-module* footgun on **either** path — it works with a raw
+  message naming the exact missing module (one analytics, one crash-reporting, one remote-config, the monetization
+  stack the Settings scaffold needs and the `AnonymousIdentityProvider` it reads). This catches the *missing-module* footgun on **either** path — it works with a raw
   `initializeFrnk(modules = …)` list too. Note it runs after start, so it can detect a *missing* module but **not**
-  a *duplicate* one (two observability modules collapse to one binding) — that's what the builder's single slots
+  a *duplicate* one (two bindings for one slot collapse to one) — that's what the builder's single slots
   prevent. `KeyValueStore`/`DatabaseFactory` are treated as optional (a local-only host omits them).
 
 ## 5. Custom analytics

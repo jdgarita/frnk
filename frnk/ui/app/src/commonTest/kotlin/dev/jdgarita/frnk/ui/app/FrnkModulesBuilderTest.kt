@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.backend.noopObservabilityModule
+import dev.jdgarita.frnk.backend.noopAnalyticsModule
+import dev.jdgarita.frnk.backend.noopCrashReportingModule
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
@@ -19,10 +20,11 @@ class FrnkModulesBuilderTest {
     private val hostModule = module { single { "host-binding" } }
 
     @Test
-    fun defaults_to_noop_observability_remote_config_and_scaffold_vms_without_monetization() {
+    fun defaults_to_noop_analytics_crash_remote_config_and_scaffold_vms_without_monetization() {
         val modules = frnkModules { }
         frnkUiModules().forEach { assertTrue(it in modules, "scaffold VM module $it") }
-        assertTrue(noopObservabilityModule in modules, "default observability is no-op")
+        assertTrue(noopAnalyticsModule in modules, "default analytics is no-op")
+        assertTrue(noopCrashReportingModule in modules, "default crash reporting is no-op")
         assertTrue(noopRemoteConfigModule in modules, "default remote-config is no-op")
         assertFalse(monetizationModule in modules, "no monetization unless a provider is set")
         assertFalse(paywallScaffoldModule in modules, "no paywall unless a provider is set")
@@ -41,14 +43,15 @@ class FrnkModulesBuilderTest {
 
     @Test
     fun assigned_slots_replace_the_defaults_and_extras_are_carried() {
-        val customObservability = module { single { "custom-observability" } }
+        val customAnalytics = module { single { "custom-analytics" } }
         val modules =
             frnkModules {
-                observability = customObservability
+                analytics = customAnalytics
                 modules(hostModule)
             }
-        assertTrue(customObservability in modules, "assigned observability slot")
-        assertFalse(noopObservabilityModule in modules, "default observability replaced (XOR)")
+        assertTrue(customAnalytics in modules, "assigned analytics slot")
+        assertFalse(noopAnalyticsModule in modules, "default analytics replaced (XOR)")
+        assertTrue(noopCrashReportingModule in modules, "the other slot keeps its default — the two are independent")
         assertTrue(hostModule in modules, "host extras carried through")
     }
 }

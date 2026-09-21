@@ -7,8 +7,6 @@ internal interface FirebaseAuthGateway {
     val currentUid: String?
 
     suspend fun signInAnonymously(): String
-
-    suspend fun idToken(forceRefresh: Boolean): String?
 }
 
 internal object GitLiveFirebaseAuthGateway : FirebaseAuthGateway {
@@ -24,6 +22,4 @@ internal object GitLiveFirebaseAuthGateway : FirebaseAuthGateway {
         ) {
             "Firebase anonymous sign-in returned no user"
         }
-
-    override suspend fun idToken(forceRefresh: Boolean): String? = Firebase.auth.currentUser?.getIdToken(forceRefresh)
 }
