@@ -18,6 +18,11 @@ local.properties
 keystore.properties
 *.keystore
 *.jks
+# Firebase is gone from frnk and its demos, but stray local copies (and the Crashlytics CLI's
+# scratch dir with its dump_syms binary) must never be committed.
+google-services.json
+GoogleService-Info.plist
+.crashlytics/
 
 # OS
 .DS_Store

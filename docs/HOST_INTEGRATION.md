@@ -262,6 +262,9 @@ initializeFrnk(
 
 - **Host modules** go in the same list, **after** the toolkit's — so with `allowOverride(true)` a
   host can override a toolkit binding (a custom `DatabaseFactory`, a custom `EntitlementProvider`).
+  The one exception is the observability pair: `frnkModules { }` installs PostHog + Sentry **last**,
+  after your `modules(...)`, so a stray `AnalyticsTracker`/`CrashReporter` in a host module can never
+  shadow them; on the raw list, keep the two provider modules last yourself.
 - The Android overload also sets `DatabaseContext.application` and registers `androidContext(...)`,
   so the §1 context line is only needed if you bypass `initializeFrnk`.
 - **Monetization opt-out:** don't pass the three monetization modules. A host using a different

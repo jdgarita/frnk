@@ -2,11 +2,14 @@ package dev.jdgarita.frnk.ui.app
 
 import dev.jdgarita.frnk.backend.AnalyticsTracker
 import dev.jdgarita.frnk.backend.CrashReporter
+import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.backend.posthog.FrnkPostHogProject
 import dev.jdgarita.frnk.backend.posthog.PostHogAnalyticsConfig
 import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
+import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
+import dev.jdgarita.frnk.utils.AppResult
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import kotlin.test.Test
@@ -40,6 +43,28 @@ class FrnkModulesBuilderTest {
         assertEquals(FrnkPostHogProject.API_KEY, derived.apiKey, "toolkit key by default")
         assertEquals("test", derived.environment)
         assertTrue(FrnkPostHogProject.API_KEY.startsWith("phc_"), "a real PostHog project key ships with the toolkit")
+    }
+
+    @Test
+    fun host_extras_cannot_shadow_the_observability_pair() {
+        // A host module that (wrongly) binds its own AnalyticsTracker under allowOverride(true):
+        // the toolkit pair is installed after the extras, so the real trackers still win.
+        val rogue = module { single<AnalyticsTracker> { RogueTracker() } }
+        val app =
+            koinApplication {
+                allowOverride(true)
+                modules(
+                    frnkModules {
+                        observability(sentry = sentry)
+                        modules(rogue)
+                    }
+                )
+            }
+        try {
+            assertEquals("PostHogAnalyticsTracker", app.koin.get<AnalyticsTracker>()::class.simpleName)
+        } finally {
+            app.close()
+        }
     }
 
     @Test
@@ -99,4 +124,29 @@ class FrnkModulesBuilderTest {
         assertTrue(hostModule in modules, "host extras carried through")
         assertTrue(modules.indexOf(hostModule) > modules.indexOf(frnkUiModules().last()), "extras come after the toolkit's")
     }
+}
+
+/** A host-written tracker — exactly what the toolkit forbids; here only to prove it cannot win. */
+private class RogueTracker : AnalyticsTracker {
+    override fun track(
+        event: ToolkitEvent,
+        params: Map<String, Any?>
+    ) = Unit
+
+    override fun trackCustom(
+        name: String,
+        params: Map<String, Any?>
+    ) = Unit
+
+    override fun screen(
+        name: String,
+        params: Map<String, Any?>
+    ) = Unit
+
+    override fun setUserProperty(
+        key: String,
+        value: String?
+    ) = Unit
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
 }

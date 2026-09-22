@@ -24,7 +24,8 @@ import org.koin.core.module.Module
  *   SDK-backed module (`:analytics-posthog` + `:crash-sentry` are `api` deps of `:ui-app`): every host
  *   links both native SDKs anyway, so nothing is dragged in that a host would not otherwise carry. The
  *   host reads the two trackers back through Koin (`koinInject<AnalyticsTracker>()` /
- *   `get<CrashReporter>()`) for its own events and non-fatals.
+ *   `get<CrashReporter>()`) for its own events and non-fatals. The pair is installed **last**, after
+ *   the host's [modules], so an `allowOverride(true)` host cannot shadow it by accident.
  * - **XOR by construction for what is still a choice.** [identity] is a single slot, so installing
  *   two identity bindings — the silent-shadowing footgun — is unrepresentable.
  * - **No forgotten monetization trio.** [monetization] takes only the provider; [build] auto-adds
@@ -103,7 +104,6 @@ class FrnkModulesScope internal constructor() {
             }
         return buildList {
             addAll(frnkUiModules())
-            addAll(observability)
             identity?.let(::add)
             monetizationProvider?.let {
                 add(it)
@@ -111,6 +111,12 @@ class FrnkModulesScope internal constructor() {
                 add(paywallScaffoldModule)
             }
             addAll(extras)
+            // Last on purpose: under Koin's allowOverride a later definition wins, and hosts are told to
+            // put their modules after the toolkit's so they can override EntitlementProvider /
+            // DatabaseFactory. The observability pair is the one thing a host must never shadow — a
+            // stray AnalyticsTracker / CrashReporter in the extras would silently swallow production
+            // telemetry — so it is installed after everything else.
+            addAll(observability)
         }
     }
 }

@@ -86,9 +86,9 @@ Notes:
   `compileDebugKotlinAndroid` does not exist for KMP modules).
 - CI is paused while the repo is private. **Validate locally before every push** with the compile
   gate and the test gate above.
-- `demo/ios-app` needs a local `Configuration/Secrets.xcconfig` (copy the `.template`; Sentry DSN +
-  PostHog key) and Xcode-resolved Swift packages; it is not buildable from a fresh clone and CI never
-  builds iOS.
+- `demo/ios-app` needs a local `Configuration/Secrets.xcconfig` (copy the `.template`; the Sentry DSN
+  and the RevenueCat Test Store key — no PostHog key, that one ships inside frnk) and Xcode-resolved
+  Swift packages; it is not buildable from a fresh clone and CI never builds iOS.
 
 ## Rules for AI agents
 
