@@ -15,6 +15,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-22
+
 ### Changed
 
 - **Breaking: observability is mandatory and fixed — PostHog + Sentry on every host.**
@@ -483,7 +485,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/jdgarita/frnk/releases/tag/v0.9.0
 [0.8.0]: https://github.com/jdgarita/frnk/releases/tag/v0.8.0
 [0.7.1]: https://github.com/jdgarita/frnk/releases/tag/v0.7.1
 [0.7.0]: https://github.com/jdgarita/frnk/releases/tag/v0.7.0
