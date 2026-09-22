@@ -404,8 +404,7 @@ xcodebuild build \
   -project demo/ios-app/iosDemoApp.xcodeproj \
   -scheme iosDemoApp \
   -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=NO \
-  EXCLUDED_SOURCE_FILE_NAMES=GoogleService-Info.plist
+  CODE_SIGNING_ALLOWED=NO
 ```
 
 ### The umbrella module's `build.gradle.kts`
@@ -494,8 +493,8 @@ target as a normal bundled resource — no copy phase needed.
 
 The toolkit never calls `Purchases.configure(...)`; the consumer app must:
 
-1. Add the **`RevenueCat`** Swift package (`github.com/RevenueCat/purchases-ios`, a 5.x compatible
-   with `purchases-kmp` — e.g. `from: 5.58.0`) via SPM. **Add only the `RevenueCat` product** —
+1. Add the **`RevenueCat`** Swift package (`github.com/RevenueCat/purchases-ios`, the 5.x release the
+   pinned `purchases-kmp` wraps — 3.7.0 ↔ `from: 5.87.1`; 5.78.0+ is the floor for Xcode 27) via SPM. **Add only the `RevenueCat` product** —
    skip `RevenueCatUI` (frnk ships its own Compose paywall), `ReceiptParser`, and
    `RevenueCat_CustomEntitlementComputation` (mutually-exclusive alternate build).
 2. Call `Purchases.configure(withAPIKey:)` on launch before using the gate — a RevenueCat

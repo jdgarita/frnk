@@ -139,8 +139,9 @@ cp local.properties.example local.properties   # then point sdk.dir at your Andr
 ```
 
 Demo apps (the internal smoke harnesses) additionally need:
-- **Android:** a valid `google-services.json` in `demo/android-app/`
-- **iOS:** a valid `GoogleService-Info.plist` in `demo/ios-app/iosDemoApp/`
+- **Both:** `POSTHOG_API_KEY` + `SENTRY_DSN` — in `local.properties` for Android; for iOS copy
+  `demo/ios-app/Configuration/Secrets.xcconfig.template` to `Secrets.xcconfig` (gitignored) and fill it in
+- **Android:** a valid `google-services.json` in `demo/android-app/` (Firebase Remote Config)
 
 ## 🔧 Common commands
 
@@ -273,8 +274,7 @@ xcodebuild build \
   -project demo/ios-app/iosDemoApp.xcodeproj \
   -scheme iosDemoApp \
   -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=NO \
-  EXCLUDED_SOURCE_FILE_NAMES=GoogleService-Info.plist
+  CODE_SIGNING_ALLOWED=NO
 ```
 
 Every `*-impl` module ships `commonTest` coverage so concrete implementations are validated before consumers see them. The **design system** is tested too: `ui-components` carries Compose UI tests for its highest-value atoms (`FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar` search mode) that drive a real composition with `runComposeUiTest` and assert the semantics tree. They run as JVM host tests under **Robolectric** (`GraphicsMode.LEGACY`, no device needed) from an `androidHostTest` source set, so they gate in the same `testAndroidHostTest` step — see `frnk/ui/components/CLAUDE.md`.

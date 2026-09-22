@@ -46,6 +46,9 @@ DerivedData/
 # CocoaPods (if reintroduced later)
 Podfile.lock
 demo/ios-app/iosDemoApp.xcodeproj/xcuserdata/
+# iOS demo keys (Sentry DSN / PostHog / RevenueCat) — same approach as Faint: Config.xcconfig does
+# `#include? "Secrets.xcconfig"`; copy Configuration/Secrets.xcconfig.template and fill it in.
+demo/ios-app/Configuration/Secrets.xcconfig
 demo/ios-app/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Kotlin Multiplatform

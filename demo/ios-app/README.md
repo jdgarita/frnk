@@ -19,30 +19,21 @@ no *optional* `*-impl` module; it references three native SDKs (each supplied by
 `dynamic_lookup`):
 - **Sentry + PostHog** — the toolkit's **mandatory** crash-reporting and analytics providers
   (`sentryCrashReportingModule` / `postHogAnalyticsModule`, carried by `:ui-app` for every host),
-  installed by `DemoSdksKt.bootstrapDemoKoinWithSdks(...)` from the Swift constants at the top of
-  `iosDemoAppApp.swift`. **The DSN and API key are required** — the demo is a real host, there is no
-  logging fake, and a blank value fails at bootstrap with a message naming it.
+  installed by `DemoSdksKt.bootstrapDemoKoinWithSdks()` from the keys in
+  `Configuration/Secrets.xcconfig` (below). **The DSN and API key are required** — the demo is a real
+  host, there is no logging fake, and a blank value fails at bootstrap with a message naming it.
 - **RevenueCat** (BACKLOG P3-3, `iosMain` only) — the paywall runs against the RevenueCat **Test
   Store** (real `RevenueCatEntitlementProvider` + `revenueCatIdentityModule`, parity with
   `demo-android`), through the same `bootstrapDemoKoinWithSdks(...)` call.
 
-So this app links the **native Sentry + PostHog + RevenueCat SDKs** (added via SPM, below) plus the
-Firebase Apple SDK for `FirebaseApp.configure()` / `GoogleService-Info.plist` (parity with
-`demo-android`'s Firebase-backed Remote Config seam; nothing in DemoKit's iOS path reads it today).
+So this app links the **native Sentry + PostHog + RevenueCat SDKs** (added via SPM, below). There is
+**no Firebase on iOS**: nothing in DemoKit's iOS path reads it (remote config is the no-op default,
+identity comes from RevenueCat), so the project carries no `firebase-ios-sdk` package and no
+`GoogleService-Info.plist`.
 
 For apps that need real backends, build your own umbrella XCFramework over the frnk
 modules you use (this demo's `DemoKit` is the worked example) and follow the
 integration notes in `docs/HOST_INTEGRATION.md` §6.
-
-## Firebase setup (one-time)
-
-`iosDemoAppApp.swift` calls `FirebaseApp.configure()`, so the Firebase Apple SDK must be linked:
-
-1. In Xcode: **File ▸ Add Package Dependencies…**
-2. Enter `https://github.com/firebase/firebase-ios-sdk`, add the package, and add the `FirebaseCore`
-   product (the project may still list `FirebaseCrashlytics`, which pulls it transitively — harmless,
-   nothing reports to Crashlytics anymore) to the `iosDemoApp` target.
-3. `GoogleService-Info.plist` is already bundled (project `frnk-demo`).
 
 ## RevenueCat setup (one-time, for the paywall)
 
@@ -50,8 +41,9 @@ The paywall runs against the RevenueCat **Test Store** — no App Store Connect 
 tester needed. The native RevenueCat Apple SDK must be linked into this Xcode project:
 
 1. In Xcode: **File ▸ Add Package Dependencies…**
-2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.58.0` or later**
-   (a 5.x compatible with `purchases-kmp` 3.0.5).
+2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.87.1` or later** — the
+   `purchases-ios` release `purchases-kmp` 3.7.0 wraps (see `gradle/libs.versions.toml`); anything
+   below 5.78.0 does not compile on Xcode 27. The project already pins this as the SPM minimum.
 3. Add the **`RevenueCat`** product to the `iosDemoApp` target. *(purchases-kmp 3.0+ binds
    directly against `purchases-ios` — **not** `PurchasesHybridCommon`.)*
 4. The Test Store `test_` API key is already wired in `iosDemoAppApp.swift`
@@ -63,11 +55,20 @@ tester needed. The native RevenueCat Apple SDK must be linked into this Xcode pr
 ## Sentry + PostHog setup (one-time)
 
 Both packages are already declared in `iosDemoApp.xcodeproj` (`sentry-cocoa` 8.58.x, product
-`Sentry`; `posthog-ios` 3.64+, product `PostHog`) — Xcode resolves them on first open. Paste a
-Sentry project DSN and a PostHog project API key into the constants at the top of
-`iosDemoAppApp.swift` (the same `frnk-demo` project keys `local.properties` uses on Android) —
-**both are required**; the app fails at bootstrap without them. Sentry installs its own
-unhandled-Kotlin-exception hook, so no extra native wiring is needed.
+`Sentry`; `posthog-ios` 3.64+, product `PostHog`) — Xcode resolves them on first open. Keys follow
+Faint's approach — an xcconfig, not Swift constants:
+
+```bash
+cp demo/ios-app/Configuration/Secrets.xcconfig.template demo/ios-app/Configuration/Secrets.xcconfig
+# then fill in SENTRY_DSN / POSTHOG_API_KEY / POSTHOG_HOST — the same frnk-demo values local.properties holds
+```
+
+`Configuration/Config.xcconfig` (tracked, the target's base configuration) does
+`#include? "Secrets.xcconfig"` (gitignored), `Info.plist` forwards each value as `$(KEY)`, and
+`bootstrapDemoKoinWithSdks()` reads them from `NSBundle` at launch. **Both are required**: with no
+`Secrets.xcconfig` the values expand empty and the Kotlin config fails at launch naming the key.
+xcconfig treats `//` as a comment, so URLs are written `https:/$()/…` (see the template). Sentry
+installs its own unhandled-Kotlin-exception hook, so no extra native wiring is needed.
 
 ## Run
 

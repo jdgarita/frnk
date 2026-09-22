@@ -86,8 +86,9 @@ Notes:
   `compileDebugKotlinAndroid` does not exist for KMP modules).
 - CI is paused while the repo is private. **Validate locally before every push** with the compile
   gate and the test gate above.
-- `demo/ios-app` needs a local `GoogleService-Info.plist` and Xcode-resolved Swift packages; it is not
-  buildable from a fresh clone and CI never builds iOS.
+- `demo/ios-app` needs a local `Configuration/Secrets.xcconfig` (copy the `.template`; Sentry DSN +
+  PostHog key) and Xcode-resolved Swift packages; it is not buildable from a fresh clone and CI never
+  builds iOS.
 
 ## Rules for AI agents
 
@@ -112,7 +113,8 @@ Notes:
   say explicitly why it cannot be demoed.
 - **Verify before claiming done.** Run the compile gate and the test gate; report failures verbatim.
 - **Record decisions in the brain**, not in the docs. Docs stay lean and canonical.
-- `local.properties` and `GoogleService-Info.plist` hold secrets. Never print or commit them.
+- `local.properties`, `google-services.json` and `demo/ios-app/Configuration/Secrets.xcconfig` hold
+  secrets. Never print or commit them.
 
 ## Git rules
 

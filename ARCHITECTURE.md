@@ -19,7 +19,7 @@ frnk/
 demo/
   shared/        FrnkDemoApp (one composable both platforms mount) → DemoKit.xcframework
   android-app/   MainActivity: initializeFrnk(...) + setContent { FrnkDemoApp() }
-  ios-app/       SwiftUI shell: FirebaseApp.configure() + UIViewControllerRepresentable(MainViewController())
+  ios-app/       SwiftUI shell: bootstrapDemoKoinWithSdks(...) + UIViewControllerRepresentable(MainViewController())
 ```
 
 Gradle project names are flat (`:core-mvi`, `:ui-components`, `:demo-shared`, …) and remapped to

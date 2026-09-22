@@ -43,7 +43,14 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   `firebaseCrashReportingModule`, `firebaseObservabilityModule`, the CrashKiOS native crash handler)
   and the `firebase-analytics` / `firebase-crashlytics` / `crashkios-crashlytics` catalog entries.
 - Demo: `LoggingAnalyticsTracker` / `LoggingCrashReporter`, the iOS CrashKiOS hook
-  (`enableDemoCrashlytics`) and the RevenueCat-only `bootstrapDemoKoinWithRevenueCat`.
+  (`enableDemoCrashlytics`) and the RevenueCat-only `bootstrapDemoKoinWithRevenueCat`. Firebase is
+  gone from the iOS demo entirely (`firebase-ios-sdk` package, `FirebaseApp.configure()`,
+  `GoogleService-Info.plist`, the Crashlytics dSYM upload phase). iOS keys moved out of Swift
+  constants into `demo/ios-app/Configuration/Secrets.xcconfig` (gitignored, `.template` tracked;
+  `Config.xcconfig` → `Info.plist` → `NSBundle`, Faint's approach). The Xcode run-script now scrubs
+  Xcode's env before calling Gradle, so Kotlin 2.4's SwiftPM synthetic-linkage integration (pulled in
+  transitively by posthog-kmp) no longer interferes with the plain-XCFramework model; the RevenueCat
+  SPM minimum is 5.87.1 (what purchases-kmp 3.7.0 wraps; 5.75.0 did not compile on Xcode 27).
 
 ## [0.8.0] - 2026-09-21
 

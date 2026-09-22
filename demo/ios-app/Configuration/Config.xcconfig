@@ -1,0 +1,5 @@
+// Machine-local keys (see Secrets.xcconfig.template). `#include?` — not `#include` — so a fresh
+// clone still configures and builds: the keys expand empty, and the Kotlin bootstrap then fails at
+// launch with a message naming the missing one (the demo is a real host — PostHog + Sentry are
+// mandatory, there is no logging fake).
+#include? "Secrets.xcconfig"
