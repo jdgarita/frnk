@@ -18,7 +18,7 @@
 `frnk` is a **Kotlin Multiplatform (KMP) + Compose Multiplatform (CMP) toolkit** —
 not a shippable application. It is a reusable foundation that downstream mobile
 apps (Android + iOS) consume to avoid re-implementing the same cross-cutting
-concerns (design system, DI, navigation, persistence, remote config, analytics,
+concerns (design system, DI, navigation, persistence, analytics,
 monetization) on every new product.
 
 ### 1.1 Consumption model
@@ -63,7 +63,6 @@ descriptions.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
   - `:analytics-api` ↔ `:analytics-posthog` (analytics; PostHog) + `:crash-sentry` (crash; Sentry) — both mandatory, no no-op
-  - `:remote-config-api` (Remote Config contract + `noopRemoteConfigModule`; a sibling of analytics, Stage 11 — the toolkit ships no backend, a host binds its own)
   - `:data-db-api` ↔ `:data-db-impl` (SQL driver SPI; split at restructure Stage 4)
   - `:data-prefs-api` ↔ `:data-prefs-impl` (key-value; split at restructure Stage 4)
   - `:monetization-api` ↔ `:monetization-impl` (RevenueCat)
@@ -184,17 +183,11 @@ gaps against these targets is tracked as open-work entries in the MobiAI brain
 
 ### 3.5 Remote config
 
-- Read-only typed remote configuration behind `:remote-config-api`:
-  `RemoteConfigService` (typed key→value + `fetchAndActivate`). Its own
-  capability pair, a **sibling of analytics** (restructure Stage 11, OQ-1) — it
-  replaced the old generic Firestore-shaped `RemoteData` stub (`AuthService` +
-  the Supabase impl were dropped at Stage 2; the Firestore stub deleted at
-  Stage 11).
-- Implementation: none shipped by the toolkit (the Firebase Remote Config
-  `:remote-config-impl` was retired on 2026-09-22). Install `noopRemoteConfigModule`
-  (`:remote-config-api`) to read bundled defaults only, XOR a host-owned
-  `RemoteConfigService` binding.
-- Installed at runtime by passing its Koin module to `initializeFrnk(...)`.
+- **Not a toolkit concern.** The Stage 11 `:remote-config-api` / `:remote-config-impl` pair
+  (`RemoteConfigService` over Firebase Remote Config, successor of the Firestore-shaped `RemoteData`
+  stub) was retired on 2026-09-22 together with Firebase: with no toolkit backend, a contract + no-op
+  + `frnkModules` slot was dead optionality. A host that needs remote config owns its own interface
+  and binding, outside frnk.
 
 ### 3.6 Analytics
 

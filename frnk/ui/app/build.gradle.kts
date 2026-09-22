@@ -23,10 +23,6 @@ kotlin {
             // adds nothing a host would not otherwise carry.
             api(projects.analyticsPosthog)
             api(projects.crashSentry)
-            // Cinterop-clean api edge (interfaces only) so
-            // frnkModules { } can default remoteConfig to noopRemoteConfigModule and
-            // validateFrnkBootstrap can resolve RemoteConfigService. Mirrors the :analytics-api edge.
-            api(projects.remoteConfigApi)
             // The bootstrap FrnkAppScaffold's fail-fast assertion points hosts at.
             api(projects.coreDi)
         }

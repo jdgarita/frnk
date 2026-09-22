@@ -1624,3 +1624,23 @@ WHY (JD): no app uses Firebase anymore — PostHog + Sentry + RevenueCat cover a
 - gradle/libs.versions.toml
 - build-logic/build.gradle.kts
 - frnk/capabilities/remote-config-api/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/RemoteConfigModule.kt
+
+## :remote-config-api and the frnkModules remoteConfig slot deleted — no remote-config contract in frnk (2026-09-22)
+
+- id: remote-config-api-and-the-frnkmodules-remoteconfig-slot-dele-20260922-181159
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: capabilities / remote config
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22, PR #85), closing the OPEN question left by the Firebase retirement: `:remote-config-api` (RemoteConfigService + NoopRemoteConfig + noopRemoteConfigModule, Stage 11 / OQ-1) is DELETED, together with the `remoteConfig` slot of `frnkModules { }` (default was the no-op), the `RemoteConfigService` check in `validateFrnkBootstrap`, the `:ui-app → :remote-config-api` edge, and the demo's "Remote welcome" / "Fetch Remote Config" UI (DemoHomeViewModel no longer injects RemoteConfigService; HomeMviContract lost `remoteWelcome` + `FetchRemoteConfig`).
+
+RESULT: `frnkModules { }` = mandatory `observability(sentry = …)` + optional `identity` slot + `monetization(provider)` + `modules(...)`. The validator requires the observability pair + the monetization stack (+ identity once monetization is present); KeyValueStore / DatabaseFactory stay optional. `:camera` / `:permissions` api-only scaffolds are unchanged (their no-ops are the remaining "contract without impl" precedent — same open question applies to them if they never get an impl).
+
+WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optionality; a host that needs remote config owns it entirely outside frnk (`still` was the "candidate first consumer" and never wired it). .gitignore was tidied at the same time (iOS demo section grouped; the stale "PostHog" mention in the Secrets.xcconfig comment removed).
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidation.kt
+- settings.gradle.kts

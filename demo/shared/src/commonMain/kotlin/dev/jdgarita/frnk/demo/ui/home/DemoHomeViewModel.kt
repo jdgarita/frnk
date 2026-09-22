@@ -11,7 +11,6 @@ import dev.jdgarita.frnk.monetization.FeatureGate
 import dev.jdgarita.frnk.monetization.FrnkFeature
 import dev.jdgarita.frnk.permissions.Permission
 import dev.jdgarita.frnk.permissions.PermissionController
-import dev.jdgarita.frnk.remoteconfig.RemoteConfigService
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeScreenState
@@ -30,7 +29,6 @@ class DemoHomeViewModel(
     private val entitlements: EntitlementManager,
     private val notes: NoteStore,
     private val crash: CrashReporter,
-    private val remoteConfig: RemoteConfigService,
     private val camera: CameraController,
     private val permissions: PermissionController
 ) : MviViewModel<DemoHomeArguments, DemoHomeModelState, DemoHomeScreenState, DemoHomeIntent, DemoHomeEffect>(
@@ -45,19 +43,9 @@ class DemoHomeViewModel(
         entitlements.isGodMode
             .onEach { god -> updateModel { copy(isGodMode = god) } }
             .launchIn(viewModelScope)
-        // Stage 11: seed the Remote Config value + current camera permission from their no-op
-        // providers (the demo carries no Firebase, so remote config always shows the bundled default).
-        updateModel {
-            copy(
-                remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, "Hello from the no-op default"),
-                cameraPermission = permissions.status(Permission.Camera).name
-            )
-        }
+        // Stage 11: seed the current camera permission from its no-op provider.
+        updateModel { copy(cameraPermission = permissions.status(Permission.Camera).name) }
         viewModelScope.launch { loadNotes() }
-    }
-
-    private companion object {
-        const val REMOTE_WELCOME_KEY = "demo_welcome_message"
     }
 
     private suspend fun loadNotes() {
@@ -152,15 +140,6 @@ class DemoHomeViewModel(
             is DemoHomeIntent.GallerySwitchChanged -> updateModel { copy(gallerySwitchOn = intent.checked) }
             is DemoHomeIntent.GallerySegmentChanged -> updateModel { copy(gallerySegmentIndex = intent.index) }
             is DemoHomeIntent.GalleryNavChanged -> updateModel { copy(galleryNavIndex = intent.index) }
-            DemoHomeIntent.FetchRemoteConfig ->
-                remoteConfig.fetchAndActivate().fold(
-                    onSuccess = {
-                        updateModel { copy(remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, remoteWelcome)) }
-                        emit(DemoHomeEffect.Toast("Remote Config fetched"))
-                    },
-                    onFailure = { emit(DemoHomeEffect.Toast("Fetch failed: ${it.message}")) }
-                )
-
             DemoHomeIntent.CapturePhoto ->
                 camera.capturePhoto().fold(
                     onSuccess = { image -> updateModel { copy(cameraResult = "Captured ${image.bytes.size} bytes") } },

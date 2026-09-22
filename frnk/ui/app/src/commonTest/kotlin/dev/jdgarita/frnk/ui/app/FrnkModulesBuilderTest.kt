@@ -7,7 +7,6 @@ import dev.jdgarita.frnk.backend.posthog.PostHogAnalyticsConfig
 import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
-import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import kotlin.test.Test
@@ -18,8 +17,7 @@ import kotlin.test.assertTrue
 
 /**
  * [frnkModules] assembly: observability is mandatory and always the PostHog + Sentry pair, the
- * monetization trio is bundled from just the provider, remote-config defaults to no-op, and an
- * assigned slot replaces the default. The XOR guarantee for the slots is a compile-time property (a
+ * monetization trio is bundled from just the provider, and extras are carried through. The XOR guarantee for the slots is a compile-time property (a
  * single `var`) — not testable at runtime.
  */
 class FrnkModulesBuilderTest {
@@ -58,10 +56,9 @@ class FrnkModulesBuilderTest {
     }
 
     @Test
-    fun defaults_to_noop_remote_config_and_scaffold_vms_without_monetization() {
+    fun defaults_to_scaffold_vms_without_monetization() {
         val modules = frnkModules { observability(sentry = sentry) }
         frnkUiModules().forEach { assertTrue(it in modules, "scaffold VM module $it") }
-        assertTrue(noopRemoteConfigModule in modules, "default remote-config is no-op")
         assertFalse(monetizationModule in modules, "no monetization unless a provider is set")
         assertFalse(paywallScaffoldModule in modules, "no paywall unless a provider is set")
     }
@@ -93,16 +90,13 @@ class FrnkModulesBuilderTest {
     }
 
     @Test
-    fun assigned_remote_config_replaces_the_default_and_extras_are_carried() {
-        val customRemoteConfig = module { single { "custom-remote-config" } }
+    fun extras_are_carried_after_the_toolkit_modules() {
         val modules =
             frnkModules {
                 observability(sentry = sentry)
-                remoteConfig = customRemoteConfig
                 modules(hostModule)
             }
-        assertTrue(customRemoteConfig in modules, "assigned remote-config slot")
-        assertFalse(noopRemoteConfigModule in modules, "default remote-config replaced (XOR)")
         assertTrue(hostModule in modules, "host extras carried through")
+        assertTrue(modules.indexOf(hostModule) > modules.indexOf(frnkUiModules().last()), "extras come after the toolkit's")
     }
 }

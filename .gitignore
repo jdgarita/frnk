@@ -33,18 +33,16 @@ DerivedData/
 # SwiftPM
 .swiftpm/
 .build/
-# Xcode-managed SwiftPM pins for iosDemoApp — resolved locally on first Xcode open.
-# Kept local (like Secrets.xcconfig below): the demo apps are internal smoke harnesses that
-# already require local key setup, and CI never builds iOS.
+# Xcode-managed SwiftPM pins for iosDemoApp — resolved locally on first Xcode open. Kept local (like
+# Secrets.xcconfig below): the demo is an internal smoke harness and CI never builds iOS.
 **/xcshareddata/swiftpm/Package.resolved
 
-# CocoaPods (if reintroduced later)
-Podfile.lock
+# iOS demo
 demo/ios-app/iosDemoApp.xcodeproj/xcuserdata/
-# iOS demo keys (Sentry DSN / PostHog / RevenueCat) — same approach as Faint: Config.xcconfig does
+demo/ios-app/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
+# Keys (Sentry DSN / RevenueCat) — same approach as Faint: Config.xcconfig does
 # `#include? "Secrets.xcconfig"`; copy Configuration/Secrets.xcconfig.template and fill it in.
 demo/ios-app/Configuration/Secrets.xcconfig
-demo/ios-app/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Kotlin Multiplatform
 *.kexe

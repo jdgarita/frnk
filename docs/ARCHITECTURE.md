@@ -17,7 +17,7 @@ core/   (no upward deps; util is the root everything depends on)
 data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (impl installed via Koin):
   db-api    ── db-impl     (DatabaseFactory)      analytics-api     ── analytics-posthog  (PostHog)  + crash-sentry (Sentry)
                                                     └─ MANDATORY on every host: frnkModules { observability(…) }; no no-op
-  prefs-api ── prefs-impl  (KeyValueStore)        remote-config-api (contract + noopRemoteConfigModule; no toolkit backend)
+  prefs-api ── prefs-impl  (KeyValueStore)
                                                   identity-api      (AnonymousIdentityProvider; bound by
                                                     │                 monetization-impl's revenueCatIdentityModule)
                                                     └─ IdentitySource: the shared identify(id) sink
@@ -62,7 +62,7 @@ references that would otherwise force iosDemoApp to link them just to launch. Th
 `FakeKeyValueStore`, `FakeNoteStore`) for the optional paid-SDK seams; observability is **not**
 faked — the demo is a real host and bootstraps PostHog + Sentry from real keys (`local.properties`
 on Android, `Configuration/Secrets.xcconfig` on iOS), so it needs those keys to boot. The demo
-carries no Firebase on either platform (remote config stays on the no-op default). The demo
+carries no Firebase on either platform. The demo
 also owns its own Room schema (`DemoDatabase` + `NoteEntity`/`NoteDao` + the
 `dev.jdgarita.frnk.demo.notes` NoteStore) — the toolkit owns no schema (Stage 4 /
 OQ-2), and Room's runtime plus the KSP-generated code are driver-free, so DemoKit
@@ -109,7 +109,6 @@ analytics-api ← identity-api                  # IdentitySource — see below
 monetization-api ← {analytics-api, identity-api, data-prefs-api}
 monetization-ui  ← {ui-scaffolds, monetization-api}
 ui-scaffolds     ← monetization-api           # SettingsViewModel.ObserveProStatusUseCase (needs monetizationModule in graph)
-remote-config-api                             # sibling of analytics, never merged into it; no toolkit impl (host binds its own)
 monetization-impl → identity-api              # revenueCatIdentityModule is the toolkit's AnonymousIdentityProvider binding
 Material3 only in ui-bottom-nav (ui-app inherits it transitively — the accepted batteries-included trade)
 Only demo modules may depend on *-impl modules from code; hosts wire impls via Koin modules only
@@ -134,7 +133,7 @@ Each domain that pulls in a third-party SDK is split:
 - **`*-api`** — pure-interface module. No Ktor, no SDK, no SQLite driver. Domain code depends only on these.
 - **`*-impl`** (e.g. `:analytics-posthog`, `:crash-sentry`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`) — concrete bindings exposed as Koin modules. `:analytics-api`'s two contracts have exactly one impl each (PostHog, Sentry) and both are mandatory; the other pairs are host choices.
 
-Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) ships only `noopRemoteConfigModule` — the toolkit has no remote-config backend, a host that wants one binds its own `RemoteConfigService` and assigns it to `frnkModules { remoteConfig = … }` — while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — bound by `revenueCatIdentityModule` (`:monetization-impl`, the RevenueCat app user id) or a host-owned binding; `frnkModules { identity = … }` takes exactly one. (The Firebase-backed `:identity-impl` / `:remote-config-impl` were retired on 2026-09-22.) **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
+Capabilities (`frnk/capabilities/`) follow the same rule: **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — bound by `revenueCatIdentityModule` (`:monetization-impl`, the RevenueCat app user id) or a host-owned binding; `frnkModules { identity = … }` takes exactly one. (The Firebase-backed `:identity-impl` and the whole remote-config pair `:remote-config-api` / `:remote-config-impl` were retired on 2026-09-22 — with no toolkit backend, a remote-config contract + no-op + slot was dead optionality; a host that needs it owns it outside frnk.) **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -178,7 +177,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 ## Module communication flow
 
 1. A composable dispatches a `UiIntent` via `viewModel.send(intent)`.
-2. The ViewModel handles it in `onIntent`: it mutates the data-only `ModelState` purely with `updateModel { copy(...) }` (the `UiState` re-derives via `mapToUiState`) and/or calls a `*-api` interface (e.g. `RemoteConfigService` from `:remote-config-api`).
+2. The ViewModel handles it in `onIntent`: it mutates the data-only `ModelState` purely with `updateModel { copy(...) }` (the `UiState` re-derives via `mapToUiState`) and/or calls a `*-api` interface (e.g. `EntitlementManager` from `:monetization-api`).
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed in its `initializeFrnk(modules = …)` list.
 4. The impl returns an `AppResult<Data, AppError>`.
 5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.

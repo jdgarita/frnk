@@ -6,7 +6,6 @@ import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
 import dev.jdgarita.frnk.backend.sentry.sentryCrashReportingModule
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
-import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import org.koin.core.module.Module
 
 /**
@@ -26,10 +25,8 @@ import org.koin.core.module.Module
  *   links both native SDKs anyway, so nothing is dragged in that a host would not otherwise carry. The
  *   host reads the two trackers back through Koin (`koinInject<AnalyticsTracker>()` /
  *   `get<CrashReporter>()`) for its own events and non-fatals.
- * - **XOR by construction for what is still a choice.** [remoteConfig] and [identity] are single
- *   slots, so installing two bindings for one of them — the silent-shadowing footgun — is
- *   unrepresentable. Identity is its own slot because RevenueCat monetization with Firebase identity
- *   is a legitimate pairing.
+ * - **XOR by construction for what is still a choice.** [identity] is a single slot, so installing
+ *   two identity bindings — the silent-shadowing footgun — is unrepresentable.
  * - **No forgotten monetization trio.** [monetization] takes only the provider; [build] auto-adds
  *   `monetizationModule` + `paywallScaffoldModule` so the stack is always complete.
  * - **Scaffold VMs included.** [build] always prepends [frnkUiModules].
@@ -39,7 +36,6 @@ import org.koin.core.module.Module
  *     context = this,
  *     modules = frnkModules {
  *         observability(sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env))
- *         // remoteConfig defaults to noopRemoteConfigModule; assign a host RemoteConfigService module to override
  *         monetization(provider = revenueCatModule)     // + monetizationModule + paywallScaffoldModule
  *         identity = revenueCatIdentityModule           // the app user id as the anonymous identity
  *         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
@@ -49,14 +45,10 @@ import org.koin.core.module.Module
  * )
  * ```
  *
- * [remoteConfig] defaults to [noopRemoteConfigModule] (no toolkit code reads remote config and the
- * toolkit ships no remote-config backend; a host with one binds its own `RemoteConfigService`). [identity] has no default: a host without monetization needs none,
+ * [identity] has no default: a host without monetization needs none,
  * and one with it must choose (the validator says so if it forgets).
  */
 class FrnkModulesScope internal constructor() {
-    /** Remote-config binding — one slot enforces the provider XOR no-op rule. Defaults to no-op. */
-    var remoteConfig: Module = noopRemoteConfigModule
-
     /**
      * Anonymous-identity binding (`AnonymousIdentityProvider`) — `revenueCatIdentityModule`
      * (`:monetization-impl`, the RevenueCat app user id), or a host-owned binding.
@@ -112,7 +104,6 @@ class FrnkModulesScope internal constructor() {
         return buildList {
             addAll(frnkUiModules())
             addAll(observability)
-            add(remoteConfig)
             identity?.let(::add)
             monetizationProvider?.let {
                 add(it)

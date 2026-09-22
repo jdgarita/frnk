@@ -36,8 +36,7 @@ import kotlin.time.Clock
 val frnkAppModule =
     module {
         // Stage 11 capability scaffolds — camera/permissions have no impl yet, so they stay no-op
-        // everywhere (demoed as such); remote config stays on the builder's no-op default too — the
-        // demo carries no Firebase on either platform.
+        // everywhere (demoed as such).
         includes(cameraModule)
         includes(permissionsModule)
         // The real frnk monetization layer (DefaultEntitlementManager + FeatureGate) over a FAKE
@@ -57,7 +56,7 @@ val frnkAppModule =
         // demoNotesModule (demo-owned DemoDatabase over DatabaseFactory, OQ-2) — and the
         // Robolectric round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
-        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get()) }
     }
 
 /** In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK. */

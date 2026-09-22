@@ -5,7 +5,6 @@ import dev.jdgarita.frnk.backend.CrashReporter
 import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
-import dev.jdgarita.frnk.remoteconfig.RemoteConfigService
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.core.error.InstanceCreationException
@@ -20,8 +19,7 @@ import org.koin.core.error.InstanceCreationException
  *
  * **Required** (missing ⇒ throw): the observability pair (`AnalyticsTracker` = PostHog,
  * `CrashReporter` = Sentry — `frnkModules { observability(…) }` cannot omit them, so these two checks
- * only ever fire on a hand-built `initializeFrnk(modules = listOf(…))` list), a remote-config module
- * (`RemoteConfigService`), and the monetization stack
+ * only ever fire on a hand-built `initializeFrnk(modules = listOf(…))` list) and the monetization stack
  * (`ObserveProStatusUseCase` + `EntitlementManager` — the always-installed Settings scaffold reads
  * pro-status) together with the `AnonymousIdentityProvider` its `SyncAuthUseCase` fans out from.
  * **Optional** (never checked): `KeyValueStore` / `DatabaseFactory`, which a local-only host
@@ -29,7 +27,7 @@ import org.koin.core.error.InstanceCreationException
  *
  * This runs **after** `startKoin`, so it can only detect *missing* bindings — it cannot see a *duplicate*
  * install (two modules collapse to one binding). Preventing that double-install is [frnkModules]'s
- * job (one `observability(…)` call and the single-slot `remoteConfig`/`identity` make it unrepresentable).
+ * job (one `observability(…)` call and the single-slot `identity` make it unrepresentable).
  */
 fun Koin.validateFrnkBootstrap() {
     val missing =
@@ -44,12 +42,6 @@ fun Koin.validateFrnkBootstrap() {
                 add(
                     "crash reporting — install sentryCrashReportingModule(config) (:crash-sentry); " +
                         "frnkModules { observability(sentry = …) } does it for you"
-                )
-            }
-            if (!isBound<RemoteConfigService>()) {
-                add(
-                    "remote config — install noopRemoteConfigModule (:remote-config-api) " +
-                        "or a host RemoteConfigService binding"
                 )
             }
             if (!isBound<ObserveProStatusUseCase>() || !isBound<EntitlementManager>()) {

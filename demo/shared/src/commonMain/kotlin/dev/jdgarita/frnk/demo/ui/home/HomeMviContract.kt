@@ -27,7 +27,6 @@ data class DemoHomeScreenState(
     val gallerySegmentIndex: Int = 0,
     val galleryNavIndex: Int = 0,
     // Stage 11 capability scaffolds — Remote Config value + camera/permission no-op outcomes.
-    val remoteWelcome: String = "",
     val cameraResult: String = "Not captured",
     val cameraPermission: String = "",
     val frnkHomeState: HomeScreenState
@@ -50,7 +49,6 @@ data class DemoHomeModelState(
     val gallerySegmentIndex: Int = 0,
     val galleryNavIndex: Int = 0,
     // Stage 11 capability scaffolds — Remote Config value + camera/permission no-op outcomes.
-    val remoteWelcome: String = "",
     val cameraResult: String = "Not captured",
     val cameraPermission: String = ""
 ) : ModelState
@@ -109,7 +107,6 @@ sealed interface DemoHomeIntent : UiIntent {
     ) : DemoHomeIntent
 
     // Stage 11 capability scaffolds.
-    data object FetchRemoteConfig : DemoHomeIntent
 
     data object CapturePhoto : DemoHomeIntent
 

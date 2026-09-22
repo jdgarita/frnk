@@ -13,7 +13,7 @@ Android and iOS are thin native wrappers around shared Compose Multiplatform UI.
 frnk/
   core/          util · mvi · nav · platform · di        ← pure Kotlin, no Compose, no SDKs
   data/          db-api/impl · prefs-api/impl             ← persistence contracts + bindings
-  capabilities/  analytics · identity · remote-config · monetization (api/impl pairs)
+  capabilities/  analytics · identity · monetization (api/impl pairs) · camera · permissions (scaffolds)
                  haptics · camera · permissions · monetization-ui
   ui/            theme ← components ← scaffolds ← bottom-nav ← app   ← Compose Multiplatform
 demo/
@@ -79,9 +79,9 @@ implementations are bound at the edge by Koin and never imported by domain or pr
 
 - **Configured in `commonMain`.** Each module exports its bindings as a Koin `module`
   (`databaseModule`, `prefsModule`, `postHogAnalyticsModule(config)`, `sentryCrashReportingModule(config)`,
-  `revenueCatModule`, `frnkUiModules()`, …). An `*-api` module may ship a no-op module where the
-  capability is genuinely optional (`noopRemoteConfigModule`); observability has none — PostHog +
-  Sentry are mandatory on every host.
+  `revenueCatModule`, `frnkUiModules()`, …). Only the `:camera` / `:permissions` scaffolds ship a
+  no-op module (no impl exists yet); observability has none — PostHog + Sentry are mandatory on every
+  host.
 - **Initialised per platform.** Android calls `initializeFrnk(context, modules)`; iOS calls
   `initializeFrnk(modules)` (both in `:core-di`). The host passes **exactly** the module list it
   wants — capability selection is a module list, not an enum. Un-passed modules never enter the graph.

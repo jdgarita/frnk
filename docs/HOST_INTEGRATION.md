@@ -35,7 +35,6 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:analytics-posthog` | `analytics-posthog` | `projects.analyticsPosthog` | PostHog `AnalyticsTracker` → `postHogAnalyticsModule(config)`. Mandatory; `:ui-app` carries it. |
 | `:crash-sentry` | `crash-sentry` | `projects.crashSentry` | Sentry `CrashReporter` → `sentryCrashReportingModule(config)`. Mandatory; `:ui-app` carries it. |
 | `:identity-api` | `identity-api` | `projects.identityApi` | SDK-free `AnonymousIdentityProvider` contract (bound by `revenueCatIdentityModule`, `:monetization-impl`). |
-| `:remote-config-api` | `remote-config-api` | `projects.remoteConfigApi` | `RemoteConfigService` + `noopRemoteConfigModule` (no toolkit backend — bind your own). |
 | `:camera` | `camera` | `projects.camera` | api-only no-op scaffold → `cameraModule` (no impl yet). |
 | `:permissions` | `permissions` | `projects.permissions` | api-only no-op scaffold → `permissionsModule` (no impl yet). |
 | `:monetization-api` | `monetization-api` | `projects.monetizationApi` | `EntitlementManager`/`FeatureGate` → `monetizationModule`. |
@@ -249,7 +248,6 @@ initializeFrnk(
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
             postHogAnalyticsModule(PostHogAnalyticsConfig(environment = env)),                // AnalyticsTracker — MANDATORY; key ships in frnk
             sentryCrashReportingModule(SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env)), // CrashReporter — MANDATORY; YOUR Sentry project
-            noopRemoteConfigModule,              // :remote-config-api — or your own single<RemoteConfigService> module
             // Monetization stack (optional — omit all three to run without entitlements):
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
             revenueCatIdentityModule,            // :monetization-impl — AnonymousIdentityProvider (or your own binding)
@@ -292,7 +290,7 @@ initializeFrnk(
   construction, so wire it from your build config exactly as described in
   [Supplying per-app keys — the standard](#supplying-per-app-keys--the-standard). Never bind your
   own `AnalyticsTracker`/`CrashReporter`; inject the toolkit's (`koinInject<AnalyticsTracker>()`) for your
-  app's own `trackCustom`/`screen`/`recordException`. Remote Config is still an XOR (`noopRemoteConfigModule` XOR a host-owned `RemoteConfigService` module — the toolkit ships no backend). `:camera` / `:permissions` are
+  app's own `trackCustom`/`screen`/`recordException`. There is no remote-config capability (retired 2026-09-22 — a host that needs one owns it outside frnk). `:camera` / `:permissions` are
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
   real impl ships.
 
@@ -411,7 +409,6 @@ initializeFrnk(
     modules = frnkModules {
         observability(sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env))
                                                       // mandatory — build() throws without it; PostHog derives from it
-        // remoteConfig defaults to noopRemoteConfigModule — assign your own RemoteConfigService module to override
         monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
         identity = revenueCatIdentityModule           // single slot; or your own AnonymousIdentityProvider module
         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
@@ -424,13 +421,12 @@ initializeFrnk(
 - **`frnkModules { }`** assembles the list. `observability(sentry = …)` is mandatory and installs the toolkit's
   PostHog + Sentry pair (you never import a provider module or hold a PostHog key): the `postHog` parameter is
   optional and defaults to `PostHogAnalyticsConfig(environment = sentry.environment)` on the toolkit-wide project —
-  pass it only to tune a flag (`debug`, `optOut`, …); `remoteConfig`/`identity` are single
-  slots (`remoteConfig` defaults to `noopRemoteConfigModule`; `identity` is unset until you choose), so installing two
-  — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)` auto-bundles the trio so you
+  pass it only to tune a flag (`debug`, `optOut`, …); `identity` is a single slot (unset until you
+  choose), so installing two identity bindings — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)` auto-bundles the trio so you
   can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is always included. The other impl
   `val`s (`revenueCatModule`, `revenueCatIdentityModule`, …) you still import yourself and assign to a slot.
 - **`validate = true` + `validator = Koin::validateFrnkBootstrap`** runs a post-`startKoin` check that throws a
-  message naming the exact missing module (one analytics, one crash-reporting, one remote-config, the monetization
+  message naming the exact missing module (one analytics, one crash-reporting, the monetization
   stack the Settings scaffold needs and the `AnonymousIdentityProvider` it reads). This catches the *missing-module* footgun on **either** path — it works with a raw
   `initializeFrnk(modules = …)` list too. Note it runs after start, so it can detect a *missing* module but **not**
   a *duplicate* one (two bindings for one slot collapse to one) — that's what the builder's single slots

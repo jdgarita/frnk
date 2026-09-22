@@ -54,11 +54,16 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   Firebase anonymous auth), `:remote-config-impl` (`remoteConfigModule`, Firebase Remote Config), the
   `frnk.android.firebase` convention plugin (and `build-logic`'s `google-services` marker), and the
   `gitlive-firebase` / `firebase-bom` / `firebase-auth` / `firebase-config` / `firebase-firestore`
-  catalog entries + the `google-services` plugin alias are deleted. `:identity-api` and
-  `:remote-config-api` stay: hosts on `firebaseIdentityModule` move to `revenueCatIdentityModule`
-  (`:monetization-impl`) or bind their own `AnonymousIdentityProvider`; hosts on `remoteConfigModule`
-  bind their own `RemoteConfigService` or keep `noopRemoteConfigModule`. Faint currently applies
-  `frnk.android.firebase` + `firebaseIdentityModule` and migrates when it bumps frnk.
+  catalog entries + the `google-services` plugin alias are deleted. `:identity-api` stays: hosts on
+  `firebaseIdentityModule` move to `revenueCatIdentityModule` (`:monetization-impl`) or bind their own
+  `AnonymousIdentityProvider`. Faint currently applies `frnk.android.firebase` +
+  `firebaseIdentityModule` and migrates when it bumps frnk.
+- **Breaking: `:remote-config-api` is gone too** (`RemoteConfigService`, `NoopRemoteConfig`,
+  `noopRemoteConfigModule`), with the `frnkModules { remoteConfig = … }` slot and the validator's
+  remote-config check — with no toolkit backend, a contract + no-op + slot was dead optionality. A
+  host that needs remote config owns its own interface and binding outside frnk; hosts that assigned
+  `remoteConfig` or installed `noopRemoteConfigModule` drop those lines. `:ui-app` no longer depends
+  on it, and the demo's "Capabilities" section lost its remote-config value and fetch button.
 - **Breaking: `NoopAnalyticsTracker`, `NoopCrashReporter`, `noopAnalyticsModule`,
   `noopCrashReportingModule`, `noopObservabilityModule`** (`:analytics-api`). Tests use the
   `commonTest` `FakeAnalyticsTracker` / `FakeCrashReporter`. `:analytics-api` no longer depends on Koin.
@@ -66,8 +71,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   `firebaseCrashReportingModule`, `firebaseObservabilityModule`, the CrashKiOS native crash handler)
   and the `firebase-analytics` / `firebase-crashlytics` / `crashkios-crashlytics` catalog entries.
 - Demo: Firebase is gone from **both** demo apps — demo-android no longer applies `google-services`,
-  reads `google-services.json` or installs `remoteConfigModule` (remote config stays on the no-op
-  default); the `:remote-config-impl` dependency is dropped from `demo-android`.
+  reads `google-services.json` or installs `remoteConfigModule`; the `:remote-config-impl`
+  dependency is dropped from `demo-android`.
 - Demo: `LoggingAnalyticsTracker` / `LoggingCrashReporter`, the iOS CrashKiOS hook
   (`enableDemoCrashlytics`) and the RevenueCat-only `bootstrapDemoKoinWithRevenueCat`. Firebase is
   gone from the iOS demo entirely (`firebase-ios-sdk` package, `FirebaseApp.configure()`,

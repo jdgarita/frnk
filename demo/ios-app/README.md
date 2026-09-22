@@ -27,8 +27,8 @@ no *optional* `*-impl` module; it references three native SDKs (each supplied by
   `demo-android`), through the same `bootstrapDemoKoinWithSdks(...)` call.
 
 So this app links the **native Sentry + PostHog + RevenueCat SDKs** (added via SPM, below). There is
-**no Firebase on iOS**: nothing in DemoKit's iOS path reads it (remote config is the no-op default,
-identity comes from RevenueCat), so the project carries no `firebase-ios-sdk` package and no
+**no Firebase on iOS**: nothing in DemoKit's iOS path reads it (identity comes from RevenueCat; the
+toolkit has no remote config), so the project carries no `firebase-ios-sdk` package and no
 `GoogleService-Info.plist`.
 
 For apps that need real backends, build your own umbrella XCFramework over the frnk

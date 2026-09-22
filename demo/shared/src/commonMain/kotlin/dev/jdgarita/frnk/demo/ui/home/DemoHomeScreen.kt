@@ -22,7 +22,6 @@ import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
 import dev.jdgarita.frnk.ui.atoms.FrnkText
 import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValue
-import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValueOrientation
 import dev.jdgarita.frnk.ui.molecules.FrnkLabeledValueState
 import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.mvi.UiEffect
@@ -236,25 +235,11 @@ fun HomeScreen(
                         state =
                             FrnkTextState.Body(
                                 text =
-                                    "New capability modules, all resolved via Koin. RemoteConfigService " +
-                                        "(:remote-config-api) reads a key→value; the demo keeps the no-op default " +
-                                        "(shows the bundled fallback; the toolkit ships no remote-config backend — a " +
-                                        "host binds its own). :camera and :permissions are api-only scaffolds " +
-                                        "(no impl yet) — their no-op defaults surface the honest 'not wired' outcome.",
+                                    "Capability modules, all resolved via Koin. :camera and :permissions are " +
+                                        "api-only scaffolds (no impl yet) — their no-op defaults surface the honest " +
+                                        "'not wired' outcome.",
                                 color = colorOnSurfaceVariant
                             )
-                    )
-                    FrnkLabeledValue(
-                        state =
-                            FrnkLabeledValueState.Content(
-                                label = "Remote welcome",
-                                value = state.remoteWelcome,
-                                orientation = FrnkLabeledValueOrientation.Stacked
-                            )
-                    )
-                    FrnkButton(
-                        state = FrnkButtonState.Content(text = "Fetch Remote Config", variant = FrnkButtonVariant.Outlined),
-                        onClick = { homeViewModel.send(DemoHomeIntent.FetchRemoteConfig) }
                     )
                     FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Camera", value = state.cameraResult))
                     FrnkLabeledValue(

@@ -14,7 +14,6 @@ import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
-import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +52,6 @@ class FrnkBootstrapValidationTest {
             listOf(
                 analyticsModule,
                 crashModule,
-                noopRemoteConfigModule,
                 identityModule,
                 fakesModule,
                 monetizationModule,
@@ -103,13 +101,6 @@ class FrnkBootstrapValidationTest {
         assertEquals(true, failure.message?.contains("identity"), "names the missing axis")
         assertEquals(true, failure.message?.contains("revenueCatIdentityModule"), "names the module to assign")
         assertEquals(false, failure.message?.contains("monetization —"), "the stack itself is present")
-    }
-
-    @Test
-    fun missing_remote_config_names_the_module() {
-        val failure = validateMissing(validModules().filterNot { it === noopRemoteConfigModule })
-        assertEquals(true, failure.message?.contains("remote config"), "names the missing axis")
-        assertEquals(true, failure.message?.contains("noopRemoteConfigModule"), "names the module to install")
     }
 
     @Test

@@ -36,7 +36,6 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`) — the toolkit's only analytics provider. Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key fails at config construction. |
 | `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`) — the toolkit's only crash reporter. Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN fails at config construction. |
 | `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`, plus `IdentitySource` — the shared `identify(id)` contract implemented by the analytics, crash and billing sinks. |
-| `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only; the toolkit ships no remote-config backend — a host binds its own `RemoteConfigService`. |
 | `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
 | `data-db-api` | The Room persistence seam: `DatabaseFactory` + the reified `roomDatabaseBuilder`/`databaseSingle` helpers (the toolkit owns no schema — hosts bring their own Room `@Database`; the demo's `DemoDatabase` is the worked example). |
 | `data-db-impl` | Platform database locations + the bundled SQLite driver defaults. Exposes `databaseModule`. |
@@ -55,7 +54,6 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **DI:** Koin 4.2.1
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** Room KMP 2.8.4 (androidx.sqlite bundled driver 2.7.0, KSP 2.3.11), Multiplatform Settings 1.3.0
-- **Remote Config:** contract only (`:remote-config-api`, `noopRemoteConfigModule` default) — a host that has a backend binds its own `RemoteConfigService`
 - **Identity:** the RevenueCat app user id, bound by `revenueCatIdentityModule` (`:monetization-impl`) — or a host-owned `AnonymousIdentityProvider`
 - **Analytics:** PostHog (`posthog-kmp` 0.5.1) via `postHogAnalyticsModule` — mandatory, installed by `frnkModules { observability(…) }`
 - **Crash reporting:** Sentry (`sentry-kotlin-multiplatform` 0.27.0, pairs with sentry-cocoa 8.58.2) via `sentryCrashReportingModule` + the `frnk.android.sentry` convention plugin — mandatory, installed by `frnkModules { observability(…) }`
