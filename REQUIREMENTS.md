@@ -18,7 +18,7 @@
 `frnk` is a **Kotlin Multiplatform (KMP) + Compose Multiplatform (CMP) toolkit** —
 not a shippable application. It is a reusable foundation that downstream mobile
 apps (Android + iOS) consume to avoid re-implementing the same cross-cutting
-concerns (design system, DI, navigation, persistence, remote config, analytics,
+concerns (design system, DI, navigation, persistence, analytics,
 monetization) on every new product.
 
 ### 1.1 Consumption model
@@ -39,8 +39,8 @@ monetization) on every new product.
 
 - `frnk` is not an app, a backend, or a UI kit for sale.
 - `frnk` does not bundle the native iOS frameworks of its SDK dependencies
-  (Firebase, RevenueCat/`PurchasesHybridCommon`); the consuming Xcode project
-  supplies those via CocoaPods/SPM (see §8.6).
+  (RevenueCat, Sentry, PostHog); the consuming Xcode project supplies those via
+  SPM (see §8.6).
 - `frnk` does not prescribe product-specific screens — it provides scaffolds and
   atoms that hosts compose into product screens.
 
@@ -58,12 +58,11 @@ descriptions.
   `BuildKonfig` config, `PlatformInfo` (the only `expect/actual` there), and
   pure-Kotlin helpers. It depends on nothing else in the graph.
 - Every domain that pulls in a **third-party SDK** is split into:
-  - **`*-api`** — pure-interface module. **No** Firebase / SQLite-driver / RevenueCat
+  - **`*-api`** — pure-interface module. **No** SDK / SQLite-driver / RevenueCat
     dependency may ever appear here.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
-  - `:analytics-api` ↔ `:analytics-impl` (analytics + crash; Firebase)
-  - `:remote-config-api` ↔ `:remote-config-impl` (Remote Config; Firebase — a sibling of analytics, Stage 11)
+  - `:analytics-api` ↔ `:analytics-posthog` (analytics; PostHog) + `:crash-sentry` (crash; Sentry) — both mandatory, no no-op
   - `:data-db-api` ↔ `:data-db-impl` (SQL driver SPI; split at restructure Stage 4)
   - `:data-prefs-api` ↔ `:data-prefs-impl` (key-value; split at restructure Stage 4)
   - `:monetization-api` ↔ `:monetization-impl` (RevenueCat)
@@ -96,8 +95,10 @@ descriptions.
   fun frnkUiModules(): List<Module>
   ```
 - **Capability selection is the module list, not an enum.** A capability the
-  host doesn't pass (`firebaseObservabilityModule`, `revenueCatModule`, …) is
-  never installed, so its bindings never enter the graph.
+  host doesn't pass (`revenueCatModule`, …) is
+  never installed, so its bindings never enter the graph. Observability is the one fixed
+  capability: `frnkModules { observability(sentry = …) }` is mandatory (the host supplies its Sentry
+  DSN; the PostHog key ships in the toolkit).
 
 ### 2.3 Error handling contract (MANDATORY)
 
@@ -111,9 +112,8 @@ descriptions.
 - `:demo-shared` depends only on the `*-api` modules +
   `:ui-theme`/`:ui-components`/`:ui-scaffolds` + `:ui-bottom-nav` +
   `:shared-monetization-ui` — never on an `*-impl` module in
-  its common surface. This keeps `DemoKit.xcframework` free of Firebase /
-  RevenueCat / SQLite native cinterops so `iosDemoApp` boots on a clean
-  simulator with no CocoaPods.
+  its common surface. This keeps `DemoKit.xcframework` free of RevenueCat /
+  SQLite native cinterops (PostHog + Sentry are the mandatory exception).
 - The demo binds fakes (`FakeEntitlementManager`, logging analytics/crash
   reporters) via `demoModule` and `bootstrapDemoKoin()`.
 
@@ -183,24 +183,18 @@ gaps against these targets is tracked as open-work entries in the MobiAI brain
 
 ### 3.5 Remote config
 
-- Read-only typed remote configuration behind `:remote-config-api`:
-  `RemoteConfigService` (typed key→value + `fetchAndActivate`). Its own
-  capability pair, a **sibling of analytics** (restructure Stage 11, OQ-1) — it
-  replaced the old generic Firestore-shaped `RemoteData` stub (`AuthService` +
-  the Supabase impl were dropped at Stage 2; the Firestore stub deleted at
-  Stage 11).
-- Implementation: **Firebase Remote Config** (`dev.gitlive:firebase-config`),
-  `:remote-config-impl`. Install `remoteConfigModule` for the real backend, XOR
-  `noopRemoteConfigModule` (`:remote-config-api`) to read bundled defaults only.
-- Installed at runtime by passing its Koin module to `initializeFrnk(...)`.
+- **Not a toolkit concern.** The Stage 11 `:remote-config-api` / `:remote-config-impl` pair
+  (`RemoteConfigService` over Firebase Remote Config, successor of the Firestore-shaped `RemoteData`
+  stub) was retired on 2026-09-22 together with Firebase: with no toolkit backend, a contract + no-op
+  + `frnkModules` slot was dead optionality. A host that needs remote config owns its own interface
+  and binding, outside frnk.
 
 ### 3.6 Analytics
 
 - A backend-agnostic `AnalyticsTracker` interface (event logging, user
   properties).
-- Concrete trackers: **Firebase Analytics** and at least one provider-neutral
-  option (**PostHog** is the named target; a no-op tracker is the safe default
-  when none is configured).
+- Concrete tracker: **PostHog** (`:analytics-posthog`) — the only one, mandatory
+  on every host; there is no no-op.
 - Crash reporting (`CrashReporter`) tracked alongside analytics.
 
 ### 3.7 Monetization (RevenueCat)

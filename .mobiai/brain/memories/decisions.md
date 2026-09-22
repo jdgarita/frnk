@@ -1520,3 +1520,127 @@ Trial semantics stay with the host (Faint books `value = 0` on `hasFreeTrial`) �
 - frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/RoomDatabaseBuilder.kt
 - frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt
 - docs/plans/2026-09-18-room-database-seam.md
+
+## Observability is mandatory PostHog + Sentry — no-ops removed, :analytics-impl retired (2026-09-22)
+
+- id: observability-is-mandatory-posthog-sentry-no-ops-removed-ana-20260922-163634
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: DI / observability
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22), superseding the observability half of Tier 2.2 and the BACKLOG P1-5 "no-op default" stance:
+
+1. NoopAnalyticsTracker / NoopCrashReporter / noopAnalyticsModule / noopCrashReportingModule / noopObservabilityModule are DELETED. Every host app (Faint, Still, …) and the demo ship the real providers: PostHog (`:analytics-posthog`) as the one AnalyticsTracker, Sentry (`:crash-sentry`) as the one CrashReporter. A host NEVER provides its own AnalyticsTracker/CrashReporter — it reads the toolkit's back through Koin (`koinInject<AnalyticsTracker>()` / `get<CrashReporter>()`) for its own events / non-fatals. `FakeAnalyticsTracker` / `FakeCrashReporter` (`:analytics-api` commonTest) stay — tests are not hosts.
+
+2. `frnkModules { }` lost the `analytics` / `crashReporting` Module slots and gained a MANDATORY `observability(postHog = PostHogAnalyticsConfig(…), sentry = SentryCrashReportingConfig(…))` call; `build()` throws (checkNotNull, message names the call) without it. `:ui-app` now has `api(projects.analyticsPosthog)` + `api(projects.crashSentry)`. This is a deliberate exception to the Tier 2.2 CINTEROP rule ("the builder never references an *-impl"): every host links posthog-ios + sentry-cocoa anyway, so the edge drags in nothing a host would not otherwise carry. The rule still holds for RevenueCat / Room / Firebase (remoteConfig / identity / monetization stay Module slots the host assigns). Consequence: `:ui-app` (like `:analytics-posthog` / `:crash-sentry`) disables `linkDebugTestIosSimulatorArm64` + `iosSimulatorArm64Test` (native SDKs come from the Xcode host; common tests run on testAndroidHostTest — docs/plans/2026-07-28-native-backed-ios-test-policy.md).
+
+3. A blank PostHog apiKey / Sentry DSN is an IllegalArgumentException at CONFIG CONSTRUCTION (`require` in the data class init), naming the field. `isConfigured` is gone; the providers' "blank key → bind Noop" branches are gone. Rationale: a silent no-op hides a misconfigured release; fail where the value is written.
+
+4. `:analytics-impl` (Firebase Analytics + Crashlytics via gitlive, NativeCrashHandler, CrashKiOS) is RETIRED — its only consumer was demo-android's key-less fallback. Catalog: `firebase-analytics`, `firebase-crashlytics`, `crashkios-crashlytics`, `firebase-crashlytics-gradle` + the `firebase-crashlytics` plugin alias removed. `frnk.android.firebase` now applies ONLY `google-services` (still needed by `:identity-impl` Firebase Auth + `:remote-config-impl` Remote Config, which stay on gitlive Firebase). Crash symbolication is `frnk.android.sentry` (Android) + sentry-cli dSYM upload (iOS).
+
+5. The demo is a REAL HOST, not a special case: `bootstrapDemoKoin(postHog, sentry, extraConfig)` assembles via `frnkModules { observability(…); modules(frnkAppModule) }` + checkFrnkModules(); frnkAppModule keeps only the paid-SDK fakes (EntitlementProvider / identity / KeyValueStore / NoteStore) + camera/permissions no-ops — the LoggingAnalyticsTracker/LoggingCrashReporter host-written fakes are deleted. demo-android reads POSTHOG_API_KEY / POSTHOG_HOST / SENTRY_DSN from local.properties (REQUIRED to boot now) and passes a plain override list (remoteConfigModule, databaseModule, demoNotesModule, + revenueCatModule/revenueCatIdentityModule when the RC key is set) — it no longer builds overrides via frnkModules (the Tier 2.2 DEMO note is superseded). iOS: DemoCrashlytics.kt (CrashKiOS hook) + DemoRevenueCat.kt (bootstrapDemoKoinWithRevenueCat) deleted; bootstrapDemoKoinWithSdks requires the two keys (Swift constants in iosDemoAppApp.swift are BLANK in the repo → iOS demo fails at bootstrap until JD pastes the frnk-demo Sentry DSN + PostHog key). FirebaseApp.configure() + the Firebase SPM products stay in the Xcode project (Remote Config / Auth parity); removing them from the pbxproj is a separate cleanup. "Force crash" now reports to Sentry (its own unhandled-Kotlin-exception hook).
+
+WHY (JD): all apps use PostHog + Sentry; optionality nobody uses only added a Noop class, a slot, a validator branch and a Firebase fallback module to maintain; frnk must not grow complexity just to let the demo run key-less.
+
+NOT changed: noopRemoteConfigModule / NoopCameraController / NoopPermissionController (no toolkit consumer reads them; remote-config stays an optional slot) — a follow-up may drop the remote-config default + validator check the same way.
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- frnk/capabilities/analytics-posthog/src/commonMain/kotlin/dev/jdgarita/frnk/backend/posthog/PostHogAnalyticsConfig.kt
+- frnk/capabilities/crash-sentry/src/commonMain/kotlin/dev/jdgarita/frnk/backend/sentry/SentryCrashReportingConfig.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoBootstrap.kt
+- build-logic/src/main/kotlin/frnk.android.firebase.gradle.kts
+
+## PostHog key ships in frnk (one project for all apps); Sentry DSN per app; keys standard = Faint's xcconfig/local.properties pattern (2026-09-22)
+
+- id: posthog-key-ships-in-frnk-one-project-for-all-apps-sentry-ds-20260922-172534
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: observability / host keys
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22), refining the same-day "observability is mandatory PostHog + Sentry" decision:
+
+1. ONE PostHog project serves every app JD ships on frnk, so its project API key (`phc_…`, a public client key by design — embedded in every binary, grants no read access) LIVES IN THE TOOLKIT: `FrnkPostHogProject.API_KEY` / `.HOST` (`:analytics-posthog`). `PostHogAnalyticsConfig(environment, apiKey = FrnkPostHogProject.API_KEY, host = DEFAULT_HOST, …)` — `environment` is the only required param. Hosts NEVER supply a PostHog key (no POSTHOG_API_KEY in any local.properties / xcconfig / BuildConfig). Apps are told apart in PostHog by the SDK's `$app_namespace` / `$app_name` properties; debug vs release by the `environment` super property.
+
+2. Sentry is PER APP: each app has its own Sentry project and supplies its DSN. `frnkModules { observability(sentry = SentryCrashReportingConfig(dsn, environment)) }` — the `postHog` param is optional and defaults to `PostHogAnalyticsConfig(environment = sentry.environment)`; pass it only to tune `debug` / `optOut`. (Signature change from `observability(postHog, sentry)`.) RevenueCat keys are per app per platform too.
+
+3. THE STANDARD for supplying per-app keys, for every present and future host (copied from Faint's `mobile/iosApp/Configuration`):
+   - Android: gitignored `local.properties` → `buildConfigField` → `BuildConfig.SENTRY_DSN` (+ `REVENUECAT_ANDROID_API_KEY`); tracked `local.properties.example`.
+   - iOS: `<app>/Configuration/Config.xcconfig` (tracked; `baseConfigurationReference` of the target's Debug + Release configs) does `#include? "Secrets.xcconfig"`; `Secrets.xcconfig` gitignored + `Secrets.xcconfig.template` tracked; `Info.plist` forwards `<key>SENTRY_DSN</key><string>$(SENTRY_DSN)</string>` (+ REVENUECAT_API_KEY); the umbrella module's Kotlin iOS bootstrap reads `NSBundle.mainBundle.objectForInfoDictionaryKey("SENTRY_DSN") as? String` and treats an unexpanded `$(…)` as blank so the toolkit's config fails naming the key. Gotcha: xcconfig treats `//` as a comment → URLs written `https:/$()/…`. NO Swift constants, NO placeholders in code.
+   - The demo (`demo/android-app`, `demo/ios-app/Configuration/*`, `demo/shared` DemoSdks.kt / DemoBootstrap.kt) is the worked example; `docs/HOST_INTEGRATION.md` "Supplying per-app keys" is the canonical write-up.
+
+WHY (JD): what is shared across apps (PostHog) should need zero per-app plumbing; what is per app (Sentry, RevenueCat) should have exactly one known home per platform, and Faint already works that way.
+
+### Files
+- frnk/capabilities/analytics-posthog/src/commonMain/kotlin/dev/jdgarita/frnk/backend/posthog/FrnkPostHogProject.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- demo/ios-app/Configuration/Secrets.xcconfig.template
+- local.properties.example
+
+## PostHog key is a BUILD-TIME input of :analytics-posthog (generated FrnkPostHogProject), never a committed constant (2026-09-22)
+
+- id: posthog-key-is-a-build-time-input-of-analytics-posthog-gener-20260922-173137
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: observability / host keys
+- date: 2026-09-22
+
+Amends the same-day "PostHog key ships in frnk" decision: JD does NOT want the `phc_…` key hardcoded in source because the repo will go public.
+
+MECHANISM: `frnk/capabilities/analytics-posthog/build.gradle.kts` registers `generateFrnkPostHogProject` (a `@CacheableTask` with `@Input apiKey/host`, `@OutputDirectory`) that writes `build/generated/frnkPostHog/commonMain/kotlin/dev/jdgarita/frnk/backend/posthog/FrnkPostHogProject.kt` (`object FrnkPostHogProject { const val API_KEY; const val HOST }`), wired via `commonMain { kotlin.srcDir(generateFrnkPostHogProject) }` so it is compiled into BOTH the Android AAR and the iOS klib (hence every umbrella framework) — no BuildKonfig plugin (BuildKonfig was already gone; CLAUDE.md's old note was stale and is fixed). Inputs resolve `-PPOSTHOG_API_KEY=` › `POSTHOG_API_KEY` env var › the frnk build's root `local.properties` (`providers.fileContents(...)`, configuration-cache safe). Blank ⇒ the task FAILS naming the three sources; a non-`phc_` value is rejected. `POSTHOG_HOST` optional (blank = `PostHogConfig.HOST_US`).
+
+CONSEQUENCES: frnk's own `local.properties` (gitignored; `local.properties.example` documents it) now REQUIRES `POSTHOG_API_KEY` to build `:analytics-posthog` — i.e. `compileAndroidMain` / `testAndroidHostTest` on a keyless clone fail early with the message. In a host, the key goes in `frnk/local.properties` (the submodule's, next to `sdk.dir`), never in the host's code / local.properties / xcconfig / Info.plist. Faint's `mobile/frnk/local.properties` needs `POSTHOG_API_KEY=` added (its own `local.properties` / `Secrets.xcconfig` PostHog entries become dead once Faint moves onto `frnkModules { observability(sentry = …) }`). CI would pass the key as a secret via env var or `-P`. `docs/HOST_INTEGRATION.md` §7 ("frnk's own local.properties") + the keys table document it. Verified: gate green, generated file untracked (`git grep phc_` clean), keyless `generateFrnkPostHogProject` fails with the intended message.
+
+### Files
+- frnk/capabilities/analytics-posthog/build.gradle.kts
+- local.properties.example
+
+## Firebase retired from frnk entirely: :identity-impl, :remote-config-impl and frnk.android.firebase deleted (2026-09-22)
+
+- id: firebase-retired-from-frnk-entirely-identity-impl-remote-con-20260922-175859
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: capabilities / firebase
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22, PR #85, same day as "observability = PostHog + Sentry, no no-ops"): nothing of Firebase stays in the toolkit.
+
+DELETED: `:identity-impl` (firebaseIdentityModule / FirebaseAuthManager / FirebaseAuthGateway — Firebase anonymous auth), `:remote-config-impl` (remoteConfigModule / FirebaseRemoteConfigService), the `frnk.android.firebase` convention plugin + the `google-services` plugin marker in build-logic, catalog entries gitlive-firebase / firebase-bom / firebase-auth / firebase-config / firebase-firestore / google-services, the root `alias(libs.plugins.google.services)`, and the `.gitignore` google-services.json / GoogleService-Info.plist lines. (`:analytics-impl` — Firebase Analytics + Crashlytics — went earlier the same day.) The demo (both platforms) carries no Firebase either.
+
+KEPT: `:identity-api` (AnonymousIdentityProvider; the only toolkit binding is now `revenueCatIdentityModule` from `:monetization-impl`, else a host-owned one) and `:remote-config-api` (RemoteConfigService + noopRemoteConfigModule; the toolkit ships NO remote-config backend — a host binds its own `single<RemoteConfigService>` and assigns it to `frnkModules { remoteConfig = … }`, default stays the no-op). The validator messages point at those options. Whether the remote-config api/slot itself should survive (it is now optionality with no toolkit impl — the same kind JD dislikes) is an OPEN question, not decided.
+
+IMPACT on hosts: Faint (`mobile/shared/.../FaintFrnkBootstrap.kt`) installs `firebaseIdentityModule` and `androidApp/build.gradle.kts` applies `frnk.android.firebase`; when Faint bumps frnk it must switch to `identity = revenueCatIdentityModule` (it already configures RevenueCat) and drop the plugin id + google-services.json. The brain's "Firebase (analytics + crash + remote config via gitlive; iOS dSYM)" integration entry is now historical.
+
+WHY (JD): no app uses Firebase anymore — PostHog + Sentry + RevenueCat cover analytics, crashes and identity — and the toolkit does not keep unused optionality.
+
+### Files
+- settings.gradle.kts
+- gradle/libs.versions.toml
+- build-logic/build.gradle.kts
+- frnk/capabilities/remote-config-api/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/RemoteConfigModule.kt
+
+## :remote-config-api and the frnkModules remoteConfig slot deleted — no remote-config contract in frnk (2026-09-22)
+
+- id: remote-config-api-and-the-frnkmodules-remoteconfig-slot-dele-20260922-181159
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: capabilities / remote config
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22, PR #85), closing the OPEN question left by the Firebase retirement: `:remote-config-api` (RemoteConfigService + NoopRemoteConfig + noopRemoteConfigModule, Stage 11 / OQ-1) is DELETED, together with the `remoteConfig` slot of `frnkModules { }` (default was the no-op), the `RemoteConfigService` check in `validateFrnkBootstrap`, the `:ui-app → :remote-config-api` edge, and the demo's "Remote welcome" / "Fetch Remote Config" UI (DemoHomeViewModel no longer injects RemoteConfigService; HomeMviContract lost `remoteWelcome` + `FetchRemoteConfig`).
+
+RESULT: `frnkModules { }` = mandatory `observability(sentry = …)` + optional `identity` slot + `monetization(provider)` + `modules(...)`. The validator requires the observability pair + the monetization stack (+ identity once monetization is present); KeyValueStore / DatabaseFactory stay optional. `:camera` / `:permissions` api-only scaffolds are unchanged (their no-ops are the remaining "contract without impl" precedent — same open question applies to them if they never get an impl).
+
+WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optionality; a host that needs remote config owns it entirely outside frnk (`still` was the "candidate first consumer" and never wired it). .gitignore was tidied at the same time (iOS demo section grouped; the stale "PostHog" mention in the Secrets.xcconfig comment removed).
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidation.kt
+- settings.gradle.kts

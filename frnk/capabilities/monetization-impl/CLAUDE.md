@@ -41,8 +41,8 @@ RevenueCat implementation of `:monetization-api`. Installed at runtime by passin
   `EntitlementProvider.identify` is a no-op (the provider skips `logIn` when it already matches).
 - `RevenueCatModule.kt` — exports `val revenueCatModule = module { ... }` binding **`EntitlementProvider`**
   (+ `RevenueCatConfig`) **only**, and `val revenueCatIdentityModule` binding **`AnonymousIdentityProvider`**
-  for the `frnkModules { identity = … }` slot — separate so RevenueCat monetization can pair with
-  `firebaseIdentityModule` without two modules binding one type. `EntitlementManager` + `FeatureGate`
+  for the `frnkModules { identity = … }` slot — separate so RevenueCat monetization can pair with a
+  host-owned identity without two modules binding one type. `EntitlementManager` + `FeatureGate`
   come from `monetizationModule`.
 
 ## Configuration is the host's job (not the toolkit's)
@@ -54,7 +54,7 @@ automatically via RevenueCat's `androidx.startup` initializer, so `Purchases.con
 helper (a `runCatching`-alike that rethrows `CancellationException` so cancelled callers aren't handed
 a bogus `StoreUnavailable`), so an
 **unconfigured** `Purchases.sharedInstance` degrades to a safe no-op (`isPro` stays `false`) instead of
-throwing — the same defensive pattern `FirebaseCrashReporter` uses. The manager also won't clobber a
+throwing — the same defensive pattern the observability bindings use. The manager also won't clobber a
 `PurchasesDelegate` the host already set (such a host should call `refresh()` after entitlement changes).
 `demo-android` is the real-path smoke test: it calls `Purchases.configure(...)` then overrides the
 demo's fake with `revenueCatModule` via Koin `allowOverride(true)` when a key is present in

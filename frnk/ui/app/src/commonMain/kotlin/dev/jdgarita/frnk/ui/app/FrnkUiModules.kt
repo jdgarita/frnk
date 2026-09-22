@@ -18,7 +18,7 @@ import org.koin.core.module.Module
  *     modules = frnkUiModules() +
  *         listOf(
  *             databaseModule, prefsModule,         // Room DatabaseFactory / KeyValueStore
- *             firebaseObservabilityModule,         // or noopObservabilityModule
+ *             postHogAnalyticsModule(postHogConfig), sentryCrashReportingModule(sentryConfig), // observability — always both
  *             revenueCatModule, monetizationModule, paywallScaffoldModule, // monetization stack
  *         ) + hostModules,
  * )

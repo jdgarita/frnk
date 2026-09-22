@@ -14,41 +14,26 @@ exercises the MVI engine + `FeatureGate` via fakes.
 | Xcode app | This folder |
 
 `DemoKit.xcframework` exports the toolkit's **`*-api`** modules plus
-`:ui-theme`/`:ui-components`/`:ui-scaffolds` + `:ui-bottom-nav` — no `*-impl` modules in its common surface. It links two native SDKs via
-`iosMain` cinterops so the demo can exercise the real paths (each supplied by this
-app via SPM under `dynamic_lookup`):
-- **CrashKiOS** (BACKLOG P1-5b) — the "Force crash" panic button → Firebase Crashlytics.
-- **RevenueCat** (BACKLOG P3-3) — the paywall runs against the RevenueCat **Test Store**
-  (real `RevenueCatEntitlementProvider`, parity with `demo-android`), via
-  `DemoRevenueCatKt.bootstrapDemoKoinWithRevenueCat(apiKey:)` in `iosDemoAppApp.swift`.
+`:ui-theme`/`:ui-components`/`:ui-scaffolds` + `:ui-bottom-nav` + `:ui-app`. Its common surface carries
+no *optional* `*-impl` module; it references three native SDKs (each supplied by this app via SPM under
+`dynamic_lookup`):
+- **Sentry + PostHog** — the toolkit's **mandatory** crash-reporting and analytics providers
+  (`sentryCrashReportingModule` / `postHogAnalyticsModule`, carried by `:ui-app` for every host),
+  installed by `DemoSdksKt.bootstrapDemoKoinWithSdks()` from the keys in
+  `Configuration/Secrets.xcconfig` (below). **The DSN and API key are required** — the demo is a real
+  host, there is no logging fake, and a blank value fails at bootstrap with a message naming it.
+- **RevenueCat** (BACKLOG P3-3, `iosMain` only) — the paywall runs against the RevenueCat **Test
+  Store** (real `RevenueCatEntitlementProvider` + `revenueCatIdentityModule`, parity with
+  `demo-android`), through the same `bootstrapDemoKoinWithSdks(...)` call.
 
-- **Sentry + PostHog** — the toolkit's crash-reporting and analytics providers
-  (`sentryCrashReportingModule` / `postHogAnalyticsModule`), installed by
-  `DemoSdksKt.bootstrapDemoKoinWithSdks(...)` when the Swift constants at the top of
-  `iosDemoAppApp.swift` carry a DSN / API key. Blank keys leave that slot on the logging fake, but
-  the `Sentry` and `PostHog` SPM products must be linked regardless — DemoKit references their
-  symbols under `dynamic_lookup`.
-
-So this app links the **native Firebase + RevenueCat + Sentry + PostHog SDKs** (added via SPM,
-below) and ships `GoogleService-Info.plist`.
+So this app links the **native Sentry + PostHog + RevenueCat SDKs** (added via SPM, below). There is
+**no Firebase on iOS**: nothing in DemoKit's iOS path reads it (identity comes from RevenueCat; the
+toolkit has no remote config), so the project carries no `firebase-ios-sdk` package and no
+`GoogleService-Info.plist`.
 
 For apps that need real backends, build your own umbrella XCFramework over the frnk
 modules you use (this demo's `DemoKit` is the worked example) and follow the
 integration notes in `docs/HOST_INTEGRATION.md` §6.
-
-## Firebase setup (one-time, for the crash test)
-
-The Crashlytics test needs the native Firebase SDK linked into this Xcode project:
-
-1. In Xcode: **File ▸ Add Package Dependencies…**
-2. Enter `https://github.com/firebase/firebase-ios-sdk`, add the package.
-3. Add the **`FirebaseCrashlytics`** product (this pulls `FirebaseAnalytics` /
-   `FirebaseCore` transitively) to the `iosDemoApp` target.
-4. `GoogleService-Info.plist` is already bundled (project `frnk-demo`). Swap it for
-   your own Firebase iOS app's plist if you want crashes in your own console.
-
-`FirebaseApp.configure()` + the CrashKiOS hook are already wired in
-`iosDemoAppApp.swift`; no further code needed.
 
 ## RevenueCat setup (one-time, for the paywall)
 
@@ -56,12 +41,13 @@ The paywall runs against the RevenueCat **Test Store** — no App Store Connect 
 tester needed. The native RevenueCat Apple SDK must be linked into this Xcode project:
 
 1. In Xcode: **File ▸ Add Package Dependencies…**
-2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.58.0` or later**
-   (a 5.x compatible with `purchases-kmp` 3.0.5).
+2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.87.1` or later** — the
+   `purchases-ios` release `purchases-kmp` 3.7.0 wraps (see `gradle/libs.versions.toml`); anything
+   below 5.78.0 does not compile on Xcode 27. The project already pins this as the SPM minimum.
 3. Add the **`RevenueCat`** product to the `iosDemoApp` target. *(purchases-kmp 3.0+ binds
    directly against `purchases-ios` — **not** `PurchasesHybridCommon`.)*
 4. The Test Store `test_` API key is already wired in `iosDemoAppApp.swift`
-   (`bootstrapDemoKoinWithRevenueCat`). It's a public key for the throwaway `frnk-demo`
+   (`bootstrapDemoKoinWithSdks`). It's a public key for the throwaway `frnk-demo`
    project; swap it (and the dashboard products/offering) for your own to use a different store.
 
 `Purchases.configure(...)` runs inside the Kotlin bootstrap helper — no Swift configure call needed.
@@ -69,10 +55,21 @@ tester needed. The native RevenueCat Apple SDK must be linked into this Xcode pr
 ## Sentry + PostHog setup (one-time)
 
 Both packages are already declared in `iosDemoApp.xcodeproj` (`sentry-cocoa` 8.58.x, product
-`Sentry`; `posthog-ios` 3.64+, product `PostHog`) — Xcode resolves them on first open. To send
-real data, paste a Sentry project DSN and a PostHog project API key into the constants at the top
-of `iosDemoAppApp.swift`. With a DSN set the app skips the CrashKiOS hook: Sentry installs its own,
-and two hooks double-report.
+`Sentry`; `posthog-ios` 3.64+, product `PostHog`) — Xcode resolves them on first open. Keys follow
+Faint's approach — an xcconfig, not Swift constants:
+
+```bash
+cp demo/ios-app/Configuration/Secrets.xcconfig.template demo/ios-app/Configuration/Secrets.xcconfig
+# then fill in SENTRY_DSN — the same frnk-demo value local.properties holds. No PostHog key: it ships inside frnk.
+```
+
+`Configuration/Config.xcconfig` (tracked, the target's base configuration) does
+`#include? "Secrets.xcconfig"` (gitignored), `Info.plist` forwards each value as `$(KEY)`, and
+`bootstrapDemoKoinWithSdks()` reads them from `NSBundle` at launch. **The DSN is required**: with no
+`Secrets.xcconfig` it expands empty and the Kotlin config fails at launch naming the key. PostHog needs
+nothing here — every frnk app reports to the one toolkit-wide project (`FrnkPostHogProject`).
+xcconfig treats `//` as a comment, so URLs are written `https:/$()/…` (see the template). Sentry
+installs its own unhandled-Kotlin-exception hook, so no extra native wiring is needed.
 
 ## Run
 
@@ -83,16 +80,15 @@ The target's first build phase is a Run Script that calls
 `./gradlew :demo-shared:assembleDemoKitDebugXCFramework`, so Xcode always picks
 up a fresh framework — no manual gradle invocation needed.
 
-## Testing the iOS crash → Crashlytics
+## Testing the iOS crash → Sentry
 
 1. Run the app, go to the **Analytics & Crash** section, tap **Force crash (unhandled)**.
-2. The app terminates (an uncaught Kotlin exception → CrashKiOS hook → Crashlytics).
-3. **Relaunch the app** — Crashlytics uploads the pending report on the next launch.
-4. Open the [Firebase Crashlytics console](https://console.firebase.google.com/)
-   for project `frnk-demo`; the crash appears within a few minutes. For readable
-   **Kotlin** stack frames, the build's dSYM must be uploaded (Crashlytics' SPM
-   `upload-symbols` run-script / `crashlyticslink`); otherwise the event still
-   shows but with native frames only.
+2. The app terminates (an uncaught Kotlin exception → Sentry's unhandled-exception hook).
+3. **Relaunch the app** — Sentry uploads the pending report on the next launch.
+4. Open the Sentry project the DSN belongs to; the crash appears within a few minutes. For
+   readable **Kotlin** stack frames, the build's dSYM must be uploaded (`sentry-cli debug-files
+   upload`, see `docs/HOST_INTEGRATION.md` §6); otherwise the event still shows but with native
+   frames only.
 
 ## What the demo demonstrates
 

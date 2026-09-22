@@ -137,3 +137,28 @@ Bind the VM through **`FrnkScreen(viewModel, arguments, onEffect) { state -> …
 ### Files
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/ui/home/DemoHomeScreen.kt
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/ui/home/DemoMessageOverlay.kt
+
+## Xcode demo build on Kotlin 2.4 + Xcode 27: KGP SwiftPM synthetic-linkage check, stale purchases-ios pin, stale Swift module cache (2026-09-22)
+
+- id: xcode-demo-build-on-kotlin-2-4-xcode-27-kgp-swiftpm-syntheti-20260922-171756
+- type: bug_fix
+- status: active
+- platform: ios
+- area: demo iOS / Xcode build
+- date: 2026-09-22
+
+Three separate failures hit `xcodebuild build -project demo/ios-app/iosDemoApp.xcodeproj -scheme iosDemoApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO` the first time it ran on Kotlin 2.4.10 + Xcode 27.0 (Swift 6.4):
+
+1. `purchases-ios` 5.75.0 (the SPM minimum the pbxproj pinned) does not compile on Xcode 27 (`PaywallColor.swift: invalid redeclaration of synthesized memberwise init`). Upstream fixed it in 5.78.0 ("Xcode 27 Beta Compilation Fix"). FIX: minimum raised to **5.87.1** = the purchases-ios release `purchases-kmp` 3.7.0 wraps (rule: keep the SPM minimum at the version the pinned purchases-kmp names in its release notes). Package.resolved is gitignored; delete it to re-resolve.
+
+2. Kotlin 2.4's SwiftPM import machinery: `posthog-kmp` 0.5.1 is published with KGP `swiftPMDependencies` metadata, so `:demo-shared` has a *transitive* SwiftPM dependency. When Gradle runs **inside an Xcode build phase** (KGP detects Xcode via env vars ACTION / SDK_NAME / CONFIGURATION / ARCHS / TARGET_BUILD_DIR / BUILT_PRODUCTS_DIR / FRAMEWORKS_FOLDER_PATH / PROJECT_FILE_PATH …), KGP wires `:demo-shared:checkSyntheticImportProjectIsCorrectlyIntegrated` ("You have SwiftPM dependencies with embedAndSign integration… run :demo-shared:integrateLinkagePackage") and `generateSyntheticLinkageSwiftPMImportProjectForEmbedAndSignLinkage` (writes `demo/ios-app/KotlinMultiplatformLinkedPackage/`, then fails once with "Synthetic project regenerated — Resolve Package Versions"). That flow assumes KGP's embedAndSign model; frnk's model is the opposite (plain XCFramework under `-undefined dynamic_lookup`, the host app links posthog-ios/sentry-cocoa/purchases-ios itself via SPM). FIX chosen: the "Run Script: Build DemoKit.xcframework" phase now calls `env -u ACTION -u ARCHS -u BUILT_PRODUCTS_DIR -u CONFIGURATION -u DWARF_DSYM_FOLDER_PATH -u ENABLE_USER_SCRIPT_SANDBOXING -u EXPANDED_CODE_SIGN_IDENTITY -u FRAMEWORKS_FOLDER_PATH -u KOTLIN_FRAMEWORK_BUILD_TYPE -u PROJECT_FILE_PATH -u SDK_NAME -u TARGET_BUILD_DIR ./gradlew "$TASK"` so Gradle behaves exactly as from a terminal (verified: no synthetic tasks run, nothing generated). REJECTED alternatives: `kotlin.suppressSwiftPMXcodeIntegrationCheck=true` in gradle.properties (skips only the check; the generator still runs and fails once per fresh clone / posthog-kmp bump); `integrateLinkagePackage` (rewires the project to KGP's embedAndSign, contrary to the documented host model). Hosts that hit the same thing (any Xcode script phase calling Gradle) apply the same env scrub. A terminal `./gradlew :demo-shared:assembleDemoKitDebugXCFramework` never triggers any of this.
+
+3. After the XCFramework's ObjC header changes (e.g. a top-level iosMain function added/removed/re-signatured), Swift in the SAME DerivedData can keep compiling against the stale clang module ("cannot find 'DemoSdksKt' in scope" / "missing arguments for parameters … in call" although DemoKit.h is fresh). FIX: build into a fresh `-derivedDataPath` (or Product → Clean Build Folder in Xcode) — nothing to change in the repo.
+
+ALSO (same day): iOS demo keys moved from Swift constants to Faint's xcconfig approach — `demo/ios-app/Configuration/Config.xcconfig` (tracked, `baseConfigurationReference` of both target configs) `#include? "Secrets.xcconfig"` (gitignored; `.template` tracked), Info.plist forwards `$(SENTRY_DSN)` / `$(POSTHOG_API_KEY)` / `$(POSTHOG_HOST)` / `$(REVENUECAT_API_KEY)`, and `bootstrapDemoKoinWithSdks()` (no args) reads them via `NSBundle.mainBundle.objectForInfoDictionaryKey` in `demo/shared` iosMain (an unexpanded `$(KEY)` counts as blank → the toolkit's config fails naming the key). xcconfig gotcha: `//` is a comment, so URLs are written `https:/$()/…`. Firebase is gone from the iOS demo entirely (package, `FirebaseApp.configure()`, plist, Crashlytics dSYM phase).
+
+### Files
+- demo/ios-app/iosDemoApp.xcodeproj/project.pbxproj
+- demo/ios-app/Configuration/Config.xcconfig
+- demo/ios-app/Configuration/Secrets.xcconfig.template
+- demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/DemoSdks.kt

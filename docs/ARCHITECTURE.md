@@ -15,9 +15,11 @@ core/   (no upward deps; util is the root everything depends on)
   di    ── initializeFrnk(modules) + requireFrnkKoin()
 
 data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (impl installed via Koin):
-  db-api    ── db-impl     (DatabaseFactory)      analytics-api     ── analytics-impl     (Firebase)
-  prefs-api ── prefs-impl  (KeyValueStore)        remote-config-api ── remote-config-impl (Firebase Remote Config)
-                                                  identity-api      ── identity-impl      (Firebase Auth)
+  db-api    ── db-impl     (DatabaseFactory)      analytics-api     ── analytics-posthog  (PostHog)  + crash-sentry (Sentry)
+                                                    └─ MANDATORY on every host: frnkModules { observability(…) }; no no-op
+  prefs-api ── prefs-impl  (KeyValueStore)
+                                                  identity-api      (AnonymousIdentityProvider; bound by
+                                                    │                 monetization-impl's revenueCatIdentityModule)
                                                     └─ IdentitySource: the shared identify(id) sink
                                                        contract, implemented by AnalyticsTracker,
                                                        CrashReporter, EntitlementProvider/Manager
@@ -55,11 +57,12 @@ no `*-impl`/cinterop deps — it resolves `EntitlementManager`/`AnalyticsTracker
 from Koin at runtime — so the "no `*-impl` in common surface" guarantee still
 holds, and the demo's shared composable can use the app-root
 `FrnkApp` on both platforms.) This keeps
-`DemoKit.xcframework` free of the Firebase / RevenueCat / SQLite native cinterop
-references that would otherwise force iosDemoApp to ship `PurchasesHybridCommon`
-+ Firebase pods just to launch. The demo binds fakes (`FakeEntitlementProvider`,
-`FakeKeyValueStore`, `FakeNoteStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`) and never
-touches a real SDK, so it boots on a clean simulator with no extra setup. The demo
+`DemoKit.xcframework` free of the RevenueCat / SQLite native cinterop
+references that would otherwise force iosDemoApp to link them just to launch. The demo binds fakes (`FakeEntitlementProvider`,
+`FakeKeyValueStore`, `FakeNoteStore`) for the optional paid-SDK seams; observability is **not**
+faked — the demo is a real host and bootstraps PostHog + Sentry from real keys (`local.properties`
+on Android, `Configuration/Secrets.xcconfig` on iOS), so it needs those keys to boot. The demo
+carries no Firebase on either platform. The demo
 also owns its own Room schema (`DemoDatabase` + `NoteEntity`/`NoteDao` + the
 `dev.jdgarita.frnk.demo.notes` NoteStore) — the toolkit owns no schema (Stage 4 /
 OQ-2), and Room's runtime plus the KSP-generated code are driver-free, so DemoKit
@@ -106,8 +109,7 @@ analytics-api ← identity-api                  # IdentitySource — see below
 monetization-api ← {analytics-api, identity-api, data-prefs-api}
 monetization-ui  ← {ui-scaffolds, monetization-api}
 ui-scaffolds     ← monetization-api           # SettingsViewModel.ObserveProStatusUseCase (needs monetizationModule in graph)
-remote-config-api ← remote-config-impl        # sibling of analytics, never merged into it
-identity-api ← identity-impl                  # SDK-free anonymous identity contract + Firebase Auth binding
+monetization-impl → identity-api              # revenueCatIdentityModule is the toolkit's AnonymousIdentityProvider binding
 Material3 only in ui-bottom-nav (ui-app inherits it transitively — the accepted batteries-included trade)
 Only demo modules may depend on *-impl modules from code; hosts wire impls via Koin modules only
 ```
@@ -128,10 +130,10 @@ hand the same uid to telemetry and billing without four differently-shaped calls
 
 Each domain that pulls in a third-party SDK is split:
 
-- **`*-api`** — pure-interface module. No Ktor, no Firebase, no SQLite driver. Domain code depends only on these.
-- **`*-impl`** (e.g. `:analytics-impl`, `:analytics-posthog`, `:crash-sentry`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`, `:remote-config-impl`) — concrete bindings exposed as Koin modules. One api can have several impls (`:analytics-api` has three); the host picks per slot.
+- **`*-api`** — pure-interface module. No Ktor, no SDK, no SQLite driver. Domain code depends only on these.
+- **`*-impl`** (e.g. `:analytics-posthog`, `:crash-sentry`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`) — concrete bindings exposed as Koin modules. `:analytics-api`'s two contracts have exactly one impl each (PostHog, Sentry) and both are mandatory; the other pairs are host choices.
 
-Capabilities (`frnk/capabilities/`) follow the same rule: **`:remote-config-api`** (`RemoteConfigService` — read-only typed key→value + `fetchAndActivate`) is backed by **`:remote-config-impl`** (Firebase Remote Config), while **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — and **`:identity-impl`** binds the provider to Firebase Auth through `firebaseIdentityModule` — or, for an accountless host on RevenueCat, `revenueCatIdentityModule` (`:monetization-impl`) binds it to the RevenueCat app user id; `frnkModules { identity = … }` takes exactly one of the two. **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
+Capabilities (`frnk/capabilities/`) follow the same rule: **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — bound by `revenueCatIdentityModule` (`:monetization-impl`, the RevenueCat app user id) or a host-owned binding; `frnkModules { identity = … }` takes exactly one. (The Firebase-backed `:identity-impl` and the whole remote-config pair `:remote-config-api` / `:remote-config-impl` were retired on 2026-09-22 — with no toolkit backend, a remote-config contract + no-op + slot was dead optionality; a host that needs it owns it outside frnk.) **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.
@@ -155,27 +157,27 @@ fun frnkUiModules(): List<Module>   // the SDK-free scaffold VM modules (Home/Se
 @Composable fun FrnkApp(onSavedStateConfiguration, onNavigationModule)
 ```
 
-Analytics and crash reporting are **two slots** (`frnkModules { analytics = …; crashReporting = … }`),
-each a separate axis from the data backend (BACKLOG P1-5) and from each other, since they are
-different vendors: a local-storage-only app can still ship telemetry, and a host can take one
-without the other. `:analytics-posthog` (`postHogAnalyticsModule(config)`) and `:crash-sentry`
-(`sentryCrashReportingModule(config)`) are the providers; `:analytics-impl` still offers
-`firebaseAnalyticsModule` / `firebaseCrashReportingModule` (`firebaseObservabilityModule` bundles both
-for the raw-list path); `noopAnalyticsModule` / `noopCrashReportingModule` (`:analytics-api`) are the
-defaults, and a provider config with a blank key binds that no-op itself. Install exactly one binding
-per slot. Both providers start their SDK inside `startKoin` (`createdAtStart`), so early crashes and
-the launch's lifecycle events are captured on every bootstrap path.
-On iOS, `firebaseCrashReportingModule` additionally installs the CrashKiOS unhandled-exception hook
-(`:analytics-impl`'s `enableNativeCrashHandler`, iOS-only — no-op on Android) so *uncaught*
-Kotlin crashes reach Crashlytics symbolicated, not just the exceptions a caller explicitly
-`recordException`s (BACKLOG P1-5b).
+Analytics and crash reporting are **mandatory and fixed**: every host ships PostHog
+(`:analytics-posthog`, `postHogAnalyticsModule(config)`) and Sentry (`:crash-sentry`,
+`sentryCrashReportingModule(config)`), installed by the one required `frnkModules { observability(sentry
+= …) }` call (`build()` throws without it) — the host supplies only its own Sentry DSN; the PostHog key
+is the toolkit's (`FrnkPostHogProject`, one project for every frnk app — generated at build time from
+`POSTHOG_API_KEY` in frnk's gitignored `local.properties`, never committed). There is no no-op, no alternative provider and no
+host-written tracker — all of this project's apps use the same two vendors, so the toolkit carries no
+optionality for them; hosts read the trackers back through Koin (`koinInject<AnalyticsTracker>()` /
+`get<CrashReporter>()`) for their own events and non-fatals. A blank key or DSN is an
+`IllegalArgumentException` at config construction. `:ui-app` therefore has `api` deps on both provider
+modules — the one deliberate SDK-backed edge in the ui column. Both providers start their SDK inside
+`startKoin` (`createdAtStart`), so early crashes and the launch's lifecycle events are captured on every
+bootstrap path; on Apple, `Sentry.init` installs its own unhandled-Kotlin-exception hook, so *uncaught*
+crashes reach Sentry symbolicated with no CrashKiOS.
 
 The Android `initializeFrnk(context, modules)` overload also sets `DatabaseContext.application` (the shared Context seam, owned by `:core-di` androidMain since Stage 4) and registers `androidContext(...)`. **The toolkit owns no Room schema** (restructure Stage 4 / OQ-2): `databaseModule` (`:data-db-impl`) binds only the `DatabaseFactory` (platform file location + the bundled SQLite driver defaults), and the host's own entity module opens its database through it (`databaseSingle<MyDb>("my.db")` — the demo's `DemoDatabase`/`demoNotesModule` is the worked example). Key-value persistence is the separate `prefsModule` (`:data-prefs-impl`, binds `KeyValueStore`). The full copy-paste snippet lives in `docs/HOST_INTEGRATION.md` §4.
 
 ## Module communication flow
 
 1. A composable dispatches a `UiIntent` via `viewModel.send(intent)`.
-2. The ViewModel handles it in `onIntent`: it mutates the data-only `ModelState` purely with `updateModel { copy(...) }` (the `UiState` re-derives via `mapToUiState`) and/or calls a `*-api` interface (e.g. `RemoteConfigService` from `:remote-config-api`).
+2. The ViewModel handles it in `onIntent`: it mutates the data-only `ModelState` purely with `updateModel { copy(...) }` (the `UiState` re-derives via `mapToUiState`) and/or calls a `*-api` interface (e.g. `EntitlementManager` from `:monetization-api`).
 3. Koin resolves the interface to the concrete impl from a `*-impl` module — whichever the host installed in its `initializeFrnk(modules = …)` list.
 4. The impl returns an `AppResult<Data, AppError>`.
 5. The ViewModel folds the result into the next state or emits a `UiEffect` (navigation, toast) via `emit(effect)`.
@@ -187,7 +189,7 @@ The Android `initializeFrnk(context, modules)` overload also sets `DatabaseConte
 
 ## iOS native dependency contract
 
-`:monetization-impl` and `:analytics-impl` cinterop with the native RevenueCat (purchases-ios) and Firebase SDKs. The toolkit does NOT ship those native frameworks — the consumer Xcode project brings them in via CocoaPods or SPM. An umbrella framework that bundles these modules (the demo's `DemoKit`; a host's own XCFramework) uses `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links (see `docs/HOST_INTEGRATION.md` §6). Both `demo-android` and `iosDemoApp` call `DemoBootstrapKt.bootstrapDemoKoin()` to install the demo's fake bindings.
+`:monetization-impl`, `:analytics-posthog` and `:crash-sentry` cinterop with the native RevenueCat (purchases-ios), PostHog (posthog-ios) and Sentry (sentry-cocoa) SDKs. The toolkit does NOT ship those native frameworks — the consumer Xcode project brings them in via SPM (or CocoaPods). An umbrella framework that bundles these modules (the demo's `DemoKit`; a host's own XCFramework — and every host's does, since PostHog + Sentry are mandatory) uses `linkerOpts("-undefined", "dynamic_lookup")` so the link succeeds locally; the symbols resolve when the consumer's iOS app links (see `docs/HOST_INTEGRATION.md` §6). Both `demo-android` and `iosDemoApp` call `bootstrapDemoKoin(postHog, sentry)` (`:demo-shared`) to assemble the graph with the real observability pair plus the demo's fake bindings.
 
 ## Consuming via composite build (includeBuild)
 
@@ -232,7 +234,8 @@ import dev.jdgarita.frnk.ui.app.frnkUiModules
 
 initializeFrnk(
     context = this,
-    modules = frnkUiModules() + databaseModule + prefsModule + firebaseObservabilityModule +
+    modules = frnkUiModules() + databaseModule + prefsModule +
+        postHogAnalyticsModule(postHogConfig) + sentryCrashReportingModule(sentryConfig) +
         listOf(myAppModule, myRoomDatabaseModule),
 )
 ```
@@ -272,7 +275,7 @@ The toolkit-owned navigation layer is built on **AndroidX Navigation3** (type-sa
 - **`release.yml`** — on a `v*` tag push, publishes the GitHub Release (see `RELEASING.md`). The deliberately-kept tag-release job.
 - **`claude.yml`** — on-demand `@claude` assistant on issues/PRs.
 
-**Validate locally before pushing** (this is the gate the old CI job enforced). After seeding a dummy `local.properties` so `BuildKonfig` resolves, run in order:
+**Validate locally before pushing** (this is the gate the old CI job enforced). After seeding `local.properties` (`sdk.dir` + `POSTHOG_API_KEY`, see `local.properties.example`), run in order:
 
 1. `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache`
 2. `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache`

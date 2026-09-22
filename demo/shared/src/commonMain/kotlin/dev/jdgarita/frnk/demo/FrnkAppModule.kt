@@ -1,8 +1,5 @@
 package dev.jdgarita.frnk.demo
 
-import dev.jdgarita.frnk.backend.AnalyticsTracker
-import dev.jdgarita.frnk.backend.CrashReporter
-import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.camera.cameraModule
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.demo.notes.Note
@@ -20,15 +17,8 @@ import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
-import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
-import dev.jdgarita.frnk.ui.app.appearanceModule
-import dev.jdgarita.frnk.ui.bottomnav.frnkNestedNavModule
-import dev.jdgarita.frnk.ui.scaffolds.home.homeScaffoldModule
-import dev.jdgarita.frnk.ui.scaffolds.onboarding.onboardingScaffoldModule
-import dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
-import dev.jdgarita.frnk.utils.PrintLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,20 +27,16 @@ import org.koin.dsl.module
 import kotlin.time.Clock
 
 /**
- * Demo wiring. The point of having a separate module is that a real host would swap these for
- * `revenueCatModule` / `firebaseObservabilityModule` — the toolkit doesn't care.
+ * The demo's host-side fakes, installed through `frnkModules { modules(frnkAppModule) }` in
+ * [bootstrapDemoKoin] — the builder supplies the scaffold VMs, the mandatory PostHog + Sentry pair and
+ * the no-op remote config; this module only binds what a real host would back with a paid SDK
+ * (`revenueCatModule`, `prefsModule`, `databaseModule`). Observability is deliberately NOT faked
+ * here: every host ships the real providers, the demo included.
  */
 val frnkAppModule =
     module {
-        includes(appearanceModule)
-        includes(homeScaffoldModule)
-        includes(onboardingScaffoldModule)
-        includes(frnkNestedNavModule)
-        includes(settingsScaffoldModule)
-        // Stage 11 capability scaffolds — all no-op api defaults so DemoKit's common surface stays
-        // SDK-free. androidDemoApp overrides remoteConfig with the real Firebase remoteConfigModule;
-        // camera/permissions have no impl yet, so they stay no-op everywhere (demoed as such).
-        includes(noopRemoteConfigModule)
+        // Stage 11 capability scaffolds — camera/permissions have no impl yet, so they stay no-op
+        // everywhere (demoed as such).
         includes(cameraModule)
         includes(permissionsModule)
         // The real frnk monetization layer (DefaultEntitlementManager + FeatureGate) over a FAKE
@@ -59,20 +45,18 @@ val frnkAppModule =
         includes(monetizationModule)
         includes(paywallScaffoldModule)
         single<EntitlementProvider> { FakeEntitlementProvider() }
-        // In-memory identity so monetizationModule's SyncAuthUseCase stays resolvable without
-        // Firebase; a real host installs firebaseIdentityModule (:identity-impl) instead.
+        // In-memory identity so monetizationModule's SyncAuthUseCase stays resolvable; a real host
+        // installs revenueCatIdentityModule (as demo-android does with a RevenueCat key) instead.
         single<AnonymousIdentityProvider> { FakeAnonymousIdentityProvider() }
         // In-memory KeyValueStore so god mode persists for the session without the
         // multiplatform-settings impl; a real host installs prefsModule (:data-prefs-impl) instead.
         single<KeyValueStore> { FakeKeyValueStore() }
-        single<AnalyticsTracker> { LoggingAnalyticsTracker() }
-        single<CrashReporter> { LoggingCrashReporter() }
         // In-memory NoteStore default so DemoKit/iOS stays free of the bundled SQLite driver.
         // androidDemoApp overrides it with the REAL path — databaseModule (:data-db-impl) +
         // demoNotesModule (demo-owned DemoDatabase over DatabaseFactory, OQ-2) — and the
         // Robolectric round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
-        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get()) }
     }
 
 /** In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK. */
@@ -134,7 +118,7 @@ class FakeEntitlementProvider : EntitlementProvider {
         AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
 }
 
-/** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path without Firebase. */
+/** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path with no identity backend. */
 class FakeAnonymousIdentityProvider : AnonymousIdentityProvider {
     private val _uid = MutableStateFlow<String?>(null)
     override val uid: StateFlow<String?> = _uid.asStateFlow()
@@ -205,66 +189,5 @@ class FakeNoteStore : NoteStore {
     override suspend fun clear(): AppResult<Unit, CommonError> {
         notes.clear()
         return AppResult.Success(Unit)
-    }
-}
-
-class LoggingAnalyticsTracker : AnalyticsTracker {
-    override fun track(
-        event: ToolkitEvent,
-        params: Map<String, Any?>
-    ) {
-        PrintLogger.d(TAG, "${event.key} $params")
-    }
-
-    override fun trackCustom(
-        name: String,
-        params: Map<String, Any?>
-    ) {
-        PrintLogger.d(TAG, "$name $params")
-    }
-
-    override fun screen(
-        name: String,
-        params: Map<String, Any?>
-    ) {
-        PrintLogger.d(TAG, "screen $name $params")
-    }
-
-    override fun setUserProperty(
-        key: String,
-        value: String?
-    ) {
-        PrintLogger.d(TAG, "user[$key] = $value")
-    }
-
-    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
-        PrintLogger.d(TAG, "identify -> $id")
-        return AppResult.Success(Unit)
-    }
-
-    companion object {
-        private const val TAG = "LoggingAnalytics"
-    }
-}
-
-class LoggingCrashReporter : CrashReporter {
-    override fun recordException(
-        throwable: Throwable,
-        extras: Map<String, String>
-    ) {
-        PrintLogger.e(TAG, "$extras", throwable)
-    }
-
-    override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
-        PrintLogger.d(TAG, "identify -> $id")
-        return AppResult.Success(Unit)
-    }
-
-    override fun log(message: String) {
-        PrintLogger.d(TAG, message)
-    }
-
-    companion object {
-        private const val TAG = "LoggingCrashReporter"
     }
 }

@@ -1,9 +1,10 @@
 # :identity-api
 
-Pure-interface identity contract. **No SDK of any kind.** Two bindings exist for the
-`frnkModules { identity = … }` slot: `revenueCatIdentityModule` (`:monetization-impl`) over the
-RevenueCat app user id — the natural choice for an accountless host, a local read with no network —
-and `firebaseIdentityModule` (`:identity-impl`) over Firebase Anonymous Auth. One per host, never both.
+Pure-interface identity contract. **No SDK of any kind.** The toolkit's one binding for the
+`frnkModules { identity = … }` slot is `revenueCatIdentityModule` (`:monetization-impl`) over the
+RevenueCat app user id — the natural choice for an accountless host, a local read with no network;
+a host with its own account system binds its own `AnonymousIdentityProvider`. One per host, never
+both. (The Firebase Anonymous Auth binding, `:identity-impl`, was retired on 2026-09-22.)
 
 ## Contents
 
@@ -33,13 +34,12 @@ that edge was preferred over duplicating the contract or inventing a fifth modul
 
 ## Rules
 
-- **No SDK dependencies.** Anything touching `dev.gitlive.firebase.*` belongs in `:identity-impl`,
-  anything touching `com.revenuecat.*` in `:monetization-impl`.
+- **No SDK dependencies.** Anything touching `com.revenuecat.*` belongs in `:monetization-impl`.
 - Every method returns `AppResult`, never throws — the toolkit-wide `*-api` rule.
 - `identify(id)` takes a **non-null** id: there is deliberately no logout/clear path yet, because no
   frnk host has a real account system. Adding one means widening this signature, and note the
-  asymmetry it has to absorb — gitlive's analytics `setUserId` accepts `String?` while its
-  crashlytics equivalent requires non-null.
+  asymmetry it has to absorb — PostHog's `identify` and Sentry's `setUser` each have their own
+  notion of "no user".
 - Keep `IdentityError` coarse. A sink that genuinely can distinguish failure causes should model
   them in its own error type rather than inflating this shared one.
 
@@ -51,5 +51,5 @@ that edge was preferred over duplicating the contract or inventing a fifth modul
 
 No tests of its own — it is interfaces and one enum. The contract is exercised where it is
 implemented: `ObservabilityTest` (`:analytics-api`), `DefaultSyncAuthUseCaseTest` and
-`DefaultEntitlementManagerTest` (`:monetization-api`), `FirebaseAuthManagerTest` (`:identity-impl`),
-`RevenueCatIdentityProviderTest` (`:monetization-impl`).
+`DefaultEntitlementManagerTest` (`:monetization-api`), `RevenueCatIdentityProviderTest`
+(`:monetization-impl`).

@@ -80,7 +80,7 @@ short list of rules every change is reviewed against. `ARCHITECTURE.md` explains
   `iosMain` is a bug.
 - Anything Swift must call lives in a module the umbrella framework `export(...)`s, uses
   Swift-friendly types, and avoids native cinterop in `commonMain` (keeps XCFrameworks clean).
-- Firebase, RevenueCat, SQLite drivers, and any other native SDK are confined to `*-impl` modules
+- RevenueCat, PostHog, Sentry, SQLite drivers, and any other native SDK are confined to `*-impl` modules
   and the platform wrappers.
 
 ## 7. Code organisation and style
@@ -93,7 +93,7 @@ short list of rules every change is reviewed against. `ARCHITECTURE.md` explains
 - **No trailing commas, no final newline in Kotlin** (`.editorconfig` + ktlint, enforced by the
   pre-commit hook). Run `./gradlew ktlintFormat` rather than hand-formatting.
 - Analytics `ToolkitEvent` keys are lowercase `snake_case`, letters/digits/underscores only,
-  starting with a letter (Firebase silently drops anything else).
+  starting with a letter (the intersection every provider accepts; PostHog reserves the `$` prefix).
 - New typed preferences use `Preference<T>` (`store.booleanPreference("key", default)`), never raw
   `KeyValueStore` keys.
 

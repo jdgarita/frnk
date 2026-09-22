@@ -1,6 +1,3 @@
-# Firebase Crashlytics CLI scratch dir (created by upload-symbols / firebase CLI)
-.crashlytics/
-
 # Gradle
 .gradle/
 build/
@@ -21,8 +18,11 @@ local.properties
 keystore.properties
 *.keystore
 *.jks
+# Firebase is gone from frnk and its demos, but stray local copies (and the Crashlytics CLI's
+# scratch dir with its dump_syms binary) must never be committed.
 google-services.json
 GoogleService-Info.plist
+.crashlytics/
 
 # OS
 .DS_Store
@@ -38,15 +38,16 @@ DerivedData/
 # SwiftPM
 .swiftpm/
 .build/
-# Xcode-managed SwiftPM pins for iosDemoApp — resolved locally on first Xcode open.
-# Kept local (like GoogleService-Info.plist above): the demo apps are internal smoke
-# harnesses that already require local Firebase setup, and CI never builds iOS.
+# Xcode-managed SwiftPM pins for iosDemoApp — resolved locally on first Xcode open. Kept local (like
+# Secrets.xcconfig below): the demo is an internal smoke harness and CI never builds iOS.
 **/xcshareddata/swiftpm/Package.resolved
 
-# CocoaPods (if reintroduced later)
-Podfile.lock
+# iOS demo
 demo/ios-app/iosDemoApp.xcodeproj/xcuserdata/
 demo/ios-app/iosDemoApp.xcodeproj/project.xcworkspace/xcuserdata/
+# Keys (Sentry DSN / RevenueCat) — same approach as Faint: Config.xcconfig does
+# `#include? "Secrets.xcconfig"`; copy Configuration/Secrets.xcconfig.template and fill it in.
+demo/ios-app/Configuration/Secrets.xcconfig
 
 # Kotlin Multiplatform
 *.kexe

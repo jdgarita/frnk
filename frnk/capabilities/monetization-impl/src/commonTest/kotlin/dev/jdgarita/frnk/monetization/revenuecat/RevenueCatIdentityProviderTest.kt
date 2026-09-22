@@ -25,10 +25,10 @@ class RevenueCatIdentityProviderTest {
     @Test
     fun `an identified app user id is reported verbatim`() =
         runTest {
-            // An install that once ran Purchases.logIn(firebaseUid) keeps that id; nothing here logs out.
-            val provider = RevenueCatIdentityProvider(FakeIdentityGateway(id = "firebase-uid-123"))
+            // An install that once ran Purchases.logIn(someUid) keeps that id; nothing here logs out.
+            val provider = RevenueCatIdentityProvider(FakeIdentityGateway(id = "host-uid-123"))
 
-            assertEquals(AppResult.Success("firebase-uid-123"), provider.ensureSignedIn())
+            assertEquals(AppResult.Success("host-uid-123"), provider.ensureSignedIn())
         }
 
     @Test

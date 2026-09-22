@@ -1,7 +1,6 @@
 package dev.jdgarita.frnk.backend.posthog
 
 import dev.jdgarita.frnk.backend.AnalyticsTracker
-import dev.jdgarita.frnk.backend.NoopAnalyticsTracker
 import dev.jdgarita.frnk.backend.ToolkitEvent
 import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.utils.AppResult
@@ -9,7 +8,7 @@ import kotlinx.coroutines.test.runTest
 import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class PostHogAnalyticsTrackerTest {
@@ -52,20 +51,25 @@ class PostHogAnalyticsTrackerTest {
         }
 
     @Test
-    fun `a blank api key binds the no-op tracker without touching the sdk`() {
-        val app = koinApplication { modules(postHogAnalyticsModule(PostHogAnalyticsConfig(apiKey = "", environment = "test"))) }
-        try {
-            assertIs<NoopAnalyticsTracker>(app.koin.get<AnalyticsTracker>())
-        } finally {
-            app.close()
-        }
+    fun `a blank api key is a configuration error, not a silent no-op`() {
+        // Every host ships real analytics, so a missing key must fail where it is written — the
+        // config — and name the fix, instead of binding a tracker that drops every event.
+        val failure = assertFailsWith<IllegalArgumentException> { PostHogAnalyticsConfig(environment = "test", apiKey = " ") }
+        assertTrue(failure.message.orEmpty().contains("apiKey"), "names the field")
+    }
+
+    @Test
+    fun `the api key defaults to the toolkit-wide project so hosts never supply one`() {
+        val config = PostHogAnalyticsConfig(environment = "test")
+        assertEquals(FrnkPostHogProject.API_KEY, config.apiKey)
+        assertEquals(FrnkPostHogProject.HOST, config.host)
     }
 
     @Test
     fun `a configured module binds the posthog tracker even when setup cannot run on the host`() {
         // No Koin androidContext here, so the Android actual cannot resolve an Application; the
         // module's runCatching keeps startKoin alive, which is the contract this pins.
-        val config = PostHogAnalyticsConfig(apiKey = "phc_test", environment = "test")
+        val config = PostHogAnalyticsConfig(environment = "test")
         val app = koinApplication { modules(postHogAnalyticsModule(config)) }
         try {
             assertTrue(app.koin.get<AnalyticsTracker>() is PostHogAnalyticsTracker)

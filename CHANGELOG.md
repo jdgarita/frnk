@@ -15,6 +15,74 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: observability is mandatory and fixed — PostHog + Sentry on every host.**
+  `frnkModules { }` lost its `analytics` / `crashReporting` slots; the one required call is now
+  `observability(sentry = SentryCrashReportingConfig(…))`, which installs `sentryCrashReportingModule`
+  from the host's config and `postHogAnalyticsModule` from a derived one (`build()` throws without it).
+  Callers of the transient `observability(postHog = …, sentry = …)` form: `postHog` is now the optional
+  second parameter (default `PostHogAnalyticsConfig(environment = sentry.environment)`) — a positional
+  call must swap the arguments.
+- **The PostHog project key ships inside the toolkit's binaries, never in source.** Every frnk app
+  reports to one PostHog project, so its public `phc_…` key is `FrnkPostHogProject.API_KEY`
+  (`:analytics-posthog`) and the default `PostHogAnalyticsConfig.apiKey`; `environment` is the config's
+  only required parameter (now first — `PostHogAnalyticsConfig(environment, apiKey = …, host = …, …)`).
+  `FrnkPostHogProject` is **generated at build time** by `:analytics-posthog`'s
+  `generateFrnkPostHogProject` from `POSTHOG_API_KEY` (+ optional `POSTHOG_HOST`) in frnk's gitignored
+  `local.properties`, the env var or `-PPOSTHOG_API_KEY=`; the build fails without it. Hosts never
+  supply a PostHog key in code (they keep it in `frnk/local.properties`); each app supplies its own
+  Sentry DSN.
+- **The per-app keys standard** (`docs/HOST_INTEGRATION.md` §"Supplying per-app keys"): Android
+  `local.properties` → `BuildConfig`; iOS `Configuration/Config.xcconfig` `#include?` → gitignored
+  `Secrets.xcconfig` (+ tracked `.template`) → `Info.plist` `$(KEY)` → `NSBundle` in the Kotlin
+  bootstrap. No key constants or placeholders in code. The demo is the worked example. `:ui-app` therefore depends on `:analytics-posthog` + `:crash-sentry` (`api`), so a
+  host never imports a provider module. Hosts never bind their own `AnalyticsTracker`/`CrashReporter`;
+  they inject the toolkit's for their own events and non-fatals. All of this project's apps use the same
+  two vendors, so the toolkit carries no optionality for them.
+- **Breaking: a blank PostHog API key or Sentry DSN now throws** (`IllegalArgumentException` at
+  config construction) instead of binding a silent no-op. `isConfigured` is gone from both configs.
+- The demo is treated as a real host: `SENTRY_DSN` (Android `local.properties`, iOS
+  `Configuration/Secrets.xcconfig`) is required to boot; `POSTHOG_API_KEY` / `POSTHOG_HOST` are gone
+  from `local.properties.example`, the iOS template and `Info.plist`. `bootstrapDemoKoin(sentry, postHog =
+  derived)` assembles the graph with `frnkModules { }`; the demo's fakes cover only the paid-SDK seams.
+  The iOS "Force crash" button reports to Sentry.
+
+### Removed
+
+- **Breaking: Firebase is gone from the toolkit.** `:identity-impl` (`firebaseIdentityModule`,
+  Firebase anonymous auth), `:remote-config-impl` (`remoteConfigModule`, Firebase Remote Config), the
+  `frnk.android.firebase` convention plugin (and `build-logic`'s `google-services` marker), and the
+  `gitlive-firebase` / `firebase-bom` / `firebase-auth` / `firebase-config` / `firebase-firestore`
+  catalog entries + the `google-services` plugin alias are deleted. `:identity-api` stays: hosts on
+  `firebaseIdentityModule` move to `revenueCatIdentityModule` (`:monetization-impl`) or bind their own
+  `AnonymousIdentityProvider`. Faint currently applies `frnk.android.firebase` +
+  `firebaseIdentityModule` and migrates when it bumps frnk.
+- **Breaking: `:remote-config-api` is gone too** (`RemoteConfigService`, `NoopRemoteConfig`,
+  `noopRemoteConfigModule`), with the `frnkModules { remoteConfig = … }` slot and the validator's
+  remote-config check — with no toolkit backend, a contract + no-op + slot was dead optionality. A
+  host that needs remote config owns its own interface and binding outside frnk; hosts that assigned
+  `remoteConfig` or installed `noopRemoteConfigModule` drop those lines. `:ui-app` no longer depends
+  on it, and the demo's "Capabilities" section lost its remote-config value and fetch button.
+- **Breaking: `NoopAnalyticsTracker`, `NoopCrashReporter`, `noopAnalyticsModule`,
+  `noopCrashReportingModule`, `noopObservabilityModule`** (`:analytics-api`). Tests use the
+  `commonTest` `FakeAnalyticsTracker` / `FakeCrashReporter`. `:analytics-api` no longer depends on Koin.
+- **Breaking: `:analytics-impl`** (Firebase Analytics + Crashlytics — `firebaseAnalyticsModule`,
+  `firebaseCrashReportingModule`, `firebaseObservabilityModule`, the CrashKiOS native crash handler)
+  and the `firebase-analytics` / `firebase-crashlytics` / `crashkios-crashlytics` catalog entries.
+- Demo: Firebase is gone from **both** demo apps — demo-android no longer applies `google-services`,
+  reads `google-services.json` or installs `remoteConfigModule`; the `:remote-config-impl`
+  dependency is dropped from `demo-android`.
+- Demo: `LoggingAnalyticsTracker` / `LoggingCrashReporter`, the iOS CrashKiOS hook
+  (`enableDemoCrashlytics`) and the RevenueCat-only `bootstrapDemoKoinWithRevenueCat`. Firebase is
+  gone from the iOS demo entirely (`firebase-ios-sdk` package, `FirebaseApp.configure()`,
+  `GoogleService-Info.plist`, the Crashlytics dSYM upload phase). iOS keys moved out of Swift
+  constants into `demo/ios-app/Configuration/Secrets.xcconfig` (gitignored, `.template` tracked;
+  `Config.xcconfig` → `Info.plist` → `NSBundle`, Faint's approach). The Xcode run-script now scrubs
+  Xcode's env before calling Gradle, so Kotlin 2.4's SwiftPM synthetic-linkage integration (pulled in
+  transitively by posthog-kmp) no longer interferes with the plain-XCFramework model; the RevenueCat
+  SPM minimum is 5.87.1 (what purchases-kmp 3.7.0 wraps; 5.75.0 did not compile on Xcode 27).
+
 ## [0.8.0] - 2026-09-21
 
 ### Added

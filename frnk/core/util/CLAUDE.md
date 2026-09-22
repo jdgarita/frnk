@@ -16,6 +16,6 @@ KMP root module — the dependency floor every other `shared-*` module sits on. 
 ## Rules
 
 - This module **must not depend on anything in the project**. It is the root of the graph.
-- Don't add SDK-specific code here — `BuildKonfig`-generated config is a future addition, but anything that needs Ktor / Firebase / Room belongs further down the graph.
+- Don't add SDK-specific code here — anything that needs Ktor / a vendor SDK / Room belongs further down the graph.
 - New helper goes here only if it's needed by **two or more** unrelated `shared-*` modules. Pure-Kotlin helpers stay in `commonMain`. If a helper genuinely needs the platform SDK (like `PlatformInfo`), expose a **narrow `expect/actual`** that returns plain data — never leak a `Context` / `UIViewController` up the graph. Otherwise put it in the module that owns it.
 - All three iOS targets are configured (`iosX64`, `iosArm64`, `iosSimulatorArm64`) with `baseName = "shared_utils"` — keep that pattern for any new target you add. Any `expect` in `commonMain` needs an `actual` in **both** `androidMain` and the iOS source set.

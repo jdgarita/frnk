@@ -5,29 +5,23 @@ import com.posthog.kmp.PostHog
 import com.posthog.kmp.PostHogConfig
 import com.posthog.kmp.PostHogContext
 import dev.jdgarita.frnk.backend.AnalyticsTracker
-import dev.jdgarita.frnk.backend.NoopAnalyticsTracker
 import dev.jdgarita.frnk.utils.PrintLogger
 import org.koin.core.module.Module
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
 /**
- * PostHog as the `AnalyticsTracker` — assign to `frnkModules { analytics = … }`.
+ * PostHog as the toolkit's one `AnalyticsTracker`. Hosts don't install this themselves:
+ * `frnkModules { observability(sentry = …) }` (`:ui-app`) does, from the config the host
+ * passes. It stays public for the raw `initializeFrnk(modules = listOf(…))` path and for tests.
  *
  * The binding is `createdAtStart`, so `PostHog.setup` runs inside `startKoin` on every bootstrap
  * path and the SDK's own lifecycle events see the launch. The SDK is set up exactly once per
- * process; a second Koin start (tests, a host that restarts its graph) does not re-run it.
- *
- * A blank [PostHogAnalyticsConfig.apiKey] binds [NoopAnalyticsTracker] instead and never touches
- * the SDK — the graceful-degradation mode for a clone without keys.
+ * process; a second Koin start (tests, a host that restarts its graph) does not re-run it. A missing
+ * key never reaches here — [PostHogAnalyticsConfig] rejects it at construction.
  */
 fun postHogAnalyticsModule(config: PostHogAnalyticsConfig): Module =
     module {
-        if (!config.isConfigured) {
-            PrintLogger.w(TAG, "no API key — analytics is a no-op for this process")
-            single<AnalyticsTracker> { NoopAnalyticsTracker() }
-            return@module
-        }
         single<AnalyticsTracker>(createdAtStart = true) {
             // The context lookup runs inside the runCatching too: a graph started without Koin's
             // androidContext (a bare startKoin) degrades to a logged no-op rather than failing start.

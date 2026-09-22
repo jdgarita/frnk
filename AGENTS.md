@@ -36,7 +36,7 @@ consumes as a Git submodule through a Gradle composite build (`includeBuild("../
 - **`docs/HOST_INTEGRATION.md`** — how a host app consumes the toolkit.
 - **`REQUIREMENTS.md`** — product spec + architecture invariants.
 - **`.mobiai/brain/`** — living memory: the *why* behind decisions, integration quirks
-  (Firebase/RevenueCat/dSYM), testing patterns, bugfixes. Query with `mobiai brain context` /
+  (RevenueCat/Sentry/PostHog/dSYM), testing patterns, bugfixes. Query with `mobiai brain context` /
   `mobiai brain search "<topic>"` before proposing architecture, DI, persistence, navigation, or
   integration changes; save new decisions there, not in the docs.
 - **Per-module `CLAUDE.md`** files under `frnk/**` — module-specific rules.
@@ -86,8 +86,9 @@ Notes:
   `compileDebugKotlinAndroid` does not exist for KMP modules).
 - CI is paused while the repo is private. **Validate locally before every push** with the compile
   gate and the test gate above.
-- `demo/ios-app` needs a local `GoogleService-Info.plist` and Xcode-resolved Swift packages; it is not
-  buildable from a fresh clone and CI never builds iOS.
+- `demo/ios-app` needs a local `Configuration/Secrets.xcconfig` (copy the `.template`; the Sentry DSN
+  and the RevenueCat Test Store key — no PostHog key, that one ships inside frnk) and Xcode-resolved
+  Swift packages; it is not buildable from a fresh clone and CI never builds iOS.
 
 ## Rules for AI agents
 
@@ -112,7 +113,8 @@ Notes:
   say explicitly why it cannot be demoed.
 - **Verify before claiming done.** Run the compile gate and the test gate; report failures verbatim.
 - **Record decisions in the brain**, not in the docs. Docs stay lean and canonical.
-- `local.properties` and `GoogleService-Info.plist` hold secrets. Never print or commit them.
+- `local.properties` and `demo/ios-app/Configuration/Secrets.xcconfig` hold secrets. Never print or
+  commit them.
 
 ## Git rules
 

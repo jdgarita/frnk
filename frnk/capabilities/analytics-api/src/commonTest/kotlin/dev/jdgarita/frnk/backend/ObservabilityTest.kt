@@ -6,29 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Covers the observability defaults + recording fakes (BACKLOG P1-5):
- *  - the [NoopAnalyticsTracker] / [NoopCrashReporter] defaults are inert (never throw, record nothing),
- *  - the recording fakes capture what was emitted, so downstream tests can assert on them.
+ * Covers the recording fakes (BACKLOG P1-5): they capture what was emitted, so downstream tests can
+ * assert on them. There is no production no-op to cover — every host installs PostHog + Sentry.
  */
 class ObservabilityTest {
-    @Test
-    fun noop_observability_is_inert() =
-        runTest {
-            // No state to observe — the contract is simply "never throws".
-            NoopAnalyticsTracker().apply {
-                track(ToolkitEvent.AppOpened, mapOf("source" to "test"))
-                trackCustom("custom", mapOf("n" to 1))
-                screen("home")
-                setUserProperty("tier", "pro")
-                identify("uid")
-            }
-            NoopCrashReporter().apply {
-                recordException(RuntimeException("boom"), mapOf("k" to "v"))
-                identify("uid")
-                log("breadcrumb")
-            }
-        }
-
     @Test
     fun fake_analytics_records_events_and_properties() {
         val analytics = FakeAnalyticsTracker()

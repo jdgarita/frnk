@@ -5,9 +5,10 @@
 #     cp local.properties.example local.properties
 #
 # The toolkit modules under frnk/ need nothing from this file. Only the Android SDK location is
-# required to configure the build at all; everything else is optional and only feeds the demo
-# harnesses, which degrade to their fake/no-op paths when a value is absent.
-# Never commit this file, google-services.json, or GoogleService-Info.plist.
+# required to configure the build at all, plus POSTHOG_API_KEY to compile :analytics-posthog; the
+# rest feeds the demo harnesses — SENTRY_DSN is required for the Android demo to boot, the RevenueCat
+# key is optional (fake provider when absent).
+# Never commit this file or demo/ios-app/Configuration/Secrets.xcconfig.
 
 # --- Android SDK (required by Gradle) -----------------------------------------------------------
 # Android Studio writes this on first sync; the ANDROID_HOME environment variable is the fallback.
@@ -20,20 +21,27 @@ sdk.dir=/Users/<you>/Library/Android/sdk
 # Blank or absent = the demo falls back to the in-memory fake EntitlementManager.
 REVENUECAT_ANDROID_API_KEY=
 
-# --- Sentry + PostHog, Android demo (optional; read by demo/android-app/build.gradle.kts) -------
-# Public client keys: the Sentry project DSN (Settings → Client Keys) and the PostHog project API
-# key (`phc_…`) + region host. Exposed to :demo-android as BuildConfig.SENTRY_DSN /
-# POSTHOG_API_KEY / POSTHOG_HOST; blank = the demo keeps the Firebase binding for that slot.
+# --- PostHog, TOOLKIT-WIDE (REQUIRED to build :analytics-posthog) -------------------------------
+# The one PostHog project every frnk app reports to. Its project API key (`phc_…`, a public client
+# key) is a BUILD-TIME input of :analytics-posthog: `generateFrnkPostHogProject` writes it into the
+# generated `FrnkPostHogProject` (build/), which is compiled into the toolkit's Android AAR and iOS
+# klib — so the key ships inside frnk and no host app ever supplies it, yet it is never committed.
+# Resolution order: -PPOSTHOG_API_KEY=… › POSTHOG_API_KEY env var › this file. In a host, this is
+# the frnk submodule's local.properties. POSTHOG_HOST is optional (blank = PostHog Cloud US).
+POSTHOG_API_KEY=
+POSTHOG_HOST=
+
+# --- Sentry, Android demo (REQUIRED to boot; read by demo/android-app/build.gradle.kts) ----------
+# The demo's own Sentry project DSN (Settings → Client Keys — a public client key). Exposed to
+# :demo-android as BuildConfig.SENTRY_DSN. The demo is a real host: blank = it fails at launch naming
+# the key (there is no no-op crash reporter). This is THE STANDARD for every frnk host on Android:
+# local.properties → BuildConfig → SentryCrashReportingConfig(dsn = …). iOS mirrors it with
+# demo/ios-app/Configuration/Secrets.xcconfig → Info.plist → NSBundle.
+# Only Sentry is per app — PostHog is the toolkit-wide key above.
 # The Sentry AUTH token (mapping upload) is not a property here — it is the `SENTRY_AUTH_TOKEN`
 # environment variable on the machine that builds releases (see frnk.android.sentry).
 SENTRY_DSN=
-POSTHOG_API_KEY=
-POSTHOG_HOST=https://us.i.posthog.com
 
 # --- Companion machine-local files (all gitignored, not properties in this file) ----------------
-#   demo/android-app/google-services.json             Firebase console → Android app for the demo
-#                                                      project. Optional: the frnk.android.firebase
-#                                                      plugin (google-services + Crashlytics) applies
-#                                                      only when the file exists.
-#   demo/ios-app/iosDemoApp/GoogleService-Info.plist   Firebase console → iOS app for the demo project.
-#                                                      Required to build/run iosDemoApp in Xcode.
+#   demo/ios-app/Configuration/Secrets.xcconfig       SENTRY_DSN + REVENUECAT_API_KEY for iosDemoApp;
+#                                                      copy Secrets.xcconfig.template. Required to run.
