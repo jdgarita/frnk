@@ -58,6 +58,9 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - **Breaking: `:analytics-impl`** (Firebase Analytics + Crashlytics — `firebaseAnalyticsModule`,
   `firebaseCrashReportingModule`, `firebaseObservabilityModule`, the CrashKiOS native crash handler)
   and the `firebase-analytics` / `firebase-crashlytics` / `crashkios-crashlytics` catalog entries.
+- Demo: Firebase is gone from **both** demo apps — demo-android no longer applies `google-services`,
+  reads `google-services.json` or installs `remoteConfigModule` (remote config stays on the no-op
+  default); the `:remote-config-impl` dependency is dropped from `demo-android`.
 - Demo: `LoggingAnalyticsTracker` / `LoggingCrashReporter`, the iOS CrashKiOS hook
   (`enableDemoCrashlytics`) and the RevenueCat-only `bootstrapDemoKoinWithRevenueCat`. Firebase is
   gone from the iOS demo entirely (`firebase-ios-sdk` package, `FirebaseApp.configure()`,

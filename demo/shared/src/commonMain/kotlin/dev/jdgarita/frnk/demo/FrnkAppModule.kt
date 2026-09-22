@@ -36,8 +36,8 @@ import kotlin.time.Clock
 val frnkAppModule =
     module {
         // Stage 11 capability scaffolds — camera/permissions have no impl yet, so they stay no-op
-        // everywhere (demoed as such). androidDemoApp overrides remoteConfig with the real Firebase
-        // remoteConfigModule.
+        // everywhere (demoed as such); remote config stays on the builder's no-op default too — the
+        // demo carries no Firebase on either platform.
         includes(cameraModule)
         includes(permissionsModule)
         // The real frnk monetization layer (DefaultEntitlementManager + FeatureGate) over a FAKE
@@ -46,8 +46,9 @@ val frnkAppModule =
         includes(monetizationModule)
         includes(paywallScaffoldModule)
         single<EntitlementProvider> { FakeEntitlementProvider() }
-        // In-memory identity so monetizationModule's SyncAuthUseCase stays resolvable without
-        // Firebase; a real host installs firebaseIdentityModule (:identity-impl) instead.
+        // In-memory identity so monetizationModule's SyncAuthUseCase stays resolvable; a real host
+        // installs revenueCatIdentityModule (as demo-android does with a RevenueCat key) or
+        // firebaseIdentityModule (:identity-impl) instead.
         single<AnonymousIdentityProvider> { FakeAnonymousIdentityProvider() }
         // In-memory KeyValueStore so god mode persists for the session without the
         // multiplatform-settings impl; a real host installs prefsModule (:data-prefs-impl) instead.
@@ -119,7 +120,7 @@ class FakeEntitlementProvider : EntitlementProvider {
         AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
 }
 
-/** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path without Firebase. */
+/** In-memory [AnonymousIdentityProvider] so the demo exercises the auth-sync path with no identity backend. */
 class FakeAnonymousIdentityProvider : AnonymousIdentityProvider {
     private val _uid = MutableStateFlow<String?>(null)
     override val uid: StateFlow<String?> = _uid.asStateFlow()

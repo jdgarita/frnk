@@ -25,21 +25,6 @@ val revenueCatAndroidApiKey: String = localProperties.getProperty("REVENUECAT_AN
 // in :analytics-posthog.
 val sentryDsn: String = localProperties.getProperty("SENTRY_DSN", "")
 
-// Real Firebase Remote Config smoke test (restructure Stage 11): the google-services plugin processes
-// google-services.json so Firebase auto-inits, enabling the real remoteConfigModule wired in
-// DemoApplication. google-services.json is gitignored, so the plugin is applied ONLY when it's
-// present — locally that turns on the real SDK; on CI (no json) it's skipped and the demo compiles,
-// with the Remote Config path degrading to a logged failure at runtime (every gitlive call is
-// wrapped in runCatching).
-if (rootProject.file("demo/android-app/google-services.json").exists()) {
-    apply(
-        plugin =
-            libs.plugins.google.services
-                .get()
-                .pluginId
-    )
-}
-
 kotlin {
     jvmToolchain(17)
 }
@@ -83,7 +68,6 @@ dependencies {
     implementation(projects.crashSentry) // SentryCrashReportingConfig — the demo's own DSN from local.properties
     implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real DatabaseFactory for DemoDatabase
-    implementation(projects.remoteConfigImpl) // remoteConfigModule override — real Firebase Remote Config
     implementation(projects.coreDi) // DatabaseContext seam (the demo bypasses initializeFrnk)
     // Shared demo Composable + MVI + Koin module (also consumed by iosDemoApp).
     implementation(projects.demoShared)

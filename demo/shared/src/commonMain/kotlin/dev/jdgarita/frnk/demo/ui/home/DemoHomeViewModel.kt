@@ -45,8 +45,8 @@ class DemoHomeViewModel(
         entitlements.isGodMode
             .onEach { god -> updateModel { copy(isGodMode = god) } }
             .launchIn(viewModelScope)
-        // Stage 11: seed the Remote Config value + current camera permission from their (no-op by
-        // default) providers. androidDemoApp installs the real Firebase remoteConfigModule.
+        // Stage 11: seed the Remote Config value + current camera permission from their no-op
+        // providers (the demo carries no Firebase, so remote config always shows the bundled default).
         updateModel {
             copy(
                 remoteWelcome = remoteConfig.getString(REMOTE_WELCOME_KEY, "Hello from the no-op default"),

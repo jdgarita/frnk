@@ -8,7 +8,7 @@
 # required to configure the build at all, plus POSTHOG_API_KEY to compile :analytics-posthog; the
 # rest feeds the demo harnesses — SENTRY_DSN is required for the Android demo to boot, the RevenueCat
 # key is optional (fake provider when absent).
-# Never commit this file, google-services.json, or demo/ios-app/Configuration/Secrets.xcconfig.
+# Never commit this file or demo/ios-app/Configuration/Secrets.xcconfig.
 
 # --- Android SDK (required by Gradle) -----------------------------------------------------------
 # Android Studio writes this on first sync; the ANDROID_HOME environment variable is the fallback.
@@ -43,9 +43,5 @@ POSTHOG_HOST=
 SENTRY_DSN=
 
 # --- Companion machine-local files (all gitignored, not properties in this file) ----------------
-#   demo/android-app/google-services.json             Firebase console → Android app for the demo
-#                                                      project (Remote Config). Optional: the
-#                                                      google-services plugin applies only when the
-#                                                      file exists.
 #   demo/ios-app/Configuration/Secrets.xcconfig       SENTRY_DSN + REVENUECAT_API_KEY for iosDemoApp;
 #                                                      copy Secrets.xcconfig.template. Required to run.

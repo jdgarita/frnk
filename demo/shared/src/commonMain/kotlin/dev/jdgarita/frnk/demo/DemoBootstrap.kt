@@ -18,7 +18,7 @@ import org.koin.core.context.startKoin
  * The demo is treated as a real app: PostHog + Sentry are real, the DSN is required (blank fails
  * inside the config with a message naming it), and nothing in the toolkit exists to support a
  * key-less demo. Both device demos then override selected fakes with real SDKs (Koin
- * `allowOverride(true)` in [extraConfig]): `demo-android` installs `remoteConfigModule` + the Room
+ * `allowOverride(true)` in [extraConfig]): `demo-android` installs the Room
  * path + (when a key is set) `revenueCatModule`/`revenueCatIdentityModule`; `iosDemoApp` calls
  * `bootstrapDemoKoinWithSdks` for the RevenueCat Test Store path.
  *

@@ -10,7 +10,6 @@ import dev.jdgarita.frnk.demo.notes.demoNotesModule
 import dev.jdgarita.frnk.di.DatabaseContext
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatIdentityModule
 import dev.jdgarita.frnk.monetization.revenuecat.revenueCatModule
-import dev.jdgarita.frnk.remoteconfig.firebase.remoteConfigModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 
@@ -34,14 +33,12 @@ class DemoApplication : Application() {
                 debug = BuildConfig.DEBUG
             )
         // The demo's fakes cover the paid-SDK seams; on Android we override selected ones with the
-        // REAL toolkit modules to smoke-test the SDKs on a device:
+        // REAL toolkit modules to smoke-test the SDKs on a device. No Firebase anywhere in the demo:
+        // remote config stays on the toolkit's no-op default (the "Capabilities" section shows the
+        // bundled fallback), identity is RevenueCat's or the in-memory fake.
         //  - databaseModule + demoNotesModule — the real Room path: the toolkit's DatabaseFactory
         //    (:data-db-impl) opening the demo-owned DemoDatabase, replacing the in-memory FakeNoteStore
         //    (restructure Stage 4 / OQ-2).
-        //  - remoteConfigModule — real Firebase Remote Config (restructure Stage 11), replacing the
-        //    no-op default so the demo's "Capabilities" section shows a live fetched value when a
-        //    `demo_welcome_message` parameter is set in the frnk-demo Firebase project (else the
-        //    bundled default). google-services.json + the google-services plugin already init Firebase.
         //  - revenueCatModule + revenueCatIdentityModule — real RevenueCat EntitlementManager
         //    (BACKLOG P3-2) + the app user id as the identity, installed only when a public Android
         //    SDK key is present in local.properties. Purchases.configure(...) must run before the
@@ -51,7 +48,6 @@ class DemoApplication : Application() {
         val rcKey = BuildConfig.REVENUECAT_ANDROID_API_KEY
         val overrides =
             buildList<Module> {
-                add(remoteConfigModule)
                 add(databaseModule)
                 add(demoNotesModule)
                 if (rcKey.isNotBlank()) {

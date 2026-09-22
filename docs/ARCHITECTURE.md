@@ -61,7 +61,8 @@ references that would otherwise force iosDemoApp to ship `PurchasesHybridCommon`
 + Firebase pods just to launch. The demo binds fakes (`FakeEntitlementProvider`,
 `FakeKeyValueStore`, `FakeNoteStore`) for the optional paid-SDK seams; observability is **not**
 faked — the demo is a real host and bootstraps PostHog + Sentry from real keys (`local.properties`
-on Android, the Swift constants on iOS), so it needs those keys to boot. The demo
+on Android, `Configuration/Secrets.xcconfig` on iOS), so it needs those keys to boot. The demo
+carries no Firebase on either platform (remote config stays on the no-op default). The demo
 also owns its own Room schema (`DemoDatabase` + `NoteEntity`/`NoteDao` + the
 `dev.jdgarita.frnk.demo.notes` NoteStore) — the toolkit owns no schema (Stage 4 /
 OQ-2), and Room's runtime plus the KSP-generated code are driver-free, so DemoKit

@@ -113,8 +113,8 @@ Notes:
   say explicitly why it cannot be demoed.
 - **Verify before claiming done.** Run the compile gate and the test gate; report failures verbatim.
 - **Record decisions in the brain**, not in the docs. Docs stay lean and canonical.
-- `local.properties`, `google-services.json` and `demo/ios-app/Configuration/Secrets.xcconfig` hold
-  secrets. Never print or commit them.
+- `local.properties` and `demo/ios-app/Configuration/Secrets.xcconfig` hold secrets. Never print or
+  commit them.
 
 ## Git rules
 

@@ -162,10 +162,10 @@ fun HomeScreen(
                         state =
                             FrnkTextState.Body(
                                 text =
-                                    "AnalyticsTracker + CrashReporter (:analytics-api), two backend-independent slots. " +
-                                        "The demo binds logging fakes so DemoKit stays SDK-free; the device demos " +
-                                        "install the real postHogAnalyticsModule / sentryCrashReportingModule when " +
-                                        "keys are set (else the Firebase pair).",
+                                    "AnalyticsTracker + CrashReporter (:analytics-api), mandatory on every host: " +
+                                        "PostHog (key ships in frnk) + Sentry (DSN per app), installed by " +
+                                        "frnkModules { observability(sentry = …) }. No no-op, no logging fake — " +
+                                        "the demo is a real host and boots with real keys.",
                                 color = colorOnSurfaceVariant
                             )
                     )
@@ -197,9 +197,9 @@ fun HomeScreen(
                         state =
                             FrnkTextState.BodySmall(
                                 text =
-                                    "Force crash throws an UNHANDLED Kotlin exception — on iOS the provider's hook " +
-                                        "(Sentry.init's own, or CrashKiOS with Firebase) reports it symbolicated; on " +
-                                        "Android the SDK's handler catches it. This terminates the app.",
+                                    "Force crash throws an UNHANDLED Kotlin exception — Sentry.init's own hook " +
+                                        "reports it symbolicated on iOS; on Android the SDK's handler catches it. " +
+                                        "This terminates the app.",
                                 color = colorOnSurfaceVariant
                             )
                     )
@@ -237,9 +237,9 @@ fun HomeScreen(
                             FrnkTextState.Body(
                                 text =
                                     "New capability modules, all resolved via Koin. RemoteConfigService " +
-                                        "(:remote-config-api) reads a key→value; the demo installs the no-op default " +
-                                        "(shows the bundled fallback), androidDemoApp overrides it with the real " +
-                                        "Firebase remoteConfigModule. :camera and :permissions are api-only scaffolds " +
+                                        "(:remote-config-api) reads a key→value; the demo keeps the no-op default " +
+                                        "(shows the bundled fallback — no Firebase in the demo; a host installs the " +
+                                        "Firebase remoteConfigModule). :camera and :permissions are api-only scaffolds " +
                                         "(no impl yet) — their no-op defaults surface the honest 'not wired' outcome.",
                                 color = colorOnSurfaceVariant
                             )

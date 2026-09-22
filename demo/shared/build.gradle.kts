@@ -86,7 +86,7 @@ kotlin {
             api(projects.uiBottomNav)
             api(projects.analyticsApi)
             // Stage 11 capability scaffolds (matches the iOS export list above). Only the *-api
-            // modules — :remote-config-impl is installed by androidDemoApp via Koin, never here.
+            // modules — the demo never installs :remote-config-impl (no Firebase in the demo).
             api(projects.remoteConfigApi)
             api(projects.camera)
             api(projects.permissions)
