@@ -159,8 +159,10 @@ fun frnkUiModules(): List<Module>   // the SDK-free scaffold VM modules (Home/Se
 
 Analytics and crash reporting are **mandatory and fixed**: every host ships PostHog
 (`:analytics-posthog`, `postHogAnalyticsModule(config)`) and Sentry (`:crash-sentry`,
-`sentryCrashReportingModule(config)`), installed by the one required `frnkModules { observability(postHog
-= …, sentry = …) }` call (`build()` throws without it). There is no no-op, no Firebase pair and no
+`sentryCrashReportingModule(config)`), installed by the one required `frnkModules { observability(sentry
+= …) }` call (`build()` throws without it) — the host supplies only its own Sentry DSN; the PostHog key
+is the toolkit's (`FrnkPostHogProject`, one project for every frnk app — generated at build time from
+`POSTHOG_API_KEY` in frnk's gitignored `local.properties`, never committed). There is no no-op, no Firebase pair and no
 host-written tracker — all of this project's apps use the same two vendors, so the toolkit carries no
 optionality for them; hosts read the trackers back through Koin (`koinInject<AnalyticsTracker>()` /
 `get<CrashReporter>()`) for their own events and non-fatals. A blank key or DSN is an
@@ -273,7 +275,7 @@ The toolkit-owned navigation layer is built on **AndroidX Navigation3** (type-sa
 - **`release.yml`** — on a `v*` tag push, publishes the GitHub Release (see `RELEASING.md`). The deliberately-kept tag-release job.
 - **`claude.yml`** — on-demand `@claude` assistant on issues/PRs.
 
-**Validate locally before pushing** (this is the gate the old CI job enforced). After seeding a dummy `local.properties` so `BuildKonfig` resolves, run in order:
+**Validate locally before pushing** (this is the gate the old CI job enforced). After seeding `local.properties` (`sdk.dir` + `POSTHOG_API_KEY`, see `local.properties.example`), run in order:
 
 1. `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache`
 2. `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache`

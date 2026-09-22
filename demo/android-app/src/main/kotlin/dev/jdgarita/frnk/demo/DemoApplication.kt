@@ -20,17 +20,12 @@ class DemoApplication : Application() {
         // The real Room path resolves the Application context through this seam; hosts on
         // initializeFrnk(context, …) get it set automatically, but the demo boots bootstrapDemoKoin().
         DatabaseContext.application = this
-        // Observability is real on every host, the demo included: POSTHOG_API_KEY / SENTRY_DSN come
-        // from local.properties (gitignored) via BuildConfig, and a blank one fails inside its config
-        // with a message naming it — there is no logging fake or no-op to fall back to.
+        // Observability is real on every host, the demo included. The host's only input is its Sentry
+        // DSN (SENTRY_DSN from local.properties via BuildConfig — blank fails inside the config naming
+        // it); PostHog reports to the toolkit-wide project whose key ships in :analytics-posthog, so the
+        // PostHog config here only turns on SDK diagnostics for debug builds.
         val environment = if (BuildConfig.DEBUG) "debug" else "release"
-        val postHog =
-            PostHogAnalyticsConfig(
-                apiKey = BuildConfig.POSTHOG_API_KEY,
-                host = BuildConfig.POSTHOG_HOST.ifBlank { PostHogAnalyticsConfig.DEFAULT_HOST },
-                environment = environment,
-                debug = BuildConfig.DEBUG
-            )
+        val postHog = PostHogAnalyticsConfig(environment = environment, debug = BuildConfig.DEBUG)
         val sentry =
             SentryCrashReportingConfig(
                 dsn = BuildConfig.SENTRY_DSN,
@@ -65,7 +60,7 @@ class DemoApplication : Application() {
                     add(revenueCatIdentityModule)
                 }
             }
-        bootstrapDemoKoin(postHog = postHog, sentry = sentry) {
+        bootstrapDemoKoin(sentry = sentry, postHog = postHog) {
             allowOverride(true)
             // postHogAnalyticsModule reads the Application from Koin's androidContext (the Android
             // initializeFrnk overload registers it; the demo bypasses initializeFrnk, so do it here).

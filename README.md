@@ -139,8 +139,9 @@ cp local.properties.example local.properties   # then point sdk.dir at your Andr
 ```
 
 Demo apps (the internal smoke harnesses) additionally need:
-- **Both:** `POSTHOG_API_KEY` + `SENTRY_DSN` — in `local.properties` for Android; for iOS copy
-  `demo/ios-app/Configuration/Secrets.xcconfig.template` to `Secrets.xcconfig` (gitignored) and fill it in
+- **Both:** `SENTRY_DSN` — in `local.properties` for Android; for iOS copy
+  `demo/ios-app/Configuration/Secrets.xcconfig.template` to `Secrets.xcconfig` (gitignored) and fill it in.
+  (No PostHog key: it ships inside frnk — every app reports to the one toolkit PostHog project.)
 - **Android:** a valid `google-services.json` in `demo/android-app/` (Firebase Remote Config)
 
 ## 🔧 Common commands

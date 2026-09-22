@@ -12,7 +12,7 @@ import org.koin.dsl.module
 
 /**
  * PostHog as the toolkit's one `AnalyticsTracker`. Hosts don't install this themselves:
- * `frnkModules { observability(postHog = …, sentry = …) }` (`:ui-app`) does, from the config the host
+ * `frnkModules { observability(sentry = …) }` (`:ui-app`) does, from the config the host
  * passes. It stays public for the raw `initializeFrnk(modules = listOf(…))` path and for tests.
  *
  * The binding is `createdAtStart`, so `PostHog.setup` runs inside `startKoin` on every bootstrap

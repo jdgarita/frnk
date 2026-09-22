@@ -98,7 +98,8 @@ descriptions.
 - **Capability selection is the module list, not an enum.** A capability the
   host doesn't pass (`remoteConfigModule`, `revenueCatModule`, …) is
   never installed, so its bindings never enter the graph. Observability is the one fixed
-  capability: `frnkModules { observability(postHog, sentry) }` is mandatory.
+  capability: `frnkModules { observability(sentry = …) }` is mandatory (the host supplies its Sentry
+  DSN; the PostHog key ships in the toolkit).
 
 ### 2.3 Error handling contract (MANDATORY)
 

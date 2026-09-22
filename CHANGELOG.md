@@ -19,18 +19,34 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 - **Breaking: observability is mandatory and fixed — PostHog + Sentry on every host.**
   `frnkModules { }` lost its `analytics` / `crashReporting` slots; the one required call is now
-  `observability(postHog = PostHogAnalyticsConfig(…), sentry = SentryCrashReportingConfig(…))`, which
-  installs `postHogAnalyticsModule` + `sentryCrashReportingModule` from the host's configs (`build()`
-  throws without it). `:ui-app` therefore depends on `:analytics-posthog` + `:crash-sentry` (`api`), so a
+  `observability(sentry = SentryCrashReportingConfig(…))`, which installs `sentryCrashReportingModule`
+  from the host's config and `postHogAnalyticsModule` from a derived one (`build()` throws without it).
+  Callers of the transient `observability(postHog = …, sentry = …)` form: `postHog` is now the optional
+  second parameter (default `PostHogAnalyticsConfig(environment = sentry.environment)`) — a positional
+  call must swap the arguments.
+- **The PostHog project key ships inside the toolkit's binaries, never in source.** Every frnk app
+  reports to one PostHog project, so its public `phc_…` key is `FrnkPostHogProject.API_KEY`
+  (`:analytics-posthog`) and the default `PostHogAnalyticsConfig.apiKey`; `environment` is the config's
+  only required parameter (now first — `PostHogAnalyticsConfig(environment, apiKey = …, host = …, …)`).
+  `FrnkPostHogProject` is **generated at build time** by `:analytics-posthog`'s
+  `generateFrnkPostHogProject` from `POSTHOG_API_KEY` (+ optional `POSTHOG_HOST`) in frnk's gitignored
+  `local.properties`, the env var or `-PPOSTHOG_API_KEY=`; the build fails without it. Hosts never
+  supply a PostHog key in code (they keep it in `frnk/local.properties`); each app supplies its own
+  Sentry DSN.
+- **The per-app keys standard** (`docs/HOST_INTEGRATION.md` §"Supplying per-app keys"): Android
+  `local.properties` → `BuildConfig`; iOS `Configuration/Config.xcconfig` `#include?` → gitignored
+  `Secrets.xcconfig` (+ tracked `.template`) → `Info.plist` `$(KEY)` → `NSBundle` in the Kotlin
+  bootstrap. No key constants or placeholders in code. The demo is the worked example. `:ui-app` therefore depends on `:analytics-posthog` + `:crash-sentry` (`api`), so a
   host never imports a provider module. Hosts never bind their own `AnalyticsTracker`/`CrashReporter`;
   they inject the toolkit's for their own events and non-fatals. All of this project's apps use the same
   two vendors, so the toolkit carries no optionality for them.
 - **Breaking: a blank PostHog API key or Sentry DSN now throws** (`IllegalArgumentException` at
   config construction) instead of binding a silent no-op. `isConfigured` is gone from both configs.
-- The demo is treated as a real host: `POSTHOG_API_KEY` + `SENTRY_DSN` (Android `local.properties`,
-  the Swift constants on iOS) are required to boot. `bootstrapDemoKoin(postHog, sentry)` assembles the
-  graph with `frnkModules { }`; the demo's fakes cover only the paid-SDK seams. The iOS "Force crash"
-  button reports to Sentry.
+- The demo is treated as a real host: `SENTRY_DSN` (Android `local.properties`, iOS
+  `Configuration/Secrets.xcconfig`) is required to boot; `POSTHOG_API_KEY` / `POSTHOG_HOST` are gone
+  from `local.properties.example`, the iOS template and `Info.plist`. `bootstrapDemoKoin(sentry, postHog =
+  derived)` assembles the graph with `frnkModules { }`; the demo's fakes cover only the paid-SDK seams.
+  The iOS "Force crash" button reports to Sentry.
 - `frnk.android.firebase` applies only `google-services` (for `:identity-impl` / `:remote-config-impl`);
   the Crashlytics Gradle plugin is gone.
 

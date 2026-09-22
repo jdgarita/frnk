@@ -15,14 +15,17 @@ import org.koin.core.module.Module
  *
  * What it buys over a raw `listOf(...)`:
  * - **Observability is not optional and not swappable.** Every frnk host ships PostHog analytics and
- *   Sentry crash reporting — there is no no-op and no alternative provider — so [observability] takes
- *   the two *configs* and installs the toolkit's own `postHogAnalyticsModule` /
- *   `sentryCrashReportingModule`. A host cannot forget it ([build] refuses to assemble without it),
- *   cannot install two `AnalyticsTracker` bindings, and never has to import a provider module. It is
- *   the one place the builder references an SDK-backed module (`:analytics-posthog` + `:crash-sentry`
- *   are `api` deps of `:ui-app`): every host links both native SDKs anyway, so nothing is dragged in
- *   that a host would not otherwise carry. The host reads the two trackers back through Koin
- *   (`koinInject<AnalyticsTracker>()` / `get<CrashReporter>()`) for its own events and non-fatals.
+ *   Sentry crash reporting — there is no no-op and no alternative provider — so [observability]
+ *   installs the toolkit's own `postHogAnalyticsModule` / `sentryCrashReportingModule`. The host
+ *   supplies only its **Sentry** config (each app has its own Sentry project and DSN); the PostHog
+ *   config is derived from it, because every frnk app reports to the one toolkit-wide PostHog project
+ *   whose key ships in `:analytics-posthog` (`FrnkPostHogProject`). A host cannot forget it ([build]
+ *   refuses to assemble without it), cannot install two `AnalyticsTracker` bindings, and never has to
+ *   import a provider module or hold a PostHog key. It is the one place the builder references an
+ *   SDK-backed module (`:analytics-posthog` + `:crash-sentry` are `api` deps of `:ui-app`): every host
+ *   links both native SDKs anyway, so nothing is dragged in that a host would not otherwise carry. The
+ *   host reads the two trackers back through Koin (`koinInject<AnalyticsTracker>()` /
+ *   `get<CrashReporter>()`) for its own events and non-fatals.
  * - **XOR by construction for what is still a choice.** [remoteConfig] and [identity] are single
  *   slots, so installing two bindings for one of them — the silent-shadowing footgun — is
  *   unrepresentable. Identity is its own slot because RevenueCat monetization with Firebase identity
@@ -35,10 +38,7 @@ import org.koin.core.module.Module
  * initializeFrnk(
  *     context = this,
  *     modules = frnkModules {
- *         observability(
- *             postHog = PostHogAnalyticsConfig(apiKey = BuildConfig.POSTHOG_API_KEY, environment = env),
- *             sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env)
- *         )
+ *         observability(sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env))
  *         remoteConfig = remoteConfigModule             // host imports the :remote-config-impl val
  *         monetization(provider = revenueCatModule)     // + monetizationModule + paywallScaffoldModule
  *         identity = revenueCatIdentityModule           // the app user id as the anonymous identity
@@ -69,14 +69,17 @@ class FrnkModulesScope internal constructor() {
     private val extras = mutableListOf<Module>()
 
     /**
-     * Installs the toolkit's observability pair — PostHog as the `AnalyticsTracker`, Sentry as the
-     * `CrashReporter` — from the host's [postHog] / [sentry] configs. Mandatory: [build] fails
-     * without it. Each config rejects a blank key at construction, so a clone without keys fails
-     * here with a message naming the missing value, never with silently dropped telemetry.
+     * Installs the toolkit's observability pair — Sentry as the `CrashReporter` from the host's
+     * [sentry] config (each app has its own Sentry project and DSN), PostHog as the
+     * `AnalyticsTracker` on the toolkit-wide project (its key ships in `:analytics-posthog`), with
+     * [postHog] defaulting to a config that mirrors [sentry]'s `environment`. Pass [postHog] only to
+     * tune a flag (`debug`, `optOut`, …). Mandatory: [build] fails without it. The Sentry config
+     * rejects a blank DSN at construction, so a clone without keys fails here with a message naming
+     * the missing value, never with silently dropped telemetry.
      */
     fun observability(
-        postHog: PostHogAnalyticsConfig,
-        sentry: SentryCrashReportingConfig
+        sentry: SentryCrashReportingConfig,
+        postHog: PostHogAnalyticsConfig = PostHogAnalyticsConfig(environment = sentry.environment)
     ) {
         observabilityModules = listOf(postHogAnalyticsModule(postHog), sentryCrashReportingModule(sentry))
     }
@@ -103,8 +106,8 @@ class FrnkModulesScope internal constructor() {
     internal fun build(): List<Module> {
         val observability =
             checkNotNull(observabilityModules) {
-                "frnkModules { } is missing observability(postHog = …, sentry = …) — every frnk host " +
-                    "ships PostHog analytics + Sentry crash reporting; pass both configs (see docs/HOST_INTEGRATION.md §4)"
+                "frnkModules { } is missing observability(sentry = …) — every frnk host ships Sentry crash " +
+                    "reporting + PostHog analytics; pass your SentryCrashReportingConfig (see docs/HOST_INTEGRATION.md §4)"
             }
         return buildList {
             addAll(frnkUiModules())

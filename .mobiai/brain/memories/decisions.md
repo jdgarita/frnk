@@ -1552,3 +1552,50 @@ NOT changed: noopRemoteConfigModule / NoopCameraController / NoopPermissionContr
 - frnk/capabilities/crash-sentry/src/commonMain/kotlin/dev/jdgarita/frnk/backend/sentry/SentryCrashReportingConfig.kt
 - demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoBootstrap.kt
 - build-logic/src/main/kotlin/frnk.android.firebase.gradle.kts
+
+## PostHog key ships in frnk (one project for all apps); Sentry DSN per app; keys standard = Faint's xcconfig/local.properties pattern (2026-09-22)
+
+- id: posthog-key-ships-in-frnk-one-project-for-all-apps-sentry-ds-20260922-172534
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: observability / host keys
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22), refining the same-day "observability is mandatory PostHog + Sentry" decision:
+
+1. ONE PostHog project serves every app JD ships on frnk, so its project API key (`phc_…`, a public client key by design — embedded in every binary, grants no read access) LIVES IN THE TOOLKIT: `FrnkPostHogProject.API_KEY` / `.HOST` (`:analytics-posthog`). `PostHogAnalyticsConfig(environment, apiKey = FrnkPostHogProject.API_KEY, host = DEFAULT_HOST, …)` — `environment` is the only required param. Hosts NEVER supply a PostHog key (no POSTHOG_API_KEY in any local.properties / xcconfig / BuildConfig). Apps are told apart in PostHog by the SDK's `$app_namespace` / `$app_name` properties; debug vs release by the `environment` super property.
+
+2. Sentry is PER APP: each app has its own Sentry project and supplies its DSN. `frnkModules { observability(sentry = SentryCrashReportingConfig(dsn, environment)) }` — the `postHog` param is optional and defaults to `PostHogAnalyticsConfig(environment = sentry.environment)`; pass it only to tune `debug` / `optOut`. (Signature change from `observability(postHog, sentry)`.) RevenueCat keys are per app per platform too.
+
+3. THE STANDARD for supplying per-app keys, for every present and future host (copied from Faint's `mobile/iosApp/Configuration`):
+   - Android: gitignored `local.properties` → `buildConfigField` → `BuildConfig.SENTRY_DSN` (+ `REVENUECAT_ANDROID_API_KEY`); tracked `local.properties.example`.
+   - iOS: `<app>/Configuration/Config.xcconfig` (tracked; `baseConfigurationReference` of the target's Debug + Release configs) does `#include? "Secrets.xcconfig"`; `Secrets.xcconfig` gitignored + `Secrets.xcconfig.template` tracked; `Info.plist` forwards `<key>SENTRY_DSN</key><string>$(SENTRY_DSN)</string>` (+ REVENUECAT_API_KEY); the umbrella module's Kotlin iOS bootstrap reads `NSBundle.mainBundle.objectForInfoDictionaryKey("SENTRY_DSN") as? String` and treats an unexpanded `$(…)` as blank so the toolkit's config fails naming the key. Gotcha: xcconfig treats `//` as a comment → URLs written `https:/$()/…`. NO Swift constants, NO placeholders in code.
+   - The demo (`demo/android-app`, `demo/ios-app/Configuration/*`, `demo/shared` DemoSdks.kt / DemoBootstrap.kt) is the worked example; `docs/HOST_INTEGRATION.md` "Supplying per-app keys" is the canonical write-up.
+
+WHY (JD): what is shared across apps (PostHog) should need zero per-app plumbing; what is per app (Sentry, RevenueCat) should have exactly one known home per platform, and Faint already works that way.
+
+### Files
+- frnk/capabilities/analytics-posthog/src/commonMain/kotlin/dev/jdgarita/frnk/backend/posthog/FrnkPostHogProject.kt
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- demo/ios-app/Configuration/Secrets.xcconfig.template
+- local.properties.example
+
+## PostHog key is a BUILD-TIME input of :analytics-posthog (generated FrnkPostHogProject), never a committed constant (2026-09-22)
+
+- id: posthog-key-is-a-build-time-input-of-analytics-posthog-gener-20260922-173137
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: observability / host keys
+- date: 2026-09-22
+
+Amends the same-day "PostHog key ships in frnk" decision: JD does NOT want the `phc_…` key hardcoded in source because the repo will go public.
+
+MECHANISM: `frnk/capabilities/analytics-posthog/build.gradle.kts` registers `generateFrnkPostHogProject` (a `@CacheableTask` with `@Input apiKey/host`, `@OutputDirectory`) that writes `build/generated/frnkPostHog/commonMain/kotlin/dev/jdgarita/frnk/backend/posthog/FrnkPostHogProject.kt` (`object FrnkPostHogProject { const val API_KEY; const val HOST }`), wired via `commonMain { kotlin.srcDir(generateFrnkPostHogProject) }` so it is compiled into BOTH the Android AAR and the iOS klib (hence every umbrella framework) — no BuildKonfig plugin (BuildKonfig was already gone; CLAUDE.md's old note was stale and is fixed). Inputs resolve `-PPOSTHOG_API_KEY=` › `POSTHOG_API_KEY` env var › the frnk build's root `local.properties` (`providers.fileContents(...)`, configuration-cache safe). Blank ⇒ the task FAILS naming the three sources; a non-`phc_` value is rejected. `POSTHOG_HOST` optional (blank = `PostHogConfig.HOST_US`).
+
+CONSEQUENCES: frnk's own `local.properties` (gitignored; `local.properties.example` documents it) now REQUIRES `POSTHOG_API_KEY` to build `:analytics-posthog` — i.e. `compileAndroidMain` / `testAndroidHostTest` on a keyless clone fail early with the message. In a host, the key goes in `frnk/local.properties` (the submodule's, next to `sdk.dir`), never in the host's code / local.properties / xcconfig / Info.plist. Faint's `mobile/frnk/local.properties` needs `POSTHOG_API_KEY=` added (its own `local.properties` / `Secrets.xcconfig` PostHog entries become dead once Faint moves onto `frnkModules { observability(sentry = …) }`). CI would pass the key as a secret via env var or `-P`. `docs/HOST_INTEGRATION.md` §7 ("frnk's own local.properties") + the keys table document it. Verified: gate green, generated file untracked (`git grep phc_` clean), keyless `generateFrnkPostHogProject` fails with the intended message.
+
+### Files
+- frnk/capabilities/analytics-posthog/build.gradle.kts
+- local.properties.example

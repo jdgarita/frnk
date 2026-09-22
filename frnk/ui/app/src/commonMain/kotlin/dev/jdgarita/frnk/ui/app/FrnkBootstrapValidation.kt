@@ -37,13 +37,13 @@ fun Koin.validateFrnkBootstrap() {
             if (!isBound<AnalyticsTracker>()) {
                 add(
                     "analytics — install postHogAnalyticsModule(config) (:analytics-posthog); " +
-                        "frnkModules { observability(postHog = …, sentry = …) } does it for you"
+                        "frnkModules { observability(sentry = …) } does it for you"
                 )
             }
             if (!isBound<CrashReporter>()) {
                 add(
                     "crash reporting — install sentryCrashReportingModule(config) (:crash-sentry); " +
-                        "frnkModules { observability(postHog = …, sentry = …) } does it for you"
+                        "frnkModules { observability(sentry = …) } does it for you"
                 )
             }
             if (!isBound<RemoteConfigService>()) {

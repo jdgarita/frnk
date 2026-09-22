@@ -2,18 +2,34 @@
 
 PostHog implementation of `:analytics-api`'s `AnalyticsTracker`, over the official
 `com.posthog:posthog-kmp` SDK — the toolkit's **only** analytics provider, mandatory on every host.
-Installed by `frnkModules { observability(postHog = PostHogAnalyticsConfig(apiKey = …, environment = …), sentry = …) }`
-(`:ui-app`, which has an `api` dep on this module); `postHogAnalyticsModule(config)` stays public for the
-raw `initializeFrnk(modules = listOf(…))` path. Crash reporting is `:crash-sentry`'s. There is no no-op
-and hosts never bind their own `AnalyticsTracker`; they inject this one for their own events.
+Installed by `frnkModules { observability(sentry = …) }` (`:ui-app`, which has an `api` dep on this
+module) — the host passes nothing PostHog-specific: **every frnk app reports to one PostHog project,
+whose key ships here** (`FrnkPostHogProject`, generated at build time from `POSTHOG_API_KEY` in frnk's
+gitignored `local.properties` — never committed), and the builder derives `PostHogAnalyticsConfig(environment
+= sentry.environment)`; a host passes `postHog = PostHogAnalyticsConfig(environment = …, debug = …)` only
+to tune a flag. `postHogAnalyticsModule(config)` stays public for the raw `initializeFrnk(modules =
+listOf(…))` path. Crash reporting is `:crash-sentry`'s (and its DSN *is* per app). There is no no-op and
+hosts never bind their own `AnalyticsTracker`; they inject this one for their own events.
 
 ## Contents
 
-- `PostHogAnalyticsConfig.kt` — what the host supplies: the project **API key** (`phc_…`, a public
-  client key), `environment` (`debug`/`release`, registered as a super property on every event so
-  one project serves both), `host` (`DEFAULT_HOST` = PostHog Cloud US, `EU_HOST`), `debug`, `optOut`,
-  `captureApplicationLifecycleEvents`. **A blank `apiKey` throws `IllegalArgumentException` in
-  `init`** — a missing key is a configuration error to fix at the source, not silently dropped events.
+- `FrnkPostHogProject` — **generated, never committed**: `build.gradle.kts`'s
+  `generateFrnkPostHogProject` task writes `build/generated/frnkPostHog/commonMain/kotlin/…/FrnkPostHogProject.kt`
+  (wired as a `commonMain` source dir, so it is compiled into the Android AAR and the iOS klib) from
+  `POSTHOG_API_KEY` / `POSTHOG_HOST`, resolved `-PPOSTHOG_API_KEY=` › `POSTHOG_API_KEY` env var › the
+  frnk checkout's gitignored `local.properties` (in a host: the submodule's). The task **fails** with a
+  message naming the three sources when the key is blank, and rejects anything not starting with
+  `phc_`. The repo will be public, so the value must never live in source — only in
+  `local.properties.example` as an empty slot. It holds `API_KEY` (the project's `phc_…` key — a public
+  client key by design, embedded in every shipped binary, granting no read access; the personal/project
+  *secret* keys never enter the toolkit) and `HOST` (blank `POSTHOG_HOST` = PostHog Cloud US). Apps are
+  told apart by the SDK's `$app_namespace`/`$app_name`/`$app_version` event properties, debug vs release
+  by the `environment` super property. Contrast Sentry: one project + DSN per app.
+- `PostHogAnalyticsConfig.kt` — `environment` (`debug`/`release`, registered as a super property on
+  every event so one project serves both; the only required param), `apiKey` (defaults to
+  `FrnkPostHogProject.API_KEY` — hosts leave it), `host` (`DEFAULT_HOST` = `FrnkPostHogProject.HOST`,
+  `EU_HOST`), `debug`, `optOut`, `captureApplicationLifecycleEvents`. **A blank `apiKey` throws
+  `IllegalArgumentException` in `init`** — never silently dropped events.
 - `PostHogAnalyticsModule.kt` — `postHogAnalyticsModule(config)`. The `AnalyticsTracker` single is
   `createdAtStart`, so `PostHog.setup` runs inside `startKoin` and the SDK's lifecycle events see
   the launch. Setup is once-per-process and `runCatching`-wrapped. Two SDK choices are made here on

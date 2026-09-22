@@ -44,7 +44,7 @@ class FrnkBootstrapValidationTest {
             single<EntitlementProvider> { FakeEntitlementProvider() }
             single<KeyValueStore> { FakeKeyValueStore() }
         }
-    private val analyticsModule = postHogAnalyticsModule(PostHogAnalyticsConfig(apiKey = "phc_test", environment = "test"))
+    private val analyticsModule = postHogAnalyticsModule(PostHogAnalyticsConfig(environment = "test"))
     private val crashModule =
         sentryCrashReportingModule(SentryCrashReportingConfig(dsn = "https://key@o1.ingest.sentry.io/1", environment = "test"))
 

@@ -2,10 +2,14 @@
 
 Sentry implementation of `:analytics-api`'s `CrashReporter`, over the official
 `io.sentry:sentry-kotlin-multiplatform` SDK — the toolkit's **only** crash reporter, mandatory on every
-host. Installed by `frnkModules { observability(postHog = …, sentry = SentryCrashReportingConfig(dsn = …, environment = …)) }`
-(`:ui-app`, which has an `api` dep on this module); `sentryCrashReportingModule(config)` stays public for
-the raw `initializeFrnk(modules = listOf(…))` path. Analytics is `:analytics-posthog`'s. There is no no-op
-and hosts never bind their own `CrashReporter`; they inject this one for their own non-fatals.
+host. Installed by `frnkModules { observability(sentry = SentryCrashReportingConfig(dsn = …, environment = …)) }`
+(`:ui-app`, which has an `api` dep on this module) — the Sentry config is the **one thing a host supplies
+for observability**: each app has its own Sentry project and DSN (the PostHog key, by contrast, is the
+toolkit's). `sentryCrashReportingModule(config)` stays public for the raw `initializeFrnk(modules =
+listOf(…))` path. Analytics is `:analytics-posthog`'s. There is no no-op and hosts never bind their own
+`CrashReporter`; they inject this one for their own non-fatals. The DSN reaches the config through the
+standard key layout (`docs/HOST_INTEGRATION.md` §"Supplying per-app keys"): `local.properties` →
+`BuildConfig` on Android, `Configuration/Secrets.xcconfig` → `Info.plist` → `NSBundle` on iOS.
 
 ## Contents
 

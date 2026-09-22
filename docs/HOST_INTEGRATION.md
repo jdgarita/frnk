@@ -249,8 +249,8 @@ initializeFrnk(
         listOf(
             databaseModule,                      // :data-db-impl — Room DatabaseFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
-            postHogAnalyticsModule(postHogConfig),       // AnalyticsTracker — MANDATORY, PostHog only
-            sentryCrashReportingModule(sentryConfig),    // CrashReporter — MANDATORY, Sentry only
+            postHogAnalyticsModule(PostHogAnalyticsConfig(environment = env)),                // AnalyticsTracker — MANDATORY; key ships in frnk
+            sentryCrashReportingModule(SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env)), // CrashReporter — MANDATORY; YOUR Sentry project
             remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
             // Monetization stack (optional — omit all three to run without entitlements):
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
@@ -284,11 +284,15 @@ initializeFrnk(
   offline launch may have left RevenueCat on its transient anonymous id. `Expired` carries the
   obfuscated address RevenueCat re-mailed a fresh link to; `NotARedemptionLink` means the URL was
   something else and is not tracked, so it is safe to route every incoming link through.
-- **Observability is not optional.** Every host installs `postHogAnalyticsModule(PostHogAnalyticsConfig(…))`
-  and `sentryCrashReportingModule(SentryCrashReportingConfig(…))` — the toolkit's only `AnalyticsTracker` /
-  `CrashReporter` and there is no no-op; `frnkModules { observability(…) }` (§4.1) does it for you. A blank
-  key or DSN throws at config construction, so wire the keys from your build config (a gitignored
-  `local.properties` → `BuildConfig` on Android, an xcconfig → `Info.plist` on iOS). Never bind your
+- **Observability is not optional.** Every host installs `postHogAnalyticsModule(PostHogAnalyticsConfig(environment = …))`
+  and `sentryCrashReportingModule(SentryCrashReportingConfig(dsn = …, environment = …))` — the toolkit's only
+  `AnalyticsTracker` / `CrashReporter` and there is no no-op; `frnkModules { observability(sentry = …) }` (§4.1)
+  does it for you. **The host supplies only its Sentry DSN** (each app has its own Sentry project); the PostHog
+  key is the toolkit's — every frnk app reports to one PostHog project, whose key ships in `:analytics-posthog`
+  (`FrnkPostHogProject.API_KEY`, the default `PostHogAnalyticsConfig.apiKey`, generated at build time from
+  `POSTHOG_API_KEY` in the **frnk checkout's** gitignored `local.properties` — never committed; see §7). A blank DSN throws at config
+  construction, so wire it from your build config exactly as described in
+  [Supplying per-app keys — the standard](#supplying-per-app-keys--the-standard). Never bind your
   own `AnalyticsTracker`/`CrashReporter`; inject the toolkit's (`koinInject<AnalyticsTracker>()`) for your
   app's own `trackCustom`/`screen`/`recordException`. Remote Config is still an XOR (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
@@ -328,6 +332,78 @@ fun bootstrapMyAppKit(): KoinApplication =
 After bootstrap, `FrnkApp(onSavedStateConfiguration, onNavigationModule)` (§8) is the app root; it fails
 fast with an explanation if `initializeFrnk` didn't run.
 
+### Supplying per-app keys — the standard
+
+> **Claude: every frnk host follows this layout, Faint included. When scaffolding a new app, set it up
+> exactly like this — no key constants in Kotlin or Swift, no placeholders in code.**
+
+Which keys are whose:
+
+| Key | Owner | Where it lives |
+| --- | --- | --- |
+| PostHog project API key | **the toolkit** — one PostHog project for every frnk app | `FrnkPostHogProject.API_KEY` (`:analytics-posthog`), **generated at build time** from `POSTHOG_API_KEY` in the frnk checkout's gitignored `local.properties` (`frnk/local.properties` in a host — copy `frnk/local.properties.example`; `-PPOSTHOG_API_KEY=` / the env var also work, e.g. on CI). The build fails without it. Never in host code, never committed. Apps are told apart by the SDK's `$app_namespace`/`$app_name`, debug vs release by the `environment` super property. |
+| Sentry DSN | **each app** (its own Sentry project) | the host's build config, below |
+| RevenueCat public SDK keys (`goog_…` / `appl_…` / `test_…`) | **each app, per platform** | the host's build config, below |
+
+**Android** — the gitignored `local.properties` feeds `BuildConfig` (track a `local.properties.example`):
+
+```kotlin
+// app/build.gradle.kts
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+android.defaultConfig {
+    buildConfigField("String", "SENTRY_DSN", "\"${localProperties.getProperty("SENTRY_DSN", "")}\"")
+    buildConfigField("String", "REVENUECAT_API_KEY", "\"${localProperties.getProperty("REVENUECAT_ANDROID_API_KEY", "")}\"")
+}
+// Application.onCreate: SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = if (BuildConfig.DEBUG) "debug" else "release")
+```
+
+**iOS** — an xcconfig pair, forwarded through `Info.plist`, read by the Kotlin bootstrap:
+
+```
+<app>/Configuration/Config.xcconfig            tracked; the app target's base configuration (Debug + Release)
+<app>/Configuration/Secrets.xcconfig           gitignored; the real values
+<app>/Configuration/Secrets.xcconfig.template  tracked; blank values + comments
+```
+
+```
+// Config.xcconfig — `#include?`, not `#include`: a fresh clone still configures and builds,
+// the keys expand empty, and the Kotlin config fails at launch naming the missing one.
+#include? "Secrets.xcconfig"
+```
+
+```
+// Secrets.xcconfig — xcconfig treats "//" as a comment, so URLs split the slashes with "$()":
+SENTRY_DSN = https:/$()/<key>@<org>.ingest.sentry.io/<project>
+REVENUECAT_API_KEY = appl_…
+```
+
+```xml
+<!-- Info.plist -->
+<key>SENTRY_DSN</key>          <string>$(SENTRY_DSN)</string>
+<key>REVENUECAT_API_KEY</key>  <string>$(REVENUECAT_API_KEY)</string>
+```
+
+```kotlin
+// umbrella module, iosMain — the bootstrap Swift calls; an unexpanded "$(…)" counts as blank
+private fun infoPlistValue(key: String): String {
+    val raw = (NSBundle.mainBundle.objectForInfoDictionaryKey(key) as? String).orEmpty().trim()
+    return if (raw.startsWith("$(")) "" else raw
+}
+fun bootstrapMyAppKit(): KoinApplication =
+    initializeFrnk(modules = frnkModules {
+        observability(sentry = SentryCrashReportingConfig(dsn = infoPlistValue("SENTRY_DSN"), environment = env))
+        // …
+    })
+```
+
+Set the base configuration in the pbxproj (`baseConfigurationReference = <Config.xcconfig file ref>` on
+the target's Debug and Release `XCBuildConfiguration`s, or Xcode → project → Info → Configurations) and
+add `Configuration/Secrets.xcconfig` to `.gitignore`. The demo is the worked example of exactly this
+layout: `demo/android-app/build.gradle.kts` + `DemoApplication.kt` (Android) and
+`demo/ios-app/Configuration/*` + `Info.plist` + `demo/shared`'s `DemoSdks.kt` (iOS).
+
 ### 4.1 Optional: the `frnkModules { }` builder + `validate = true` (Tier 2.2)
 
 The explicit list above stays the canonical path. Two **additive** opt-ins (both in `:ui-app`) remove the
@@ -337,10 +413,8 @@ two footguns it leaves to host discipline:
 initializeFrnk(
     context = this,
     modules = frnkModules {
-        observability(
-            postHog = PostHogAnalyticsConfig(apiKey = keys.postHog, environment = env),
-            sentry = SentryCrashReportingConfig(dsn = keys.sentryDsn, environment = env)
-        )                                             // mandatory — build() throws without it
+        observability(sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env))
+                                                      // mandatory — build() throws without it; PostHog derives from it
         remoteConfig = remoteConfigModule             // single slot ⇒ XOR by construction
         monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
         identity = revenueCatIdentityModule           // single slot; or firebaseIdentityModule
@@ -351,8 +425,10 @@ initializeFrnk(
 )
 ```
 
-- **`frnkModules { }`** assembles the list. `observability(postHog, sentry)` is mandatory and installs the toolkit's
-  PostHog + Sentry pair from your configs (you never import a provider module); `remoteConfig`/`identity` are single
+- **`frnkModules { }`** assembles the list. `observability(sentry = …)` is mandatory and installs the toolkit's
+  PostHog + Sentry pair (you never import a provider module or hold a PostHog key): the `postHog` parameter is
+  optional and defaults to `PostHogAnalyticsConfig(environment = sentry.environment)` on the toolkit-wide project —
+  pass it only to tune a flag (`debug`, `optOut`, …); `remoteConfig`/`identity` are single
   slots (`remoteConfig` defaults to `noopRemoteConfigModule`; `identity` is unset until you choose), so installing two
   — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)` auto-bundles the trio so you
   can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is always included. The other impl
@@ -542,8 +618,10 @@ installs the SDK's unhandled-Kotlin-exception hook on Apple itself. What the app
 1. **Link `sentry-cocoa`** — SPM product `Sentry`, at the version frnk's catalog pairs with
    `sentry-kmp` (the KMP SDK's compat table). The umbrella framework defers the symbols under
    `dynamic_lookup`, so a project that forgets this fails at the app link step, loudly.
-2. **Supply the DSN** from a gitignored xcconfig → `Info.plist` value (the RevenueCat key's
-   pattern). Blank throws at `SentryCrashReportingConfig` construction — there is no no-op.
+2. **Supply the DSN** from the gitignored `Configuration/Secrets.xcconfig` → `Info.plist` value, read
+   with `NSBundle` in the Kotlin bootstrap — [the standard](#supplying-per-app-keys--the-standard).
+   Blank throws at `SentryCrashReportingConfig` construction — there is no no-op. (No PostHog key to
+   supply: it is the toolkit's.)
 3. **Confirm Release builds emit dSYMs** — `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym`.
 4. **Upload dSYMs** with a run-script phase: `sentry-cli debug-files upload --include-sources
    "$DWARF_DSYM_FOLDER_PATH"`, keyed by `SENTRY_AUTH_TOKEN` / `~/.sentryclirc` on the machine that
@@ -559,6 +637,12 @@ run-script. `frnk/capabilities/crash-sentry/CLAUDE.md` has the module's own note
 ## 7. Inherit build configuration (single source of truth)
 
 The host **does not** redeclare SDK targets or library versions — it inherits them from frnk.
+
+**frnk's own `local.properties`.** The submodule keeps its own gitignored `frnk/local.properties`
+(copy `frnk/local.properties.example`): `sdk.dir` for its Android build **and `POSTHOG_API_KEY`**, the
+toolkit-wide PostHog project key that `:analytics-posthog` compiles into the binaries every host links
+(see [Supplying per-app keys](#supplying-per-app-keys--the-standard)). Without it frnk does not build.
+On CI, pass `-PPOSTHOG_API_KEY=…` or export the `POSTHOG_API_KEY` env var from a secret instead.
 
 **Version catalog.** A composite build does not auto-share `gradle/libs.versions.toml`, so import it
 explicitly under a distinct name:

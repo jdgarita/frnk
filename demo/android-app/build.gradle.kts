@@ -19,11 +19,11 @@ val localProperties: Properties =
     }
 val revenueCatAndroidApiKey: String = localProperties.getProperty("REVENUECAT_ANDROID_API_KEY", "")
 
-// Sentry + PostHog: public client keys read from local.properties (gitignored). REQUIRED — the demo
-// is a real host, and a blank key fails at bootstrap inside the config that names it.
+// Sentry DSN: the demo's own Sentry project (public client key), read from local.properties
+// (gitignored). REQUIRED — the demo is a real host, and a blank DSN fails at bootstrap inside the
+// config that names it. PostHog needs nothing here: its key is the toolkit-wide project's, shipped
+// in :analytics-posthog.
 val sentryDsn: String = localProperties.getProperty("SENTRY_DSN", "")
-val postHogApiKey: String = localProperties.getProperty("POSTHOG_API_KEY", "")
-val postHogHost: String = localProperties.getProperty("POSTHOG_HOST", "")
 
 // Real Firebase Remote Config smoke test (restructure Stage 11): the google-services plugin processes
 // google-services.json so Firebase auto-inits, enabling the real remoteConfigModule wired in
@@ -64,8 +64,6 @@ android {
         versionName = "0.1.0"
         buildConfigField("String", "REVENUECAT_ANDROID_API_KEY", "\"$revenueCatAndroidApiKey\"")
         buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
-        buildConfigField("String", "POSTHOG_API_KEY", "\"$postHogApiKey\"")
-        buildConfigField("String", "POSTHOG_HOST", "\"$postHogHost\"")
     }
     buildFeatures {
         compose = true
@@ -81,8 +79,8 @@ dependencies {
     // (the :shared/:androidApp aggregators died at restructure Stage 1). Atoms/theme/scaffolds/utils
     // arrive transitively via :demo-shared's api() deps.
     implementation(projects.uiApp) // FrnkAppScaffold — now wrapped by :demo-shared's DemoScreen (also transitive)
-    implementation(projects.analyticsPosthog) // PostHogAnalyticsConfig — mandatory observability, built from local.properties keys
-    implementation(projects.crashSentry) // SentryCrashReportingConfig — likewise
+    implementation(projects.analyticsPosthog) // PostHogAnalyticsConfig(debug = …) — the key itself ships in the module
+    implementation(projects.crashSentry) // SentryCrashReportingConfig — the demo's own DSN from local.properties
     implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real DatabaseFactory for DemoDatabase
     implementation(projects.remoteConfigImpl) // remoteConfigModule override — real Firebase Remote Config

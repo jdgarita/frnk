@@ -60,13 +60,14 @@ Faint's approach — an xcconfig, not Swift constants:
 
 ```bash
 cp demo/ios-app/Configuration/Secrets.xcconfig.template demo/ios-app/Configuration/Secrets.xcconfig
-# then fill in SENTRY_DSN / POSTHOG_API_KEY / POSTHOG_HOST — the same frnk-demo values local.properties holds
+# then fill in SENTRY_DSN — the same frnk-demo value local.properties holds. No PostHog key: it ships inside frnk.
 ```
 
 `Configuration/Config.xcconfig` (tracked, the target's base configuration) does
 `#include? "Secrets.xcconfig"` (gitignored), `Info.plist` forwards each value as `$(KEY)`, and
-`bootstrapDemoKoinWithSdks()` reads them from `NSBundle` at launch. **Both are required**: with no
-`Secrets.xcconfig` the values expand empty and the Kotlin config fails at launch naming the key.
+`bootstrapDemoKoinWithSdks()` reads them from `NSBundle` at launch. **The DSN is required**: with no
+`Secrets.xcconfig` it expands empty and the Kotlin config fails at launch naming the key. PostHog needs
+nothing here — every frnk app reports to the one toolkit-wide project (`FrnkPostHogProject`).
 xcconfig treats `//` as a comment, so URLs are written `https:/$()/…` (see the template). Sentry
 installs its own unhandled-Kotlin-exception hook, so no extra native wiring is needed.
 
