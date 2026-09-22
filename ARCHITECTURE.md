@@ -46,8 +46,8 @@ implementations are bound at the edge by Koin and never imported by domain or pr
   Key-value state goes through `KeyValueStore` + the typed `Preference<T>` layer in
   `:data-prefs-api` (bound by `prefsModule`). Room is **not** used.
 - **Networking.** The toolkit currently ships no HTTP client; remote capabilities go through
-  Firebase SDKs (`:analytics-impl`, `:identity-impl`, `:remote-config-impl`) and RevenueCat
-  (`:monetization-impl`). When a host or a future capability needs HTTP, it uses **Ktor** behind a
+  Firebase SDKs (`:identity-impl`, `:remote-config-impl`), PostHog (`:analytics-posthog`), Sentry
+  (`:crash-sentry`) and RevenueCat (`:monetization-impl`). When a host or a future capability needs HTTP, it uses **Ktor** behind a
   new `*-api`/`*-impl` pair; Ktor never appears in an `*-api` module.
 - **DTO → domain mapping happens here.** SDK types, SQLDelight rows, and wire DTOs are mapped to
   pure Kotlin domain models inside the impl module. Nothing above this layer sees an SDK type.
@@ -79,8 +79,10 @@ implementations are bound at the edge by Koin and never imported by domain or pr
 ## Dependency injection — Koin
 
 - **Configured in `commonMain`.** Each module exports its bindings as a Koin `module`
-  (`databaseModule`, `prefsModule`, `firebaseObservabilityModule`, `revenueCatModule`,
-  `frnkUiModules()`, …). `*-api` modules may ship a no-op module (`noopObservabilityModule`).
+  (`databaseModule`, `prefsModule`, `postHogAnalyticsModule(config)`, `sentryCrashReportingModule(config)`,
+  `revenueCatModule`, `frnkUiModules()`, …). An `*-api` module may ship a no-op module where the
+  capability is genuinely optional (`noopRemoteConfigModule`); observability has none — PostHog +
+  Sentry are mandatory on every host.
 - **Initialised per platform.** Android calls `initializeFrnk(context, modules)`; iOS calls
   `initializeFrnk(modules)` (both in `:core-di`). The host passes **exactly** the module list it
   wants — capability selection is a module list, not an enum. Un-passed modules never enter the graph.

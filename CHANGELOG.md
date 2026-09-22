@@ -15,6 +15,36 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: observability is mandatory and fixed — PostHog + Sentry on every host.**
+  `frnkModules { }` lost its `analytics` / `crashReporting` slots; the one required call is now
+  `observability(postHog = PostHogAnalyticsConfig(…), sentry = SentryCrashReportingConfig(…))`, which
+  installs `postHogAnalyticsModule` + `sentryCrashReportingModule` from the host's configs (`build()`
+  throws without it). `:ui-app` therefore depends on `:analytics-posthog` + `:crash-sentry` (`api`), so a
+  host never imports a provider module. Hosts never bind their own `AnalyticsTracker`/`CrashReporter`;
+  they inject the toolkit's for their own events and non-fatals. All of this project's apps use the same
+  two vendors, so the toolkit carries no optionality for them.
+- **Breaking: a blank PostHog API key or Sentry DSN now throws** (`IllegalArgumentException` at
+  config construction) instead of binding a silent no-op. `isConfigured` is gone from both configs.
+- The demo is treated as a real host: `POSTHOG_API_KEY` + `SENTRY_DSN` (Android `local.properties`,
+  the Swift constants on iOS) are required to boot. `bootstrapDemoKoin(postHog, sentry)` assembles the
+  graph with `frnkModules { }`; the demo's fakes cover only the paid-SDK seams. The iOS "Force crash"
+  button reports to Sentry.
+- `frnk.android.firebase` applies only `google-services` (for `:identity-impl` / `:remote-config-impl`);
+  the Crashlytics Gradle plugin is gone.
+
+### Removed
+
+- **Breaking: `NoopAnalyticsTracker`, `NoopCrashReporter`, `noopAnalyticsModule`,
+  `noopCrashReportingModule`, `noopObservabilityModule`** (`:analytics-api`). Tests use the
+  `commonTest` `FakeAnalyticsTracker` / `FakeCrashReporter`. `:analytics-api` no longer depends on Koin.
+- **Breaking: `:analytics-impl`** (Firebase Analytics + Crashlytics — `firebaseAnalyticsModule`,
+  `firebaseCrashReportingModule`, `firebaseObservabilityModule`, the CrashKiOS native crash handler)
+  and the `firebase-analytics` / `firebase-crashlytics` / `crashkios-crashlytics` catalog entries.
+- Demo: `LoggingAnalyticsTracker` / `LoggingCrashReporter`, the iOS CrashKiOS hook
+  (`enableDemoCrashlytics`) and the RevenueCat-only `bootstrapDemoKoinWithRevenueCat`.
+
 ## [0.8.0] - 2026-09-21
 
 ### Added

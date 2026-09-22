@@ -1,6 +1,6 @@
 # :analytics-api
 
-Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls live in `:analytics-impl`. (Remote Config is its own sibling capability pair — `:remote-config-api`/`:remote-config-impl` — since restructure Stage 11, not part of this module.)
+Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no Serialization plugin.** Feature code depends on these interfaces; the concrete impls are `:analytics-posthog` (`AnalyticsTracker`) and `:crash-sentry` (`CrashReporter`) — the toolkit's only providers, mandatory on every host, with **no no-op**. (Remote Config is its own sibling capability pair — `:remote-config-api`/`:remote-config-impl` — since restructure Stage 11, not part of this module.)
 
 ## Contents
 
@@ -9,12 +9,10 @@ Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no 
 - `Analytics.kt` — analytics + crash-reporting interfaces (`AnalyticsTracker`, `CrashReporter`, `ToolkitEvent`). `AnalyticsTracker.screen(name, params)` is the screen-view primitive: providers map it onto their native one (PostHog `screen`, Firebase's `screen_view` event) so hosts never spell a provider's event name. `CrashReporter.log` is the breadcrumb primitive (context for the next report), `recordException(throwable, extras)` the non-fatal, with `extras` scoped to that one report. **Both interfaces extend `IdentitySource`** (`:identity-api`), so each is an identity sink: `suspend fun identify(id: String): AppResult<Unit, IdentityError>` maps to the SDK's *reserved* user-id field (Firebase's `setUserId`, not a custom user property — a uid as a user property or event param is unbounded-cardinality and unusable in reports). This is the sole reason this module depends on `:identity-api`.
   - **`ToolkitEvent.key` is lowercase `snake_case`: letters, digits, underscores, starting with a letter.** That is the intersection every provider accepts — Firebase Analytics silently drops anything else (hyphens included) and PostHog reserves the `$` prefix; since every tracker wraps its SDK calls in `runCatching`, a malformed key fails with no trace anywhere.
   - The identity funnel is `IdentitySynced` / `IdentitySyncFailed`, emitted by `DefaultSyncAuthUseCase` (`:monetization-api`) — **not** by the tracker binding, which only writes the user id. The event has to follow the step that decides success, or it reports syncs that later failed. (`SignInStarted`/`SignInCompleted` were removed: nothing emitted them.)
-- `NoopObservability.kt` — `NoopAnalyticsTracker` / `NoopCrashReporter`, the SDK-free no-op defaults
-  (BACKLOG P1-5). They live here rather than in a backend impl because observability is a
-  **backend-independent axis**.
-- `NoopObservabilityModule.kt` — `noopAnalyticsModule` and `noopCrashReportingModule`, the defaults
-  of the two `frnkModules { }` slots (`analytics` / `crashReporting`), plus `noopObservabilityModule`
-  bundling both for the raw-list path and tests. One binding per slot, never two.
+- **No `Noop*` here** (removed 2026-09-22): every host — the demo included — ships PostHog + Sentry
+  through `frnkModules { observability(…) }`, so a production no-op would only hide a missing key.
+  The only stand-ins are the recording `FakeAnalyticsTracker` / `FakeCrashReporter` in `commonTest`.
+  This module has no Koin dependency anymore.
 
 ## Rules
 
@@ -23,7 +21,7 @@ Pure-interface analytics + crash-reporting contract. **No Ktor, no Firebase, no 
 - DTOs that need `@Serializable` go in the impl module, not here. This module keeps `kotlin.serialization` off its classpath on purpose.
 - Adding a new analytics/crash capability:
   1. Define the interface + domain models here.
-  2. Implement it in every provider module (`:analytics-impl` today) and in the `Noop*`/`Fake*` here.
+  2. Implement it in the provider module (`:analytics-posthog` or `:crash-sentry`) and in the `Fake*` here.
   3. Register in each provider's Koin module.
 
 ## Dependencies

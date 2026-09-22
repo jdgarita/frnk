@@ -19,28 +19,22 @@ val localProperties: Properties =
     }
 val revenueCatAndroidApiKey: String = localProperties.getProperty("REVENUECAT_ANDROID_API_KEY", "")
 
-// Sentry + PostHog real-path smoke test: public client keys read from local.properties (gitignored).
-// Blank = DemoApplication keeps the Firebase bindings for that slot (until Firebase is retired).
+// Sentry + PostHog: public client keys read from local.properties (gitignored). REQUIRED — the demo
+// is a real host, and a blank key fails at bootstrap inside the config that names it.
 val sentryDsn: String = localProperties.getProperty("SENTRY_DSN", "")
 val postHogApiKey: String = localProperties.getProperty("POSTHOG_API_KEY", "")
 val postHogHost: String = localProperties.getProperty("POSTHOG_HOST", "")
 
-// Real Firebase smoke test (BACKLOG P1-5): the google-services plugin processes
-// google-services.json so Firebase auto-inits, enabling the real firebaseObservabilityModule
-// wired in DemoApplication. google-services.json is gitignored, so these plugins are applied
-// ONLY when it's present — locally that turns on the real SDK; on CI (no json) they're skipped
-// and the demo compiles, with DemoApplication's Firebase path degrading to a logged no-op at
-// runtime (every gitlive call is wrapped in runCatching).
+// Real Firebase Remote Config smoke test (restructure Stage 11): the google-services plugin processes
+// google-services.json so Firebase auto-inits, enabling the real remoteConfigModule wired in
+// DemoApplication. google-services.json is gitignored, so the plugin is applied ONLY when it's
+// present — locally that turns on the real SDK; on CI (no json) it's skipped and the demo compiles,
+// with the Remote Config path degrading to a logged failure at runtime (every gitlive call is
+// wrapped in runCatching).
 if (rootProject.file("demo/android-app/google-services.json").exists()) {
     apply(
         plugin =
             libs.plugins.google.services
-                .get()
-                .pluginId
-    )
-    apply(
-        plugin =
-            libs.plugins.firebase.crashlytics
                 .get()
                 .pluginId
     )
@@ -87,9 +81,8 @@ dependencies {
     // (the :shared/:androidApp aggregators died at restructure Stage 1). Atoms/theme/scaffolds/utils
     // arrive transitively via :demo-shared's api() deps.
     implementation(projects.uiApp) // FrnkAppScaffold — now wrapped by :demo-shared's DemoScreen (also transitive)
-    implementation(projects.analyticsImpl) // firebaseAnalyticsModule / firebaseCrashReportingModule fallbacks
-    implementation(projects.analyticsPosthog) // postHogAnalyticsModule when POSTHOG_API_KEY is set
-    implementation(projects.crashSentry) // sentryCrashReportingModule when SENTRY_DSN is set
+    implementation(projects.analyticsPosthog) // PostHogAnalyticsConfig — mandatory observability, built from local.properties keys
+    implementation(projects.crashSentry) // SentryCrashReportingConfig — likewise
     implementation(projects.monetizationImpl) // revenueCatModule override
     implementation(projects.dataDbImpl) // databaseModule override — real DatabaseFactory for DemoDatabase
     implementation(projects.remoteConfigImpl) // remoteConfigModule override — real Firebase Remote Config

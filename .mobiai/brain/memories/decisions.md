@@ -1520,3 +1520,35 @@ Trial semantics stay with the host (Faint books `value = 0` on `hasFreeTrial`) �
 - frnk/data/db-api/src/commonMain/kotlin/dev/jdgarita/frnk/database/RoomDatabaseBuilder.kt
 - frnk/data/db-impl/src/commonMain/kotlin/dev/jdgarita/frnk/database/impl/Defaults.kt
 - docs/plans/2026-09-18-room-database-seam.md
+
+## Observability is mandatory PostHog + Sentry — no-ops removed, :analytics-impl retired (2026-09-22)
+
+- id: observability-is-mandatory-posthog-sentry-no-ops-removed-ana-20260922-163634
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: DI / observability
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22), superseding the observability half of Tier 2.2 and the BACKLOG P1-5 "no-op default" stance:
+
+1. NoopAnalyticsTracker / NoopCrashReporter / noopAnalyticsModule / noopCrashReportingModule / noopObservabilityModule are DELETED. Every host app (Faint, Still, …) and the demo ship the real providers: PostHog (`:analytics-posthog`) as the one AnalyticsTracker, Sentry (`:crash-sentry`) as the one CrashReporter. A host NEVER provides its own AnalyticsTracker/CrashReporter — it reads the toolkit's back through Koin (`koinInject<AnalyticsTracker>()` / `get<CrashReporter>()`) for its own events / non-fatals. `FakeAnalyticsTracker` / `FakeCrashReporter` (`:analytics-api` commonTest) stay — tests are not hosts.
+
+2. `frnkModules { }` lost the `analytics` / `crashReporting` Module slots and gained a MANDATORY `observability(postHog = PostHogAnalyticsConfig(…), sentry = SentryCrashReportingConfig(…))` call; `build()` throws (checkNotNull, message names the call) without it. `:ui-app` now has `api(projects.analyticsPosthog)` + `api(projects.crashSentry)`. This is a deliberate exception to the Tier 2.2 CINTEROP rule ("the builder never references an *-impl"): every host links posthog-ios + sentry-cocoa anyway, so the edge drags in nothing a host would not otherwise carry. The rule still holds for RevenueCat / Room / Firebase (remoteConfig / identity / monetization stay Module slots the host assigns). Consequence: `:ui-app` (like `:analytics-posthog` / `:crash-sentry`) disables `linkDebugTestIosSimulatorArm64` + `iosSimulatorArm64Test` (native SDKs come from the Xcode host; common tests run on testAndroidHostTest — docs/plans/2026-07-28-native-backed-ios-test-policy.md).
+
+3. A blank PostHog apiKey / Sentry DSN is an IllegalArgumentException at CONFIG CONSTRUCTION (`require` in the data class init), naming the field. `isConfigured` is gone; the providers' "blank key → bind Noop" branches are gone. Rationale: a silent no-op hides a misconfigured release; fail where the value is written.
+
+4. `:analytics-impl` (Firebase Analytics + Crashlytics via gitlive, NativeCrashHandler, CrashKiOS) is RETIRED — its only consumer was demo-android's key-less fallback. Catalog: `firebase-analytics`, `firebase-crashlytics`, `crashkios-crashlytics`, `firebase-crashlytics-gradle` + the `firebase-crashlytics` plugin alias removed. `frnk.android.firebase` now applies ONLY `google-services` (still needed by `:identity-impl` Firebase Auth + `:remote-config-impl` Remote Config, which stay on gitlive Firebase). Crash symbolication is `frnk.android.sentry` (Android) + sentry-cli dSYM upload (iOS).
+
+5. The demo is a REAL HOST, not a special case: `bootstrapDemoKoin(postHog, sentry, extraConfig)` assembles via `frnkModules { observability(…); modules(frnkAppModule) }` + checkFrnkModules(); frnkAppModule keeps only the paid-SDK fakes (EntitlementProvider / identity / KeyValueStore / NoteStore) + camera/permissions no-ops — the LoggingAnalyticsTracker/LoggingCrashReporter host-written fakes are deleted. demo-android reads POSTHOG_API_KEY / POSTHOG_HOST / SENTRY_DSN from local.properties (REQUIRED to boot now) and passes a plain override list (remoteConfigModule, databaseModule, demoNotesModule, + revenueCatModule/revenueCatIdentityModule when the RC key is set) — it no longer builds overrides via frnkModules (the Tier 2.2 DEMO note is superseded). iOS: DemoCrashlytics.kt (CrashKiOS hook) + DemoRevenueCat.kt (bootstrapDemoKoinWithRevenueCat) deleted; bootstrapDemoKoinWithSdks requires the two keys (Swift constants in iosDemoAppApp.swift are BLANK in the repo → iOS demo fails at bootstrap until JD pastes the frnk-demo Sentry DSN + PostHog key). FirebaseApp.configure() + the Firebase SPM products stay in the Xcode project (Remote Config / Auth parity); removing them from the pbxproj is a separate cleanup. "Force crash" now reports to Sentry (its own unhandled-Kotlin-exception hook).
+
+WHY (JD): all apps use PostHog + Sentry; optionality nobody uses only added a Noop class, a slot, a validator branch and a Firebase fallback module to maintain; frnk must not grow complexity just to let the demo run key-less.
+
+NOT changed: noopRemoteConfigModule / NoopCameraController / NoopPermissionController (no toolkit consumer reads them; remote-config stays an optional slot) — a follow-up may drop the remote-config default + validator check the same way.
+
+### Files
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
+- frnk/capabilities/analytics-posthog/src/commonMain/kotlin/dev/jdgarita/frnk/backend/posthog/PostHogAnalyticsConfig.kt
+- frnk/capabilities/crash-sentry/src/commonMain/kotlin/dev/jdgarita/frnk/backend/sentry/SentryCrashReportingConfig.kt
+- demo/shared/src/commonMain/kotlin/dev/jdgarita/frnk/demo/DemoBootstrap.kt
+- build-logic/src/main/kotlin/frnk.android.firebase.gradle.kts

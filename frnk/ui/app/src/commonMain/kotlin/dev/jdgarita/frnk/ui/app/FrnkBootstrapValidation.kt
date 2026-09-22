@@ -18,8 +18,10 @@ import org.koin.core.error.InstanceCreationException
  * Wire it via `initializeFrnk(modules = …, validate = true, validator = Koin::validateFrnkBootstrap)`,
  * or call [KoinApplication.checkFrnkModules] on the returned application.
  *
- * **Required** (missing ⇒ throw): an analytics module (`AnalyticsTracker`), a crash-reporting module
- * (`CrashReporter`), a remote-config module (`RemoteConfigService`), and the monetization stack
+ * **Required** (missing ⇒ throw): the observability pair (`AnalyticsTracker` = PostHog,
+ * `CrashReporter` = Sentry — `frnkModules { observability(…) }` cannot omit them, so these two checks
+ * only ever fire on a hand-built `initializeFrnk(modules = listOf(…))` list), a remote-config module
+ * (`RemoteConfigService`), and the monetization stack
  * (`ObserveProStatusUseCase` + `EntitlementManager` — the always-installed Settings scaffold reads
  * pro-status) together with the `AnonymousIdentityProvider` its `SyncAuthUseCase` fans out from.
  * **Optional** (never checked): `KeyValueStore` / `DatabaseFactory`, which a local-only host
@@ -27,23 +29,21 @@ import org.koin.core.error.InstanceCreationException
  *
  * This runs **after** `startKoin`, so it can only detect *missing* bindings — it cannot see a *duplicate*
  * install (two modules collapse to one binding). Preventing that double-install is [frnkModules]'s
- * job (its single-slot `analytics`/`crashReporting`/`remoteConfig` make it unrepresentable).
+ * job (one `observability(…)` call and the single-slot `remoteConfig`/`identity` make it unrepresentable).
  */
 fun Koin.validateFrnkBootstrap() {
     val missing =
         buildList {
             if (!isBound<AnalyticsTracker>()) {
                 add(
-                    "analytics — assign a provider to frnkModules { analytics = … } " +
-                        "(postHogAnalyticsModule from :analytics-posthog, firebaseAnalyticsModule from :analytics-impl) " +
-                        "or noopAnalyticsModule (:analytics-api)"
+                    "analytics — install postHogAnalyticsModule(config) (:analytics-posthog); " +
+                        "frnkModules { observability(postHog = …, sentry = …) } does it for you"
                 )
             }
             if (!isBound<CrashReporter>()) {
                 add(
-                    "crash reporting — assign a provider to frnkModules { crashReporting = … } " +
-                        "(sentryCrashReportingModule from :crash-sentry, firebaseCrashReportingModule from :analytics-impl) " +
-                        "or noopCrashReportingModule (:analytics-api)"
+                    "crash reporting — install sentryCrashReportingModule(config) (:crash-sentry); " +
+                        "frnkModules { observability(postHog = …, sentry = …) } does it for you"
                 )
             }
             if (!isBound<RemoteConfigService>()) {

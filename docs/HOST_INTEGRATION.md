@@ -31,10 +31,9 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:data-db-impl` | `data-db-impl` | `projects.dataDbImpl` | Platform locations + bundled SQLite driver → `databaseModule`. |
 | `:data-prefs-api` | `data-prefs-api` | `projects.dataPrefsApi` | `KeyValueStore` + typed `Preference<T>`. |
 | `:data-prefs-impl` | `data-prefs-impl` | `projects.dataPrefsImpl` | multiplatform-settings → `prefsModule`. |
-| `:analytics-api` | `analytics-api` | `projects.analyticsApi` | `AnalyticsTracker`/`CrashReporter` + `noopObservabilityModule`. |
-| `:analytics-impl` | `analytics-impl` | `projects.analyticsImpl` | Firebase analytics + crash → `firebaseObservabilityModule`. |
-| `:analytics-posthog` | `analytics-posthog` | `projects.analyticsPosthog` | PostHog `AnalyticsTracker` → `postHogAnalyticsModule(config)`. |
-| `:crash-sentry` | `crash-sentry` | `projects.crashSentry` | Sentry `CrashReporter` → `sentryCrashReportingModule(config)`. |
+| `:analytics-api` | `analytics-api` | `projects.analyticsApi` | `AnalyticsTracker`/`CrashReporter` contracts (no no-op). |
+| `:analytics-posthog` | `analytics-posthog` | `projects.analyticsPosthog` | PostHog `AnalyticsTracker` → `postHogAnalyticsModule(config)`. Mandatory; `:ui-app` carries it. |
+| `:crash-sentry` | `crash-sentry` | `projects.crashSentry` | Sentry `CrashReporter` → `sentryCrashReportingModule(config)`. Mandatory; `:ui-app` carries it. |
 | `:identity-api` | `identity-api` | `projects.identityApi` | SDK-free `AnonymousIdentityProvider` contract. |
 | `:identity-impl` | `identity-impl` | `projects.identityImpl` | Firebase anonymous auth → `firebaseIdentityModule`. |
 | `:remote-config-api` | `remote-config-api` | `projects.remoteConfigApi` | `RemoteConfigService` + `noopRemoteConfigModule`. |
@@ -250,8 +249,8 @@ initializeFrnk(
         listOf(
             databaseModule,                      // :data-db-impl — Room DatabaseFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
-            postHogAnalyticsModule(postHogConfig),       // AnalyticsTracker — or firebaseAnalyticsModule / noopAnalyticsModule
-            sentryCrashReportingModule(sentryConfig),    // CrashReporter — or firebaseCrashReportingModule / noopCrashReportingModule
+            postHogAnalyticsModule(postHogConfig),       // AnalyticsTracker — MANDATORY, PostHog only
+            sentryCrashReportingModule(sentryConfig),    // CrashReporter — MANDATORY, Sentry only
             remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
             // Monetization stack (optional — omit all three to run without entitlements):
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
@@ -285,10 +284,13 @@ initializeFrnk(
   offline launch may have left RevenueCat on its transient anonymous id. `Expired` carries the
   obfuscated address RevenueCat re-mailed a fresh link to; `NotARedemptionLink` means the URL was
   something else and is not tracked, so it is safe to route every incoming link through.
-- Install **exactly one** `AnalyticsTracker` binding (`postHogAnalyticsModule(config)`, `firebaseAnalyticsModule`
-  or `noopAnalyticsModule`) and **exactly one** `CrashReporter` binding (`sentryCrashReportingModule(config)`,
-  `firebaseCrashReportingModule` or `noopCrashReportingModule`) — they are independent slots, and a
-  blank key in either config binds that slot's no-op, so a clone without keys still boots. Remote Config follows the same XOR rule (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
+- **Observability is not optional.** Every host installs `postHogAnalyticsModule(PostHogAnalyticsConfig(…))`
+  and `sentryCrashReportingModule(SentryCrashReportingConfig(…))` — the toolkit's only `AnalyticsTracker` /
+  `CrashReporter` and there is no no-op; `frnkModules { observability(…) }` (§4.1) does it for you. A blank
+  key or DSN throws at config construction, so wire the keys from your build config (a gitignored
+  `local.properties` → `BuildConfig` on Android, an xcconfig → `Info.plist` on iOS). Never bind your
+  own `AnalyticsTracker`/`CrashReporter`; inject the toolkit's (`koinInject<AnalyticsTracker>()`) for your
+  app's own `trackCustom`/`screen`/`recordException`. Remote Config is still an XOR (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
   real impl ships.
 
@@ -335,8 +337,10 @@ two footguns it leaves to host discipline:
 initializeFrnk(
     context = this,
     modules = frnkModules {
-        analytics = postHogAnalyticsModule(PostHogAnalyticsConfig(apiKey = keys.postHog, environment = env))
-        crashReporting = sentryCrashReportingModule(SentryCrashReportingConfig(dsn = keys.sentryDsn, environment = env))
+        observability(
+            postHog = PostHogAnalyticsConfig(apiKey = keys.postHog, environment = env),
+            sentry = SentryCrashReportingConfig(dsn = keys.sentryDsn, environment = env)
+        )                                             // mandatory — build() throws without it
         remoteConfig = remoteConfigModule             // single slot ⇒ XOR by construction
         monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
         identity = revenueCatIdentityModule           // single slot; or firebaseIdentityModule
@@ -347,11 +351,12 @@ initializeFrnk(
 )
 ```
 
-- **`frnkModules { }`** assembles the list. `analytics`/`crashReporting`/`remoteConfig`/`identity` are single slots (the first three default to the
-  no-op modules; `identity` is unset until you choose), so installing two — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)`
-  auto-bundles the trio so you can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is
-  always included. You still import the impl `val`s yourself and assign them (the builder never references an
-  `*-impl` module, so the toolkit stays cinterop-clean).
+- **`frnkModules { }`** assembles the list. `observability(postHog, sentry)` is mandatory and installs the toolkit's
+  PostHog + Sentry pair from your configs (you never import a provider module); `remoteConfig`/`identity` are single
+  slots (`remoteConfig` defaults to `noopRemoteConfigModule`; `identity` is unset until you choose), so installing two
+  — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)` auto-bundles the trio so you
+  can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is always included. The other impl
+  `val`s (`remoteConfigModule`, `revenueCatModule`, …) you still import yourself and assign to a slot.
 - **`validate = true` + `validator = Koin::validateFrnkBootstrap`** runs a post-`startKoin` check that throws a
   message naming the exact missing module (one analytics, one crash-reporting, one remote-config, the monetization
   stack the Settings scaffold needs and the `AnonymousIdentityProvider` it reads). This catches the *missing-module* footgun on **either** path — it works with a raw
@@ -380,15 +385,16 @@ generalized so you can copy it without opening the demo.
 Two rules carry over from the old packaging:
 
 - `isStatic = true` + `linkerOpts("-undefined", "dynamic_lookup")` on the framework — bundled impls
-  (`:monetization-impl`, `:analytics-impl`) reference native iOS SDKs
-  (purchases-ios, Firebase) that **your app** supplies via SPM/CocoaPods; deferred symbol
-  resolution lets the framework link without them.
+  (`:monetization-impl`, and the always-present `:analytics-posthog` + `:crash-sentry`) reference
+  native iOS SDKs (purchases-ios, posthog-ios, sentry-cocoa) that **your app** supplies via SPM;
+  deferred symbol resolution lets the framework link without them.
 - Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native
   dep list.
 
-The same ownership boundary applies to tests. `:analytics-impl` and `:monetization-impl` run their
-common tests through `testAndroidHostTest`, but skip standalone iOS simulator test executables:
-those executables have no consuming Xcode target from which to obtain Firebase or RevenueCat.
+The same ownership boundary applies to tests. `:analytics-posthog`, `:crash-sentry`, `:ui-app` and
+`:monetization-impl` run their common tests through `testAndroidHostTest`, but skip standalone iOS
+simulator test executables: those executables have no consuming Xcode target from which to obtain
+PostHog, Sentry or RevenueCat.
 Validate their native Apple linkage through an integration host that supplies both packages. The
 repository demo is the canonical gate:
 
@@ -447,11 +453,12 @@ kotlin {
 }
 ```
 
-Keep the **common** surface free of `*-impl` modules so the framework links no native cinterop. If you
-need real crash reporting or RevenueCat on iOS, add those impls **only** to `iosMain` (the demo adds
-`crashkios.crashlytics` + `monetizationImpl` + `revenuecat.core` there) — the consumer Xcode project
-then supplies the matching native SDKs via SPM, and the `dynamic_lookup` flag above lets the framework
-link locally without them.
+Keep the **common** surface free of *optional* `*-impl` modules so the framework links no native
+cinterop it doesn't need. PostHog + Sentry are the exception by design — `:ui-app` carries them, so
+every umbrella framework references posthog-ios + sentry-cocoa and the Xcode project links the
+`PostHog` + `Sentry` SPM products. RevenueCat goes **only** in `iosMain` (the demo adds
+`monetizationImpl` + `revenuecat.core` there) — the consumer Xcode project then supplies the native
+SDK via SPM, and the `dynamic_lookup` flag above lets the framework link locally without it.
 
 Build it with the generated task `assemble<Name>{Debug,Release}XCFramework` — e.g.
 `./gradlew :your-shared:assembleYourAppKitDebugXCFramework`.
@@ -475,24 +482,13 @@ else
 fi
 ```
 
-**2. Upload Crashlytics dSYMs** — the last phase; uploads the app dSYM (which, because the framework
-is static, already carries frnk's Kotlin frames) so crashes symbolicate:
+**2. Upload dSYMs to Sentry** — the last phase; uploads the app dSYM (which, because the framework
+is static, already carries frnk's Kotlin frames) so crashes symbolicate. See
+[Sentry setup](#sentry-setup-the-crash-reporter) below for the `sentry-cli debug-files upload`
+phase and its skip-when-absent guard.
 
-```sh
-# Requires DEBUG_INFORMATION_FORMAT=dwarf-with-dsym (Xcode's Release default).
-set -e
-TOOL="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols"
-GSP="${SRCROOT}/YourApp/GoogleService-Info.plist"
-DSYM="${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"
-if [ -f "$TOOL" ] && [ -d "$DSYM" ]; then
-  "$TOOL" -gsp "$GSP" -p ios "$DSYM" || echo "warning: Crashlytics dSYM upload failed (continuing)"
-else
-  echo "warning: Crashlytics upload-symbols or dSYM not found - skipping (add FirebaseCrashlytics via SPM + enable dSYM)"
-fi
-```
-
-The `GoogleService-Info.plist` itself is added to the app target as a normal bundled resource — no copy
-phase needed.
+If the host also uses Firebase (Auth / Remote Config), `GoogleService-Info.plist` is added to the app
+target as a normal bundled resource — no copy phase needed.
 
 ### RevenueCat consumer setup
 
@@ -533,53 +529,33 @@ toolkit paywall route key. `FeatureGate(freeFeatures = …)` whitelists features
 `Feature.id`) — but note it's **not wired through `monetizationModule`** today (binds the empty default),
 so configuring it means overriding the `FeatureGate` Koin binding.
 
-### Crashlytics setup (do this for every new iOS app)
+### Sentry setup (the crash reporter)
 
-> **Claude: when the user is creating/scaffolding a new iOS app on frnk and wants crash reporting,
-> walk them through this checklist.** The toolkit cannot wire any of this — it's per-app Xcode
-> setup. Skipping step 4 is the #1 reason "crashes don't show up in Crashlytics."
+> **Claude: when the user is creating/scaffolding a new iOS app on frnk, walk them through this
+> checklist.** The toolkit cannot wire any of this — it's per-app Xcode setup. Skipping step 4 is the
+> #1 reason "crashes don't show up in Sentry." (Crashlytics is gone: Sentry is the only crash reporter.)
 
 Your umbrella framework is static, so frnk's Kotlin symbols link into the **app binary**.
-Installing `firebaseObservabilityModule` adds the CrashKiOS hook that turns an uncaught Kotlin
-exception into a Crashlytics report — but Crashlytics still needs the matching **dSYM**:
-
-1. **Add Firebase** to the Xcode project — Firebase Apple SDK via SPM (`FirebaseCrashlytics`
-   product) or CocoaPods — and add the app's `GoogleService-Info.plist` to the target.
-2. **Configure + install the hook** early at launch: `FirebaseApp.configure()` in Swift, then the
-   Kotlin bootstrap with `firebaseObservabilityModule` in the module list.
-3. **Confirm Release builds emit dSYMs** — `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym` (Xcode's
-   Release default; Debug defaults to `dwarf` = **no dSYM**).
-4. **Upload dSYMs to Crashlytics** — add the dSYM-upload run-script build phase from
-   [Xcode build phases](#xcode-build-phases) above (phase 2) so every build/archive uploads
-   automatically. Skipping this is the #1 cause of unsymbolicated crashes.
-
-KMP specifics: because the umbrella framework is **static**, your app's own dSYM already contains
-frnk's Kotlin frames — no separate Kotlin-framework dSYM step, and no CrashKiOS `crashlyticslink`
-Gradle plugin (that's only for *dynamic* frameworks). A crash showing as **"unprocessed — upload
-1 dSYM file"** means no matching dSYM was uploaded — usually a Debug build or a missing
-run-script. Crashes upload on the **next launch**; the first-ever crash can take several minutes
-to surface. Details in `frnk/capabilities/analytics-impl/CLAUDE.md`.
-
-### Sentry setup (the default crash reporter)
-
-`sentryCrashReportingModule` needs no Swift call and no native hook of its own: `Sentry.init` runs
-inside `startKoin` (the binding is `createdAtStart`) and installs the SDK's unhandled-Kotlin-exception
-hook on Apple itself. What the app must still do:
+`sentryCrashReportingModule` (installed by `frnkModules { observability(…) }`) needs no Swift call and
+no native hook of its own: `Sentry.init` runs inside `startKoin` (the binding is `createdAtStart`) and
+installs the SDK's unhandled-Kotlin-exception hook on Apple itself. What the app must still do:
 
 1. **Link `sentry-cocoa`** — SPM product `Sentry`, at the version frnk's catalog pairs with
    `sentry-kmp` (the KMP SDK's compat table). The umbrella framework defers the symbols under
    `dynamic_lookup`, so a project that forgets this fails at the app link step, loudly.
 2. **Supply the DSN** from a gitignored xcconfig → `Info.plist` value (the RevenueCat key's
-   pattern). Blank binds the no-op reporter.
+   pattern). Blank throws at `SentryCrashReportingConfig` construction — there is no no-op.
 3. **Confirm Release builds emit dSYMs** — `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym`.
 4. **Upload dSYMs** with a run-script phase: `sentry-cli debug-files upload --include-sources
    "$DWARF_DSYM_FOLDER_PATH"`, keyed by `SENTRY_AUTH_TOKEN` / `~/.sentryclirc` on the machine that
    archives (never CI). Declare the dSYM as an input path so Xcode orders the phase after
    `GenerateDSYMFile` under Archive, and skip-with-warning when the token or `sentry-cli` is absent.
-5. **Never also install CrashKiOS's hook** — two hooks double-report.
+5. **Never install another unhandled-exception hook** (CrashKiOS and the like) — two hooks double-report.
 
-Same KMP specifics as above: the static umbrella framework means the app dSYM already carries the
-Kotlin frames. `frnk/capabilities/crash-sentry/CLAUDE.md` has the module's own notes.
+KMP specifics: because the umbrella framework is **static**, your app's own dSYM already contains
+frnk's Kotlin frames — no separate Kotlin-framework dSYM step. A crash with unsymbolicated Kotlin
+frames means no matching dSYM was uploaded — usually a Debug build (`dwarf`, no dSYM) or a missing
+run-script. `frnk/capabilities/crash-sentry/CLAUDE.md` has the module's own notes.
 
 ## 7. Inherit build configuration (single source of truth)
 
@@ -638,19 +614,15 @@ Two plugins are host-facing:
   ```
 
   It applies `google-services` (so `FirebaseInitProvider` auto-initializes Firebase *before*
-  `Application.onCreate`, which is what `firebaseIdentityModule` and `firebaseObservabilityModule`
-  depend on) and `firebase-crashlytics` (so **R8-minified release stack traces deobfuscate** —
-  without it a minified build reports unreadable frames). Both are applied **only when the host's
-  `google-services.json` is present**, so CI and fresh clones build without it and the toolkit's
-  `runCatching`-wrapped bindings degrade to a logged no-op at runtime.
+  `Application.onCreate`, which is what `firebaseIdentityModule` and `remoteConfigModule` depend
+  on) — and only that: crash reporting is Sentry's, whose build half is `frnk.android.sentry` below,
+  so there is no Crashlytics plugin. It is applied **only when the host's `google-services.json` is
+  present**, so CI and fresh clones build without it and the toolkit's `runCatching`-wrapped Firebase
+  bindings degrade to a logged failure at runtime.
 
-  The plugin takes no configuration, and the host does **not** declare the `google-services` or
-  `firebase-crashlytics` plugin versions — frnk's catalog owns them, which is the point: two
-  catalogs pinning the same plugin is a drift bug waiting to happen. Crashlytics collection defaults
-  to on for every build type; mapping upload defaults to on wherever a mapping exists (release only,
-  since debug isn't minified and the upload task is never created). Note that
-  `uploadCrashlyticsMappingFileRelease` sits **inside the `assembleRelease` task graph**, so local
-  release builds attempt a network upload — `-x uploadCrashlyticsMappingFileRelease` skips it.
+  The plugin takes no configuration, and the host does **not** declare the `google-services` plugin
+  version — frnk's catalog owns it, which is the point: two catalogs pinning the same plugin is a
+  drift bug waiting to happen.
 - **`frnk.android.sentry`** *(for any Android host on `sentryCrashReportingModule`)* — apply it in
   the **application** module the same way. It applies Sentry's Android Gradle plugin so the R8
   mapping's UUID lands in the manifest and the mapping uploads, making minified release traces

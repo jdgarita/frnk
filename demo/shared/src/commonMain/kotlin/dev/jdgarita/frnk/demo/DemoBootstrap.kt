@@ -1,30 +1,40 @@
 package dev.jdgarita.frnk.demo
 
+import dev.jdgarita.frnk.backend.posthog.PostHogAnalyticsConfig
+import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
 import dev.jdgarita.frnk.ui.app.checkFrnkModules
+import dev.jdgarita.frnk.ui.app.frnkModules
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 
 /**
- * Single entry point for both `androidDemoApp` and `iosDemoApp`. Installs only [frnkAppModule],
- * which binds fakes for every `*-api` interface the screen touches (`FakeEntitlementProvider`,
- * `FakeKeyValueStore`, `LoggingAnalyticsTracker`, `LoggingCrashReporter`). No real backend by design.
+ * Single entry point for both `demo-android` and `iosDemoApp`. Assembles the graph the way a real
+ * host does — `frnkModules { }` with the mandatory observability pair from the [postHog] / [sentry]
+ * configs the platform read from its build config — plus [frnkAppModule], which binds fakes for the
+ * paid-SDK seams the screen touches (`FakeEntitlementProvider`, `FakeKeyValueStore`, `FakeNoteStore`).
  *
- * The device demos override selected bindings with real SDKs to smoke-test them (Koin
- * `allowOverride(true)`): `androidDemoApp` assembles its override list with `frnkModules { }` and installs
- * the analytics/crash providers (PostHog + Sentry when keys are set, else the Firebase pair) +
- * `remoteConfigModule` + (when a key is set) `revenueCatModule`; `iosDemoApp` calls
- * `bootstrapDemoKoinWithSdks` for the real RevenueCat Test Store path plus Sentry/PostHog when keys
- * are passed, and configures Firebase + the CrashKiOS hook ([enableDemoCrashlytics]) in Swift only
- * when Sentry is off (BACKLOG P1-5b/P3-3).
- * Apps that want real backends pass an explicit toolkit-module list to `initializeFrnk(...)` (`:core-di`)
- * instead — see docs/HOST_INTEGRATION.md.
+ * The demo is treated as a real app: PostHog + Sentry are real, keys are required (a blank one fails
+ * inside the config with a message naming it), and nothing in the toolkit exists to support a
+ * key-less demo. Both device demos then override selected fakes with real SDKs (Koin
+ * `allowOverride(true)` in [extraConfig]): `demo-android` installs `remoteConfigModule` + the Room
+ * path + (when a key is set) `revenueCatModule`/`revenueCatIdentityModule`; `iosDemoApp` calls
+ * `bootstrapDemoKoinWithSdks` for the RevenueCat Test Store path.
  *
  * Demonstrates Tier 2.2's fail-fast validation: [checkFrnkModules] runs on the fully-assembled graph
  * (overrides included, since [extraConfig] runs inside the `startKoin` block) before returning, so a
  * missing required module surfaces as one explained crash here rather than a deep `NoDefinitionFound`.
  */
-fun bootstrapDemoKoin(extraConfig: KoinApplication.() -> Unit = {}): KoinApplication =
+fun bootstrapDemoKoin(
+    postHog: PostHogAnalyticsConfig,
+    sentry: SentryCrashReportingConfig,
+    extraConfig: KoinApplication.() -> Unit = {}
+): KoinApplication =
     startKoin {
-        modules(frnkAppModule)
+        modules(
+            frnkModules {
+                observability(postHog = postHog, sentry = sentry)
+                modules(frnkAppModule)
+            }
+        )
         extraConfig()
     }.apply { checkFrnkModules() }

@@ -1,31 +1,24 @@
 package dev.jdgarita.frnk.backend.sentry
 
 import dev.jdgarita.frnk.backend.CrashReporter
-import dev.jdgarita.frnk.backend.NoopCrashReporter
 import dev.jdgarita.frnk.utils.PrintLogger
 import io.sentry.kotlin.multiplatform.Sentry
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
 /**
- * Sentry as the `CrashReporter` — assign to `frnkModules { crashReporting = … }`.
+ * Sentry as the toolkit's one `CrashReporter`. Hosts don't install this themselves:
+ * `frnkModules { observability(postHog = …, sentry = …) }` (`:ui-app`) does, from the config the host
+ * passes. It stays public for the raw `initializeFrnk(modules = listOf(…))` path and for tests.
  *
  * The binding is `createdAtStart`, so `Sentry.init` runs inside `startKoin` on every bootstrap path,
  * with or without `validate`: a crash in the first frames after launch is still reported. The SDK is
  * started exactly once per process; a second Koin start (tests, a host that restarts its graph) sees
- * it already running and does not re-init.
- *
- * A blank [SentryCrashReportingConfig.dsn] binds [NoopCrashReporter] instead and never touches the
- * SDK — the graceful-degradation mode for a clone without keys, matching what an unconfigured
- * RevenueCat or Firebase does elsewhere in the toolkit.
+ * it already running and does not re-init. A missing DSN never reaches here —
+ * [SentryCrashReportingConfig] rejects it at construction.
  */
 fun sentryCrashReportingModule(config: SentryCrashReportingConfig): Module =
     module {
-        if (!config.isConfigured) {
-            PrintLogger.w(TAG, "no DSN — crash reporting is a no-op for this process")
-            single<CrashReporter> { NoopCrashReporter() }
-            return@module
-        }
         single<CrashReporter>(createdAtStart = true) {
             startSentryOnce(config)
             SentryCrashReporter()

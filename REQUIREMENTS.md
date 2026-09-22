@@ -62,7 +62,7 @@ descriptions.
     dependency may ever appear here.
   - **`*-impl`** — concrete bindings exposed as a Koin module.
 - Current api/impl pairs:
-  - `:analytics-api` ↔ `:analytics-impl` (analytics + crash; Firebase)
+  - `:analytics-api` ↔ `:analytics-posthog` (analytics; PostHog) + `:crash-sentry` (crash; Sentry) — both mandatory, no no-op
   - `:remote-config-api` ↔ `:remote-config-impl` (Remote Config; Firebase — a sibling of analytics, Stage 11)
   - `:data-db-api` ↔ `:data-db-impl` (SQL driver SPI; split at restructure Stage 4)
   - `:data-prefs-api` ↔ `:data-prefs-impl` (key-value; split at restructure Stage 4)
@@ -96,8 +96,9 @@ descriptions.
   fun frnkUiModules(): List<Module>
   ```
 - **Capability selection is the module list, not an enum.** A capability the
-  host doesn't pass (`firebaseObservabilityModule`, `revenueCatModule`, …) is
-  never installed, so its bindings never enter the graph.
+  host doesn't pass (`remoteConfigModule`, `revenueCatModule`, …) is
+  never installed, so its bindings never enter the graph. Observability is the one fixed
+  capability: `frnkModules { observability(postHog, sentry) }` is mandatory.
 
 ### 2.3 Error handling contract (MANDATORY)
 

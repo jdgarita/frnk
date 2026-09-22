@@ -1,18 +1,20 @@
 # :analytics-posthog
 
 PostHog implementation of `:analytics-api`'s `AnalyticsTracker`, over the official
-`com.posthog:posthog-kmp` SDK. Installed by assigning
-`postHogAnalyticsModule(PostHogAnalyticsConfig(apiKey = …, environment = …))` to
-`frnkModules { analytics = … }`. It fills one slot only — crash reporting is `:crash-sentry`'s.
+`com.posthog:posthog-kmp` SDK — the toolkit's **only** analytics provider, mandatory on every host.
+Installed by `frnkModules { observability(postHog = PostHogAnalyticsConfig(apiKey = …, environment = …), sentry = …) }`
+(`:ui-app`, which has an `api` dep on this module); `postHogAnalyticsModule(config)` stays public for the
+raw `initializeFrnk(modules = listOf(…))` path. Crash reporting is `:crash-sentry`'s. There is no no-op
+and hosts never bind their own `AnalyticsTracker`; they inject this one for their own events.
 
 ## Contents
 
 - `PostHogAnalyticsConfig.kt` — what the host supplies: the project **API key** (`phc_…`, a public
   client key), `environment` (`debug`/`release`, registered as a super property on every event so
   one project serves both), `host` (`DEFAULT_HOST` = PostHog Cloud US, `EU_HOST`), `debug`, `optOut`,
-  `captureApplicationLifecycleEvents`. `isConfigured` is `apiKey.isNotBlank()`.
-- `PostHogAnalyticsModule.kt` — `postHogAnalyticsModule(config)`. **Blank key binds
-  `NoopAnalyticsTracker` and never touches the SDK.** Otherwise the `AnalyticsTracker` single is
+  `captureApplicationLifecycleEvents`. **A blank `apiKey` throws `IllegalArgumentException` in
+  `init`** — a missing key is a configuration error to fix at the source, not silently dropped events.
+- `PostHogAnalyticsModule.kt` — `postHogAnalyticsModule(config)`. The `AnalyticsTracker` single is
   `createdAtStart`, so `PostHog.setup` runs inside `startKoin` and the SDK's lifecycle events see
   the launch. Setup is once-per-process and `runCatching`-wrapped. Two SDK choices are made here on
   purpose: `captureScreenViews = false` (the SDK's Activity-based capture sees one Activity in a

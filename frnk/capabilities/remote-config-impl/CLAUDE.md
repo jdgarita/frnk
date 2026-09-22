@@ -4,7 +4,7 @@ Firebase Remote Config binding for `:remote-config-api`'s `RemoteConfigService`.
 Firebase SDK** (gitlive `dev.gitlive:firebase-config`, iOS cinterop) — so it is **never** part of any
 toolkit module's common surface, and never in `:demo-shared`'s common deps. The host installs it via
 `initializeFrnk(modules = …)`; everything else resolves it through Koin (same api/impl discipline as
-`:analytics-impl`).
+`:monetization-impl`).
 
 ## Contents
 

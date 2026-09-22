@@ -1,7 +1,9 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.backend.noopAnalyticsModule
-import dev.jdgarita.frnk.backend.noopCrashReportingModule
+import dev.jdgarita.frnk.backend.posthog.PostHogAnalyticsConfig
+import dev.jdgarita.frnk.backend.posthog.postHogAnalyticsModule
+import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
+import dev.jdgarita.frnk.backend.sentry.sentryCrashReportingModule
 import dev.jdgarita.frnk.database.KeyValueStore
 import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
 import dev.jdgarita.frnk.identity.IdentityError
@@ -10,6 +12,8 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
+import dev.jdgarita.frnk.monetization.monetizationModule
+import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
@@ -26,6 +30,10 @@ import kotlin.test.assertFailsWith
  * Starts a Koin graph and runs [validateFrnkBootstrap]: a complete frnk-UI stack passes, and dropping
  * any required module fails fast with a message naming the exact module to install. Mirrors
  * `FrnkInitializerTest`'s "the error must name the fix" contract.
+ *
+ * The list is hand-built the way the raw `initializeFrnk(modules = listOf(…))` path builds it —
+ * `frnkModules { }` cannot omit observability, so the analytics / crash-reporting checks are only
+ * reachable from a hand-built list.
  */
 class FrnkBootstrapValidationTest {
     // monetizationModule needs an EntitlementProvider + KeyValueStore in the graph to construct, and
@@ -36,12 +44,21 @@ class FrnkBootstrapValidationTest {
             single<EntitlementProvider> { FakeEntitlementProvider() }
             single<KeyValueStore> { FakeKeyValueStore() }
         }
+    private val analyticsModule = postHogAnalyticsModule(PostHogAnalyticsConfig(apiKey = "phc_test", environment = "test"))
+    private val crashModule =
+        sentryCrashReportingModule(SentryCrashReportingConfig(dsn = "https://key@o1.ingest.sentry.io/1", environment = "test"))
 
     private fun validModules(): List<Module> =
-        frnkModules {
-            monetization(provider = fakesModule)
-            identity = identityModule
-        }.plus(fakesModule)
+        frnkUiModules() +
+            listOf(
+                analyticsModule,
+                crashModule,
+                noopRemoteConfigModule,
+                identityModule,
+                fakesModule,
+                monetizationModule,
+                paywallScaffoldModule
+            )
 
     private fun validateMissing(modules: List<Module>): IllegalStateException {
         val app = koinApplication { modules(modules) }
@@ -64,25 +81,25 @@ class FrnkBootstrapValidationTest {
 
     @Test
     fun missing_analytics_names_the_module() {
-        val failure = validateMissing(validModules().filterNot { it === noopAnalyticsModule })
+        val failure = validateMissing(validModules().filterNot { it === analyticsModule })
         assertEquals(true, failure.message?.contains("analytics"), "names the missing axis")
-        assertEquals(true, failure.message?.contains("noopAnalyticsModule"), "names the module to install")
+        assertEquals(true, failure.message?.contains("postHogAnalyticsModule"), "names the module to install")
         assertEquals(false, failure.message?.contains("crash reporting"), "the other slot is still bound")
         assertEquals(true, failure.message?.contains("initializeFrnk"), "names the bootstrap call")
     }
 
     @Test
     fun missing_crash_reporting_names_the_module() {
-        val failure = validateMissing(validModules().filterNot { it === noopCrashReportingModule })
+        val failure = validateMissing(validModules().filterNot { it === crashModule })
         assertEquals(true, failure.message?.contains("crash reporting"), "names the missing axis")
-        assertEquals(true, failure.message?.contains("noopCrashReportingModule"), "names the module to install")
+        assertEquals(true, failure.message?.contains("sentryCrashReportingModule"), "names the module to install")
         assertEquals(false, failure.message?.contains("analytics —"), "the other slot is still bound")
     }
 
     @Test
     fun missing_identity_under_monetization_names_the_slot() {
         // The slot left unset: the stack is there, its identity is not.
-        val failure = validateMissing(frnkModules { monetization(provider = fakesModule) })
+        val failure = validateMissing(validModules().filterNot { it === identityModule })
         assertEquals(true, failure.message?.contains("identity"), "names the missing axis")
         assertEquals(true, failure.message?.contains("revenueCatIdentityModule"), "names the module to assign")
         assertEquals(false, failure.message?.contains("monetization —"), "the stack itself is present")
@@ -97,8 +114,8 @@ class FrnkBootstrapValidationTest {
 
     @Test
     fun missing_monetization_names_the_module_and_settings() {
-        // frnkModules { } with no monetization(provider) → no monetizationModule in the graph.
-        val failure = validateMissing(frnkModules { })
+        // No monetizationModule in the graph (nor its paywall half).
+        val failure = validateMissing(validModules().filterNot { it === monetizationModule || it === paywallScaffoldModule })
         assertEquals(true, failure.message?.contains("monetization"), "names the missing axis")
         assertEquals(true, failure.message?.contains("monetizationModule"), "names the module to install")
         assertEquals(true, failure.message?.contains("Settings"), "explains why it's required")

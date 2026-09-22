@@ -1,14 +1,15 @@
 package dev.jdgarita.frnk.backend.sentry
 
 import dev.jdgarita.frnk.backend.CrashReporter
-import dev.jdgarita.frnk.backend.NoopCrashReporter
 import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.test.runTest
 import org.koin.dsl.koinApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class SentryCrashReporterTest {
     @Test
@@ -39,13 +40,11 @@ class SentryCrashReporterTest {
         }
 
     @Test
-    fun `a blank dsn binds the no-op reporter without touching the sdk`() {
-        val app = koinApplication { modules(sentryCrashReportingModule(SentryCrashReportingConfig(dsn = "", environment = "test"))) }
-        try {
-            assertIs<NoopCrashReporter>(app.koin.get<CrashReporter>())
-        } finally {
-            app.close()
-        }
+    fun `a blank dsn is a configuration error, not a silent no-op`() {
+        // Every host ships real crash reporting, so a missing DSN must fail where it is written — the
+        // config — and name the fix, instead of binding a reporter that drops every crash.
+        val failure = assertFailsWith<IllegalArgumentException> { SentryCrashReportingConfig(dsn = "", environment = "test") }
+        assertTrue(failure.message.orEmpty().contains("dsn"), "names the field")
     }
 
     @Test

@@ -7,7 +7,7 @@ import dev.jdgarita.frnk.utils.CommonError
  * SDK-free [RemoteConfigService] default: every getter returns the caller-supplied default and
  * [fetchAndActivate] is a successful no-op. Lets a host run without any remote-config backend (or a
  * test exercise call sites) and always see the bundled fallback values — same precedent as
- * `NoopAnalyticsTracker` / `NoopCrashReporter` in `:analytics-api`.
+ * the camera / permissions scaffolds (observability has no no-op — every host ships PostHog + Sentry).
  */
 class NoopRemoteConfig : RemoteConfigService {
     override suspend fun fetchAndActivate(): AppResult<Unit, CommonError> = AppResult.Success(Unit)

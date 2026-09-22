@@ -1,9 +1,11 @@
 # :crash-sentry
 
 Sentry implementation of `:analytics-api`'s `CrashReporter`, over the official
-`io.sentry:sentry-kotlin-multiplatform` SDK. Installed by assigning
-`sentryCrashReportingModule(SentryCrashReportingConfig(dsn = …, environment = …))` to
-`frnkModules { crashReporting = … }`. It fills one slot only — analytics is `:analytics-posthog`'s.
+`io.sentry:sentry-kotlin-multiplatform` SDK — the toolkit's **only** crash reporter, mandatory on every
+host. Installed by `frnkModules { observability(postHog = …, sentry = SentryCrashReportingConfig(dsn = …, environment = …)) }`
+(`:ui-app`, which has an `api` dep on this module); `sentryCrashReportingModule(config)` stays public for
+the raw `initializeFrnk(modules = listOf(…))` path. Analytics is `:analytics-posthog`'s. There is no no-op
+and hosts never bind their own `CrashReporter`; they inject this one for their own non-fatals.
 
 ## Contents
 
@@ -11,9 +13,9 @@ Sentry implementation of `:analytics-api`'s `CrashReporter`, over the official
   Settings → Client Keys; not the auth token, which uploads symbols and never enters the app),
   `environment` (`debug`/`release` — one project serves both, an issue filter separates them),
   optional `release` (`<bundleId>@<version>+<build>`), `debug`, `sampleRate`, and a `configure`
-  escape hatch over the raw `SentryOptions`. `isConfigured` is `dsn.isNotBlank()`.
-- `SentryCrashReportingModule.kt` — `sentryCrashReportingModule(config)`. **Blank DSN binds
-  `NoopCrashReporter` and never touches the SDK** (a clone without keys, CI). Otherwise the
+  escape hatch over the raw `SentryOptions`. **A blank `dsn` throws `IllegalArgumentException` in
+  `init`** — a missing DSN is a configuration error to fix at the source, not silently dropped crashes.
+- `SentryCrashReportingModule.kt` — `sentryCrashReportingModule(config)`. The
   `CrashReporter` single is `createdAtStart`, so `Sentry.init` runs inside `startKoin` on every
   bootstrap path, `validate` or not — a crash in the first frames is still reported. Init is
   once-per-process (`started` flag), `runCatching`-wrapped, and sets `sendDefaultPii = false` and

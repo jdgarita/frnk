@@ -15,7 +15,7 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Room's bundled SQLite driver, Firebase, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent (a local-only app with no backend can still install Firebase telemetry).
+Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Room's bundled SQLite driver, Firebase, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5; the Firebase impl was retired in favour of `:analytics-posthog` + `:crash-sentry`). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent. The one fixed axis is observability: every host ships PostHog + Sentry via `frnkModules { observability(…) }`.
 
 ### Module map
 
@@ -32,10 +32,9 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `ui-components` | The **component tier** on `compose-unstyled`: `Frnk*` atoms (`FrnkText`, `FrnkButton`, `FrnkIcon`, `FrnkIconButton`, `FrnkDivider`, `FrnkSwitch`, `FrnkSegmentedControl`, `FrnkTopAppBar`), molecules (`FrnkListRow`, `FrnkLabeledValue`, `FrnkEmptyState`, `FrnkSwipeable` swipe-to-action), organisms (`FrnkListSection`, `FrnkProfileHeader`), and the built-in **loading skeleton** (`FrnkSkeleton` + `Modifier.frnkSkeleton`). |
 | `ui-scaffolds` | The **page templates** + the Compose binding layer for the MVI/nav engines: scaffolds (`OnboardingScreen`, `SettingsScreen`, `HomeScreen`, `FrnkScreenScaffold`), `FrnkScreen` (the MVI Compose binding), and `FrnkNavDisplay` + `rememberFrnkNavBackStack` + the slide animations. |
 | `ui-bottom-nav` | **Platform-adaptive bottom navigation** — `FrnkBottomFloatingBar`, an `expect`/`actual` composable: a Material3 *Expressive* `HorizontalFloatingToolbar` (floating pill) on Android and a native glassy `UITabBar` (iOS 26+) / Material3 bar (older) on iOS (via [adaptive-nav-bar](https://github.com/narendraanjana09/adaptive-navigation-bar)), both themed from `FrnkTheme` tokens. It also owns `FrnkNestedNavScaffold(customTab, onNestedNavigationModule)` (replaced `FrnkTabbedNavScaffold`) — a fixed `Home · <custom> · Settings` multiple-back-stack tabbed scaffold (Home + Settings toolkit-fixed; the host supplies the middle `customTab` + the nested-nav Koin module registering the destinations behind the three routes), and the bar's view state **and per-tab back stacks** live in the MVI `FrnkNestedNavViewModel` (`frnkNestedNavModule`) — each tab keeps its own in-memory back stack. Icons are `FrnkIconSource` (Android) + SF-Symbol string (iOS). **The toolkit's sole Material3 dependency**, deliberately isolated here so `ui-theme`/`ui-components`/`ui-scaffolds` stay `compose-unstyled`-only. Android never touches `DrawableResource`, so there's **no host-side asset step**. |
-| `analytics-api` | `AnalyticsTracker` (events, screens, user properties) / `CrashReporter` (non-fatals, breadcrumbs) interfaces and their no-op defaults: `noopAnalyticsModule`, `noopCrashReportingModule` (one per `frnkModules { }` slot) and `noopObservabilityModule` (both). |
-| `analytics-impl` | Firebase impl of `analytics-api`. Exposes `firebaseAnalyticsModule` + `firebaseCrashReportingModule` (and `firebaseObservabilityModule`, both together). |
-| `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`). Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key binds the no-op. |
-| `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`). Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN binds the no-op. |
+| `analytics-api` | `AnalyticsTracker` (events, screens, user properties) / `CrashReporter` (non-fatals, breadcrumbs) interfaces. No no-op: every host installs the two providers below; `commonTest` ships `FakeAnalyticsTracker` / `FakeCrashReporter` for tests. |
+| `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`) — the toolkit's only analytics provider. Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key fails at config construction. |
+| `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`) — the toolkit's only crash reporter. Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN fails at config construction. |
 | `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`, plus `IdentitySource` — the shared `identify(id)` contract implemented by the analytics, crash and billing sinks. |
 | `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule` — the alternative to `revenueCatIdentityModule`; one of the two goes in `frnkModules { identity = … }`. |
 | `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
@@ -60,8 +59,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **Persistence:** Room KMP 2.8.4 (androidx.sqlite bundled driver 2.7.0, KSP 2.3.11), Multiplatform Settings 1.3.0
 - **Remote Config:** GitLive Firebase Remote Config 2.7.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
 - **Identity:** the RevenueCat app user id, bound by `revenueCatModule` — or GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) via `firebaseIdentityModule` from `:identity-impl`
-- **Analytics:** PostHog (`posthog-kmp` 0.5.1) via `postHogAnalyticsModule` — or GitLive Firebase Analytics 2.7.0 via `firebaseAnalyticsModule`
-- **Crash reporting:** Sentry (`sentry-kotlin-multiplatform` 0.27.0, pairs with sentry-cocoa 8.58.2) via `sentryCrashReportingModule` + the `frnk.android.sentry` convention plugin — or GitLive Firebase Crashlytics 2.7.0 via `firebaseCrashReportingModule`
+- **Analytics:** PostHog (`posthog-kmp` 0.5.1) via `postHogAnalyticsModule` — mandatory, installed by `frnkModules { observability(…) }`
+- **Crash reporting:** Sentry (`sentry-kotlin-multiplatform` 0.27.0, pairs with sentry-cocoa 8.58.2) via `sentryCrashReportingModule` + the `frnk.android.sentry` convention plugin — mandatory, installed by `frnkModules { observability(…) }`
 - **Monetization:** RevenueCat 3.7.0
 - **Haptics:** multihaptic 0.3.2 (`top.ltfan.multihaptic`) — cross-platform Android/iOS, no native cinterop
 - **Build:** AGP 9.4.0, Gradle 9.6.0, JDK 17 (auto-provisioned via the Foojay resolver in `settings.gradle.kts`)
@@ -100,7 +99,8 @@ dependencies {
     implementation("dev.jdgarita.frnk:data-db-impl")                    // databaseModule (DatabaseFactory)
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:monetization-impl")  // revenueCatModule (optional)
-    // + any other impl modules you install (e.g. dev.jdgarita.frnk:analytics-impl for firebaseObservabilityModule)
+    // PostHog + Sentry arrive transitively through ui-app (frnkModules { observability(…) } installs them)
+    // + any other impl modules you install (e.g. dev.jdgarita.frnk:remote-config-impl for remoteConfigModule)
 }
 ```
 
@@ -263,7 +263,7 @@ If frnk saves you time, consider [sponsoring the project on GitHub](https://gith
 1. `./gradlew compileAndroidMain :demo-android:compileDebugKotlin --parallel --build-cache` — covers every shared module's `commonMain` + `androidMain` plus the demo harness
 2. `./gradlew testAndroidHostTest :demo-android:testDebugUnitTest --parallel --build-cache` — covers every shared module's `commonTest` + `androidHostTest` (KMP host tests run under `testAndroidHostTest`, not `testDebugUnitTest`) plus the demo app's unit tests
 
-`assemble` and `ktlintCheck` are intentionally out — the local pre-commit hook (style) and downstream consumer builds cover them. `./gradlew allTests` is also available, but `analytics-impl` and `monetization-impl` skip their standalone iOS simulator test binaries because the native Firebase and RevenueCat SDKs belong to the consuming Xcode target. Their common tests still run through `testAndroidHostTest`.
+`assemble` and `ktlintCheck` are intentionally out — the local pre-commit hook (style) and downstream consumer builds cover them. `./gradlew allTests` is also available, but `analytics-posthog`, `crash-sentry`, `ui-app` and `monetization-impl` skip their standalone iOS simulator test binaries because the native PostHog, Sentry and RevenueCat SDKs belong to the consuming Xcode target. Their common tests still run through `testAndroidHostTest`.
 
 Validate those two modules' native Apple linkage through the demo host, which owns both SwiftPM dependencies:
 

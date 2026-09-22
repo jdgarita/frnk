@@ -1,30 +1,56 @@
 package dev.jdgarita.frnk.ui.app
 
-import dev.jdgarita.frnk.backend.noopAnalyticsModule
-import dev.jdgarita.frnk.backend.noopCrashReportingModule
+import dev.jdgarita.frnk.backend.AnalyticsTracker
+import dev.jdgarita.frnk.backend.CrashReporter
+import dev.jdgarita.frnk.backend.posthog.PostHogAnalyticsConfig
+import dev.jdgarita.frnk.backend.sentry.SentryCrashReportingConfig
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.remoteconfig.noopRemoteConfigModule
+import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Pure list-inspection of [frnkModules] (no `startKoin`): the slots default to the no-op modules, the
- * monetization trio is bundled from just the provider, and an assigned slot replaces the default. The
- * XOR guarantee itself is a compile-time property (a single `var` slot) — not testable at runtime.
+ * [frnkModules] assembly: observability is mandatory and always the PostHog + Sentry pair, the
+ * monetization trio is bundled from just the provider, remote-config defaults to no-op, and an
+ * assigned slot replaces the default. The XOR guarantee for the slots is a compile-time property (a
+ * single `var`) — not testable at runtime.
  */
 class FrnkModulesBuilderTest {
     private val customProviderModule = module { single { "fake-entitlement-provider" } }
     private val hostModule = module { single { "host-binding" } }
+    private val postHog = PostHogAnalyticsConfig(apiKey = "phc_test", environment = "test")
+    private val sentry = SentryCrashReportingConfig(dsn = "https://key@o1.ingest.sentry.io/1", environment = "test")
 
     @Test
-    fun defaults_to_noop_analytics_crash_remote_config_and_scaffold_vms_without_monetization() {
-        val modules = frnkModules { }
+    fun observability_is_mandatory_and_the_error_names_the_call() {
+        val failure = assertFailsWith<IllegalStateException> { frnkModules { } }
+        assertTrue(failure.message.orEmpty().contains("observability(postHog"), "names the missing call")
+        assertTrue(failure.message.orEmpty().contains("Sentry"), "says which providers it installs")
+    }
+
+    @Test
+    fun observability_installs_the_posthog_and_sentry_bindings() {
+        // The provider classes are internal to their modules, so the built graph is the observable:
+        // both contracts resolve, to the toolkit's own trackers (no no-op, no host class).
+        val app = koinApplication { modules(frnkModules { observability(postHog = postHog, sentry = sentry) }) }
+        try {
+            assertEquals("PostHogAnalyticsTracker", app.koin.get<AnalyticsTracker>()::class.simpleName)
+            assertEquals("SentryCrashReporter", app.koin.get<CrashReporter>()::class.simpleName)
+        } finally {
+            app.close()
+        }
+    }
+
+    @Test
+    fun defaults_to_noop_remote_config_and_scaffold_vms_without_monetization() {
+        val modules = frnkModules { observability(postHog = postHog, sentry = sentry) }
         frnkUiModules().forEach { assertTrue(it in modules, "scaffold VM module $it") }
-        assertTrue(noopAnalyticsModule in modules, "default analytics is no-op")
-        assertTrue(noopCrashReportingModule in modules, "default crash reporting is no-op")
         assertTrue(noopRemoteConfigModule in modules, "default remote-config is no-op")
         assertFalse(monetizationModule in modules, "no monetization unless a provider is set")
         assertFalse(paywallScaffoldModule in modules, "no paywall unless a provider is set")
@@ -33,14 +59,22 @@ class FrnkModulesBuilderTest {
     @Test
     fun identity_slot_is_unset_by_default_and_carried_when_assigned() {
         val identityModule = module { single { "fake-identity" } }
-        assertFalse(identityModule in frnkModules { }, "no identity unless assigned")
-        assertTrue(identityModule in frnkModules { identity = identityModule }, "assigned identity slot")
+        assertFalse(identityModule in frnkModules { observability(postHog = postHog, sentry = sentry) }, "no identity unless assigned")
+        assertTrue(
+            identityModule in
+                frnkModules {
+                    observability(postHog = postHog, sentry = sentry)
+                    identity = identityModule
+                },
+            "assigned identity slot"
+        )
     }
 
     @Test
     fun monetization_provider_auto_bundles_the_trio() {
         val modules =
             frnkModules {
+                observability(postHog = postHog, sentry = sentry)
                 monetization(provider = customProviderModule)
             }
         assertTrue(customProviderModule in modules, "the host-supplied provider")
@@ -49,16 +83,16 @@ class FrnkModulesBuilderTest {
     }
 
     @Test
-    fun assigned_slots_replace_the_defaults_and_extras_are_carried() {
-        val customAnalytics = module { single { "custom-analytics" } }
+    fun assigned_remote_config_replaces_the_default_and_extras_are_carried() {
+        val customRemoteConfig = module { single { "custom-remote-config" } }
         val modules =
             frnkModules {
-                analytics = customAnalytics
+                observability(postHog = postHog, sentry = sentry)
+                remoteConfig = customRemoteConfig
                 modules(hostModule)
             }
-        assertTrue(customAnalytics in modules, "assigned analytics slot")
-        assertFalse(noopAnalyticsModule in modules, "default analytics replaced (XOR)")
-        assertTrue(noopCrashReportingModule in modules, "the other slot keeps its default — the two are independent")
+        assertTrue(customRemoteConfig in modules, "assigned remote-config slot")
+        assertFalse(noopRemoteConfigModule in modules, "default remote-config replaced (XOR)")
         assertTrue(hostModule in modules, "host extras carried through")
     }
 }

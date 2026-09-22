@@ -31,14 +31,12 @@ kotlin {
             baseName = "DemoKit"
             xcf.add(this)
             isStatic = true
-            // Only api-only toolkit modules are exported. The demo's common surface deliberately
-            // avoids the *-impl modules (monetization-impl / :data-db-impl and their
-            // native cinterops), so DemoKit stays free of RevenueCat / bundled-SQLite symbols
-            // (:data-db-api carries only Room's pure-Kotlin runtime).
-            // EXCEPTION (BACKLOG P1-5b): the iosMain set adds the lightweight CrashKiOS cinterop so
-            // the demo's "Force crash" panic button can be reported to Firebase Crashlytics. That
-            // makes iosDemoApp require the native Firebase Crashlytics SDK (via SPM/CocoaPods) +
-            // GoogleService-Info.plist — it no longer launches on a bare simulator with no Firebase.
+            // Only api-only toolkit modules are exported. The demo's common surface avoids the
+            // optional *-impl modules (monetization-impl / :data-db-impl and their native cinterops),
+            // so DemoKit stays free of RevenueCat / bundled-SQLite symbols (:data-db-api carries only
+            // Room's pure-Kotlin runtime). Observability is the deliberate exception: PostHog + Sentry
+            // are mandatory for every host, the demo included, so :ui-app (and this module's
+            // commonMain) carry them and iosDemoApp links the `PostHog` + `Sentry` SPM products.
             export(projects.sharedUtils)
             // shared-ui-api was split (restructure Stage 6); Kotlin/Native `export` is non-transitive, so
             // the src-less facade would carry no Swift symbols — export the three successors directly.
@@ -64,8 +62,8 @@ kotlin {
             // Batteries-included app root (FrnkAppScaffold/FrnkAppConfig). Kotlin/Native `export` is
             // non-transitive, so export it directly to keep the Swift surface consistent with the api() list.
             export(projects.uiApp)
-            // CrashKiOS resolves the native Crashlytics symbols through the host's Firebase SDK at the
-            // app link step; defer them here (same approach as :iosApp / FrnkKit).
+            // The Sentry / PostHog / RevenueCat native symbols resolve through the host's SPM products
+            // at the app link step; defer them here (same approach as a host's own umbrella framework).
             linkerOpts("-undefined", "dynamic_lookup")
         }
     }
@@ -96,10 +94,13 @@ kotlin {
             api(projects.dataPrefsApi)
             api(projects.monetizationApi)
             api(projects.sharedMonetizationUi)
-            // The batteries-included app root. Safe in DemoKit's common surface: :ui-app depends only
-            // on :ui-bottom-nav + :shared-monetization-ui + :analytics-api + :core-di — no *-impl, no
-            // native cinterop — so it adds zero RevenueCat/SQLite/Firebase symbols to the framework.
+            // The batteries-included app root. :ui-app carries the mandatory observability pair
+            // (:analytics-posthog + :crash-sentry, native SDKs supplied by iosDemoApp via SPM under
+            // dynamic_lookup) and otherwise no *-impl, so it adds no RevenueCat/SQLite/Firebase symbols.
             api(projects.uiApp)
+            // The demo bootstraps observability itself (bootstrapDemoKoin takes the two configs).
+            implementation(projects.analyticsPosthog)
+            implementation(projects.crashSentry)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.ui)
@@ -117,21 +118,13 @@ kotlin {
             // Demo-bundled drawable for the Components tab under the adaptive-nav-bar engine (resource icons).
             implementation(compose.components.resources)
         }
-        // iOS-only native SDKs the demo opts into (kept out of commonMain so the Android demo +
-        // DemoKit's common surface stay SDK-free):
-        //  - CrashKiOS for the Crashlytics panic-button test (BACKLOG P1-5b).
-        //  - RevenueCat (P3-3): so DemoKit can install the REAL revenueCatModule over the fake and
-        //    iosDemoApp exercises the same RevenueCat Test Store path demo-android does. The native
-        //    purchases-ios SDK is supplied by the consumer (iosDemoApp) via SPM under dynamic_lookup.
-        //  - Sentry + PostHog: the real crash-reporting / analytics providers, installed by
-        //    bootstrapDemoKoinWithSdks when iosDemoApp passes keys. Their native SDKs (SPM products
-        //    `Sentry` and `PostHog`) are supplied by iosDemoApp under dynamic_lookup, like RevenueCat.
+        // iOS-only native SDK the demo opts into (kept out of commonMain so DemoKit's common surface
+        // stays free of it): RevenueCat (P3-3), so DemoKit can install the REAL revenueCatModule over
+        // the fake and iosDemoApp exercises the same RevenueCat Test Store path demo-android does. The
+        // native purchases-ios SDK is supplied by the consumer (iosDemoApp) via SPM under dynamic_lookup.
         iosMain.dependencies {
-            implementation(libs.crashkios.crashlytics)
             implementation(projects.monetizationImpl)
             implementation(libs.revenuecat.core)
-            implementation(projects.crashSentry)
-            implementation(projects.analyticsPosthog)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

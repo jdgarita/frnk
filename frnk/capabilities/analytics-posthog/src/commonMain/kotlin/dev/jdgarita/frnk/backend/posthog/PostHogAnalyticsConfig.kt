@@ -5,8 +5,10 @@ import com.posthog.kmp.PostHogConfig
 /**
  * Everything a host tells frnk about its PostHog project.
  *
- * @property apiKey The project API key (`phc_…`), a public client key. Blank means "not configured":
- *   [postHogAnalyticsModule] then binds the no-op tracker and never touches the SDK.
+ * @property apiKey The project API key (`phc_…`), a public client key. **Required**: a blank key is
+ *   a configuration error and fails here, at construction, rather than degrading to a tracker that
+ *   silently drops every event — every frnk host ships real analytics, so there is no no-op to fall
+ *   back to.
  * @property host The ingestion host of the project's region ([PostHogConfig.HOST_US] / `HOST_EU`).
  * @property environment Registered as a super property on every event (`debug` / `release`), so one
  *   PostHog project serves both and an insight filters testers out.
@@ -23,7 +25,12 @@ data class PostHogAnalyticsConfig(
     val optOut: Boolean = false,
     val captureApplicationLifecycleEvents: Boolean = true
 ) {
-    val isConfigured: Boolean get() = apiKey.isNotBlank()
+    init {
+        require(apiKey.isNotBlank()) {
+            "PostHogAnalyticsConfig.apiKey is blank — frnk hosts always ship PostHog analytics; " +
+                "pass the project's public API key (phc_…) from your build config / local.properties"
+        }
+    }
 
     companion object {
         /** PostHog Cloud US — the [host] a project created without picking a region lands on. */
