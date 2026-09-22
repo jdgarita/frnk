@@ -48,8 +48,8 @@ fun Koin.validateFrnkBootstrap() {
             }
             if (!isBound<RemoteConfigService>()) {
                 add(
-                    "remote config — install remoteConfigModule (:remote-config-impl) " +
-                        "or noopRemoteConfigModule (:remote-config-api)"
+                    "remote config — install noopRemoteConfigModule (:remote-config-api) " +
+                        "or a host RemoteConfigService binding"
                 )
             }
             if (!isBound<ObserveProStatusUseCase>() || !isBound<EntitlementManager>()) {
@@ -63,8 +63,8 @@ fun Koin.validateFrnkBootstrap() {
                 // sole toolkit consumer, and a host without monetization has no need for an identity.
                 add(
                     "identity — monetizationModule's SyncAuthUseCase needs an AnonymousIdentityProvider; " +
-                        "assign frnkModules { identity = … } revenueCatIdentityModule (:monetization-impl, " +
-                        "the RevenueCat app user id) or firebaseIdentityModule (:identity-impl)"
+                        "assign frnkModules { identity = revenueCatIdentityModule } (:monetization-impl, " +
+                        "the RevenueCat app user id) or a host AnonymousIdentityProvider binding"
                 )
             }
         }

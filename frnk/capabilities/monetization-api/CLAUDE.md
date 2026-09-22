@@ -64,14 +64,14 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   `crashReporter.identify(id)` → `analyticsTracker.identify(id)` → `entitlementManager.identify(id)`.
   Three rules are load-bearing and easy to break:
   1. **Only the entitlement sink gates.** The two observability results are deliberately discarded
-     (each already logs its own failure), so an unconfigured Firebase degrades telemetry rather than
+     (each already logs its own failure), so an unreachable sink degrades telemetry rather than
      blocking a scan — the same graceful-degradation promise `EntitlementProvider` makes for a
      missing billing key. `DefaultSyncAuthUseCaseTest` pins this; don't turn it into a checked call.
   2. **`IdentitySynced` is emitted here, not in the analytics binding** — after the step that decides
      success, so it can't report a sync that then failed in RevenueCat.
   3. **Exactly one funnel event per call**: `IdentitySynced` xor `IdentitySyncFailed`. The failure
      event carries `stage` (`sign_in` | `entitlement`) and `error_type`, both low-cardinality, so the
-     two failure modes — Firebase auth down vs. billing backend unreachable — stay distinguishable.
+     two failure modes — identity provider down vs. billing backend unreachable — stay distinguishable.
      `IdentityError` collapses to `CommonError.Unknown` on the public contract, since it carries no
      cause worth forwarding.
 - `monetization/MonetizationModule.kt` — `monetizationModule` binds `EntitlementManager`

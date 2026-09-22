@@ -36,7 +36,7 @@ consumes as a Git submodule through a Gradle composite build (`includeBuild("../
 - **`docs/HOST_INTEGRATION.md`** — how a host app consumes the toolkit.
 - **`REQUIREMENTS.md`** — product spec + architecture invariants.
 - **`.mobiai/brain/`** — living memory: the *why* behind decisions, integration quirks
-  (Firebase/RevenueCat/dSYM), testing patterns, bugfixes. Query with `mobiai brain context` /
+  (RevenueCat/Sentry/PostHog/dSYM), testing patterns, bugfixes. Query with `mobiai brain context` /
   `mobiai brain search "<topic>"` before proposing architecture, DI, persistence, navigation, or
   integration changes; save new decisions there, not in the docs.
 - **Per-module `CLAUDE.md`** files under `frnk/**` — module-specific rules.

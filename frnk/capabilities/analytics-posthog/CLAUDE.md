@@ -50,7 +50,8 @@ hosts never bind their own `AnalyticsTracker`; they inject this one for their ow
 
 Event and property names go through verbatim. PostHog reserves the `$` prefix for its own
 vocabulary; everything else is fine, which is why `ToolkitEvent.key`'s rule (lowercase
-`snake_case`) is the intersection with Firebase's, not something PostHog demands.
+`snake_case`) is a provider-neutral floor inherited from the retired Firebase tracker, not something
+PostHog demands.
 
 ## Native SDK contract (iOS)
 

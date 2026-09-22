@@ -26,7 +26,7 @@ Gradle project names are flat (`:core-mvi`, `:ui-components`, `:demo-shared`, â€
 those directories in `settings.gradle.kts`.
 
 - **Native wrappers are thin.** The Android `Activity` and the iOS `UIViewController` host one shared
-  composable and bootstrap Koin. Platform-only work (Firebase init, crash hook, SPM-linked SDKs) stays
+  composable and bootstrap Koin. Platform-only work (`Purchases.configure`, SPM-linked SDKs) stays
   in the wrapper; nothing app-shaped lives there.
 - **UI is 100 % Compose Multiplatform in shared code.** No SwiftUI screens, no XML layouts. The only
   `expect`/`actual` composable is the platform-adaptive bottom bar in `:ui-bottom-nav`.
@@ -46,8 +46,7 @@ implementations are bound at the edge by Koin and never imported by domain or pr
   Key-value state goes through `KeyValueStore` + the typed `Preference<T>` layer in
   `:data-prefs-api` (bound by `prefsModule`). Room is **not** used.
 - **Networking.** The toolkit currently ships no HTTP client; remote capabilities go through
-  Firebase SDKs (`:identity-impl`, `:remote-config-impl`), PostHog (`:analytics-posthog`), Sentry
-  (`:crash-sentry`) and RevenueCat (`:monetization-impl`). When a host or a future capability needs HTTP, it uses **Ktor** behind a
+  PostHog (`:analytics-posthog`), Sentry (`:crash-sentry`) and RevenueCat (`:monetization-impl`). When a host or a future capability needs HTTP, it uses **Ktor** behind a
   new `*-api`/`*-impl` pair; Ktor never appears in an `*-api` module.
 - **DTO â†’ domain mapping happens here.** SDK types, SQLDelight rows, and wire DTOs are mapped to
   pure Kotlin domain models inside the impl module. Nothing above this layer sees an SDK type.
@@ -58,7 +57,7 @@ implementations are bound at the edge by Koin and never imported by domain or pr
 
 - **Pure Kotlin.** Interfaces, immutable models, sealed errors, and use cases
   (`DefaultSyncAuthUseCase`, `DefaultEntitlementManager`, `FeatureGate`). No Compose, no Ktor, no
-  Firebase, no SQLDelight driver, no platform imports.
+  SDK, no SQLDelight driver, no platform imports.
 - Every `*-api` interface returns **`AppResult<D, E : AppError>`** (sealed `Success` / `Failure` in
   `:shared-utils`) instead of throwing, so callers handle errors exhaustively.
 - `IdentitySource` (`:identity-api`) is the single `identify(id)` contract shared by analytics,
@@ -97,6 +96,6 @@ implementations are bound at the edge by Koin and never imported by domain or pr
 - `*-api` never depends on an SDK; toolkit code never imports an `*-impl` package (demo modules are
   the sanctioned exception).
 - Umbrella iOS frameworks that bundle `:monetization-impl` link with `-undefined dynamic_lookup`;
-  the consuming Xcode project supplies the native RevenueCat/Firebase symbols.
+  the consuming Xcode project supplies the native RevenueCat/Sentry/PostHog symbols.
 - Structured concurrency everywhere: ViewModels use `viewModelScope`, services take a scope, no
   global scopes.

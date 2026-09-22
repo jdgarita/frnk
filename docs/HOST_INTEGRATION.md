@@ -34,10 +34,8 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:analytics-api` | `analytics-api` | `projects.analyticsApi` | `AnalyticsTracker`/`CrashReporter` contracts (no no-op). |
 | `:analytics-posthog` | `analytics-posthog` | `projects.analyticsPosthog` | PostHog `AnalyticsTracker` → `postHogAnalyticsModule(config)`. Mandatory; `:ui-app` carries it. |
 | `:crash-sentry` | `crash-sentry` | `projects.crashSentry` | Sentry `CrashReporter` → `sentryCrashReportingModule(config)`. Mandatory; `:ui-app` carries it. |
-| `:identity-api` | `identity-api` | `projects.identityApi` | SDK-free `AnonymousIdentityProvider` contract. |
-| `:identity-impl` | `identity-impl` | `projects.identityImpl` | Firebase anonymous auth → `firebaseIdentityModule`. |
-| `:remote-config-api` | `remote-config-api` | `projects.remoteConfigApi` | `RemoteConfigService` + `noopRemoteConfigModule`. |
-| `:remote-config-impl` | `remote-config-impl` | `projects.remoteConfigImpl` | Firebase Remote Config → `remoteConfigModule`. |
+| `:identity-api` | `identity-api` | `projects.identityApi` | SDK-free `AnonymousIdentityProvider` contract (bound by `revenueCatIdentityModule`, `:monetization-impl`). |
+| `:remote-config-api` | `remote-config-api` | `projects.remoteConfigApi` | `RemoteConfigService` + `noopRemoteConfigModule` (no toolkit backend — bind your own). |
 | `:camera` | `camera` | `projects.camera` | api-only no-op scaffold → `cameraModule` (no impl yet). |
 | `:permissions` | `permissions` | `projects.permissions` | api-only no-op scaffold → `permissionsModule` (no impl yet). |
 | `:monetization-api` | `monetization-api` | `projects.monetizationApi` | `EntitlementManager`/`FeatureGate` → `monetizationModule`. |
@@ -251,10 +249,10 @@ initializeFrnk(
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
             postHogAnalyticsModule(PostHogAnalyticsConfig(environment = env)),                // AnalyticsTracker — MANDATORY; key ships in frnk
             sentryCrashReportingModule(SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env)), // CrashReporter — MANDATORY; YOUR Sentry project
-            remoteConfigModule,                  // :remote-config-impl — or noopRemoteConfigModule (:remote-config-api); optional
+            noopRemoteConfigModule,              // :remote-config-api — or your own single<RemoteConfigService> module
             // Monetization stack (optional — omit all three to run without entitlements):
             revenueCatModule,                    // :monetization-impl — EntitlementProvider
-            revenueCatIdentityModule,            // :monetization-impl — AnonymousIdentityProvider (or firebaseIdentityModule)
+            revenueCatIdentityModule,            // :monetization-impl — AnonymousIdentityProvider (or your own binding)
             monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
             paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
         ) + hostModules,                         // your repositories, feature VMs, schema module — after the toolkit's
@@ -294,7 +292,7 @@ initializeFrnk(
   construction, so wire it from your build config exactly as described in
   [Supplying per-app keys — the standard](#supplying-per-app-keys--the-standard). Never bind your
   own `AnalyticsTracker`/`CrashReporter`; inject the toolkit's (`koinInject<AnalyticsTracker>()`) for your
-  app's own `trackCustom`/`screen`/`recordException`. Remote Config is still an XOR (`remoteConfigModule` XOR `noopRemoteConfigModule`). `:camera` / `:permissions` are
+  app's own `trackCustom`/`screen`/`recordException`. Remote Config is still an XOR (`noopRemoteConfigModule` XOR a host-owned `RemoteConfigService` module — the toolkit ships no backend). `:camera` / `:permissions` are
   api-only scaffolds — install `cameraModule` / `permissionsModule` for their no-op defaults until a
   real impl ships.
 
@@ -302,12 +300,10 @@ initializeFrnk(
 over the RevenueCat app user id: a local read, no network, minted the moment the host calls
 `Purchases.configure(...)` and persisted by the SDK across launches — the natural choice for an
 accountless host on RevenueCat. The toolkit never calls `Purchases.logOut()`, so an install that once
-identified RevenueCat with another id (a Firebase uid, say) keeps it. The alternative,
-`firebaseIdentityModule` (`:identity-impl`), reuses `Firebase.auth.currentUser` or signs in
-anonymously; it needs `google-services.json` plus the `frnk.android.firebase` convention plugin (§7)
-on Android and `FirebaseCore` + `FirebaseAuth` with `FirebaseApp.configure()` before Kotlin bootstrap
-on iOS. Install exactly one of the two (`frnkModules { identity = … }` makes a second one
-unrepresentable; on the raw list, two would silently shadow each other). The API module contains no
+identified RevenueCat with another id keeps it. It is the toolkit's only identity binding (the
+Firebase-backed `firebaseIdentityModule` was retired on 2026-09-22); a host with its own account
+system binds its own `AnonymousIdentityProvider` instead. Install exactly one (`frnkModules { identity
+= … }` makes a second one unrepresentable; on the raw list, two would silently shadow each other). The API module contains no
 SDK types, and no longer exposes a signed token — a backend credential is the host's concern.
 
 **Propagating the identity.** `AnonymousIdentityProvider` only *produces* a uid. Everything that
@@ -318,7 +314,7 @@ wherever you must not proceed with an unsynced identity (gate on the `AppResult`
 carry the uid automatically, and Analytics gets it in the reserved User-ID field.
 
 A telemetry sink failing **never** fails the sync — only the billing backend does — so an
-unconfigured Firebase degrades telemetry rather than blocking your app. Anonymous credentials normally persist across launches but are not recoverable after
+unconfigured or unreachable sink degrades telemetry rather than blocking your app. Anonymous credentials normally persist across launches but are not recoverable after
 uninstall or cleared app data unless the host later links the user to a durable account.
 
 **iOS** (on launch, via a Kotlin bootstrap function your umbrella shared module exposes to Swift —
@@ -415,9 +411,9 @@ initializeFrnk(
     modules = frnkModules {
         observability(sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env))
                                                       // mandatory — build() throws without it; PostHog derives from it
-        remoteConfig = remoteConfigModule             // single slot ⇒ XOR by construction
+        // remoteConfig defaults to noopRemoteConfigModule — assign your own RemoteConfigService module to override
         monetization(provider = revenueCatModule)     // bundles monetizationModule + paywallScaffoldModule
-        identity = revenueCatIdentityModule           // single slot; or firebaseIdentityModule
+        identity = revenueCatIdentityModule           // single slot; or your own AnonymousIdentityProvider module
         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
     },
     validate = true,
@@ -432,7 +428,7 @@ initializeFrnk(
   slots (`remoteConfig` defaults to `noopRemoteConfigModule`; `identity` is unset until you choose), so installing two
   — the silent-shadowing footgun — is **unrepresentable**; `monetization(provider)` auto-bundles the trio so you
   can't forget `monetizationModule`/`paywallScaffoldModule`; `frnkUiModules()` is always included. The other impl
-  `val`s (`remoteConfigModule`, `revenueCatModule`, …) you still import yourself and assign to a slot.
+  `val`s (`revenueCatModule`, `revenueCatIdentityModule`, …) you still import yourself and assign to a slot.
 - **`validate = true` + `validator = Koin::validateFrnkBootstrap`** runs a post-`startKoin` check that throws a
   message naming the exact missing module (one analytics, one crash-reporting, one remote-config, the monetization
   stack the Settings scaffold needs and the `AnonymousIdentityProvider` it reads). This catches the *missing-module* footgun on **either** path — it works with a raw
@@ -512,7 +508,7 @@ kotlin {
             export(projects.monetizationApi)
             export(projects.sharedMonetizationUi)
             export(projects.uiApp)
-            // Defer native RevenueCat/Firebase symbols to the app's own link step.
+            // Defer native RevenueCat/Sentry/PostHog symbols to the app's own link step.
             linkerOpts("-undefined", "dynamic_lookup")
         }
     }
@@ -561,9 +557,6 @@ fi
 is static, already carries frnk's Kotlin frames) so crashes symbolicate. See
 [Sentry setup](#sentry-setup-the-crash-reporter) below for the `sentry-cli debug-files upload`
 phase and its skip-when-absent guard.
-
-If the host also uses Firebase (Auth / Remote Config), `GoogleService-Info.plist` is added to the app
-target as a normal bundled resource — no copy phase needed.
 
 ### RevenueCat consumer setup
 
@@ -682,32 +675,23 @@ pluginManagement {
 This coexists with the top-level `includeBuild("frnk")` composite — Gradle dedupes the build even
 though frnk also includes `build-logic` from its own `pluginManagement`.
 
-Two plugins are host-facing:
+Two plugins are host-facing (`frnk.kmp.library` for host-owned KMP modules, `frnk.android.sentry` for the application module):
 
 - **`frnk.kmp.library`** *(optional)* — for host-owned KMP library modules: jvmToolchain 17 + Android
   SDK levels + bare iOS targets in one line, identical to what frnk's own modules get.
-- **`frnk.android.firebase`** *(recommended for any Android host shipping Firebase)* — apply it in
+- **`frnk.android.sentry`** *(for every Android host — Sentry is mandatory)* — apply it in
   the **application** module:
 
   ```kotlin
   plugins {
       alias(libs.plugins.androidApplication)
-      id("frnk.android.firebase")
+      id("frnk.android.sentry")
   }
   ```
 
-  It applies `google-services` (so `FirebaseInitProvider` auto-initializes Firebase *before*
-  `Application.onCreate`, which is what `firebaseIdentityModule` and `remoteConfigModule` depend
-  on) — and only that: crash reporting is Sentry's, whose build half is `frnk.android.sentry` below,
-  so there is no Crashlytics plugin. It is applied **only when the host's `google-services.json` is
-  present**, so CI and fresh clones build without it and the toolkit's `runCatching`-wrapped Firebase
-  bindings degrade to a logged failure at runtime.
-
-  The plugin takes no configuration, and the host does **not** declare the `google-services` plugin
+  The plugin takes no configuration, and the host does **not** declare the Sentry Gradle plugin
   version — frnk's catalog owns it, which is the point: two catalogs pinning the same plugin is a
-  drift bug waiting to happen.
-- **`frnk.android.sentry`** *(for any Android host on `sentryCrashReportingModule`)* — apply it in
-  the **application** module the same way. It applies Sentry's Android Gradle plugin so the R8
+  drift bug waiting to happen. It applies Sentry's Android Gradle plugin so the R8
   mapping's UUID lands in the manifest and the mapping uploads, making minified release traces
   symbolicate in Sentry. It needs no secret to build: the upload runs only when `SENTRY_AUTH_TOKEN`
   is in the environment (the release machine's — CI builds without it), with org/project from

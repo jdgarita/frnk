@@ -11,7 +11,6 @@ repositories {
 // Plugin-marker dependencies so the precompiled convention plugins can apply these plugins:
 //  - frnk.kmp.library         → Kotlin Multiplatform + AGP-9 KMP-Android-library
 //  - frnk.kmp.library.compose → + Compose Multiplatform plugin pair
-//  - frnk.android.firebase    → google-services for an application host (Firebase Auth / Remote Config)
 //  - frnk.android.sentry      → Sentry's Android Gradle plugin (R8 mapping upload) for an application host
 // Versions resolve from the shared catalog (imported via settings.gradle.kts) — no version duplication.
 dependencies {
@@ -20,7 +19,6 @@ dependencies {
     implementation(libs.plugins.compose.multiplatform.toMarker())
     implementation(libs.plugins.kotlin.compose.toMarker())
     implementation(libs.plugins.kotlin.serialization.toMarker())
-    implementation(libs.plugins.google.services.toMarker())
     implementation(libs.plugins.sentry.android.gradle.toMarker())
 }
 

@@ -47,8 +47,7 @@ val frnkAppModule =
         includes(paywallScaffoldModule)
         single<EntitlementProvider> { FakeEntitlementProvider() }
         // In-memory identity so monetizationModule's SyncAuthUseCase stays resolvable; a real host
-        // installs revenueCatIdentityModule (as demo-android does with a RevenueCat key) or
-        // firebaseIdentityModule (:identity-impl) instead.
+        // installs revenueCatIdentityModule (as demo-android does with a RevenueCat key) instead.
         single<AnonymousIdentityProvider> { FakeAnonymousIdentityProvider() }
         // In-memory KeyValueStore so god mode persists for the session without the
         // multiplatform-settings impl; a real host installs prefsModule (:data-prefs-impl) instead.

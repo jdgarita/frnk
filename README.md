@@ -15,7 +15,7 @@ Give indie / small-team apps a fast-compiling foundation with a clean architectu
 
 ## 🏗️ Architecture
 
-Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Room's bundled SQLite driver, Firebase, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5; the Firebase impl was retired in favour of `:analytics-posthog` + `:crash-sentry`). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent. The one fixed axis is observability: every host ships PostHog + Sentry via `frnkModules { observability(…) }`.
+Hosts depend on the **individual modules** they use (there is no aggregator), organized as an **api / impl** split: `*-api` modules hold only interfaces and DTOs; impl modules hold the concrete bindings (Room's bundled SQLite driver, PostHog, Sentry, RevenueCat) wired via Koin. All modules use flat Gradle paths (the last nested `:shared:backend:*` pair became `:analytics-api`/`:analytics-impl` at restructure Stage 5; the Firebase impl was retired in favour of `:analytics-posthog` + `:crash-sentry`). What runs is decided by the **explicit Koin module list** the host passes to `initializeFrnk(...)` — un-passed capability modules never enter the graph, and the axes stay independent. The one fixed axis is observability: every host ships PostHog + Sentry via `frnkModules { observability(…) }`.
 
 ### Module map
 
@@ -36,9 +36,7 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 | `analytics-posthog` | PostHog impl of `AnalyticsTracker` (official `posthog-kmp`) — the toolkit's only analytics provider. Exposes `postHogAnalyticsModule(PostHogAnalyticsConfig)`; a blank key fails at config construction. |
 | `crash-sentry` | Sentry impl of `CrashReporter` (official `sentry-kotlin-multiplatform`) — the toolkit's only crash reporter. Exposes `sentryCrashReportingModule(SentryCrashReportingConfig)`; a blank DSN fails at config construction. |
 | `identity-api` | SDK-free `AnonymousIdentityProvider` contract exposing UID state and `ensureSignedIn()`, plus `IdentitySource` — the shared `identify(id)` contract implemented by the analytics, crash and billing sinks. |
-| `identity-impl` | GitLive Firebase Auth implementation. Exposes `firebaseIdentityModule` — the alternative to `revenueCatIdentityModule`; one of the two goes in `frnkModules { identity = … }`. |
-| `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only. |
-| `remote-config-impl` | Firebase Remote Config impl. Exposes `remoteConfigModule`. |
+| `remote-config-api` | `RemoteConfigService` — read-only typed key→value + `fetchAndActivate`. A capability sibling of `analytics-*` (Stage 11), with `noopRemoteConfigModule` reading bundled defaults only; the toolkit ships no remote-config backend — a host binds its own `RemoteConfigService`. |
 | `camera` / `permissions` | api-only **scaffolds** (Stage 11) — interface + no-op default (`NoopCameraController` / `NoopPermissionController`) + Koin module (`cameraModule` / `permissionsModule`); no impl yet, no native cinterop. |
 | `data-db-api` | The Room persistence seam: `DatabaseFactory` + the reified `roomDatabaseBuilder`/`databaseSingle` helpers (the toolkit owns no schema — hosts bring their own Room `@Database`; the demo's `DemoDatabase` is the worked example). |
 | `data-db-impl` | Platform database locations + the bundled SQLite driver defaults. Exposes `databaseModule`. |
@@ -57,8 +55,8 @@ Hosts depend on the **individual modules** they use (there is no aggregator), or
 - **DI:** Koin 4.2.1
 - **Navigation:** AndroidX Navigation3 1.1.1 — `navigation3-runtime` (`androidx.navigation3`, NavKey/NavBackStack) + the JetBrains CMP `navigation3-ui` port (`org.jetbrains.androidx.navigation3`), with the `lifecycle-viewmodel-navigation3` 2.10.0 decorator
 - **Persistence:** Room KMP 2.8.4 (androidx.sqlite bundled driver 2.7.0, KSP 2.3.11), Multiplatform Settings 1.3.0
-- **Remote Config:** GitLive Firebase Remote Config 2.7.0 (`dev.gitlive:firebase-config`) — opt in by installing `remoteConfigModule`, its own capability pair (`:remote-config-api`/`:remote-config-impl`)
-- **Identity:** the RevenueCat app user id, bound by `revenueCatModule` — or GitLive Firebase Auth 2.7.0 (`dev.gitlive:firebase-auth`) via `firebaseIdentityModule` from `:identity-impl`
+- **Remote Config:** contract only (`:remote-config-api`, `noopRemoteConfigModule` default) — a host that has a backend binds its own `RemoteConfigService`
+- **Identity:** the RevenueCat app user id, bound by `revenueCatIdentityModule` (`:monetization-impl`) — or a host-owned `AnonymousIdentityProvider`
 - **Analytics:** PostHog (`posthog-kmp` 0.5.1) via `postHogAnalyticsModule` — mandatory, installed by `frnkModules { observability(…) }`
 - **Crash reporting:** Sentry (`sentry-kotlin-multiplatform` 0.27.0, pairs with sentry-cocoa 8.58.2) via `sentryCrashReportingModule` + the `frnk.android.sentry` convention plugin — mandatory, installed by `frnkModules { observability(…) }`
 - **Monetization:** RevenueCat 3.7.0
@@ -100,7 +98,7 @@ dependencies {
     implementation("dev.jdgarita.frnk:data-prefs-impl")                 // prefsModule (KeyValueStore)
     implementation("dev.jdgarita.frnk:monetization-impl")  // revenueCatModule (optional)
     // PostHog + Sentry arrive transitively through ui-app (frnkModules { observability(…) } installs them)
-    // + any other impl modules you install (e.g. dev.jdgarita.frnk:remote-config-impl for remoteConfigModule)
+    // + any other impl modules you install
 }
 ```
 
@@ -126,11 +124,11 @@ initializeFrnk(
 
 For iOS, there is no prebuilt toolkit framework: the host adds a small KMP shared module that `api()`-depends on the frnk modules it uses and bundles them into its own umbrella `XCFramework` — the demo's `DemoKit` (`demo/shared/build.gradle.kts`) is the worked example, and [`docs/HOST_INTEGRATION.md`](docs/HOST_INTEGRATION.md) §6 has the recipe.
 
-> ⚠️ The consumer iOS Xcode project must bring in RevenueCat's native SDK and the relevant Firebase frameworks for installed Firebase capabilities (including `FirebaseCore` + `FirebaseAuth` for `firebaseIdentityModule`) via CocoaPods or SPM. The umbrella framework defers their symbol resolution via `-undefined dynamic_lookup`.
+> ⚠️ The consumer iOS Xcode project must bring in the native SDKs via SPM — `Sentry`, `PostHog` (always) and `RevenueCat` (when `:monetization-impl` is bundled). The umbrella framework defers their symbol resolution via `-undefined dynamic_lookup`.
 
 ## ⚙️ Setup
 
-The toolkit itself has no required secrets — backend credentials are supplied by the host app at runtime (the Firebase / RevenueCat clients are configured in your `Application` / `AppDelegate`, not baked into frnk).
+The toolkit itself has no required secrets beyond the build-time `POSTHOG_API_KEY` (see below) — the RevenueCat client and the Sentry DSN are supplied by the host app at runtime, not baked into frnk.
 
 `local.properties` is gitignored and only needs `sdk.dir`, which Android Studio writes automatically on first open. From the CLI, copy the template:
 

@@ -39,7 +39,7 @@ import org.koin.core.module.Module
  *     context = this,
  *     modules = frnkModules {
  *         observability(sentry = SentryCrashReportingConfig(dsn = BuildConfig.SENTRY_DSN, environment = env))
- *         remoteConfig = remoteConfigModule             // host imports the :remote-config-impl val
+ *         // remoteConfig defaults to noopRemoteConfigModule; assign a host RemoteConfigService module to override
  *         monetization(provider = revenueCatModule)     // + monetizationModule + paywallScaffoldModule
  *         identity = revenueCatIdentityModule           // the app user id as the anonymous identity
  *         modules(databaseModule, prefsModule, *hostModules.toTypedArray())
@@ -49,8 +49,8 @@ import org.koin.core.module.Module
  * )
  * ```
  *
- * [remoteConfig] defaults to [noopRemoteConfigModule] (no toolkit code reads remote config, so a
- * host may genuinely have none). [identity] has no default: a host without monetization needs none,
+ * [remoteConfig] defaults to [noopRemoteConfigModule] (no toolkit code reads remote config and the
+ * toolkit ships no remote-config backend; a host with one binds its own `RemoteConfigService`). [identity] has no default: a host without monetization needs none,
  * and one with it must choose (the validator says so if it forgets).
  */
 class FrnkModulesScope internal constructor() {
@@ -59,7 +59,7 @@ class FrnkModulesScope internal constructor() {
 
     /**
      * Anonymous-identity binding (`AnonymousIdentityProvider`) — `revenueCatIdentityModule`
-     * (`:monetization-impl`, the RevenueCat app user id) or `firebaseIdentityModule` (`:identity-impl`).
+     * (`:monetization-impl`, the RevenueCat app user id), or a host-owned binding.
      * Required whenever [monetization] is set: its `SyncAuthUseCase` reads it. Unset by default.
      */
     var identity: Module? = null

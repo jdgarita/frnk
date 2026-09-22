@@ -1599,3 +1599,28 @@ CONSEQUENCES: frnk's own `local.properties` (gitignored; `local.properties.examp
 ### Files
 - frnk/capabilities/analytics-posthog/build.gradle.kts
 - local.properties.example
+
+## Firebase retired from frnk entirely: :identity-impl, :remote-config-impl and frnk.android.firebase deleted (2026-09-22)
+
+- id: firebase-retired-from-frnk-entirely-identity-impl-remote-con-20260922-175859
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: capabilities / firebase
+- date: 2026-09-22
+
+DECIDED by JD (2026-09-22, PR #85, same day as "observability = PostHog + Sentry, no no-ops"): nothing of Firebase stays in the toolkit.
+
+DELETED: `:identity-impl` (firebaseIdentityModule / FirebaseAuthManager / FirebaseAuthGateway — Firebase anonymous auth), `:remote-config-impl` (remoteConfigModule / FirebaseRemoteConfigService), the `frnk.android.firebase` convention plugin + the `google-services` plugin marker in build-logic, catalog entries gitlive-firebase / firebase-bom / firebase-auth / firebase-config / firebase-firestore / google-services, the root `alias(libs.plugins.google.services)`, and the `.gitignore` google-services.json / GoogleService-Info.plist lines. (`:analytics-impl` — Firebase Analytics + Crashlytics — went earlier the same day.) The demo (both platforms) carries no Firebase either.
+
+KEPT: `:identity-api` (AnonymousIdentityProvider; the only toolkit binding is now `revenueCatIdentityModule` from `:monetization-impl`, else a host-owned one) and `:remote-config-api` (RemoteConfigService + noopRemoteConfigModule; the toolkit ships NO remote-config backend — a host binds its own `single<RemoteConfigService>` and assigns it to `frnkModules { remoteConfig = … }`, default stays the no-op). The validator messages point at those options. Whether the remote-config api/slot itself should survive (it is now optionality with no toolkit impl — the same kind JD dislikes) is an OPEN question, not decided.
+
+IMPACT on hosts: Faint (`mobile/shared/.../FaintFrnkBootstrap.kt`) installs `firebaseIdentityModule` and `androidApp/build.gradle.kts` applies `frnk.android.firebase`; when Faint bumps frnk it must switch to `identity = revenueCatIdentityModule` (it already configures RevenueCat) and drop the plugin id + google-services.json. The brain's "Firebase (analytics + crash + remote config via gitlive; iOS dSYM)" integration entry is now historical.
+
+WHY (JD): no app uses Firebase anymore — PostHog + Sentry + RevenueCat cover analytics, crashes and identity — and the toolkit does not keep unused optionality.
+
+### Files
+- settings.gradle.kts
+- gradle/libs.versions.toml
+- build-logic/build.gradle.kts
+- frnk/capabilities/remote-config-api/src/commonMain/kotlin/dev/jdgarita/frnk/remoteconfig/RemoteConfigModule.kt

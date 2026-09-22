@@ -18,9 +18,6 @@ local.properties
 keystore.properties
 *.keystore
 *.jks
-# No Firebase anywhere in this repo's demos anymore; kept so a stray local copy is never committed.
-google-services.json
-GoogleService-Info.plist
 
 # OS
 .DS_Store

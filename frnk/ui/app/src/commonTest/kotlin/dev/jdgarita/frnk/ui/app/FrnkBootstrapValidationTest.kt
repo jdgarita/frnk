@@ -109,7 +109,7 @@ class FrnkBootstrapValidationTest {
     fun missing_remote_config_names_the_module() {
         val failure = validateMissing(validModules().filterNot { it === noopRemoteConfigModule })
         assertEquals(true, failure.message?.contains("remote config"), "names the missing axis")
-        assertEquals(true, failure.message?.contains("remoteConfigModule"), "names the module to install")
+        assertEquals(true, failure.message?.contains("noopRemoteConfigModule"), "names the module to install")
     }
 
     @Test

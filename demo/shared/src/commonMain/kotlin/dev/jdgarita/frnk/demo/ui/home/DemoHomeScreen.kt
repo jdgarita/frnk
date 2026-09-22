@@ -238,8 +238,8 @@ fun HomeScreen(
                                 text =
                                     "New capability modules, all resolved via Koin. RemoteConfigService " +
                                         "(:remote-config-api) reads a key→value; the demo keeps the no-op default " +
-                                        "(shows the bundled fallback — no Firebase in the demo; a host installs the " +
-                                        "Firebase remoteConfigModule). :camera and :permissions are api-only scaffolds " +
+                                        "(shows the bundled fallback; the toolkit ships no remote-config backend — a " +
+                                        "host binds its own). :camera and :permissions are api-only scaffolds " +
                                         "(no impl yet) — their no-op defaults surface the honest 'not wired' outcome.",
                                 color = colorOnSurfaceVariant
                             )

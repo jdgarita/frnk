@@ -47,11 +47,18 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   from `local.properties.example`, the iOS template and `Info.plist`. `bootstrapDemoKoin(sentry, postHog =
   derived)` assembles the graph with `frnkModules { }`; the demo's fakes cover only the paid-SDK seams.
   The iOS "Force crash" button reports to Sentry.
-- `frnk.android.firebase` applies only `google-services` (for `:identity-impl` / `:remote-config-impl`);
-  the Crashlytics Gradle plugin is gone.
 
 ### Removed
 
+- **Breaking: Firebase is gone from the toolkit.** `:identity-impl` (`firebaseIdentityModule`,
+  Firebase anonymous auth), `:remote-config-impl` (`remoteConfigModule`, Firebase Remote Config), the
+  `frnk.android.firebase` convention plugin (and `build-logic`'s `google-services` marker), and the
+  `gitlive-firebase` / `firebase-bom` / `firebase-auth` / `firebase-config` / `firebase-firestore`
+  catalog entries + the `google-services` plugin alias are deleted. `:identity-api` and
+  `:remote-config-api` stay: hosts on `firebaseIdentityModule` move to `revenueCatIdentityModule`
+  (`:monetization-impl`) or bind their own `AnonymousIdentityProvider`; hosts on `remoteConfigModule`
+  bind their own `RemoteConfigService` or keep `noopRemoteConfigModule`. Faint currently applies
+  `frnk.android.firebase` + `firebaseIdentityModule` and migrates when it bumps frnk.
 - **Breaking: `NoopAnalyticsTracker`, `NoopCrashReporter`, `noopAnalyticsModule`,
   `noopCrashReportingModule`, `noopObservabilityModule`** (`:analytics-api`). Tests use the
   `commonTest` `FakeAnalyticsTracker` / `FakeCrashReporter`. `:analytics-api` no longer depends on Koin.

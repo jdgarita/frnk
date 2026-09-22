@@ -18,9 +18,9 @@ val revenueCatModule =
 /**
  * The RevenueCat app user id as the app's [AnonymousIdentityProvider] — assign to
  * `frnkModules { identity = … }`. Kept apart from [revenueCatModule] so a host picks its identity the
- * way it picks every other axis, one binding per slot: RevenueCat monetization with Firebase identity
- * (`firebaseIdentityModule`) is a legitimate combination, and two modules binding the same type would
- * only shadow each other silently.
+ * way it picks every other axis, one binding per slot: RevenueCat monetization with a host-owned
+ * identity is a legitimate combination, and two modules binding the same type would only shadow each
+ * other silently.
  */
 val revenueCatIdentityModule =
     module {

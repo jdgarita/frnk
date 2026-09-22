@@ -7,9 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Produces the app's anonymous identity — one stable id per install, with no account behind it.
  *
- * Which system mints the id is the impl's business: `revenueCatModule` (`:monetization-impl`) binds
- * it to the RevenueCat app user id, `firebaseIdentityModule` (`:identity-impl`) to a Firebase
- * anonymous user. Consumers only ever see the string. Whether that string can also serve as a
+ * Which system mints the id is the impl's business: `revenueCatIdentityModule` (`:monetization-impl`)
+ * binds it to the RevenueCat app user id; a host may bind its own. Consumers only ever see the string. Whether that string can also serve as a
  * credential a backend trusts is a host concern, deliberately outside this contract.
  */
 interface AnonymousIdentityProvider {

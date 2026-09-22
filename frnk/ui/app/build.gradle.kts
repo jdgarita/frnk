@@ -23,7 +23,7 @@ kotlin {
             // adds nothing a host would not otherwise carry.
             api(projects.analyticsPosthog)
             api(projects.crashSentry)
-            // Cinterop-clean api edge (interfaces only — Firebase lives in :remote-config-impl) so
+            // Cinterop-clean api edge (interfaces only) so
             // frnkModules { } can default remoteConfig to noopRemoteConfigModule and
             // validateFrnkBootstrap can resolve RemoteConfigService. Mirrors the :analytics-api edge.
             api(projects.remoteConfigApi)
