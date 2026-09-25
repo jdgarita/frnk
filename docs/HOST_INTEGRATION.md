@@ -461,6 +461,10 @@ Two rules carry over from the old packaging:
   deferred symbol resolution lets the framework link without them.
 - Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native
   dep list.
+- Set `kotlin.disableSwiftPMImport=true` in the host's `gradle.properties`, as frnk's own does.
+  Kotlin 2.4 otherwise turns on SwiftPM import for posthog-kmp's declared Swift packages and links
+  them itself, which conflicts with the app supplying them — and fails outright on Xcode 27, whose
+  linker flags the import's clang wrapper rejects.
 
 The same ownership boundary applies to tests. `:analytics-posthog`, `:crash-sentry`, `:ui-app` and
 `:monetization-impl` run their common tests through `testAndroidHostTest`, but skip standalone iOS

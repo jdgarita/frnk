@@ -51,7 +51,7 @@ class PostHogAnalyticsTrackerTest {
         }
 
     @Test
-    fun `a blank api key is a configuration error, not a silent no-op`() {
+    fun `a blank api key is a configuration error and never a silent no-op`() {
         // Every host ships real analytics, so a missing key must fail where it is written — the
         // config — and name the fix, instead of binding a tracker that drops every event.
         val failure = assertFailsWith<IllegalArgumentException> { PostHogAnalyticsConfig(environment = "test", apiKey = " ") }
