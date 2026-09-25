@@ -15,6 +15,16 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Fixed
+
+- **iOS builds on Xcode 27.** `kotlin.disableSwiftPMImport=true` in `gradle.properties`: Kotlin 2.4's
+  SwiftPM import, switched on by posthog-kmp's declared Swift packages, linked a synthetic package
+  through a clang wrapper that rejects Xcode 27's swiftc linker flags (`-emit-library`, `-sdk`), so
+  every iOS compile in `check` failed. frnk never used it — hosts link the native SDKs via SPM.
+  `HOST_INTEGRATION.md` §6 now asks hosts to set the same flag.
+- Two common test names (`:analytics-posthog`, `:crash-sentry`) held a comma, which Kotlin/Native
+  rejects; they compile for iOS again.
+
 ## [0.9.0] - 2026-09-22
 
 ### Changed

@@ -40,7 +40,7 @@ class SentryCrashReporterTest {
         }
 
     @Test
-    fun `a blank dsn is a configuration error, not a silent no-op`() {
+    fun `a blank dsn is a configuration error and never a silent no-op`() {
         // Every host ships real crash reporting, so a missing DSN must fail where it is written — the
         // config — and name the fix, instead of binding a reporter that drops every crash.
         val failure = assertFailsWith<IllegalArgumentException> { SentryCrashReportingConfig(dsn = "", environment = "test") }
