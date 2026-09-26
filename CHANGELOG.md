@@ -15,6 +15,13 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`:analytics-posthog` no longer captures deep links.** posthog-android's `captureDeepLinks`
+  defaults to on and recorded every opened deep link as a `Deep Link Opened` event with the full URL
+  and its query parameters — a host's one-time secrets among them (Faint's web-purchase redemption
+  token). `PostHogConfig` now sets it off; screens and the host's own events are unchanged.
+
 ## [0.9.1] - 2026-09-25
 
 ### Fixed
