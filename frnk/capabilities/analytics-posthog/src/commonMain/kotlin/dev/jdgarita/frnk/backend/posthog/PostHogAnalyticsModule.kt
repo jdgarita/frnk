@@ -53,6 +53,11 @@ private fun setUpPostHogOnce(
                     // Screens come through AnalyticsTracker.screen; the SDK's Activity-based capture
                     // sees one Activity in a Compose app and would report nothing useful.
                     captureScreenViews = false,
+                    // Off: posthog-android's default records every opened deep link as a
+                    // `Deep Link Opened` event carrying the full URL and its query parameters —
+                    // a web-purchase redemption link's one-time token among them — and screens
+                    // and the host's own events are all the toolkit reports. Android-only in the SDK.
+                    captureDeepLinks = false,
                     // Anonymous events create no person until identify(); the toolkit identifies
                     // with the app's anonymous id at bootstrap, which merges them in.
                     personProfiles = PersonProfiles.IDENTIFIED_ONLY

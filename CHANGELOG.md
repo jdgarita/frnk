@@ -15,6 +15,15 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-09-25
+
+### Fixed
+
+- **`:analytics-posthog` no longer captures deep links.** posthog-android's `captureDeepLinks`
+  defaults to on and recorded every opened deep link as a `Deep Link Opened` event with the full URL
+  and its query parameters — a host's one-time secrets among them (Faint's web-purchase redemption
+  token). `PostHogConfig` now sets it off; screens and the host's own events are unchanged.
+
 ## [0.9.1] - 2026-09-25
 
 ### Fixed
@@ -497,7 +506,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2
 [0.9.1]: https://github.com/jdgarita/frnk/releases/tag/v0.9.1
 [0.9.0]: https://github.com/jdgarita/frnk/releases/tag/v0.9.0
 [0.8.0]: https://github.com/jdgarita/frnk/releases/tag/v0.8.0
