@@ -59,8 +59,11 @@ import dev.jdgarita.frnk.ui.theme.colors
  * sheet show the scrim and dismiss only when [dismissOnClickOutside] is set — a gutter tap on a
  * tablet counts as an outside tap, like the strip above a partial sheet.
  *
- * [visible] drives the sheet; [onDismiss] fires once for every dismissal the sheet performs
- * itself (system back, swipe down, tap outside), so the caller can drop its own visibility state.
+ * [visible] drives the sheet; [onDismiss] fires for every dismissal the sheet performs itself
+ * (system back, swipe down, tap outside), so the caller can drop its own visibility state. A single
+ * close can reach [onDismiss] more than once — back calls it, then compose-unstyled's settle
+ * callback calls it again once the hidden sheet comes to rest — so hosts must treat it
+ * idempotently: set `visible = false`, never count calls.
  * A swipe is reported by the sheet itself, from its own state ([FrnkSheetExitReporter]) — never
  * only by compose-unstyled's callback, which the modal's teardown can outrun. The content is
  * composed only while the sheet is on screen, so `remember` inside it is per-presentation.
@@ -217,8 +220,9 @@ fun FrnkModalSheet(
 
     val currentOnDismiss by rememberUpdatedState(onDismiss)
     val currentVisible by rememberUpdatedState(visible)
-    // The sheet's own exits (a swipe) reach the host from here, once per presentation, whether or
-    // not the library's callback below survives the modal's teardown — see [FrnkSheetExitReporter].
+    // The sheet's own exits (a swipe) reach the host from here, whether or not the library's
+    // callback below survives the modal's teardown — see [FrnkSheetExitReporter]. Back and the
+    // scrim tap call [onDismiss] directly, so their settle can reach it a second time (idempotent).
     val exitReporter = rememberFrnkSheetExitReporter(sheetState, visible, onDismiss)
     // Where the content registers its ✕ ([FrnkModalSheetCloseHandler]); the surface draws it.
     val closeRegistry = remember { FrnkModalSheetCloseRegistry() }
