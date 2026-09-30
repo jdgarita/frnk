@@ -10,7 +10,7 @@ interface FrnkShellNavigator {
     /** Push [route] onto the shell's back stack. Pushing the route already on top is a no-op. */
     fun push(route: NavKey)
 
-    /** Pop the shell's back stack. */
+    /** Pop the shell's back stack. A no-op at the start route: the stack is never emptied. */
     fun back()
 
     /** Raise the [FrnkShellSheet] whose key is [sheetKey], with fresh content. A no-op while it is up. */

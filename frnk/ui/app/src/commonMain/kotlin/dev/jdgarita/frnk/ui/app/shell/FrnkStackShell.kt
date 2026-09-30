@@ -46,16 +46,18 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * **Sheets.** Each [FrnkShellSheet] is a [FrnkModalSheet] drawn above the stack, raised by
  * [FrnkShellNavigator.present] with its key — presenting leaves the current destination mounted
- * underneath. Which sheets are up lives in an MVI ViewModel ([frnkShellModule], in `frnkUiModules()`),
+ * underneath. Sheet keys must be unique (a duplicate throws `IllegalArgumentException`); presenting a
+ * key no [FrnkShellSheet] declares renders nothing. Which sheets are up lives in an MVI ViewModel ([frnkShellModule], in `frnkUiModules()`),
  * not in `remember`. Every presentation composes the sheet's content afresh under its own
  * [FrnkPresentationViewModelStore], so a `koinViewModel()` inside it starts from scratch each time, even
  * when re-presented before the previous exit slide has finished.
  *
- * **Back.** Within the stack, back pops (the NavDisplay owns it). A dismissible sheet closes on back —
- * through the sheet's own handler, which is where back lands on Android (the sheet is its own window),
- * with a handler here as the fallback for back that reaches the host window. A non-dismissible sheet
- * swallows back and refuses the swipe and the outside tap; only [FrnkShellNavigator.dismiss] lowers it.
- * At the start route with no sheet up, nothing here claims back, so the system takes it and leaves.
+ * **Back.** Within the stack, back pops (the NavDisplay owns it); [FrnkShellNavigator.back] at the start
+ * route is a no-op. A dismissible sheet closes on back — through the sheet's own handler, which is where
+ * back lands on Android (the sheet is its own window), with a handler here as the fallback for back that
+ * reaches the host window. A non-dismissible sheet swallows back on either path (it never reaches the
+ * stack underneath) and refuses the swipe and the outside tap; only [FrnkShellNavigator.dismiss] lowers
+ * it. At the start route with no sheet up, nothing here claims back, so the system takes it and leaves.
  *
  * **Known limit.** On targets where back reaches the host window rather than the sheet's own window
  * (non-Android), a `BackHandler` inside a destination pushed after the shell composed is registered later
@@ -80,6 +82,7 @@ fun FrnkStackShell(
     popTransitionSpec: AnimatedContentTransitionScope<Scene<NavKey>>.() -> ContentTransform = { frnkExitTransition() },
     entries: EntryProviderScope<NavKey>.(navigator: FrnkShellNavigator) -> Unit
 ) {
+    require(sheets.map { it.key }.toSet().size == sheets.size) { "FrnkStackShell sheet keys must be unique" }
     val viewModel = koinViewModel<FrnkShellViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val navConfig = remember(hostRoutes) { frnkNestedNavConfig(hostRoutes = hostRoutes) }
@@ -123,8 +126,9 @@ private fun ShellSheet(
     presentation: Int,
     navigator: FrnkShellNavigator
 ) {
-    // The fallback for back that reaches the host window rather than the sheet's own.
-    BackHandler(enabled = visible && sheet.dismissible) { navigator.dismiss(sheet.key) }
+    // The fallback for back that reaches the host window rather than the sheet's own. Enabled for a
+    // non-dismissible sheet too, so it swallows back instead of letting it pop the stack underneath.
+    BackHandler(enabled = visible) { if (sheet.dismissible) navigator.dismiss(sheet.key) }
 
     FrnkModalSheet(
         visible = visible,
@@ -135,10 +139,9 @@ private fun ShellSheet(
         dismissOnClickOutside = sheet.dismissOnClickOutside,
         surfaceColor = sheet.surfaceColor(),
         // A swipe settles the sheet before it reports, so a non-dismissible sheet has to veto it here,
-        // or it would leave the screen while the shell still holds it up. The veto also refuses the
-        // sheet's programmatic hide, so it lifts once the shell has dropped the sheet itself
-        // (FrnkShellNavigator.dismiss).
-        canDismiss = { sheet.dismissible || !visible }
+        // or it would leave the screen while the shell still holds it up. The veto never blocks the
+        // shell's own hide (FrnkShellNavigator.dismiss).
+        canDismiss = { sheet.dismissible }
     ) {
         key(presentation) {
             FrnkPresentationViewModelStore { sheet.content(navigator) }
@@ -153,7 +156,10 @@ private class ShellNavigator(
 ) : FrnkShellNavigator {
     override fun push(route: NavKey) = backStack.navigateTo(route)
 
-    override fun back() = backStack.back()
+    override fun back() {
+        // nav3's NavDisplay cannot render an empty stack, so the start route is never popped.
+        if (backStack.size > 1) backStack.back()
+    }
 
     override fun present(sheetKey: String) = viewModel.send(FrnkShellIntent.Present(sheetKey))
 

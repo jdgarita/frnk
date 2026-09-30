@@ -31,6 +31,7 @@ import org.robolectric.shadows.ShadowDialog
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
@@ -129,9 +130,8 @@ class FrnkStackShellTest : RobolectricComposeTest() {
         }
 
     /**
-     * The host's own dismiss still lowers a non-dismissible sheet. FrnkModalSheet's `canDismiss` veto
-     * (which the shell uses to refuse the swipe) also refuses a programmatic hide, so the shell lifts it
-     * once it has dropped the sheet itself.
+     * The host's own dismiss still lowers a non-dismissible sheet: FrnkModalSheet's `canDismiss` veto
+     * (which the shell uses to refuse the swipe) never refuses a programmatic hide.
      */
     @Test
     fun the_navigator_lowers_a_non_dismissible_sheet() =
@@ -145,6 +145,85 @@ class FrnkStackShellTest : RobolectricComposeTest() {
             runOnIdle { navigator().dismiss(SHEET_KEY) }
             waitUntilDoesNotExist(hasTestTag(SHEET_TAG))
         }
+
+    /** nav3's NavDisplay throws on an empty back stack, so back at the start route must be a no-op. */
+    @Test
+    fun navigator_back_at_the_start_route_is_a_no_op() =
+        runAndroidComposeUiTest<ComponentActivity> {
+            val navigator = setShell()
+            waitUntilExactlyOneExists(hasTestTag(START_TAG))
+
+            runOnIdle { navigator().back() }
+            waitForIdle()
+            onNodeWithTag(START_TAG).assertExists()
+        }
+
+    /**
+     * Back that reaches the host window (iOS, and any path that bypasses the sheet's own dialog) while a
+     * dismissible sheet is up closes the sheet — the shell's fallback handler — and does not pop the stack.
+     */
+    @Test
+    fun host_window_back_dismisses_a_dismissible_sheet_without_popping() =
+        runAndroidComposeUiTest<ComponentActivity> {
+            val navigator = setShell()
+            waitUntilExactlyOneExists(hasTestTag(START_TAG))
+            onNodeWithTag(PUSH_TAG).performClick()
+            waitUntilExactlyOneExists(hasTestTag(SECOND_TAG))
+
+            runOnIdle { navigator().present(SHEET_KEY) }
+            waitUntilExactlyOneExists(hasTestTag(SHEET_TAG))
+
+            runOnUiThread { activity!!.onBackPressedDispatcher.onBackPressed() }
+            waitUntilDoesNotExist(hasTestTag(SHEET_TAG))
+            onNodeWithTag(SECOND_TAG).assertExists()
+        }
+
+    /**
+     * A non-dismissible sheet is a hard gate: back that reaches the host window must be swallowed, not
+     * fall through to pop the stack underneath it.
+     */
+    @Test
+    fun host_window_back_is_swallowed_by_a_non_dismissible_sheet() =
+        runAndroidComposeUiTest<ComponentActivity> {
+            val navigator = setShell(dismissible = false)
+            waitUntilExactlyOneExists(hasTestTag(START_TAG))
+            onNodeWithTag(PUSH_TAG).performClick()
+            waitUntilExactlyOneExists(hasTestTag(SECOND_TAG))
+
+            runOnIdle { navigator().present(SHEET_KEY) }
+            waitUntilExactlyOneExists(hasTestTag(SHEET_TAG))
+
+            runOnUiThread { activity!!.onBackPressedDispatcher.onBackPressed() }
+            waitForIdle()
+            mainClock.advanceTimeBy(EXIT_SETTLE_MILLIS)
+            waitForIdle()
+            onNodeWithTag(SHEET_TAG).assertExists()
+            onNodeWithTag(SECOND_TAG).assertExists()
+            onNodeWithTag(START_TAG).assertDoesNotExist()
+        }
+
+    @Test
+    fun duplicate_sheet_keys_are_rejected() {
+        assertFailsWith<IllegalArgumentException> {
+            runAndroidComposeUiTest<ComponentActivity> {
+                setContent {
+                    FrnkTheme {
+                        FrnkStackShell(
+                            startRoute = FrnkTabRoute.Home,
+                            hostRoutes = EmptySerializersModule(),
+                            sheets =
+                                listOf(
+                                    FrnkShellSheet(key = SHEET_KEY) {},
+                                    FrnkShellSheet(key = SHEET_KEY) {}
+                                )
+                        ) {
+                            entry<FrnkTabRoute.Home> { BasicText(text = "Start") }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @Test
     fun each_presentation_gets_a_fresh_view_model() =
