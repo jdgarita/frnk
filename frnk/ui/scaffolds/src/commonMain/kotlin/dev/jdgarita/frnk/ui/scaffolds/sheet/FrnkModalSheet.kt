@@ -105,7 +105,9 @@ import dev.jdgarita.frnk.ui.theme.colors
  * is composed with [LocalFrnkBackHandledByHost] set, so a `FrnkScreen` inside a sheet does not
  * install the leaf handler that would otherwise swallow back before the sheet sees it; a screen that
  * genuinely needs back (e.g. to log a dismissal) still opts in with `handleBackPressed = true` and
- * wins, being the deeper handler.
+ * wins, being the deeper handler. [dismissOnBackPress] only controls compose-unstyled's own back
+ * handler: while [visible], back always calls [onDismiss] through the sheet's handler, so a host
+ * that must not close ignores it in [onDismiss].
  *
  * **The ✕ is the sheet's, not the content's.** A sheet that offers a close control draws it in
  * its own top-end corner, above the content and at one fixed geometry for every sheet, the way it

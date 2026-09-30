@@ -85,24 +85,43 @@ class FrnkModalSheetTest : RobolectricComposeTest() {
      * On Android the sheet lives in compose-unstyled's own `ComponentDialog` window, so system back
      * reaches the dialog's dispatcher, never the activity's — which is why the sheet owns its
      * `BackHandler`. The test presses back where a real one lands while the sheet is up: on the
-     * dialog's dispatcher.
+     * dialog's dispatcher. `dismissOnBackPress = false` switches off the library's own back handler,
+     * so only the sheet's `BackHandler` can answer. A second back once the host has dropped
+     * `visible` (the exit still sliding) must not report again.
      */
     @Test
     fun back_press_dismisses_a_visible_sheet() =
         runComposeUiTest {
+            var shown by mutableStateOf(true)
             var dismissals = 0
             setFrnkContent {
-                FrnkModalSheet(visible = true, onDismiss = { dismissals += 1 }) {
+                FrnkModalSheet(
+                    visible = shown,
+                    onDismiss = {
+                        dismissals += 1
+                        shown = false
+                    },
+                    dismissOnBackPress = false
+                ) {
                     Box(modifier = Modifier.fillMaxWidth().height(320.dp).testTag(BODY_TAG))
                 }
             }
             waitUntilExactlyOneExists(hasTestTag(BODY_TAG))
+            val sheetDialog = runOnIdle { ShadowDialog.getLatestDialog() as ComponentDialog }
 
-            runOnIdle {
-                val sheetDialog = ShadowDialog.getLatestDialog() as ComponentDialog
-                sheetDialog.onBackPressedDispatcher.onBackPressed()
-            }
-            runOnIdle { assertEquals(1, dismissals) }
+            mainClock.autoAdvance = false
+            runOnUiThread { sheetDialog.onBackPressedDispatcher.onBackPressed() }
+            assertEquals(1, dismissals)
+
+            // A few frames: the host's `visible = false` recomposes the sheet (disabling its back
+            // handler), whose slide has only just begun — the content is still on screen when the
+            // second back arrives.
+            waitForIdle()
+            mainClock.advanceTimeBy(EXIT_PROBE_MILLIS)
+            waitForIdle()
+            onNodeWithTag(BODY_TAG).assertExists()
+            runOnUiThread { sheetDialog.onBackPressedDispatcher.onBackPressed() }
+            assertEquals(1, dismissals, "a back during the exit must not dismiss again")
         }
 
     @Test
@@ -145,17 +164,24 @@ class FrnkModalSheetTest : RobolectricComposeTest() {
     @Test
     fun content_is_settled_once_the_sheet_has_risen() =
         runComposeUiTest {
-            var settled = false
+            // Every value the content observed, in order: false while the sheet rises, then true.
+            val seen = mutableListOf<Boolean>()
             setFrnkContent {
                 FrnkModalSheet(visible = true, onDismiss = {}) {
-                    settled = LocalFrnkModalSheetSettled.current
+                    seen += LocalFrnkModalSheetSettled.current
                     Box(modifier = Modifier.fillMaxWidth().height(320.dp).testTag(BODY_TAG))
                 }
             }
             waitUntilExactlyOneExists(hasTestTag(BODY_TAG))
             waitForIdle()
-            runOnIdle { assertTrue(settled) }
+            runOnIdle {
+                assertFalse(seen.first(), "content must see the sheet unsettled while it rises: $seen")
+                assertTrue(seen.last(), "content must see the sheet settled once it has risen: $seen")
+            }
         }
 }
 
 private const val BODY_TAG = "FrnkModalSheetTest.body"
+
+/** Well inside the exit slide (~400ms settle): the sheet has recomposed but not yet left. */
+private const val EXIT_PROBE_MILLIS = 64L
