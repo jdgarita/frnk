@@ -19,6 +19,11 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
  *
  * Hosts key each presentation (`key(presentationCount) { … }`) so the store is replaced even when
  * a sheet re-opens before the previous one fully unmounts.
+ *
+ * **Not retained across Android configuration changes.** Unlike a nav3 destination's store, this one
+ * lives in composition, so a rotation, dark-mode toggle, locale or font-scale change rebuilds the
+ * content's ViewModels from scratch. A host that holds user input in a sheet should persist it
+ * (e.g. `SavedStateHandle` or `rememberSaveable`) until a retained store lands.
  */
 @Composable
 public fun FrnkPresentationViewModelStore(content: @Composable () -> Unit) {

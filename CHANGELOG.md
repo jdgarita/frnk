@@ -30,6 +30,23 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - **`FrnkStackShell`** (`:ui-app`, `dev.jdgarita.frnk.ui.app.shell`): a single-stack app shell with modal
   sheets held above the stack, driven by `FrnkShellNavigator` (`push` / `back` / `present` /
   `dismiss`) and declared with `FrnkShellSheet`. `frnkShellModule` is now part of `frnkUiModules()`.
+  `FrnkShellNavigator.back()` is a no-op at the start route; a non-dismissible sheet swallows back (on the
+  sheet's own window and on the host window alike) so it never reaches the stack underneath; sheet keys
+  must be unique.
+- **`Modifier.sheetBodyScroll()`** (`:ui-scaffolds`): for the scroller inside a sheet's body, so a
+  scroll-to-top flick's leftover velocity never counts as a dismiss flick (a deliberate pull still drags).
+- **`LocalFrnkModalSheetSettled`** (`:ui-scaffolds`): true once the sheet has come to rest at its detent,
+  for content that starts motion of its own only after the entrance.
+- **`FrnkModalSheetDefaults`** (`:ui-scaffolds`): the sheet's defaults (e.g. `MaxWidth`, the tablet width cap).
+
+### Known limitations
+
+- **`FrnkPresentationViewModelStore` is not retained across Android configuration changes** (rotation,
+  dark-mode toggle, locale, font scale): sheet content ViewModels — including `FrnkStackShell` sheets' —
+  are rebuilt, unlike nav3 destinations'. A host that holds user input in a sheet should persist it (e.g.
+  `SavedStateHandle` / `rememberSaveable`) until a retained store lands.
+- `FrnkModalSheet`'s `onDismiss` also fires once a host's own `visible = false` hide settles; it is not
+  proof of a user dismissal.
 
 ## [0.9.2] - 2026-09-25
 
