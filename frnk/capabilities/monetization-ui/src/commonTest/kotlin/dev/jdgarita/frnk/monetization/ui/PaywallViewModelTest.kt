@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
+import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
 import dev.jdgarita.frnk.monetization.usecase.SyncAuthUseCase
 import dev.jdgarita.frnk.ui.mvi.UiEffect
@@ -16,11 +17,13 @@ import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.stringPaywallAlreadyOwnedRestoring
 import dev.jdgarita.frnk.ui.theme.stringPaywallIdentityError
 import dev.jdgarita.frnk.ui.theme.stringPaywallNothingToRestore
+import dev.jdgarita.frnk.ui.theme.stringPaywallPurchasePending
 import dev.jdgarita.frnk.ui.theme.stringPaywallRestored
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -64,8 +67,9 @@ class PaywallViewModelTest {
     private fun viewModel(
         useCase: FakePaywallPurchaseUseCase,
         analytics: AnalyticsTracker = FakeAnalytics(),
-        syncAuth: SyncAuthUseCase = FakeSyncAuthUseCase()
-    ) = PaywallViewModel(useCase, analytics, syncAuth)
+        syncAuth: SyncAuthUseCase = FakeSyncAuthUseCase(),
+        isPro: MutableStateFlow<Boolean>? = null
+    ) = PaywallViewModel(useCase, analytics, syncAuth, observeProStatus = isPro?.let { flow -> ObserveProStatusUseCase { flow } })
 
     @Test
     fun attach_loads_offerings_and_defaults_to_yearly() =
@@ -542,10 +546,173 @@ class PaywallViewModelTest {
             assertTrue(syncEffects.any { it is PaywallEffect.Dismiss })
             syncJob.cancel()
         }
+
+    /** Collects the ViewModel's effects from before [attach] runs. */
+    private fun kotlinx.coroutines.test.TestScope.effectsOf(vm: PaywallViewModel): Pair<MutableList<UiEffect>, kotlinx.coroutines.Job> {
+        val effects = mutableListOf<UiEffect>()
+        val job = launch { vm.effects.toList(effects) }
+        runCurrent()
+        return effects to job
+    }
+
+    @Test
+    fun a_pending_purchase_keeps_a_hard_paywall_up_and_says_so() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(
+                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), purchase = AppResult.Success(false)),
+                    isPro = MutableStateFlow(false)
+                )
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            assertTrue(effects.none { it is PaywallEffect.Dismiss }, "a pending purchase is not Pro yet")
+            assertTrue(effects.none { it is PaywallEffect.Purchased })
+            assertTrue(effects.contains(PaywallEffect.Message(FrnkStringSource.Token(stringPaywallPurchasePending))))
+            assertFalse(vm.state.value.isPurchasing)
+            job.cancel()
+        }
+
+    @Test
+    fun a_pending_purchase_still_dismisses_a_soft_paywall() =
+        runTest(dispatcher) {
+            val vm = viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), purchase = AppResult.Success(false)))
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("home"))
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            assertEquals(1, effects.count { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_paywall_dismisses_once_pro_arrives_from_anywhere() =
+        runTest(dispatcher) {
+            val isPro = MutableStateFlow(false)
+            val vm = viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), isPro = isPro)
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+            assertTrue(effects.none { it is PaywallEffect.Dismiss })
+
+            isPro.value = true // e.g. an approved pending purchase, or a late sync
+            runCurrent()
+
+            assertEquals(1, effects.count { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_paywall_shown_to_a_pro_user_dismisses_at_once() =
+        runTest(dispatcher) {
+            val vm = viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), isPro = MutableStateFlow(true))
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+
+            assertEquals(1, effects.count { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun a_soft_paywall_ignores_the_pro_status() =
+        runTest(dispatcher) {
+            val isPro = MutableStateFlow(false)
+            val vm = viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), isPro = isPro)
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("home"))
+            runCurrent()
+
+            isPro.value = true
+            runCurrent()
+
+            assertTrue(effects.none { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_purchase_that_flips_pro_mid_flight_reports_purchased_then_dismisses_once() =
+        runTest(dispatcher) {
+            val isPro = MutableStateFlow(false)
+            val useCase =
+                object : PaywallPurchaseUseCase by FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)) {
+                    override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
+                        isPro.value = true // the provider's listener flips Pro before the call returns
+                        kotlinx.coroutines.yield()
+                        return AppResult.Success(true)
+                    }
+                }
+            val vm = PaywallViewModel(useCase, FakeAnalytics(), FakeSyncAuthUseCase(), observeProStatus = { isPro })
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            val closing = effects.filter { it is PaywallEffect.Purchased || it is PaywallEffect.Dismiss }
+            assertEquals(2, closing.size)
+            assertTrue(closing[0] is PaywallEffect.Purchased)
+            assertEquals(PaywallEffect.Dismiss, closing[1])
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_purchase_that_errors_after_pro_landed_still_dismisses() =
+        runTest(dispatcher) {
+            val isPro = MutableStateFlow(false)
+            val useCase =
+                object : PaywallPurchaseUseCase by FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)) {
+                    override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
+                        isPro.value = true
+                        kotlinx.coroutines.yield()
+                        return AppResult.Failure(MonetizationError.NetworkUnavailable)
+                    }
+                }
+            val vm = PaywallViewModel(useCase, FakeAnalytics(), FakeSyncAuthUseCase(), observeProStatus = { isPro })
+            val (effects, job) = effectsOf(vm)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            assertEquals(1, effects.count { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun retry_reloads_the_offerings_in_the_same_view_model() =
+        runTest(dispatcher) {
+            val useCase = FakePaywallPurchaseUseCase(offerings = AppResult.Failure(MonetizationError.NoOfferings))
+            val vm = viewModel(useCase)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+            assertTrue(
+                vm.state.value.products
+                    .isEmpty()
+            )
+            assertFalse(vm.state.value.isLoading)
+
+            useCase.offerings = AppResult.Success(products)
+            vm.send(PaywallIntent.Retry)
+            runCurrent()
+
+            assertEquals(2, vm.state.value.products.size)
+            assertEquals("yearly", vm.state.value.selectedProductId)
+            assertFalse(vm.state.value.isLoading)
+        }
 }
 
 internal class FakePaywallPurchaseUseCase(
-    private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
+    var offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val sync: AppResult<Boolean, MonetizationError> = AppResult.Success(false),

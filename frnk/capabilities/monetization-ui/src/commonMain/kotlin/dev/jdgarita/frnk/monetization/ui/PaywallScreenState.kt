@@ -37,8 +37,10 @@ object PaywallModelStateFactory : ModelStateFactory<PaywallModelState> {
  * @param source the analytics source (where the paywall was opened from: `home_topbar`, `settings`,
  * `feature_gate:<id>`).
  * @param dismissible `false` makes it a **hard paywall**: [PaywallIntent.Close] is ignored (no
- * [PaywallEffect.Dismiss], no `Paywall_Dismissed`), so only a purchase, a restore or the silent
- * receipt sync that finds Pro closes it. The screen hides its ✕ and swallows system back to match.
+ * [PaywallEffect.Dismiss], no `Paywall_Dismissed`), so only Pro closes it: a purchase that activated it
+ * (a pending one keeps the paywall up with `stringPaywallPurchasePending`), a restore, the silent receipt
+ * sync, or — when `ObserveProStatusUseCase` is bound — Pro arriving any other way (an approved pending
+ * purchase, a late sync, another device). The screen hides its ✕ and swallows system back to match.
  */
 data class PaywallArguments(
     val source: String,
@@ -73,6 +75,9 @@ sealed interface PaywallIntent : UiIntent {
     data object Purchase : PaywallIntent
 
     data object Restore : PaywallIntent
+
+    /** Reload the offerings (after they failed to load), in the same ViewModel. */
+    data object Retry : PaywallIntent
 
     /** The user asked to leave (✕ or back). Ignored when the paywall is not dismissible. */
     data object Close : PaywallIntent

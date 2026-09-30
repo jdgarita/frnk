@@ -59,6 +59,9 @@ val stringPaywallRestoring = ThemeToken<String>("string_paywall_restoring")
 val stringPaywallRestored = ThemeToken<String>("string_paywall_restored")
 val stringPaywallNothingToRestore = ThemeToken<String>("string_paywall_nothing_to_restore")
 val stringPaywallAlreadyOwnedRestoring = ThemeToken<String>("string_paywall_already_owned_restoring")
+
+/** A purchase the store accepted but left pending (Ask to Buy, a slow payment method). */
+val stringPaywallPurchasePending = ThemeToken<String>("string_paywall_purchase_pending")
 val stringPaywallIdentityError = ThemeToken<String>("string_paywall_identity_error")
 val stringPerMonthSuffix = ThemeToken<String>("string_per_month_suffix")
 val stringGodMode = ThemeToken<String>("string_god_mode")
@@ -148,6 +151,7 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringPaywallRestored to "Purchases restored",
         stringPaywallNothingToRestore to "Nothing to restore",
         stringPaywallAlreadyOwnedRestoring to "Already subscribed — restoring…",
+        stringPaywallPurchasePending to "Your purchase is pending. Pro unlocks as soon as it goes through.",
         stringPaywallIdentityError to "Couldn't verify your account — check your connection and try again",
         stringPerMonthSuffix to "/mo",
         stringGodMode to "God mode",
@@ -230,6 +234,7 @@ internal val EsFrnkStrings: Map<ThemeToken<String>, String> =
         stringPaywallRestored to "Compras restauradas",
         stringPaywallNothingToRestore to "Nada que restaurar",
         stringPaywallAlreadyOwnedRestoring to "Ya estás suscrito — restaurando…",
+        stringPaywallPurchasePending to "Tu compra está pendiente. Pro se activa en cuanto se complete.",
         stringPaywallIdentityError to "No pudimos verificar tu cuenta — revisa tu conexión e inténtalo de nuevo",
         stringPerMonthSuffix to "/mes",
         stringGodMode to "Modo dios",

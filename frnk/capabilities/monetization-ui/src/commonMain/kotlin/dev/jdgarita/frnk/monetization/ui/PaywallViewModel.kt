@@ -7,6 +7,7 @@ import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.ui.ext.toStringSource
+import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
 import dev.jdgarita.frnk.monetization.usecase.PaywallPurchaseUseCase
 import dev.jdgarita.frnk.monetization.usecase.SyncAuthUseCase
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
@@ -14,6 +15,7 @@ import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.stringPaywallAlreadyOwnedRestoring
 import dev.jdgarita.frnk.ui.theme.stringPaywallIdentityError
 import dev.jdgarita.frnk.ui.theme.stringPaywallNothingToRestore
+import dev.jdgarita.frnk.ui.theme.stringPaywallPurchasePending
 import dev.jdgarita.frnk.ui.theme.stringPaywallRestored
 import dev.jdgarita.frnk.utils.AppResult
 import kotlinx.coroutines.async
@@ -41,7 +43,8 @@ import kotlinx.coroutines.launch
 class PaywallViewModel(
     private val paywallPurchaseUseCase: PaywallPurchaseUseCase,
     private val analytics: AnalyticsTracker,
-    private val syncAuthUseCase: SyncAuthUseCase
+    private val syncAuthUseCase: SyncAuthUseCase,
+    private val observeProStatus: ObserveProStatusUseCase? = null
 ) : MviViewModel<PaywallArguments, PaywallModelState, PaywallScreenState, PaywallIntent, PaywallEffect>(
         factory = PaywallModelStateFactory,
         mapper = { modelState ->
@@ -57,10 +60,42 @@ class PaywallViewModel(
             )
         }
     ) {
+    /** Hard mode: one Dismiss for Pro, whichever path (purchase, restore, sync, [observeProStatus]) gets there first. */
+    private var dismissedForPro = false
+
+    private val isHard: Boolean get() = !arguments.dismissible
+
     override fun onAttached(arguments: PaywallArguments) {
         analytics.track(ToolkitEvent.PaywallViewed, mapOf("source" to arguments.source))
         viewModelScope.launch { fetchPaywallData() }
         viewModelScope.launch { silentSync() }
+        if (!arguments.dismissible) observeProStatus?.let { status -> viewModelScope.launch { dismissWhenPro(status) } }
+    }
+
+    /**
+     * Hard mode: the paywall stands until the customer is Pro, whatever makes them Pro — an approved
+     * pending purchase, a late receipt sync, a purchase on another device, god mode. While a purchase or
+     * restore is in flight its own result decides (so [PaywallEffect.Purchased] precedes the Dismiss).
+     */
+    private suspend fun dismissWhenPro(status: ObserveProStatusUseCase) {
+        status().collect { isPro ->
+            val model = currentModel()
+            if (isPro && !model.isPurchasing && !model.isRestoring) dismissForPro()
+        }
+    }
+
+    /** Closes after a success. On a hard paywall at most once, since several paths can report the same Pro. */
+    private suspend fun dismissForPro() {
+        if (isHard) {
+            if (dismissedForPro) return
+            dismissedForPro = true
+        }
+        emit(PaywallEffect.Dismiss)
+    }
+
+    /** Hard mode, after a purchase / restore that did not close: Pro may have landed anyway (the listener). */
+    private suspend fun dismissIfProArrived() {
+        if (isHard && observeProStatus?.invoke()?.value == true) dismissForPro()
     }
 
     override suspend fun onIntent(intent: PaywallIntent) {
@@ -68,6 +103,10 @@ class PaywallViewModel(
             is PaywallIntent.ProductSelected -> updateModel { copy(selectedProductId = intent.id) }
             PaywallIntent.Purchase -> purchase()
             PaywallIntent.Restore -> restore()
+            PaywallIntent.Retry -> {
+                updateModel { copy(isLoading = true) }
+                fetchPaywallData()
+            }
             PaywallIntent.Close -> {
                 // A hard paywall only closes on success (purchase / restore / silent sync).
                 if (!arguments.dismissible) return
@@ -113,7 +152,7 @@ class PaywallViewModel(
         val result = paywallPurchaseUseCase.sync()
         if (result is AppResult.Success && result.data) {
             emit(PaywallEffect.Message(FrnkStringSource.Token(stringPaywallRestored)))
-            emit(PaywallEffect.Dismiss)
+            dismissForPro()
         }
     }
 
@@ -127,7 +166,15 @@ class PaywallViewModel(
                 // store accepting one it left pending still closes the sheet, silently.
                 val product = model.products.firstOrNull { it.id == id }
                 if (result.data && product != null) emit(PaywallEffect.Purchased(product))
-                emit(PaywallEffect.Dismiss) // manager flips status reactively
+                if (isHard && !result.data) {
+                    // Pending (Ask to Buy, a slow payment method): not Pro yet, so a hard paywall stays up
+                    // and closes through the Pro status once the store approves it.
+                    updateModel { copy(isPurchasing = false) }
+                    emit(PaywallEffect.Message(FrnkStringSource.Token(stringPaywallPurchasePending)))
+                    dismissIfProArrived()
+                } else {
+                    dismissForPro() // manager flips status reactively
+                }
             }
 
             is AppResult.Failure -> {
@@ -143,6 +190,7 @@ class PaywallViewModel(
 
                     else -> emit(PaywallEffect.Message(result.error.toStringSource()))
                 }
+                dismissIfProArrived()
             }
         }
     }
@@ -161,12 +209,16 @@ class PaywallViewModel(
         when (result) {
             is AppResult.Success ->
                 if (result.data) {
-                    emit(PaywallEffect.Dismiss)
+                    dismissForPro()
                 } else {
                     emit(PaywallEffect.Message(FrnkStringSource.Token(stringPaywallNothingToRestore)))
+                    dismissIfProArrived()
                 }
 
-            is AppResult.Failure -> emit(PaywallEffect.Message(result.error.toStringSource()))
+            is AppResult.Failure -> {
+                emit(PaywallEffect.Message(result.error.toStringSource()))
+                dismissIfProArrived()
+            }
         }
     }
 

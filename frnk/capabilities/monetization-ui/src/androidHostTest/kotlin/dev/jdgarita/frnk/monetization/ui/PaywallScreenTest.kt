@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runAndroidComposeUiTest
+import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.ui.atoms.FrnkText
@@ -240,5 +241,22 @@ class PaywallScreenTest {
             waitForIdle()
             onNodeWithText("Terms for lifetime").performScrollTo().assertExists()
             onNodeWithText("Terms for monthly").assertDoesNotExist()
+        }
+
+    @Test
+    fun failed_offerings_offer_a_retry_that_loads_them_in_place() =
+        runAndroidComposeUiTest<ComponentActivity> {
+            val useCase = FakePaywallPurchaseUseCase(offerings = AppResult.Failure(MonetizationError.NoOfferings))
+            val vm = PaywallViewModel(useCase, FakeAnalytics(), FakeSyncAuthUseCase())
+            setContent { FrnkTheme(config = theme) { PaywallScreen(vm, "test", emptyList(), dismissible = false) } }
+            waitForIdle()
+            onNodeWithText("Monthly").assertDoesNotExist()
+
+            useCase.offerings = AppResult.Success(products)
+            onNodeWithText("Retry").performScrollTo().performClick()
+            waitForIdle()
+
+            onNodeWithText("Monthly").assertExists()
+            onNodeWithText("Retry").assertDoesNotExist()
         }
 }

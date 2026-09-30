@@ -69,6 +69,7 @@ import dev.jdgarita.frnk.ui.theme.stringPaywallTitlePrefix
 import dev.jdgarita.frnk.ui.theme.stringPerMonthSuffix
 import dev.jdgarita.frnk.ui.theme.stringProName
 import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
+import dev.jdgarita.frnk.ui.theme.stringRetry
 import dev.jdgarita.frnk.ui.theme.strings
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -82,10 +83,13 @@ import org.koin.compose.viewmodel.koinViewModel
  * @param dismissible `false` presents a **hard paywall**: no ✕, system back (and the iOS back swipe) is
  * swallowed — even under a `FrnkNavDisplay`, whose pop it pre-empts — and [PaywallIntent.Close] is
  * ignored, so only a purchase, a restore or the silent receipt sync that finds Pro emits
- * [PaywallEffect.Dismiss]. Read once per presentation (it travels in [PaywallArguments]).
+ * [PaywallEffect.Dismiss]. With `ObserveProStatusUseCase` bound (`monetizationModule`) it also closes as soon
+ * as the customer becomes Pro any other way; a pending purchase keeps it up with a "pending" message. Read
+ * once per presentation (it travels in [PaywallArguments]); a hard presentation gets its own ViewModel key.
  * @param legalLinks the host's Terms / Privacy URLs: when set, the footer's "Terms · Privacy" become
  * links opened through `LocalUriHandler`; when `null` the footer stays plain text.
- * @param onLegalLinkClick called when a legal link is tapped, before it opens — the host's analytics hook.
+ * @param onLegalLinkClick called when a legal link is tapped, before it opens (and even if opening then fails) —
+ * the host's analytics hook, so record it as "tapped".
  * @param planDisclosure the host's line under the CTA for the selected plan (trial / renewal terms, e.g.
  * "7 days free, then $4.99/month. Cancel anytime."), composed only while a plan is selected; `null`
  * renders nothing there.
@@ -102,7 +106,9 @@ fun PaywallScreen(
     planDisclosure: (@Composable (ProProduct) -> Unit)? = null,
     onEffect: (PaywallEffect) -> Unit = {}
 ) {
-    val vm: PaywallViewModel = koinViewModel(key = vmKey)
+    // The mode is read once per ViewModel (PaywallArguments attach once), so a hard and a soft presentation
+    // never share one: the ✕ the screen shows and the Close the ViewModel honours always agree.
+    val vm: PaywallViewModel = koinViewModel(key = if (dismissible) vmKey else "${vmKey ?: "frnk-paywall"}#hard")
     PaywallScreen(
         viewModel = vm,
         source = source,
@@ -217,7 +223,15 @@ fun PaywallScreenContent(
         when {
             state.isLoading -> repeat(2) { SkeletonCard() }
             state.products.isEmpty() ->
-                FrnkText(state = FrnkTextState.Body(text = Theme[strings][stringPaywallEmpty], color = colorOnSurfaceVariant))
+                Column(verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])) {
+                    FrnkText(state = FrnkTextState.Body(text = Theme[strings][stringPaywallEmpty], color = colorOnSurfaceVariant))
+                    // Never a dead end — a hard paywall has no other way past failed offerings.
+                    FrnkButton(
+                        state = FrnkButtonState.Content(text = Theme[strings][stringRetry], variant = FrnkButtonVariant.Outlined),
+                        onClick = { onIntent(PaywallIntent.Retry) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             else ->
                 Column(verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])) {
                     state.products.forEach { product ->
