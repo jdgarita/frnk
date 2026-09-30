@@ -27,12 +27,21 @@ import dev.jdgarita.frnk.demo.ui.home.DemoHomeEffect
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeIntent
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeScreenState
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
+import dev.jdgarita.frnk.monetization.ui.FrnkAppStore
+import dev.jdgarita.frnk.monetization.ui.NoSubscriptionFoundDialog
+import dev.jdgarita.frnk.monetization.ui.frnkAppStore
 import dev.jdgarita.frnk.ui.app.shell.FrnkShellNavigator
 import dev.jdgarita.frnk.ui.app.shell.FrnkShellSheet
 import dev.jdgarita.frnk.ui.app.shell.FrnkStackShell
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
+import dev.jdgarita.frnk.ui.atoms.FrnkDialog
+import dev.jdgarita.frnk.ui.atoms.FrnkDialogAction
+import dev.jdgarita.frnk.ui.atoms.FrnkDialogActionKind
+import dev.jdgarita.frnk.ui.atoms.FrnkDialogActionLayout
+import dev.jdgarita.frnk.ui.atoms.FrnkDialogState
+import dev.jdgarita.frnk.ui.atoms.FrnkDialogVariant
 import dev.jdgarita.frnk.ui.atoms.FrnkDivider
 import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
 import dev.jdgarita.frnk.ui.atoms.FrnkHeadlineAction
@@ -92,6 +101,7 @@ import dev.jdgarita.frnk.ui.theme.icons
 import dev.jdgarita.frnk.ui.theme.rememberFrnkRipple
 import dev.jdgarita.frnk.ui.theme.shapeCard
 import dev.jdgarita.frnk.ui.theme.shapes
+import dev.jdgarita.frnk.ui.theme.stringCancel
 import dev.jdgarita.frnk.ui.theme.stringSearch
 import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
@@ -615,6 +625,10 @@ private fun ComponentGallery(
 
         "FrnkStackShell" -> StackShellDemo()
 
+        "FrnkDialog" -> DialogDemo()
+
+        "NoSubscriptionFoundDialog" -> NoSubscriptionFoundDemo()
+
         else ->
             FrnkText(
                 state =
@@ -845,4 +859,75 @@ private fun ShellPage(
             onClick = { navigator.present(DEMO_SHEET_KEY) }
         )
     }
+}
+
+@Composable
+private fun DialogDemo() {
+    var shown by remember { mutableStateOf<FrnkDialogVariant?>(null) }
+    var lastAction by remember { mutableStateOf("none") }
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text =
+                    "FrnkDialog opens in its own modal window over a scrim; back closes it here " +
+                        "(onDismissRequest). Last action: $lastAction",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkDialogVariant.entries.forEach { variant ->
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Show $variant", variant = FrnkButtonVariant.Outlined),
+            onClick = { shown = variant }
+        )
+    }
+    val variant = shown ?: return
+    val cancel = FrnkDialogAction(key = "cancel", label = FrnkStringSource.Token(stringCancel), kind = FrnkDialogActionKind.Cancel)
+    val answer =
+        when (variant) {
+            FrnkDialogVariant.Destructive ->
+                FrnkDialogAction(key = "delete", label = FrnkStringSource.Raw("Delete"), kind = FrnkDialogActionKind.Destructive)
+            else -> FrnkDialogAction(key = "ok", label = FrnkStringSource.Raw("OK"), kind = FrnkDialogActionKind.Primary)
+        }
+    FrnkDialog(
+        state =
+            FrnkDialogState(
+                title = FrnkStringSource.Raw("$variant dialog"),
+                eyebrow = FrnkStringSource.Raw("Demo"),
+                body = FrnkStringSource.Raw("Tap an action to close it. Taps on the scrim do nothing."),
+                variant = variant,
+                actions = if (variant == FrnkDialogVariant.Warning) listOf(answer, cancel) else listOf(cancel, answer),
+                actionLayout =
+                    if (variant == FrnkDialogVariant.Warning) FrnkDialogActionLayout.Stacked else FrnkDialogActionLayout.Row
+            ),
+        onAction = { action ->
+            lastAction = action.key
+            shown = null
+        },
+        onDismissRequest = {
+            lastAction = "back"
+            shown = null
+        }
+    )
+}
+
+@Composable
+private fun NoSubscriptionFoundDemo() {
+    var store by remember { mutableStateOf<FrnkAppStore?>(null) }
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text =
+                    "The empty-restore dialog. This build ships through $frnkAppStore; " +
+                        "the other store's wording is shown for comparison.",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkAppStore.entries.forEach { option ->
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Show ($option)", variant = FrnkButtonVariant.Outlined),
+            onClick = { store = option }
+        )
+    }
+    val selected = store ?: return
+    NoSubscriptionFoundDialog(onDismiss = { store = null }, store = selected)
 }

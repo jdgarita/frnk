@@ -53,7 +53,9 @@ private val componentNames =
         "FrnkProfileHeader",
         "FrnkModalSheet",
         "FrnkHeadlineTopBar",
-        "FrnkStackShell"
+        "FrnkStackShell",
+        "FrnkDialog",
+        "NoSubscriptionFoundDialog"
     )
 
 @Composable

@@ -1644,3 +1644,24 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkModulesBuilder.kt
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkBootstrapValidation.kt
 - settings.gradle.kts
+
+## A3/A5 upstream from Faint: persisted haptics, FrnkDialog, NoSubscriptionFoundDialog
+
+- id: a3-a5-upstream-from-faint-persisted-haptics-frnkdialog-nosub-20260930-045709
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: haptics, ui-components, monetization-ui
+- date: 2026-09-30
+
+- **A5 haptics:** the persisted switch is a `HapticsPreference` whose value *is* the ambient flag (`PersistentHapticFeedback`), not a second copy synced by an effect (Faint's `FaintHapticsPreferenceSync`). One source of truth, so `rememberFrnkSettingsHandler`'s existing `haptics.setEnabled` persists with no change. The key is **required** and host-owned (no toolkit namespace), default on, so Faint can keep `faint.haptics.enabled`.
+- `FrnkApp` finds the preference with `KoinPlatformTools.defaultContext().getOrNull()?.getOrNull<HapticsPreference>()`, NOT Compose `getKoin()`: the composition-local Koin default is cached across Koin restarts in one JVM (Robolectric), which returned a stale graph in `FrnkAppHapticsTest` (same trap Faint documents on `FaintHapticsPreferenceSync`).
+- `:haptics` now depends on `:data-prefs-api` + `koin-core` (capability → data-api edge, allowed).
+- **A3 FrnkDialog** is in-composition (not a platform window), like Faint's `PoAlert`: scrim is a sibling *below* the card consuming all pointer changes; a modifier around the card would cancel real-finger taps. No built-in back/outside dismiss. Category C state. Five variants map to color + icon tokens.
+- **NoSubscriptionFoundDialog** copy uses a `{product}` placeholder in the store-specific body tokens (default product = "<appName> <proName>"); store picked by `expect val frnkAppStore`. Analytics via `onShown` callback, the dialog records nothing. Not yet raised by `rememberFrnkSettingsHandler` or the paywall; A4 proposal (`docs/plans/a4-settings-proposal.md`) covers that.
+
+### Files
+- frnk/capabilities/haptics
+- frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
+- frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkDialog.kt
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/NoSubscriptionFoundDialog.kt

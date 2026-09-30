@@ -15,6 +15,35 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-09-30
+
+### Added
+
+- **Persisted haptics switch** (`:haptics`): `HapticsPreference` (the durable on/off switch),
+  `KeyValueHapticsPreference` (stored in the host's `KeyValueStore` under a host-supplied key, on by
+  default), `PersistentHapticFeedback` (a `HapticFeedback` whose enabled flag is the preference),
+  `hapticsPreferenceModule(key, default = true)` and a `rememberFrnkHaptics(preference)` overload. `FrnkApp`
+  builds the ambient `LocalFrnkHaptics` over a bound `HapticsPreference`, and `SettingsViewModel` takes
+  it as an optional dependency (`getOrNull()` in `settingsScaffoldModule`): the Settings "Haptic
+  feedback" row starts at the stored value and follows it. The switch is written by the host's
+  `SettingsEffect.ToggleChanged` handler calling `LocalFrnkHaptics.current.setEnabled` (as
+  `rememberFrnkSettingsHandler` already does), so it survives relaunch once the host adds
+  `hapticsPreferenceModule(key)` and `prefsModule`. `:haptics` now depends on `:data-prefs-api` and
+  `koin-core`.
+- **`FrnkDialog`** (`:ui-components`): the alert dialog (`FrnkDialogState`, `FrnkDialogAction`,
+  `FrnkDialogActionKind` Cancel / Primary / Destructive, `FrnkDialogActionLayout` Row / Stacked,
+  `FrnkDialogVariant` Accent / Destructive / Warning / Success / Neutral, `FrnkDialogDefaults`), presented
+  through compose-unstyled `Modal` (its own dialog window, so the screen beneath is out of reach of
+  screen readers and keyboard focus; focus starts on the first action), with an optional `extra` slot and
+  `onDismissRequest`: the dialog always consumes system back while shown and calls it when non-null.
+  `:ui-components` now depends on `compose-unstyled-modal` and `compose-ui-backhandler`.
+- **`NoSubscriptionFoundDialog`** (`:shared-monetization-ui`): the empty-restore dialog, worded for the
+  store the build ships through (`FrnkAppStore`, `frnkAppStore`: Google Play on Android, the App Store on
+  iOS), with an `onShown` hook for host analytics.
+- Theme tokens: `iconInfo`, `iconDelete`, `iconWarning`, `iconReceipt`; `stringNoSubscriptionFoundTitle`,
+  `stringNoSubscriptionFoundBodyAppStore`, `stringNoSubscriptionFoundBodyGooglePlay` (with a `{product}`
+  placeholder), `stringNoSubscriptionFoundConfirm` (EN + ES).
+
 ## [0.10.0] - 2026-09-29
 
 ### Added
@@ -539,7 +568,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
 [0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
 [0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2
 [0.9.1]: https://github.com/jdgarita/frnk/releases/tag/v0.9.1

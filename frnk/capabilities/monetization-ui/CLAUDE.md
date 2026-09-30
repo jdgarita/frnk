@@ -35,6 +35,8 @@ monetization domain (`:monetization-api`).
   `koinEntryProvider()`). **The toolkit owns the paywall destination; the host owns the `NavBackStack`.** A host
   with its own paywall route just calls `FrnkPaywallDestination(...)` inside its own `navigation<MyRoute.Paywall>`
   block. (No `kotlin-serialization` plugin needed here anymore — that was for the old nav2 `frnkComposable<T>`.)
+- `NoSubscriptionFoundDialog.kt` — the empty-restore dialog (plan A3, from Faint): a neutral `FrnkDialog` with the `iconReceipt` glyph, copy from the `stringNoSubscriptionFound*` tokens (EN + ES), the body naming the one store the build ships through and the product (`{product}` placeholder, "<appName> <proName>" by default). `onShown` fires once per presentation for host analytics; the dialog records nothing itself. Not yet raised by `rememberFrnkSettingsHandler` / the paywall (they keep their `onMessage` "Nothing to restore" copy) — see `docs/plans/a4-settings-proposal.md`.
+- `FrnkAppStore.kt` — `FrnkAppStore { AppStore, GooglePlay }` + `expect val frnkAppStore` (GooglePlay on Android, AppStore on iOS): a per-target constant for store-specific copy.
 - `FrnkSettingsHandler.kt` — `rememberFrnkSettingsHandler(backStack, entitlements, analytics, onMessage,
   fallback)` returns a `(SettingsEffect) -> Unit` that wires the monetization Settings rows for free:
   `UpgradeToPro` → `backStack.navigateTo(FrnkRootRoute.Paywall)`, `RestorePurchases` → `entitlements.restorePurchases()`,
@@ -72,5 +74,7 @@ Two always-on paywall entry points the demo wires (and real hosts copy):
 
 - `api(projects.uiScaffolds)`, `api(projects.monetizationApi)` (transitively `:core-nav` for
   `FrnkRootRoute` + the nav3 back-stack helpers, and the nav3 engine via `:ui-scaffolds`). `commonTest`: `kotlin.test` +
-  `kotlinx.coroutines.test`.
+  `kotlinx.coroutines.test`. `androidHostTest` (with `isIncludeAndroidResources`): `compose-ui-test` +
+  `ui-test-manifest` + `robolectric`, for `NoSubscriptionFoundDialogTest` (the module has no `commonDebug`
+  preview source set; the dialog's look is previewed through `FrnkDialog`'s neutral preview in `:ui-components`).
 - Plugins: compose (+ hosttest). No `kotlin-serialization` — the nav3 route serializers live in `:core-nav`.

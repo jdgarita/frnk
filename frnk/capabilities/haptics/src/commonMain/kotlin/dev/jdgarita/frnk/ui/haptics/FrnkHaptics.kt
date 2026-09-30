@@ -48,16 +48,42 @@ val LocalFrnkHaptics: ProvidableCompositionLocal<HapticFeedback> =
  * a provider. On Android the rebuild is a cheap no-op-equivalent (the system `Vibrator` is stateless).
  *
  * Runtime enable/disable goes through [HapticFeedback.setEnabled] (the Settings toggle) on the
- * returned instance. Hosts wanting a different initial value or process-death-durable state build
- * their own `DefaultHapticFeedback(MultiHapticEngine(rememberVibrator()), initiallyEnabled = …)` (or
- * any [HapticFeedback]) and pass it to `FrnkTheme(haptics = …)`.
+ * returned instance; the flag lives in memory only. For a switch that survives relaunch, bind a
+ * [HapticsPreference] ([hapticsPreferenceModule]) — `FrnkApp` then uses the `rememberFrnkHaptics(preference)`
+ * overload — or pass any other [HapticFeedback] to `FrnkTheme(haptics = …)`.
  */
 @Composable
 fun rememberFrnkHaptics(): HapticFeedback {
+    val engine = rememberFrnkHapticEngine()
+    return remember { DefaultHapticFeedback(engine) }
+}
+
+/**
+ * The same `multihaptic`-backed haptics as [rememberFrnkHaptics], with the enabled flag stored in
+ * [preference] instead of in memory: returns a [PersistentHapticFeedback], so `isEnabled` starts at the
+ * stored value and every `setEnabled` (the Settings toggle) is written back. The foreground rebuild of
+ * the vibrator described on [rememberFrnkHaptics] applies here too.
+ *
+ * `FrnkApp` calls this for you when a [HapticsPreference] is bound (see [hapticsPreferenceModule]);
+ * call it yourself only when you compose `FrnkTheme(haptics = …)` directly.
+ */
+@Composable
+fun rememberFrnkHaptics(preference: HapticsPreference): HapticFeedback {
+    val engine = rememberFrnkHapticEngine()
+    return remember(preference) { PersistentHapticFeedback(engine, preference) }
+}
+
+/**
+ * The stable [HapticEngine] both [rememberFrnkHaptics] overloads wrap: it reads the current vibrator
+ * through a provider, and the vibrator is rebuilt on every return to foreground (see
+ * [rememberFrnkHaptics] for why).
+ */
+@Composable
+private fun rememberFrnkHapticEngine(): HapticEngine {
     val foregroundCount = rememberForegroundCount()
     val vibrator = key(foregroundCount) { rememberVibrator() }
     val currentVibrator = rememberUpdatedState(vibrator)
-    return remember { DefaultHapticFeedback(MultiHapticEngine { currentVibrator.value }) }
+    return remember { MultiHapticEngine { currentVibrator.value } }
 }
 
 /**

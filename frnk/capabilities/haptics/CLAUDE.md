@@ -20,9 +20,19 @@ Stage 9. Kotlin package is unchanged (`dev.jdgarita.frnk.ui.haptics`).
 
 **Engine binding (Compose, Stage 7a):**
 - `ui/haptics/MultiHapticEngine.kt` — `HapticEngine` impl that maps each `HapticType` to a `top.ltfan.multihaptic` primitive composition and plays it through a `Vibrator` (no-op when `isVibrationSupported` is false, e.g. an iOS simulator). Reads the current `Vibrator` through a provider lambda so it stays stable across rebuilds.
-- `ui/haptics/FrnkHaptics.kt` — `LocalFrnkHaptics` (the ambient `HapticFeedback`, default `NoOpHapticFeedback`); `rememberFrnkHaptics(enabled)` resolves the platform `Vibrator` via `multihaptic-compose`'s `rememberVibrator()` (reads `LocalContext` on Android — **no Context plumbing**) and wraps it in `DefaultHapticFeedback`. **Rebuilds the `Vibrator` on every return to foreground** (keyed off an `ON_STOP`→`ON_START` counter via `LocalLifecycleOwner`) because multihaptic 0.3.2 doesn't restart its iOS `CHHapticEngine` after backgrounding — without this, haptics silently die after leaving the app and coming back. `HAPTICS_TOGGLE_ID = "haptics"` is the stable id of the default Settings toggle.
+- `ui/haptics/FrnkHaptics.kt` — `LocalFrnkHaptics` (the ambient `HapticFeedback`, default `NoOpHapticFeedback`); `rememberFrnkHaptics()` resolves the platform `Vibrator` via `multihaptic-compose`'s `rememberVibrator()` (reads `LocalContext` on Android — **no Context plumbing**) and wraps it in `DefaultHapticFeedback`. **Rebuilds the `Vibrator` on every return to foreground** (keyed off an `ON_STOP`→`ON_START` counter via `LocalLifecycleOwner`) because multihaptic 0.3.2 doesn't restart its iOS `CHHapticEngine` after backgrounding — without this, haptics silently die after leaving the app and coming back. `HAPTICS_TOGGLE_ID = "haptics"` is the stable id of the default Settings toggle.
 
-The "Haptic feedback" Settings toggle drives `setEnabled`; frnk atoms call `perform` on press.
+**Persisted switch (A5, from Faint's `HapticsPreferenceDataSource`):**
+- `ui/haptics/HapticsPreference.kt` — the durable on/off contract (`isEnabled: StateFlow<Boolean>` + `setEnabled`). Compose-free.
+- `ui/haptics/KeyValueHapticsPreference.kt` — stored in the host's `KeyValueStore` (`:data-prefs-api`) under a **host-supplied key** (required, never a toolkit namespace); a missing key reads as `default` (on).
+- `ui/haptics/PersistentHapticFeedback.kt` — a `HapticFeedback` whose flag *is* the preference: `setEnabled` writes it, `perform` is gated by it. One source of truth, no sync effect (Faint needed `FaintHapticsPreferenceSync`; frnk does not).
+- `ui/haptics/HapticsPreferenceModule.kt` — `hapticsPreferenceModule(key, default = true)` binds a single `HapticsPreference`. `rememberFrnkHaptics(preference)` builds the persistent ambient instance; `:ui-app`'s `FrnkApp` calls it automatically when a `HapticsPreference` is bound.
+
+The "Haptic feedback" Settings toggle drives `setEnabled`; frnk atoms call `perform` on press. With a
+bound preference that call persists, and `:ui-scaffolds`' `SettingsViewModel` (optional
+`HapticsPreference`) seeds and follows the row from it. The host's `ToggleChanged` handler is the one
+writer (`rememberFrnkSettingsHandler` does it; a hand-rolled handler must call
+`LocalFrnkHaptics.current.setEnabled`).
 `:ui-theme`'s `FrnkTheme` installs `LocalFrnkHaptics` via `rememberFrnkHaptics()`, so atoms vibrate with
 zero host wiring.
 
@@ -33,5 +43,6 @@ zero host wiring.
   ViewModels; the engine is the Compose half.
 - **No native cinterop.** multihaptic ships its own Android/iOS impls, so umbrella XCFrameworks stay
   clean and the Android `VIBRATE` permission self-merges from `multihaptic-core`'s manifest.
-- Deps: `api(kotlinx-coroutines)` (the `StateFlow<Boolean>` enabled flag) + `implementation` of
+- Deps: `api(kotlinx-coroutines)` (the `StateFlow<Boolean>` enabled flag), `api(:data-prefs-api)` +
+  `api(koin-core)` (the persisted switch and its module) + `implementation` of
   `androidx-lifecycle-runtime-compose` + `multihaptic-core`/`-compose`.

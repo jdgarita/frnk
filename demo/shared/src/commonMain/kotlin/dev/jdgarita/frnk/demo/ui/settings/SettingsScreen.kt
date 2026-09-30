@@ -1,6 +1,8 @@
 package dev.jdgarita.frnk.demo.ui.settings
 
 import androidx.compose.runtime.Composable
+import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
+import dev.jdgarita.frnk.ui.haptics.LocalFrnkHaptics
 import dev.jdgarita.frnk.ui.mvi.FrnkScreen
 import dev.jdgarita.frnk.ui.scaffolds.rememberFeedbackEmailLauncher
 import dev.jdgarita.frnk.ui.scaffolds.settings.FrnkSettingsScreen
@@ -14,6 +16,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsScreen(onNavigateToOnboarding: () -> Unit) {
     val controller = LocalAppearanceController.current
+    // FrnkApp builds this over the demo's HapticsPreference, so setEnabled persists the switch.
+    val haptics = LocalFrnkHaptics.current
 
     val viewModel: SettingsViewModel = koinViewModel()
     val sendFeedback = rememberFeedbackEmailLauncher(appName = "Frnk", appVersion = "0.0.0.312")
@@ -31,7 +35,8 @@ fun SettingsScreen(onNavigateToOnboarding: () -> Unit) {
                         else -> Unit
                     }
 
-                else -> Unit
+                is SettingsEffect.ToggleChanged ->
+                    if (uiEffect.id == HAPTICS_TOGGLE_ID) haptics.setEnabled(uiEffect.checked)
             }
         }
     ) { state ->

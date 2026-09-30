@@ -253,6 +253,7 @@ initializeFrnk(
             revenueCatIdentityModule,            // :monetization-impl — AnonymousIdentityProvider (or your own binding)
             monetizationModule,                  // :monetization-api — EntitlementManager/FeatureGate
             paywallScaffoldModule,               // :shared-monetization-ui — paywall VM
+            hapticsPreferenceModule("myapp.haptics.enabled"), // :haptics — persisted haptics switch (optional; needs prefsModule). FrnkApp and Settings pick it up (0.10.1)
         ) + hostModules,                         // your repositories, feature VMs, schema module — after the toolkit's
 ) {
     // extraConfig: Koin DSL escape hatch (logging, overrides).
