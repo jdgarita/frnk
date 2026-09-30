@@ -84,6 +84,15 @@ val stringErrorNetworkUnavailable = ThemeToken<String>("string_error_network_una
 val stringErrorNoOfferings = ThemeToken<String>("string_error_no_offerings")
 val stringErrorPurchaseNotAllowed = ThemeToken<String>("string_error_purchase_not_allowed")
 val stringErrorAlreadyOwned = ThemeToken<String>("string_error_already_owned")
+
+// No Subscription Found dialog (NoSubscriptionFoundDialog in :shared-monetization-ui): a restore the
+// store answered with no receipt. The body names the one store the build ships through, so there is a
+// token per store; `{product}` is replaced at render with the product name ("<appName> <proName>" by
+// default, e.g. "Still Pro").
+val stringNoSubscriptionFoundTitle = ThemeToken<String>("string_no_subscription_found_title")
+val stringNoSubscriptionFoundBodyAppStore = ThemeToken<String>("string_no_subscription_found_body_app_store")
+val stringNoSubscriptionFoundBodyGooglePlay = ThemeToken<String>("string_no_subscription_found_body_google_play")
+val stringNoSubscriptionFoundConfirm = ThemeToken<String>("string_no_subscription_found_confirm")
 // endregion
 
 internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
@@ -151,7 +160,17 @@ internal val DefaultFrnkStrings: Map<ThemeToken<String>, String> =
         stringErrorNetworkUnavailable to "Network unavailable",
         stringErrorNoOfferings to "No products available",
         stringErrorPurchaseNotAllowed to "Purchases are not allowed on this device",
-        stringErrorAlreadyOwned to "Already subscribed"
+        stringErrorAlreadyOwned to "Already subscribed",
+        stringNoSubscriptionFoundTitle to "No Subscription Found",
+        stringNoSubscriptionFoundBodyAppStore to
+            "We couldn't find an active {product} subscription associated with your App Store receipt. " +
+            "If you previously subscribed, make sure you are using the same Apple Account used for the " +
+            "original purchase.",
+        stringNoSubscriptionFoundBodyGooglePlay to
+            "We couldn't find an active {product} subscription associated with your Google Play receipt. " +
+            "If you previously subscribed, make sure you are using the same Google Account used for the " +
+            "original purchase.",
+        stringNoSubscriptionFoundConfirm to "Got It"
     )
 
 /**
@@ -223,7 +242,17 @@ internal val EsFrnkStrings: Map<ThemeToken<String>, String> =
         stringErrorNetworkUnavailable to "Sin conexión",
         stringErrorNoOfferings to "No hay productos disponibles",
         stringErrorPurchaseNotAllowed to "Las compras no están permitidas en este dispositivo",
-        stringErrorAlreadyOwned to "Ya estás suscrito"
+        stringErrorAlreadyOwned to "Ya estás suscrito",
+        stringNoSubscriptionFoundTitle to "Sin suscripción encontrada",
+        stringNoSubscriptionFoundBodyAppStore to
+            "No encontramos una suscripción activa de {product} asociada a tu recibo de App Store. " +
+            "Si ya te habías suscrito, asegúrate de estar usando la misma cuenta de Apple con la que " +
+            "realizaste la compra original.",
+        stringNoSubscriptionFoundBodyGooglePlay to
+            "No encontramos una suscripción activa de {product} asociada a tu recibo de Google Play. " +
+            "Si ya te habías suscrito, asegúrate de estar usando la misma cuenta de Google con la que " +
+            "realizaste la compra original.",
+        stringNoSubscriptionFoundConfirm to "Entendido"
     )
 
 /**

@@ -6,6 +6,12 @@ plugins {
 kotlin {
     android {
         namespace = "${libs.versions.frnk.groupId.get()}.monetization.ui"
+        // NoSubscriptionFoundDialogTest drives a real composition (runComposeUiTest) under Robolectric,
+        // which needs the merged Android resources/manifest — configured through the host-test
+        // compilation frnk.kmp.library.hosttest already created, as :ui-app does.
+        compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation::class.java) {
+            isIncludeAndroidResources = true
+        }
     }
     sourceSets {
         commonMain.dependencies {
@@ -16,6 +22,14 @@ kotlin {
             // (the Stage 8 precondition).
             api(projects.uiScaffolds)
             api(projects.monetizationApi)
+        }
+
+        // The Compose host-test bundle (kotlin-test + coroutines-test arrive from commonTest via
+        // frnk.kmp.library.hosttest), for the dialog's Robolectric compose tests.
+        getByName("androidHostTest").dependencies {
+            implementation(libs.compose.ui.test)
+            implementation(libs.androidx.compose.ui.test.manifest)
+            implementation(libs.robolectric)
         }
     }
 }

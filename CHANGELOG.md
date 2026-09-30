@@ -15,6 +15,26 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Added
+
+- **Persisted haptics switch** (`:haptics`): `HapticsPreference` (the durable on/off switch),
+  `KeyValueHapticsPreference` (stored in the host's `KeyValueStore` under a host-supplied key, on by
+  default), `PersistentHapticFeedback` (a `HapticFeedback` whose enabled flag is the preference),
+  `hapticsPreferenceModule(key, default = true)` and a `rememberFrnkHaptics(preference)` overload. `FrnkApp`
+  builds the ambient `LocalFrnkHaptics` over a bound `HapticsPreference`, so the default Settings "Haptic
+  feedback" toggle now survives relaunch once a host adds the module. `:haptics` now depends on
+  `:data-prefs-api` and `koin-core`.
+- **`FrnkDialog`** (`:ui-components`): the alert dialog (`FrnkDialogState`, `FrnkDialogAction`,
+  `FrnkDialogActionKind` Cancel / Primary / Destructive, `FrnkDialogActionLayout` Row / Stacked,
+  `FrnkDialogVariant` Accent / Destructive / Warning / Success / Neutral, `FrnkDialogDefaults`), drawn in
+  the composition over a scrim that swallows gestures, with an optional `extra` slot.
+- **`NoSubscriptionFoundDialog`** (`:shared-monetization-ui`): the empty-restore dialog, worded for the
+  store the build ships through (`FrnkAppStore`, `frnkAppStore`: Google Play on Android, the App Store on
+  iOS), with an `onShown` hook for host analytics.
+- Theme tokens: `iconInfo`, `iconDelete`, `iconWarning`, `iconReceipt`; `stringNoSubscriptionFoundTitle`,
+  `stringNoSubscriptionFoundBodyAppStore`, `stringNoSubscriptionFoundBodyGooglePlay` (with a `{product}`
+  placeholder), `stringNoSubscriptionFoundConfirm` (EN + ES).
+
 ## [0.10.0] - 2026-09-29
 
 ### Added
