@@ -118,11 +118,18 @@ private val DemoPaywallLegalLinks =
 @Composable
 private fun DemoPlanDisclosure(product: ProProduct) {
     val trialDays = product.freeTrialPeriod?.approximateDays
+    val price =
+        when (product.plan) {
+            ProPlan.Weekly -> "${product.priceFormatted}/week"
+            ProPlan.Monthly -> "${product.priceFormatted}/month"
+            ProPlan.Yearly -> "${product.priceFormatted}/year"
+            else -> product.priceFormatted
+        }
     val text =
         when {
             product.plan == ProPlan.Lifetime -> "${product.priceFormatted} once."
-            trialDays != null -> "$trialDays days free, then ${product.priceFormatted}. Cancel anytime."
-            else -> "${product.priceFormatted}, renews automatically. Cancel anytime."
+            trialDays != null -> "$trialDays days free, then $price. Cancel anytime."
+            else -> "$price, renews automatically. Cancel anytime."
         }
     FrnkText(state = FrnkTextState.BodySmall(text = text, color = colorOnSurfaceVariant))
 }

@@ -1683,3 +1683,16 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 ### Files
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreen.kt
 - frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProvider.kt
+
+## Hard paywall closes only on Pro; iOS trial eligibility (0.10.2 fix round)
+
+- id: hard-paywall-closes-only-on-pro-ios-trial-eligibility-0-10-2-20260930-194046
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization-ui
+- date: 2026-09-30
+
+- Hard mode: a pending purchase (Success(false)) keeps the paywall up (stringPaywallPurchasePending); the VM collects the optional ObserveProStatusUseCase (getOrNull in paywallScaffoldModule) and dismisses on Pro from any cause. The observer skips while isPurchasing/isRestoring so Purchased precedes Dismiss; failure/pending paths re-check isPro afterwards; one dedup flag (dismissedForPro) — hard mode only, soft mode emits exactly as before.
+- PaywallIntent.Retry added (breaks exhaustive `when` over PaywallIntent in hosts, e.g. Still's PaywallFunnel) — accepted in the PATCH at the coordinator's request, called out in the CHANGELOG.
+- iOS trials: checkTrialOrIntroPriceEligibility (3 s timeout) for products with introductoryDiscount and no defaultOption; only ELIGIBLE reports a trial (UNKNOWN/failure = regular price, RevenueCat's own advice). Pure decision in trialInfoOf().

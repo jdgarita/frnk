@@ -28,7 +28,11 @@ monetization domain (`:monetization-api`).
   `frnkPaywallNavigation`, carried to the VM in `PaywallArguments`) hides the ✕ (`FrnkFullScreenScaffold
   (showCloseButton = false)`), installs a swallowing `BackHandler` inside the screen (it outranks a
   `FrnkNavDisplay`'s pop and `FrnkScreen`'s own handler), and the VM ignores `PaywallIntent.Close`; success
-  paths (purchase / restore / silent sync) still emit `Dismiss`. `PaywallScreenTest` (Robolectric) pins it.
+  paths (purchase / restore / silent sync) still emit `Dismiss`; a pending purchase does not (it shows
+  `stringPaywallPurchasePending`), and the VM also collects the optional `ObserveProStatusUseCase` to close on
+  Pro from any cause — every Pro path goes through one deduplicating `dismissForPro()`. A hard presentation
+  uses its own VM key. `PaywallIntent.Retry` reloads offerings; the stock screen shows Retry under the empty
+  copy. `PaywallScreenTest` (Robolectric) pins it.
   **Footer:** `legalLinks: PaywallLegalLinks?` (`PaywallLegalLinks.kt`) turns "Terms · Privacy" into links
   opened via `LocalUriHandler` (failures swallowed — hosts supply their own `UriHandler` to report them),
   `onLegalLinkClick` is the analytics hook; `planDisclosure` is the host's slot under the CTA for the

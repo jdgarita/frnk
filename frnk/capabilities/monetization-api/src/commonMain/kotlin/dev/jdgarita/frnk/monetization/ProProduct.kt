@@ -10,14 +10,16 @@ enum class ProPlan { Weekly, Monthly, Yearly, Lifetime, Other }
  * @param id provider package identifier (passed back to [EntitlementManager.purchase]).
  * @param priceFormatted localized total price, e.g. "$39.99".
  * @param pricePerMonthFormatted localized per-month price for comparison, e.g. "$3.33" (null for lifetime).
- * @param hasFreeTrial whether the product has an introductory free trial.
+ * @param hasFreeTrial whether the product has an introductory free trial the customer can redeem. From
+ * RevenueCat on iOS this is true for any introductory offer (paid ones too) the customer is eligible for —
+ * use [freeTrialPeriod] for "is it a free trial, and how long".
  * @param badge optional short marketing badge, e.g. "BEST VALUE" / "Save 33%".
  * @param price the same total as [priceFormatted], as a number with its currency — for analytics
  * and revenue reporting, never for display. `null` when the provider has no store price (a fake
  * provider, or a product the store answered without one).
  * @param freeTrialPeriod the length of the introductory free trial, as the store states it (e.g.
  * 1 week, or 7 days) — for copy such as "7 days free, then …". `null` when the product has no free
- * trial, or the provider does not report its length. Set whenever a trial's length is known, in which
+ * trial, the customer is not (or not known to be) eligible for it, or the provider does not report its length. Set whenever a trial's length is known, in which
  * case [hasFreeTrial] is true as well.
  */
 data class ProProduct(

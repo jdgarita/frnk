@@ -798,15 +798,20 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
 - **Hard paywall, legal links, disclosure (0.10.2).** `dismissible = false` (on `FrnkPaywallDestination`,
   `frnkPaywallNavigation`, `PaywallScreen`, or `PaywallArguments` for a host that drives `PaywallViewModel`
   itself) hides the close button, swallows system back / the iOS back swipe (pre-empting the enclosing
-  `FrnkNavDisplay`'s pop) and makes the ViewModel ignore `PaywallIntent.Close`; `onClose` then fires only after a
-  purchase, a restore, or the silent receipt sync found Pro — so the host decides when it is due (e.g. while
-  not entitled) and navigates on from `onClose`. It is read once per presentation. A hard paywall has no
-  way out when offerings fail to load, so give it a retry (a fresh `vmKey`). `legalLinks =
+  `FrnkNavDisplay`'s pop) and makes the ViewModel ignore `PaywallIntent.Close`; `onClose` then fires only once
+  the customer is Pro — a purchase that activated it, a restore, the silent receipt sync, or (with
+  `monetizationModule`'s `ObserveProStatusUseCase` in the graph) Pro arriving any other way, e.g. an approved
+  pending purchase. A pending purchase keeps it up with a "pending" message. The host decides when it is due
+  (e.g. while not entitled) and navigates on from `onClose`. The mode is read once per presentation (a hard
+  one gets its own ViewModel key). Failed offerings show a **Retry** (`PaywallIntent.Retry`, reloading in the
+  same ViewModel), so the stock destination is never a dead end; a host with its own destination sends
+  `PaywallIntent.Retry` from its own control. `legalLinks =
   PaywallLegalLinks(termsUrl, privacyUrl)` turns the footer's "Terms · Privacy" into links opened through
   `LocalUriHandler` (provide your own `UriHandler` to open them differently or report failure), with
-  `onLegalLinkClick` as the analytics hook. `planDisclosure = { product -> … }` renders the host's
+  `onLegalLinkClick` as the analytics hook (it fires on the tap, before opening, even if opening fails). `planDisclosure = { product -> … }` renders the host's
   trial / renewal line under the CTA for the selected plan; `ProProduct.freeTrialPeriod` (`ProPeriod`:
-  `value` + `unit`, `approximateDays`) carries the store's trial length for it.
+  `value` + `unit`, `approximateDays`) carries the store's trial length for it — on iOS only when RevenueCat
+  says the customer is eligible for the introductory offer, so the line never promises a trial they won't get.
 - `:demo-shared`'s `FrnkDemoApp` is the reference integration — the single shared composable both
   `demo-android` and `iosDemoApp` call. Its `RootNavigationModule` (root) + `NestedNavigationModule` (tabs)
   are the canonical example of this shape: a Home / Components / Settings tabbed surface, with the demo wiring
