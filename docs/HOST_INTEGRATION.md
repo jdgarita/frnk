@@ -795,7 +795,7 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
   `PaywallEffect.Purchased`, emitted right before the `Dismiss` of a purchase that activated the
   entitlement) is where a host records its own conversion event — the `ProProduct` carries the plan
   and, from a store-backed provider, `price` (`ProPrice`: `amountMicros` + `currencyCode`).
-- **Hard paywall, legal links, disclosure (0.10.2).** `dismissible = false` (on `FrnkPaywallDestination`,
+- **Hard paywall, legal links, disclosure (0.11.0).** `dismissible = false` (on `FrnkPaywallDestination`,
   `frnkPaywallNavigation`, `PaywallScreen`, or `PaywallArguments` for a host that drives `PaywallViewModel`
   itself) hides the close button, swallows system back / the iOS back swipe (pre-empting the enclosing
   `FrnkNavDisplay`'s pop) and makes the ViewModel ignore `PaywallIntent.Close`; `onClose` then fires only once

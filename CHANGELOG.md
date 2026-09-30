@@ -15,7 +15,13 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
-## [0.10.2] - 2026-09-30
+## [0.11.0] - 2026-09-30
+
+### Changed
+
+- **Breaking (source): `PaywallIntent` gains `Retry`.** Hosts that match `PaywallIntent` with an
+  exhaustive `when` must add a `Retry` branch. Everything else in this release is additive and keeps
+  today's behaviour by default (`dismissible = true`, no legal URLs, no disclosure slot).
 
 ### Added
 
@@ -612,8 +618,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.2...HEAD
-[0.10.2]: https://github.com/jdgarita/frnk/releases/tag/v0.10.2
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/jdgarita/frnk/releases/tag/v0.11.0
 [0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
 [0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
 [0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2

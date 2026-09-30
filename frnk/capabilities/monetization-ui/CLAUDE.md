@@ -24,7 +24,7 @@ monetization domain (`:monetization-api`).
   (`stringPaywallRestoring`) while a restore is in flight. UI is **stacked selectable plan cards** (radio + price + per-month + free-trial/best-value
   badge), a single CTA ("Start free trial" when the selected plan has a trial, else "Continue"), and
   Restore + Terms/Privacy. Product list shows a loading skeleton while offerings load.
-  **Hard mode (0.10.2):** `dismissible = false` (on `PaywallScreen` / `FrnkPaywallDestination` /
+  **Hard mode (0.11.0):** `dismissible = false` (on `PaywallScreen` / `FrnkPaywallDestination` /
   `frnkPaywallNavigation`, carried to the VM in `PaywallArguments`) hides the ✕ (`FrnkFullScreenScaffold
   (showCloseButton = false)`), installs a swallowing `BackHandler` inside the screen (it outranks a
   `FrnkNavDisplay`'s pop and `FrnkScreen`'s own handler), and the VM ignores `PaywallIntent.Close`; success

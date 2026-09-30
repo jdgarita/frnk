@@ -1666,7 +1666,7 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 - frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkDialog.kt
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/NoSubscriptionFoundDialog.kt
 
-## Hard paywall, legal links, trial length (0.10.2)
+## Hard paywall, legal links, trial length (0.11.0)
 
 - id: hard-paywall-legal-links-trial-length-0-10-2-20260930-192952
 - type: architecture_decision
@@ -1684,7 +1684,7 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreen.kt
 - frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProvider.kt
 
-## Hard paywall closes only on Pro; iOS trial eligibility (0.10.2 fix round)
+## Hard paywall closes only on Pro; iOS trial eligibility (0.11.0 fix round)
 
 - id: hard-paywall-closes-only-on-pro-ios-trial-eligibility-0-10-2-20260930-194046
 - type: architecture_decision
