@@ -243,3 +243,36 @@ mounts `FrnkSettingsDestination` at its pushed Settings route.
    opener reports it through a callback).
 9. **Row taps on toggles.** Faint lets a tap anywhere on the haptics row throw the switch. Adopt that
    for every `SettingsToggleRowState`?
+
+## Review notes (for the maintainer to decide)
+
+From the branch review (`frnk-a3-a5-review.md`, Important 4 and 5). The proposal above is left as
+written; these two points change its module table, so settle them before any A4 code.
+
+1. **The subscription seam may be unnecessary.** `EntitlementManager` and `SyncAuthUseCase` live in
+   `:monetization-api`, which is already SDK-free and already on `:ui-scaffolds`' classpath (for
+   `ObserveProStatusUseCase`). Decide between:
+   - (a) `SettingsViewModel` takes `EntitlementManager` / `SyncAuthUseCase` directly (optionally via
+     `getOrNull()`), and only the UI-side effect wiring (URI handler, mail launcher,
+     `NoSubscriptionFoundDialog`) stays in `:shared-monetization-ui`. This drops
+     `SettingsSubscriptionDelegate` and `EntitlementSettingsDelegate`.
+   - (b) Keep the seam, with a written reason (e.g. VM tests without monetization fakes), and drop
+     `delegate.isPro` in favour of the existing `ObserveProStatusUseCase`.
+2. **Keep it one settings system, not two under shared types.** As proposed, A4 would leave two
+   catalogue builders (`defaultSettingsState` and `frnkSettingsCatalog`), two VM modes (host-pushed via
+   `ConfigChanged` vs VM-owned), two effect handlers (`rememberFrnkSettingsHandler` and
+   `FrnkSettingsDestination`) and two haptics writers. Decide:
+   - make `defaultSettingsState(...)` a thin call to `frnkSettingsCatalog(FrnkSettingsConfig.Default, status)`;
+   - name one writer for the haptics switch. Since the fix round, `SettingsViewModel` already *reads* the
+     `HapticsPreference` and the host's `ToggleChanged` handler writes it; if A4 moves the write into the
+     VM, `rememberFrnkSettingsHandler` must stop touching haptics;
+   - deprecate `rememberFrnkSettingsHandler` in the same release, not "once there's a second consumer";
+   - add an open question: how host rows whose state changes (for example a reminders toggle) reach a
+     `FrnkSettingsConfig` bound as a static Koin single.
+
+The review also answers some open questions above:
+- Q1: the release is 0.11.0 either way, and nesting the new effects saves little.
+- Q2: `FrnkDialog` now presents through `Modal` (fix round), so the destination can raise
+  No Subscription Found itself.
+- Q4: prefer the generic `SettingsAction.OpenLink(id)`.
+- Q7: the A3 plan row already says the paywall restore uses the dialog, so change `PaywallViewModel` in A4.
