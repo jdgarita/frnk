@@ -91,10 +91,10 @@ private const val CORNER_GLYPH_REST_SCALE = 0.6f
 fun FrnkHeadlineTopBar(
     state: FrnkHeadlineTopBarState,
     onActionClick: (key: String) -> Unit,
-    modifier: Modifier = Modifier,
     onSearchOpen: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
-    onSearchClose: () -> Unit = {}
+    onSearchClose: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     val trailing = state.trailing
     val isSearching = trailing is FrnkHeadlineTrailing.Search && trailing.isActive
