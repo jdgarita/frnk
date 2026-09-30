@@ -795,6 +795,18 @@ fun myRootNavigationModule(backStack: NavBackStack<NavKey>) = module {
   `PaywallEffect.Purchased`, emitted right before the `Dismiss` of a purchase that activated the
   entitlement) is where a host records its own conversion event — the `ProProduct` carries the plan
   and, from a store-backed provider, `price` (`ProPrice`: `amountMicros` + `currencyCode`).
+- **Hard paywall, legal links, disclosure (0.10.2).** `dismissible = false` (on `FrnkPaywallDestination`,
+  `frnkPaywallNavigation`, `PaywallScreen`, or `PaywallArguments` for a host that drives `PaywallViewModel`
+  itself) hides the close button, swallows system back / the iOS back swipe (pre-empting the enclosing
+  `FrnkNavDisplay`'s pop) and makes the ViewModel ignore `PaywallIntent.Close`; `onClose` then fires only after a
+  purchase, a restore, or the silent receipt sync found Pro — so the host decides when it is due (e.g. while
+  not entitled) and navigates on from `onClose`. It is read once per presentation. A hard paywall has no
+  way out when offerings fail to load, so give it a retry (a fresh `vmKey`). `legalLinks =
+  PaywallLegalLinks(termsUrl, privacyUrl)` turns the footer's "Terms · Privacy" into links opened through
+  `LocalUriHandler` (provide your own `UriHandler` to open them differently or report failure), with
+  `onLegalLinkClick` as the analytics hook. `planDisclosure = { product -> … }` renders the host's
+  trial / renewal line under the CTA for the selected plan; `ProProduct.freeTrialPeriod` (`ProPeriod`:
+  `value` + `unit`, `approximateDays`) carries the store's trial length for it.
 - `:demo-shared`'s `FrnkDemoApp` is the reference integration — the single shared composable both
   `demo-android` and `iosDemoApp` call. Its `RootNavigationModule` (root) + `NestedNavigationModule` (tabs)
   are the canonical example of this shape: a Home / Components / Settings tabbed surface, with the demo wiring

@@ -35,7 +35,8 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   `validateFrnkBootstrap` can explain a missing dep) — the validated path resolves it at bootstrap.
 - `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode})`.
 - `monetization/ProProduct.kt` — SDK-free purchasable plan (`ProPlan{Weekly,Monthly,Yearly,Lifetime,Other}`,
-  prices, `hasFreeTrial`, `badge`) the paywall renders.
+  prices, `hasFreeTrial`, `badge`, `freeTrialPeriod: ProPeriod?` — the store's trial length as `value` + `ProPeriodUnit`,
+  with `approximateDays` for plural copy) the paywall renders.
 - `monetization/MonetizationError.kt` — typed offerings/purchase/restore failures. `AlreadyOwned`
   means "the store says you already own this" — callers recover by falling through to a restore
   instead of dead-ending (the paywall does exactly that).

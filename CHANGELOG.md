@@ -15,6 +15,33 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-09-30
+
+### Added
+
+- **Hard paywall** (`:shared-monetization-ui`): `dismissible: Boolean = true` on `PaywallScreen`,
+  `FrnkPaywallDestination`, `frnkPaywallNavigation` and `PaywallArguments`. When `false` the paywall has no
+  close button, swallows system back and the iOS back swipe (also under a `FrnkNavDisplay`), and
+  `PaywallViewModel` ignores `PaywallIntent.Close` (no `Dismiss`, no `Paywall_Dismissed`); a purchase, a
+  restore, or the silent receipt sync that finds Pro still emits `PaywallEffect.Dismiss`.
+- **Paywall legal links** (`:shared-monetization-ui`): `PaywallLegalLinks(termsUrl, privacyUrl)` +
+  `PaywallLegalLink { Terms, Privacy }`. Passed as `legalLinks`, they make the "Terms · Privacy" footer
+  tappable, opened through `LocalUriHandler`, with `onLegalLinkClick` for analytics. Without them the footer
+  is the same plain text as before.
+- **Plan disclosure slot** (`:shared-monetization-ui`): `planDisclosure: (@Composable (ProProduct) -> Unit)?`
+  on the same entry points and `PaywallScreenContent`, rendered under the CTA for the selected plan.
+- **Free-trial length** (`:monetization-api`): `ProProduct.freeTrialPeriod: ProPeriod?`, with `ProPeriod(value,
+  unit)`, `ProPeriodUnit { Day, Week, Month, Year }` and `ProPeriod.approximateDays`. `:monetization-impl` fills
+  it from RevenueCat: the free pricing phase of the Play subscription option the SDK buys (Android), or a
+  `FREE_TRIAL` introductory discount (iOS).
+- `FrnkFullScreenScaffold(showCloseButton = true)` (`:ui-scaffolds`): `false` renders no close button and
+  reserves no space for it.
+
+### Fixed
+
+- `ProProduct.hasFreeTrial` is now true for an Android product with a free trial. purchases-kmp never
+  reports an Android `introductoryDiscount`, so it was always false there.
+
 ## [0.10.1] - 2026-09-30
 
 ### Added
@@ -568,7 +595,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.2...HEAD
+[0.10.2]: https://github.com/jdgarita/frnk/releases/tag/v0.10.2
 [0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
 [0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
 [0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2

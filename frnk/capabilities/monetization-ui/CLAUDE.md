@@ -24,6 +24,15 @@ monetization domain (`:monetization-api`).
   (`stringPaywallRestoring`) while a restore is in flight. UI is **stacked selectable plan cards** (radio + price + per-month + free-trial/best-value
   badge), a single CTA ("Start free trial" when the selected plan has a trial, else "Continue"), and
   Restore + Terms/Privacy. Product list shows a loading skeleton while offerings load.
+  **Hard mode (0.10.2):** `dismissible = false` (on `PaywallScreen` / `FrnkPaywallDestination` /
+  `frnkPaywallNavigation`, carried to the VM in `PaywallArguments`) hides the ✕ (`FrnkFullScreenScaffold
+  (showCloseButton = false)`), installs a swallowing `BackHandler` inside the screen (it outranks a
+  `FrnkNavDisplay`'s pop and `FrnkScreen`'s own handler), and the VM ignores `PaywallIntent.Close`; success
+  paths (purchase / restore / silent sync) still emit `Dismiss`. `PaywallScreenTest` (Robolectric) pins it.
+  **Footer:** `legalLinks: PaywallLegalLinks?` (`PaywallLegalLinks.kt`) turns "Terms · Privacy" into links
+  opened via `LocalUriHandler` (failures swallowed — hosts supply their own `UriHandler` to report them),
+  `onLegalLinkClick` is the analytics hook; `planDisclosure` is the host's slot under the CTA for the
+  selected plan. The internal `PaywallScreen(viewModel, …)` overload exists for tests.
 - `PaywallScaffoldModule.kt` — `paywallScaffoldModule` registers `PaywallViewModel` (`source` arrives at
   attach time via `PaywallArguments`; `PaywallPurchaseUseCase` + `AnalyticsTracker` + `SyncAuthUseCase`
   from the graph). Hosts
@@ -72,9 +81,10 @@ Two always-on paywall entry points the demo wires (and real hosts copy):
 
 ## Dependencies
 
-- `api(projects.uiScaffolds)`, `api(projects.monetizationApi)` (transitively `:core-nav` for
+- `api(projects.uiScaffolds)`, `api(projects.monetizationApi)`, `implementation(compose-ui-backhandler)` (the hard paywall's back handler) (transitively `:core-nav` for
   `FrnkRootRoute` + the nav3 back-stack helpers, and the nav3 engine via `:ui-scaffolds`). `commonTest`: `kotlin.test` +
   `kotlinx.coroutines.test`. `androidHostTest` (with `isIncludeAndroidResources`): `compose-ui-test` +
-  `ui-test-manifest` + `robolectric`, for `NoSubscriptionFoundDialogTest` (the module has no `commonDebug`
+  `ui-test-manifest` + `robolectric`, for `NoSubscriptionFoundDialogTest` and `PaywallScreenTest` (which reuses
+  the `internal` fakes in `PaywallViewModelTest.kt`) (the module has no `commonDebug`
   preview source set; the dialog's look is previewed through `FrnkDialog`'s neutral preview in `:ui-components`).
 - Plugins: compose (+ hosttest). No `kotlin-serialization` — the nav3 route serializers live in `:core-nav`.
