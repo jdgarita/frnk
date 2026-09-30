@@ -1,5 +1,6 @@
 package dev.jdgarita.frnk.ui.app
 
+import dev.jdgarita.frnk.ui.app.shell.frnkShellModule
 import dev.jdgarita.frnk.ui.scaffolds.home.homeScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.onboardingScaffoldModule
 import dev.jdgarita.frnk.ui.scaffolds.settings.settingsScaffoldModule
@@ -19,5 +20,6 @@ class FrnkUiModulesTest {
         assertTrue(homeScaffoldModule in modules, "home scaffold VM module")
         assertTrue(settingsScaffoldModule in modules, "settings scaffold VM module")
         assertTrue(onboardingScaffoldModule in modules, "onboarding scaffold VM module")
+        assertTrue(frnkShellModule in modules, "stack shell VM module")
     }
 }
