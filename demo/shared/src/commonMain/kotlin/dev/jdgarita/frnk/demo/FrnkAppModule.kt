@@ -10,6 +10,8 @@ import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
+import dev.jdgarita.frnk.monetization.ProPeriod
+import dev.jdgarita.frnk.monetization.ProPeriodUnit
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
@@ -92,7 +94,8 @@ class FakeEntitlementProvider : EntitlementProvider {
                     pricePerMonthFormatted = "$3.33",
                     hasFreeTrial = true,
                     badge = "Save 33%",
-                    price = ProPrice(amountMicros = 39_990_000, currencyCode = "USD")
+                    price = ProPrice(amountMicros = 39_990_000, currencyCode = "USD"),
+                    freeTrialPeriod = ProPeriod(1, ProPeriodUnit.Week)
                 ),
                 ProProduct(
                     "lifetime",
