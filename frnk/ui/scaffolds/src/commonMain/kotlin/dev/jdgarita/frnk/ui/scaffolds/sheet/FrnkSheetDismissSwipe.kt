@@ -3,6 +3,7 @@ package dev.jdgarita.frnk.ui.scaffolds.sheet
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.jdgarita.frnk.ui.scaffolds.sheet.ext.sheetBodyScroll
 
 /**
  * How much of a swipe it takes to dismiss a modal sheet: a release settles at Hidden once the
@@ -25,9 +26,9 @@ class FrnkSheetDismissSwipe(
          * For a sheet whose body scrolls under the finger: a pull that begins as the scroll's
          * overscroll at its top is the same gesture as a swipe down, so it takes a drag of a
          * fifth of the sheet's travel, or a hard flick, to leave — a swipe the user means is
-         * still one swipe, only a longer or a faster one. Pair it with the sheet-body scroll
-         * connection on the scroller: the flick half is for the sheet's own handle, and a
-         * release over the body is judged on the drag alone.
+         * still one swipe, only a longer or a faster one. Pair it with [sheetBodyScroll] on the
+         * scroller: the flick half is for the sheet's own handle, and a release over the body is
+         * judged on the drag alone.
          */
         val Heavy: FrnkSheetDismissSwipe =
             FrnkSheetDismissSwipe(

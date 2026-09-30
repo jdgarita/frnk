@@ -8,6 +8,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import com.composeunstyled.ModalBottomSheetState
 import com.composeunstyled.SheetDetent
+import dev.jdgarita.frnk.ui.scaffolds.sheet.ext.fadeScrimWithSwipe
 
 /**
  * Reports a sheet's exit to its host **exactly once per presentation**, read off the sheet state
@@ -15,10 +16,10 @@ import com.composeunstyled.SheetDetent
  *
  * The library reports a swipe through `UnstyledModalBottomSheet`'s `onDismiss`, from a
  * `LaunchedEffect` that lives *inside* the modal and fires once the sheet has settled at Hidden.
- * Since the scrim leaves at the gesture's release rather than after the settle, the modal's
- * lifetime no longer waits for that callback: when the fade has finished before the slide, the
- * settle is also the moment the modal's last fragment goes, and the modal can tear down before
- * the effect body runs — the effect is cancelled, the callback never comes, and the host's
+ * Since the scrim leaves at the gesture's release ([fadeScrimWithSwipe]) rather than after the
+ * settle, the modal's lifetime no longer waits for that callback: when the fade has finished
+ * before the slide, the settle is also the moment the modal's last fragment goes, and the modal
+ * can tear down before the effect body runs — the effect is cancelled, the callback never comes, and the host's
  * `visible` flag stays true against a sheet that has already left. Every later present is then a
  * no-op. The library also drops the callback when its `dismissRequested` guard is still set from
  * a previous exit in the same mount.
