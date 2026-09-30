@@ -268,6 +268,18 @@ The toolkit-owned navigation layer is built on **AndroidX Navigation3** (type-sa
 
 **The toolkit ships the nav display + scaffold machinery; the host owns the back-stack instance** (`FrnkApp` and `FrnkNestedNavScaffold` each create one via `rememberNavBackStack` from the host-supplied `onSavedStateConfiguration` and hand it to the host's navigation module). Navigation is driven by the MVI effect channel: a ViewModel emits a navigation `UiEffect`, and a single effect collector above the display mutates the host-owned back stack via `navigateTo`/`back`/`clearAndNavigateTo` (collect it in exactly one place — the effect channel is single-consumer). On Android `NavDisplay` consumes the system back button / predictive-back gesture to pop the back stack automatically (the host activity sets `android:enableOnBackInvokedCallback="true"`); on iOS the back-gesture support depends on the Compose Multiplatform runtime, so screens should also carry an on-screen back affordance. `:demo-shared`'s `FrnkDemoApp` is the reference integration — the single shared composable both `demo-android`'s `MainActivity` and `iosDemoApp`'s `MainViewController` call, built over **`FrnkApp`** (`:ui-app`): it hands `FrnkApp` a root navigation module (`RootNavigationModule`) that registers `FrnkRootRoute.Onboarding`/`Tab`/`Paywall`, mounting `FrnkNestedNavScaffold` at the `Tab` destination (the fixed Home/Components/Settings bar) and registering the destinations behind those routes plus the pushed `ComponentDetail(name)`. The demo wires its own paywall and onboarding (nothing is auto-mounted).
 
+### Sheets, headline bar and the single-stack shell
+
+- **`:ui-scaffolds`** owns the modal sheet (`ui/scaffolds/sheet/`): `FrnkModalSheet` (themed bottom sheet with a
+  `canDismiss` veto and `FrnkSheetDismissSwipe` thresholds), `FrnkSheetHeader`, `FrnkModalSheetCloseHandler`,
+  and `Modifier.sheetBodyScroll()`; and `FrnkPresentationViewModelStore` (`ui/nav/`), which gives a
+  presentation its own ViewModel store.
+- **`:ui-components`** owns `FrnkHeadlineTopBar` (`ui/atoms/`): a large-headline bar with a leading action, an
+  optional badge, actions, and a `FrnkHeadlineTrailing` search-or-action slot. The host owns the search state.
+- **`:ui-app`** owns `FrnkStackShell` (`ui/app/shell/`): one saveable back stack plus `FrnkShellSheet`s held
+  above it, driven through `FrnkShellNavigator`. Sheet presentation lives in an MVI ViewModel registered by
+  `frnkShellModule`, which `frnkUiModules()` includes.
+
 ## CI
 
 **Build/test CI is paused while the repo is private.** Free-tier GitHub Actions minutes are capped on private repos, and the per-push `compile & test` job (`main.yml`) was exhausting the spending limit during foundation work — so it and the auto PR review (`claude-code-review.yml`) were removed. Two workflows remain, both triggered only rarely:

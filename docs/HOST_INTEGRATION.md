@@ -242,7 +242,7 @@ capabilities are simply not installed, so their bindings never appear in the gra
 // Application.onCreate (Android). iOS calls the common overload (no context param).
 initializeFrnk(
     context = this,
-    modules = frnkUiModules() +                  // :ui-app — scaffold VMs (Home/Settings/Onboarding/BottomNav)
+    modules = frnkUiModules() +                  // :ui-app — scaffold VMs (Home/Settings/Onboarding/BottomNav) + frnkShellModule (FrnkStackShell)
         listOf(
             databaseModule,                      // :data-db-impl — Room DatabaseFactory (bring your own schema, §1)
             prefsModule,                         // :data-prefs-impl — KeyValueStore (multiplatform-settings)
@@ -714,6 +714,21 @@ Two plugins are host-facing (`frnk.kmp.library` for host-owned KMP modules, `frn
 > `startRoute = rememberFrnkRootStartRoute()` for first-launch onboarding gating. See `:demo-shared`'s
 > `FrnkDemoApp` for the reference call. The rest of this section documents the lower-level `FrnkApp` path for
 > full control.
+
+> **No bottom bar? Use `FrnkStackShell`.** An app that is one stack of screens with modal sheets over it
+> (Faint's, Still's shape) mounts **`FrnkStackShell(startRoute, hostRoutes, sheets) { navigator -> entry<…> { … } }`**
+> (`:ui-app`, `dev.jdgarita.frnk.ui.app.shell`) instead of the tabbed shell. It owns one saveable back stack
+> (routes serialized through your `hostRoutes` `SerializersModule`) plus the sheets declared as
+> `FrnkShellSheet(key, dismissible, dismissOnClickOutside) { navigator -> … }`; entries and sheet content get a
+> `FrnkShellNavigator` (`push` / `back` / `present(key)` / `dismiss(key)`). Sheet visibility lives in an MVI
+> ViewModel registered by **`frnkShellModule`**, which `frnkUiModules()` already carries — no extra Koin
+> module. Each presentation composes its content under a fresh `FrnkPresentationViewModelStore`.
+> Rules: `navigator.back()` at the start route is a no-op; a non-dismissible sheet swallows back, the
+> swipe and the outside tap, and only `navigator.dismiss(key)` lowers it; sheet keys must be unique; and
+> the shell's ViewModel is keyed by class, so use **one `FrnkStackShell` per `ViewModelStoreOwner`**.
+> Sheet presentation is not saved across process death, and sheet-content ViewModels are rebuilt on an
+> Android configuration change (see the 0.10.0 changelog's known limitations). Pick
+> `frnkTabbedRootModule` for `Home · <custom> · Settings` with a bottom bar, `FrnkStackShell` otherwise.
 
 After `initializeFrnk(...)` (§4), **`FrnkApp`** (`:ui-app`) is the app root. It owns only the app chrome —
 `FrnkTheme` + the `AppearanceController`-driven light/dark + system-bar appearance + a single root

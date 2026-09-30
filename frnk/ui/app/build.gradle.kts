@@ -6,6 +6,13 @@ plugins {
 kotlin {
     android {
         namespace = "${libs.versions.frnk.groupId.get()}.ui.app"
+        // FrnkStackShellTest drives a real composition (runComposeUiTest) under Robolectric, which needs
+        // the merged Android resources/manifest to inflate the test host — as :ui-scaffolds does. The host
+        // test is already created by frnk.kmp.library.hosttest (only one may exist), so configure it
+        // through its compilation, the AGP-documented way to change an existing host test's options.
+        compilations.withType(com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation::class.java) {
+            isIncludeAndroidResources = true
+        }
     }
     sourceSets {
         commonMain.dependencies {
@@ -25,6 +32,18 @@ kotlin {
             api(projects.crashSentry)
             // The bootstrap FrnkAppScaffold's fail-fast assertion points hosts at.
             api(projects.coreDi)
+            // Multiplatform BackHandler — FrnkStackShell's host-window fallback for a visible sheet.
+            implementation(libs.compose.ui.backhandler)
+        }
+
+        // The Compose host-test bundle :ui-scaffolds gets from frnk.kmp.library.composehosttest
+        // (kotlin-test + coroutines-test arrive from commonTest via frnk.kmp.library.hosttest).
+        getByName("androidHostTest").dependencies {
+            implementation(libs.compose.ui.test)
+            // Registers androidx.activity.ComponentActivity in the test manifest so runComposeUiTest
+            // can launch it under Robolectric.
+            implementation(libs.androidx.compose.ui.test.manifest)
+            implementation(libs.robolectric)
         }
     }
 }

@@ -1,5 +1,5 @@
 package dev.jdgarita.frnk.utils
 
 object Frnk {
-    const val VERSION = "0.9.2"
+    const val VERSION = "0.10.0"
 }

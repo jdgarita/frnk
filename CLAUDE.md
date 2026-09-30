@@ -120,6 +120,10 @@ unreachable sink degrades telemetry instead of blocking the app. Don't "fix" tha
 
 **iOS linker quirk.** Umbrella frameworks that bundle `:monetization-impl` (DemoKit; host frameworks) set `linkerOpts("-undefined", "dynamic_lookup")` because that module cinterops the native purchases-ios SDK — expected to be supplied by the consumer Xcode project via CocoaPods or SPM. Deferring symbol resolution lets the XCFramework link locally; the consumer app's own link step resolves the native RevenueCat/Firebase symbols at integration time.
 
+## Sheets & single-stack shell
+
+`FrnkModalSheet` / `FrnkSheetHeader` / `FrnkModalSheetCloseHandler` (`:ui-scaffolds`, `ui/scaffolds/sheet/`) are the modal sheet; `FrnkHeadlineTopBar` (`:ui-components`) is the large-headline bar. `FrnkStackShell` (`:ui-app`, `ui/app/shell/`) is the app shell for a **single back stack with no bottom bar** (Faint, Still): sheets are raised with `FrnkShellNavigator.present(key)` and held above the stack by the shell. For the tabbed `Home · <custom> · Settings` shape use `frnkTabbedRootModule` instead. Use one `FrnkStackShell` per `ViewModelStoreOwner`; sheet presentation is not saved across process death, so a host re-presents gate sheets itself. `canDismiss = { false }` on a `FrnkModalSheet` also blocks a programmatic `visible = false`; the host lifts the veto once it has hidden the sheet.
+
 ## Ktlint runs locally, not in CI
 
 `./build.gradle.kts` applies the ktlint plugin to **all** projects with `ignoreFailures.set(false)`. Style is enforced via a **git pre-commit hook** (`.githooks/pre-commit`) that runs `./gradlew ktlintFormat` and re-stages the fixed files — so commits land already-formatted and CI no longer needs a separate ktlint job.

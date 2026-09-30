@@ -50,6 +50,10 @@ kotlin {
             // Multiplatform BackHandler (androidx.compose.ui.backhandler) — used by FrnkTabbedBackHandler to
             // route system/predictive back into the tabbed nav. implementation (internal to the helper).
             implementation(libs.compose.ui.backhandler)
+            // FrnkModalSheet: compose-unstyled's modal bottom sheet (+ the modal window it lives in).
+            // implementation: the sheet's public API takes only Compose/frnk types.
+            implementation(libs.compose.unstyled.modal.bottom.sheet)
+            implementation(libs.compose.unstyled.modal)
         }
 
         // HomeViewModelTest constructs a FrnkTopAppBarAction with a Lucide vector directly (the scaffold

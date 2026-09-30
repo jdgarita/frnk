@@ -142,6 +142,8 @@ compose-unstyled-button = { module = "com.composables:composeunstyled-button", v
 compose-unstyled-icon = { module = "com.composables:composeunstyled-icon", version.ref = "compose-unstyled" }
 compose-unstyled-separators = { module = "com.composables:composeunstyled-separators", version.ref = "compose-unstyled" }
 compose-ripple-indication = { module = "com.composables:ripple-indication", version.ref = "ripple-indication" }
+compose-unstyled-modal = { module = "com.composables:composeunstyled-modal", version.ref = "compose-unstyled" }
+compose-unstyled-modal-bottom-sheet = { module = "com.composables:composeunstyled-modal-bottom-sheet", version.ref = "compose-unstyled" }
 
 [plugins]
 kotlin-multiplatform               = { id = "org.jetbrains.kotlin.multiplatform",       version.ref = "kotlin" }
