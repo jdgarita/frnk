@@ -18,6 +18,13 @@ kotlin {
             // the enabled flag. Compose-free at the contract level; usable without the engine.
             api(libs.kotlinx.coroutines.core)
 
+            // The persisted on/off switch (HapticsPreference): KeyValueHapticsPreference reads and
+            // writes the host's KeyValueStore, which is in its public constructor, so api. A
+            // capability may depend on a data-*-api (never an impl). koin-core for
+            // hapticsPreferenceModule(key), the one-line binding FrnkApp picks up.
+            api(projects.dataPrefsApi)
+            api(libs.koin.core)
+
             // The multihaptic engine binding (Stage 7a): wraps top.ltfan.multihaptic behind the Compose-free
             // HapticFeedback contract. Like the ripple, this is a UI-feedback library, not a swappable
             // backend SDK — no api/impl split. multihaptic ships its own Android/iOS impls (no native

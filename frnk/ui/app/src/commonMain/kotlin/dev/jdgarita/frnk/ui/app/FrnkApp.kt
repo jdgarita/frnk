@@ -11,6 +11,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import dev.jdgarita.frnk.ui.haptics.HapticFeedback
+import dev.jdgarita.frnk.ui.haptics.HapticsPreference
+import dev.jdgarita.frnk.ui.haptics.rememberFrnkHaptics
 import dev.jdgarita.frnk.ui.nav.FrnkRootRoute
 import dev.jdgarita.frnk.ui.nav.back
 import dev.jdgarita.frnk.ui.theme.Appearance
@@ -23,6 +26,7 @@ import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.context.loadKoinModules
 import org.koin.core.module.Module
+import org.koin.mp.KoinPlatformTools
 
 /**
  * The toolkit's app root — owns only the app chrome and hands the navigation graph to the host. The host
@@ -43,6 +47,10 @@ import org.koin.core.module.Module
  * navigation (e.g. via [FrnkRootRoute.Tab] hosting a nested back stack built with
  * [dev.jdgarita.frnk.ui.nav.frnkNestedNavConfig]). Assumes `initializeFrnk(...)` has run (the
  * [AppearanceController] is resolved from Koin).
+ *
+ * **Haptics.** When the graph binds a [HapticsPreference] (`hapticsPreferenceModule(key)` from
+ * `:haptics`), the ambient `LocalFrnkHaptics` is built over it, so it starts at the stored switch and
+ * the Settings toggle writes back to it. Without one, haptics behave as before: on, held in memory.
  *
  * @param onSavedStateConfiguration supplies the root back stack's `SavedStateConfiguration`.
  * @param startRoute the route the root back stack is seeded with on first launch (before any saved stack
@@ -90,7 +98,11 @@ fun FrnkApp(
         // instantiate a second controller and shadow this one via LocalAppearanceController, leaving
         // the palette (and the iOS interface-style pin) on Appearance.System regardless of what the
         // host seeded or a toggle set — while the system bars above followed this controller.
-        FrnkTheme(config = themeConfig, appearanceController = appearanceController) {
+        FrnkTheme(
+            config = themeConfig,
+            appearanceController = appearanceController,
+            haptics = rememberFrnkAppHaptics()
+        ) {
             AppScaffold {
                 val backStack =
                     rememberNavBackStack(
@@ -120,4 +132,21 @@ fun FrnkApp(
             }
         }
     }
+}
+
+/**
+ * The ambient haptics for [FrnkApp]: backed by the graph's [HapticsPreference] when one is bound, the
+ * in-memory default otherwise. The lookup is optional on purpose — a host that never installed
+ * `hapticsPreferenceModule` keeps working unchanged.
+ *
+ * Reads the live global Koin (the one `initializeFrnk` starts) rather than Compose's `getKoin()`,
+ * whose composition-local default is cached across Koin restarts in one process (Robolectric suites
+ * restart it per test) and would hand back a stale graph. Resolved once, at first composition; which
+ * overload runs never changes afterwards, so the call below is stable across recompositions.
+ */
+@Composable
+private fun rememberFrnkAppHaptics(): HapticFeedback {
+    val preference =
+        remember { KoinPlatformTools.defaultContext().getOrNull()?.getOrNull<HapticsPreference>() }
+    return if (preference != null) rememberFrnkHaptics(preference) else rememberFrnkHaptics()
 }

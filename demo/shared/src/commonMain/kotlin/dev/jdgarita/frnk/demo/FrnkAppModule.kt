@@ -17,6 +17,7 @@ import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
 import dev.jdgarita.frnk.permissions.permissionsModule
+import dev.jdgarita.frnk.ui.haptics.hapticsPreferenceModule
 import dev.jdgarita.frnk.utils.AppResult
 import dev.jdgarita.frnk.utils.CommonError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,10 @@ val frnkAppModule =
         // In-memory KeyValueStore so god mode persists for the session without the
         // multiplatform-settings impl; a real host installs prefsModule (:data-prefs-impl) instead.
         single<KeyValueStore> { FakeKeyValueStore() }
+        // The Settings "Haptic feedback" switch, stored in that KeyValueStore under the host's own key;
+        // FrnkApp builds the ambient LocalFrnkHaptics over it (in-memory store here, so it lasts the
+        // session — a real host's prefsModule makes it survive relaunch).
+        includes(hapticsPreferenceModule(key = "frnk.demo.haptics.enabled"))
         // In-memory NoteStore default so DemoKit/iOS stays free of the bundled SQLite driver.
         // androidDemoApp overrides it with the REAL path — databaseModule (:data-db-impl) +
         // demoNotesModule (demo-owned DemoDatabase over DatabaseFactory, OQ-2) — and the
