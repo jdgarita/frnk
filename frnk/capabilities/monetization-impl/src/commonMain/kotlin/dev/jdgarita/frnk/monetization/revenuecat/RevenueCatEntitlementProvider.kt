@@ -5,6 +5,7 @@ import com.revenuecat.purchases.kmp.PurchasesDelegate
 import com.revenuecat.purchases.kmp.ktx.SuccessfulLogin
 import com.revenuecat.purchases.kmp.models.CustomerInfo
 import com.revenuecat.purchases.kmp.models.DiscountPaymentMode
+import com.revenuecat.purchases.kmp.models.IntroEligibilityStatus
 import com.revenuecat.purchases.kmp.models.OfferPaymentMode
 import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
@@ -43,7 +44,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * [EntitlementProvider] backed by the RevenueCat KMP SDK.
@@ -60,6 +63,7 @@ internal class RevenueCatEntitlementProvider(
 
     private companion object {
         const val TAG = "EntitlementProvider"
+        val ELIGIBILITY_TIMEOUT = 3.seconds
     }
 
     override suspend fun identify(id: String): AppResult<Unit, IdentityError> {
@@ -119,10 +123,31 @@ internal class RevenueCatEntitlementProvider(
             onSuccess = { offerings ->
                 val packages = offerings.current?.availablePackages.orEmpty()
                 packagesById = packages.associateBy { it.identifier }
-                AppResult.Success(mapProducts(packages, config.savingsBadgeTemplate()))
+                AppResult.Success(mapProducts(packages, config.savingsBadgeTemplate(), introEligibility(packages)))
             },
             onFailure = { AppResult.Failure(MonetizationError.NoOfferings) }
         )
+    }
+
+    /**
+     * iOS: whether this customer can still redeem each product's introductory offer. StoreKit lists the
+     * offer whether or not they already used it, so without this a lapsed subscriber would read "7 days
+     * free" and be charged at once. Only products that carry an `introductoryDiscount` and no subscription
+     * options (the iOS shape) are checked — Android's `defaultOption` is eligible by construction. A check
+     * that fails or takes longer than [ELIGIBILITY_TIMEOUT] leaves the map empty: no trial is promised.
+     */
+    private suspend fun introEligibility(packages: List<Package>): Map<String, IntroEligibilityStatus> {
+        val products = packages.map { it.storeProduct }.filter { it.defaultOption == null && it.introductoryDiscount != null }
+        if (products.isEmpty()) return emptyMap()
+        return withTimeoutOrNull(ELIGIBILITY_TIMEOUT) {
+            sdkCall {
+                suspendCancellableCoroutine { continuation ->
+                    Purchases.sharedInstance.checkTrialOrIntroPriceEligibility(products) { byProduct ->
+                        if (continuation.isActive) continuation.resume(byProduct.mapKeys { (product, _) -> product.id })
+                    }
+                }
+            }
+        }.orEmpty()
     }
 
     override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
@@ -277,7 +302,8 @@ private class EntitlementDelegate(
 
 private fun mapProducts(
     packages: List<Package>,
-    savingsBadgeTemplate: String
+    savingsBadgeTemplate: String,
+    introEligibility: Map<String, IntroEligibilityStatus>
 ): List<ProProduct> {
     // Per-month price of the annual plan vs the monthly plan → savings badge.
     val monthlyMicros =
@@ -292,25 +318,56 @@ private fun mapProducts(
         val perMonthMicros = product.pricePerMonth?.amountMicros
         // Android reports trials on the subscription option the SDK buys (`defaultOption`, never an
         // `introductoryDiscount`); iOS on the introductory discount (no subscription options).
-        val freeTrial =
-            product.defaultOption?.let { freeTrialOf(it.pricingPhases) }
-                ?: product.introductoryDiscount?.let {
-                    freeTrialOf(it.paymentMode, it.subscriptionPeriod, it.numberOfPeriods)
-                }
+        val intro = product.introductoryDiscount
+        val trial =
+            trialInfoOf(
+                optionTrial = product.defaultOption?.let { freeTrialOf(it.pricingPhases) },
+                hasIntroDiscount = intro != null,
+                introTrial = intro?.let { freeTrialOf(it.paymentMode, it.subscriptionPeriod, it.numberOfPeriods) },
+                introEligibility = introEligibility[product.id]
+            )
         ProProduct(
             id = pkg.identifier,
             plan = plan,
             title = product.title,
             priceFormatted = product.price.formatted,
             pricePerMonthFormatted = product.pricePerMonth?.formatted,
-            // Any introductory offer (iOS, as before) or a free trial of known length (Android too).
-            hasFreeTrial = product.introductoryDiscount != null || freeTrial != null,
+            hasFreeTrial = trial.hasFreeTrial,
             badge = savingsBadge(plan, monthlyMicros, perMonthMicros, savingsBadgeTemplate),
             price = ProPrice(amountMicros = product.price.amountMicros, currencyCode = product.price.currencyCode),
-            freeTrialPeriod = freeTrial
+            freeTrialPeriod = trial.freeTrialPeriod
         )
     }
 }
+
+/** What [ProProduct.hasFreeTrial] / [ProProduct.freeTrialPeriod] report for one product. */
+internal data class TrialInfo(
+    val hasFreeTrial: Boolean,
+    val freeTrialPeriod: ProPeriod?
+)
+
+/**
+ * Pure trial decision. A Play option's free phase ([optionTrial], Android) is reported as is — Play only
+ * offers what the user is eligible for. An iOS introductory offer counts only when RevenueCat says the
+ * customer is [IntroEligibilityStatus.ELIGIBLE]: `UNKNOWN` / a failed check ([introEligibility] `null`) shows
+ * the regular price, as RevenueCat recommends, so the paywall never promises a trial it won't give.
+ * `hasFreeTrial` stays true for an eligible *paid* iOS intro offer (with no [introTrial] length), as before.
+ */
+internal fun trialInfoOf(
+    optionTrial: ProPeriod?,
+    hasIntroDiscount: Boolean,
+    introTrial: ProPeriod?,
+    introEligibility: IntroEligibilityStatus?
+): TrialInfo =
+    when {
+        optionTrial != null -> TrialInfo(hasFreeTrial = true, freeTrialPeriod = optionTrial)
+        hasIntroDiscount && introEligibility == IntroEligibilityStatus.ELIGIBLE ->
+            TrialInfo(
+                hasFreeTrial = true,
+                freeTrialPeriod = introTrial
+            )
+        else -> TrialInfo(hasFreeTrial = false, freeTrialPeriod = null)
+    }
 
 /**
  * Pure free-trial length from a Play subscription option's pricing phases (Android): the first

@@ -1,6 +1,7 @@
 package dev.jdgarita.frnk.monetization.revenuecat
 
 import com.revenuecat.purchases.kmp.models.DiscountPaymentMode
+import com.revenuecat.purchases.kmp.models.IntroEligibilityStatus
 import com.revenuecat.purchases.kmp.models.OfferPaymentMode
 import com.revenuecat.purchases.kmp.models.Period
 import com.revenuecat.purchases.kmp.models.PeriodUnit
@@ -91,5 +92,52 @@ class FreeTrialMappingTest {
 
         assertNull(freeTrialOf(DiscountPaymentMode.PAY_AS_YOU_GO, week, numberOfPeriods = 4))
         assertNull(freeTrialOf(DiscountPaymentMode.PAY_UP_FRONT, week, numberOfPeriods = 1))
+    }
+
+    private val week = ProPeriod(1, ProPeriodUnit.Week)
+
+    @Test
+    fun an_android_option_trial_is_reported_without_an_eligibility_check() {
+        // Play only offers the options the user is eligible for, and the SDK buys defaultOption.
+        assertEquals(
+            TrialInfo(true, week),
+            trialInfoOf(optionTrial = week, hasIntroDiscount = false, introTrial = null, introEligibility = null)
+        )
+    }
+
+    @Test
+    fun an_ios_trial_is_reported_only_for_an_eligible_customer() {
+        assertEquals(
+            TrialInfo(true, week),
+            trialInfoOf(optionTrial = null, hasIntroDiscount = true, introTrial = week, introEligibility = IntroEligibilityStatus.ELIGIBLE)
+        )
+        for (status in listOf(
+            IntroEligibilityStatus.INELIGIBLE,
+            IntroEligibilityStatus.UNKNOWN,
+            IntroEligibilityStatus.NO_INTRO_OFFER_EXISTS,
+            null
+        )) {
+            assertEquals(
+                TrialInfo(false, null),
+                trialInfoOf(optionTrial = null, hasIntroDiscount = true, introTrial = week, introEligibility = status),
+                "eligibility $status must not promise a trial"
+            )
+        }
+    }
+
+    @Test
+    fun an_eligible_paid_ios_intro_offer_keeps_has_free_trial_without_a_length() {
+        assertEquals(
+            TrialInfo(true, null),
+            trialInfoOf(optionTrial = null, hasIntroDiscount = true, introTrial = null, introEligibility = IntroEligibilityStatus.ELIGIBLE)
+        )
+    }
+
+    @Test
+    fun no_offer_is_no_trial() {
+        assertEquals(
+            TrialInfo(false, null),
+            trialInfoOf(optionTrial = null, hasIntroDiscount = false, introTrial = null, introEligibility = null)
+        )
     }
 }
