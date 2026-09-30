@@ -12,13 +12,17 @@ import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Crown
 import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.House
+import com.composables.icons.lucide.Info
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.MessageSquare
+import com.composables.icons.lucide.Receipt
 import com.composables.icons.lucide.RefreshCw
 import com.composables.icons.lucide.Search
 import com.composables.icons.lucide.Settings
 import com.composables.icons.lucide.Shield
 import com.composables.icons.lucide.Star
+import com.composables.icons.lucide.Trash2
+import com.composables.icons.lucide.TriangleAlert
 import com.composables.icons.lucide.Vibrate
 import com.composables.icons.lucide.X
 import com.composeunstyled.theme.ThemeToken
@@ -29,6 +33,14 @@ val iconClose = ThemeToken<ImageVector>("icon_close")
 val iconSearch = ThemeToken<ImageVector>("icon_search")
 val iconCheck = ThemeToken<ImageVector>("icon_check")
 val iconError = ThemeToken<ImageVector>("icon_error")
+
+// FrnkDialog badge glyphs: each FrnkDialogVariant shows one by default (Accent/Neutral → iconInfo,
+// Destructive → iconDelete, Warning → iconWarning, Success → iconCheck). iconReceipt is the
+// No Subscription Found dialog's (a purchase record, not a fault).
+val iconInfo = ThemeToken<ImageVector>("icon_info")
+val iconDelete = ThemeToken<ImageVector>("icon_delete")
+val iconWarning = ThemeToken<ImageVector>("icon_warning")
+val iconReceipt = ThemeToken<ImageVector>("icon_receipt")
 
 // Settings scaffold icons. Used by the default settings catalog
 // (SettingsDefaults.rememberDefaultSettingsState); hosts override per token.
@@ -59,6 +71,10 @@ internal val DefaultFrnkIcons: Map<ThemeToken<ImageVector>, ImageVector> =
         iconSearch to Lucide.Search,
         iconCheck to Lucide.Check,
         iconError to Lucide.CircleAlert,
+        iconInfo to Lucide.Info,
+        iconDelete to Lucide.Trash2,
+        iconWarning to Lucide.TriangleAlert,
+        iconReceipt to Lucide.Receipt,
         iconChevronRight to Lucide.ChevronRight,
         iconUpgrade to Lucide.Crown,
         iconRestore to Lucide.RefreshCw,
