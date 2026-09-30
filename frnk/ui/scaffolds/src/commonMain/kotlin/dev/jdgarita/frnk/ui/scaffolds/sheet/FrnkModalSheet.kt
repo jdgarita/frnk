@@ -63,7 +63,10 @@ import dev.jdgarita.frnk.ui.theme.colors
  * (system back, swipe down, tap outside), so the caller can drop its own visibility state. A single
  * close can reach [onDismiss] more than once — back calls it, then compose-unstyled's settle
  * callback calls it again once the hidden sheet comes to rest — so hosts must treat it
- * idempotently: set `visible = false`, never count calls.
+ * idempotently: set `visible = false`, never count calls. That settle callback also runs after a
+ * host's **own** programmatic hide (`visible = false`) once the sheet comes to rest, so [onDismiss]
+ * is not proof the user dismissed anything: a host that logs "user dismissed" analytics from it must
+ * first check its own intent (e.g. whether it had already set `visible = false` itself).
  * A swipe is reported by the sheet itself, from its own state ([FrnkSheetExitReporter]) — never
  * only by compose-unstyled's callback, which the modal's teardown can outrun. The content is
  * composed only while the sheet is on screen, so `remember` inside it is per-presentation.
@@ -86,10 +89,9 @@ import dev.jdgarita.frnk.ui.theme.colors
  * once the predicate has reported it — so a sheet reads a tap on the scrim exactly as it reads a
  * swipe down, and the veto's refusal is the one signal either gesture leaves behind. Back is
  * deliberately not gated: a sheet that needs the veto also needs to hear about the attempt, and
- * the caller decides what to do with it. The veto also applies to a programmatic hide: while
- * `canDismiss = { false }`, setting [visible] to false does not hide the sheet. A host that must close
- * a vetoing sheet itself makes [canDismiss] return true once it has set [visible] to false, as
- * `FrnkStackShell` does with `canDismiss = { dismissible || !visible }`.
+ * the caller decides what to do with it. A host's own hide (`visible = false`) is never vetoed:
+ * [canDismiss] only gates the user's gestures (swipe, scrim tap), so a host can always close a
+ * vetoing sheet itself.
  *
  * [dismissSwipe] is how much of a swipe it takes to leave: the drag length, or the flick speed,
  * past which a release settles at Hidden rather than springing back. Every sheet takes
@@ -97,7 +99,8 @@ import dev.jdgarita.frnk.ui.theme.colors
  * finger asks for [FrnkSheetDismissSwipe.Heavy], so a pull that began as the scroll's overscroll at
  * the top does not carry the sheet off with it — a swipe the user means is still one swipe, only a
  * longer or a faster one. It changes when a drag *counts*, never whether it may: [canDismiss] is
- * still the veto.
+ * still the veto. The thresholds are captured when the sheet is first composed; a later change to
+ * [dismissSwipe] is ignored.
  *
  * [scrimColor] is the dim over what the sheet covers, the theme's `colorScrim` by default. A sheet
  * whose content must read at full strength over what it covers passes transparent. A transparent
@@ -184,6 +187,7 @@ fun FrnkModalSheet(
     // and never rebuilds it — a predicate closed over stale state would keep vetoing (or keep
     // allowing) long after the content moved on.
     val currentCanDismiss by rememberUpdatedState(canDismiss)
+    val currentVisible by rememberUpdatedState(visible)
     // The state cannot be named inside its own predicate, so the swipe hook reaches it through
     // this reference, filled in right after creation.
     val sheetStateRef = remember { Ref<ModalBottomSheetState>() }
@@ -198,7 +202,9 @@ fun FrnkModalSheet(
                 if (detent != SheetDetent.Hidden) {
                     true
                 } else {
-                    val allowed = currentCanDismiss()
+                    // A host's own hide (visible = false) is never vetoed: the host has decided,
+                    // and the veto only gates the user's gestures (swipe, scrim tap).
+                    val allowed = !currentVisible || currentCanDismiss()
                     // A swipe the veto lets settle at Hidden is an exit that began on the
                     // release, so the scrim leaves from here rather than after the settle.
                     if (allowed) sheetStateRef.value?.fadeScrimWithSwipe()
@@ -221,7 +227,6 @@ fun FrnkModalSheet(
     }
 
     val currentOnDismiss by rememberUpdatedState(onDismiss)
-    val currentVisible by rememberUpdatedState(visible)
     // The sheet's own exits (a swipe) reach the host from here, whether or not the library's
     // callback below survives the modal's teardown — see [FrnkSheetExitReporter]. Back and the
     // scrim tap call [onDismiss] directly, so their settle can reach it a second time (idempotent).
@@ -288,8 +293,11 @@ fun FrnkModalSheet(
                 modifier = modifier.sheetWidth(maxWidth)
             ) {
                 // Composed before [content], so a handler the content installs itself is the deeper
-                // one and takes back first. Disabled while dismissing, so back during the exit
-                // animation falls through to the host instead of firing [onDismiss] a second time.
+                // one and takes back first. Disabled while dismissing, so this handler does not fire
+                // [onDismiss] a second time during the exit animation. A second back then goes to
+                // whatever handler is next: with the default dismissOnBackPress = true that is
+                // compose-unstyled's own EscapeHandler, which calls [onDismiss] again (hence the
+                // idempotency contract); only with it off does back fall through to the host.
                 BackHandler(enabled = visible) { onDismiss() }
 
                 FrnkModalSheetSurface(

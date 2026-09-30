@@ -666,8 +666,8 @@ private fun ModalSheetDemo() {
         onDismiss = {},
         heightFraction = 0.4f,
         surfaceColor = Theme[colors][colorSurfaceVariant],
-        // The host lifts the veto once it has hidden the sheet, so its own hide is not refused.
-        canDismiss = { !lockedVisible }
+        // Vetoes only the user's gestures; the host's own hide (the button below) is never refused.
+        canDismiss = { false }
     ) {
         FrnkSheetHeader(
             title = "Locked sheet",

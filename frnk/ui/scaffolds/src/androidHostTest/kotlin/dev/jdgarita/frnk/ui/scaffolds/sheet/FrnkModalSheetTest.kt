@@ -145,6 +145,30 @@ class FrnkModalSheetTest : RobolectricComposeTest() {
             onNodeWithTag(BODY_TAG).assertIsDisplayed()
         }
 
+    /**
+     * The veto gates the user's gestures only. A host that drops [visible] itself has already decided,
+     * so a sheet with `canDismiss = { false }` must still leave — not strand on screen over a faded scrim.
+     */
+    @Test
+    fun can_dismiss_false_never_vetoes_the_hosts_own_hide() =
+        runComposeUiTest {
+            var shown by mutableStateOf(true)
+            setFrnkContent {
+                FrnkModalSheet(
+                    visible = shown,
+                    onDismiss = { shown = false },
+                    canDismiss = { false }
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth().height(320.dp).testTag(BODY_TAG))
+                }
+            }
+            waitUntilExactlyOneExists(hasTestTag(BODY_TAG))
+            waitForIdle()
+
+            runOnIdle { shown = false }
+            waitUntilDoesNotExist(hasTestTag(BODY_TAG))
+        }
+
     @Test
     fun a_close_handler_draws_the_close_button_and_calls_back() =
         runComposeUiTest {
