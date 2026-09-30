@@ -15,6 +15,22 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-29
+
+### Added
+
+- **`FrnkModalSheet`** (`:ui-scaffolds`, `dev.jdgarita.frnk.ui.scaffolds.sheet`): a themed modal bottom
+  sheet with a `canDismiss` veto, `FrnkSheetDismissSwipe` (`Default` / `Heavy`) dismiss thresholds,
+  `FrnkSheetHeader`, and `FrnkModalSheetCloseHandler` to declare the sheet's own close control.
+- **`FrnkPresentationViewModelStore`** (`:ui-scaffolds`): composes content under its own ViewModel store,
+  so a `koinViewModel()` inside a presentation starts fresh each time.
+- **`FrnkHeadlineTopBar`** (`:ui-components`): a large-headline top bar with a leading action, an optional
+  badge, actions, and a search-or-action trailing slot (`FrnkHeadlineTopBarState`, `FrnkHeadlineAction`,
+  `FrnkHeadlineBadge`, `FrnkHeadlineTrailing`).
+- **`FrnkStackShell`** (`:ui-app`, `dev.jdgarita.frnk.ui.app.shell`): a single-stack app shell with modal
+  sheets held above the stack, driven by `FrnkShellNavigator` (`push` / `back` / `present` /
+  `dismiss`) and declared with `FrnkShellSheet`. `frnkShellModule` is now part of `frnkUiModules()`.
+
 ## [0.9.2] - 2026-09-25
 
 ### Fixed
@@ -506,7 +522,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.9.2...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
 [0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2
 [0.9.1]: https://github.com/jdgarita/frnk/releases/tag/v0.9.1
 [0.9.0]: https://github.com/jdgarita/frnk/releases/tag/v0.9.0

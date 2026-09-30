@@ -5,29 +5,41 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeEffect
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeIntent
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeScreenState
 import dev.jdgarita.frnk.demo.ui.home.DemoHomeViewModel
+import dev.jdgarita.frnk.ui.app.shell.FrnkShellNavigator
+import dev.jdgarita.frnk.ui.app.shell.FrnkShellSheet
+import dev.jdgarita.frnk.ui.app.shell.FrnkStackShell
 import dev.jdgarita.frnk.ui.atoms.FrnkButton
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonState
 import dev.jdgarita.frnk.ui.atoms.FrnkButtonVariant
 import dev.jdgarita.frnk.ui.atoms.FrnkDivider
 import dev.jdgarita.frnk.ui.atoms.FrnkDividerState
+import dev.jdgarita.frnk.ui.atoms.FrnkHeadlineAction
+import dev.jdgarita.frnk.ui.atoms.FrnkHeadlineBadge
+import dev.jdgarita.frnk.ui.atoms.FrnkHeadlineTopBar
+import dev.jdgarita.frnk.ui.atoms.FrnkHeadlineTopBarState
+import dev.jdgarita.frnk.ui.atoms.FrnkHeadlineTrailing
 import dev.jdgarita.frnk.ui.atoms.FrnkIcon
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButton
 import dev.jdgarita.frnk.ui.atoms.FrnkIconButtonState
@@ -56,6 +68,9 @@ import dev.jdgarita.frnk.ui.organisms.FrnkListSection
 import dev.jdgarita.frnk.ui.organisms.FrnkListSectionState
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeader
 import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
+import dev.jdgarita.frnk.ui.scaffolds.sheet.FrnkModalSheet
+import dev.jdgarita.frnk.ui.scaffolds.sheet.FrnkModalSheetCloseHandler
+import dev.jdgarita.frnk.ui.scaffolds.sheet.FrnkSheetHeader
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
@@ -81,6 +96,10 @@ import dev.jdgarita.frnk.ui.theme.stringSearch
 import dev.jdgarita.frnk.ui.theme.stringSettings
 import dev.jdgarita.frnk.ui.tokens.FrnkIconSize
 import dev.jdgarita.frnk.ui.tokens.FrnkSpacing
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -585,6 +604,17 @@ private fun ComponentGallery(
             FrnkProfileHeader(state = FrnkProfileHeaderState.Skeleton)
         }
 
+        "FrnkModalSheet" -> ModalSheetDemo()
+
+        "FrnkHeadlineTopBar" ->
+            HeadlineTopBarDemo(
+                searchActive = state.searchActive,
+                searchQuery = state.searchQuery,
+                onIntent = onIntent
+            )
+
+        "FrnkStackShell" -> StackShellDemo()
+
         else ->
             FrnkText(
                 state =
@@ -593,5 +623,226 @@ private fun ComponentGallery(
                         color = colorOnSurfaceVariant
                     )
             )
+    }
+}
+
+@Composable
+private fun ModalSheetDemo() {
+    var basicVisible by remember { mutableStateOf(false) }
+    var lockedVisible by remember { mutableStateOf(false) }
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text =
+                    "A modal sheet over the screen. The second one vetoes every user exit (back, swipe, " +
+                        "outside tap) with canDismiss = { false }; its button closes it from the host.",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkButton(
+        state = FrnkButtonState.Content(text = "Present sheet"),
+        onClick = { basicVisible = true }
+    )
+    FrnkButton(
+        state = FrnkButtonState.Content(text = "Present non-dismissible sheet", variant = FrnkButtonVariant.Outlined),
+        onClick = { lockedVisible = true }
+    )
+    FrnkModalSheet(
+        visible = basicVisible,
+        onDismiss = { basicVisible = false },
+        heightFraction = 0.5f,
+        dismissOnClickOutside = true,
+        surfaceColor = Theme[colors][colorSurfaceVariant]
+    ) {
+        FrnkModalSheetCloseHandler(contentDescription = "Close sheet", onClose = { basicVisible = false })
+        FrnkSheetHeader(
+            title = "Sheet",
+            eyebrow = "Demo",
+            body = "Swipe down, tap outside, press back or tap the close button to dismiss."
+        )
+    }
+    FrnkModalSheet(
+        visible = lockedVisible,
+        onDismiss = {},
+        heightFraction = 0.4f,
+        surfaceColor = Theme[colors][colorSurfaceVariant],
+        // The host lifts the veto once it has hidden the sheet, so its own hide is not refused.
+        canDismiss = { !lockedVisible }
+    ) {
+        FrnkSheetHeader(
+            title = "Locked sheet",
+            body = "Back, swipe and outside taps are all refused. Only the button below closes it."
+        )
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Close"),
+            onClick = { lockedVisible = false },
+            modifier = Modifier.padding(horizontal = FrnkSpacing.md)
+        )
+    }
+}
+
+@Composable
+private fun HeadlineTopBarDemo(
+    searchActive: Boolean,
+    searchQuery: String,
+    onIntent: (DemoHomeIntent) -> Unit
+) {
+    var sortEnabled by remember { mutableStateOf(true) }
+    var lastAction by remember { mutableStateOf("none") }
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text = "Search trailing + PRO badge + add action (search state lives in the demo's view model).",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkHeadlineTopBar(
+        state =
+            FrnkHeadlineTopBarState(
+                title = FrnkStringSource.Raw("Library"),
+                leading =
+                    FrnkHeadlineAction(
+                        key = "settings",
+                        icon = FrnkIconSource.Token(iconNavSettings),
+                        contentDescription = FrnkStringSource.Raw("Settings")
+                    ),
+                badge =
+                    FrnkHeadlineBadge(
+                        key = "pro",
+                        label = FrnkStringSource.Raw("PRO"),
+                        contentDescription = FrnkStringSource.Raw("Upgrade to Pro")
+                    ),
+                actions =
+                    listOf(
+                        FrnkHeadlineAction(
+                            key = "add",
+                            icon = FrnkIconSource.Token(iconCheck),
+                            contentDescription = FrnkStringSource.Raw("Add")
+                        )
+                    ),
+                trailing =
+                    FrnkHeadlineTrailing.Search(
+                        isActive = searchActive,
+                        query = searchQuery,
+                        openContentDescription = FrnkStringSource.Raw("Search"),
+                        closeContentDescription = FrnkStringSource.Raw("Close search")
+                    )
+            ),
+        onActionClick = { lastAction = it },
+        onSearchOpen = { onIntent(DemoHomeIntent.SearchOpened) },
+        onSearchQueryChange = { onIntent(DemoHomeIntent.SearchQueryChanged(it)) },
+        onSearchClose = { onIntent(DemoHomeIntent.SearchClosed) }
+    )
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text = "Action trailing (\"Sort\"), never searches. Toggle enabled below.",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkHeadlineTopBar(
+        state =
+            FrnkHeadlineTopBarState(
+                title = FrnkStringSource.Raw("Activity"),
+                leading =
+                    FrnkHeadlineAction(
+                        key = "settings",
+                        icon = FrnkIconSource.Token(iconNavSettings),
+                        contentDescription = FrnkStringSource.Raw("Settings")
+                    ),
+                trailing =
+                    FrnkHeadlineTrailing.Action(
+                        FrnkHeadlineAction(
+                            key = "sort",
+                            icon = FrnkIconSource.Token(iconRestore),
+                            contentDescription = FrnkStringSource.Raw("Sort"),
+                            enabled = sortEnabled
+                        )
+                    )
+            ),
+        onActionClick = { lastAction = it }
+    )
+    FrnkButton(
+        state =
+            FrnkButtonState.Content(
+                text = if (sortEnabled) "Disable Sort" else "Enable Sort",
+                variant = FrnkButtonVariant.Outlined
+            ),
+        onClick = { sortEnabled = !sortEnabled }
+    )
+    FrnkText(state = FrnkTextState.BodySmall(text = "Last action: $lastAction", color = colorOnSurfaceVariant))
+}
+
+@Serializable
+private sealed interface DemoShellRoute : NavKey {
+    @Serializable
+    data object Home : DemoShellRoute
+
+    @Serializable
+    data object Detail : DemoShellRoute
+}
+
+private const val DEMO_SHEET_KEY = "demo-sheet"
+
+private val demoShellRoutes =
+    SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(DemoShellRoute.Home::class)
+            subclass(DemoShellRoute.Detail::class)
+        }
+    }
+
+private val demoShellSheets =
+    listOf(
+        FrnkShellSheet(key = DEMO_SHEET_KEY) { navigator ->
+            FrnkModalSheetCloseHandler(contentDescription = "Close sheet", onClose = { navigator.dismiss(DEMO_SHEET_KEY) })
+            FrnkSheetHeader(title = "Shell sheet", body = "Held above the stack by the shell; back closes it.")
+        }
+    )
+
+@Composable
+private fun StackShellDemo() {
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text = "An embedded FrnkStackShell: two routes on one back stack and one sheet the shell holds above it.",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkStackShell(
+        startRoute = DemoShellRoute.Home,
+        hostRoutes = demoShellRoutes,
+        sheets = demoShellSheets,
+        modifier = Modifier.height(320.dp).clip(Theme[shapes][shapeCard])
+    ) { navigator ->
+        entry<DemoShellRoute.Home> { ShellPage("Home", "Push detail", navigator, DemoShellRoute.Detail) }
+        entry<DemoShellRoute.Detail> { ShellPage("Detail", "Back", navigator, null) }
+    }
+}
+
+@Composable
+private fun ShellPage(
+    title: String,
+    primaryLabel: String,
+    navigator: FrnkShellNavigator,
+    next: NavKey?
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(Theme[colors][colorSurfaceVariant])
+                .padding(FrnkSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)
+    ) {
+        FrnkText(state = FrnkTextState.Title(text = title))
+        FrnkButton(
+            state = FrnkButtonState.Content(text = primaryLabel),
+            onClick = { if (next != null) navigator.push(next) else navigator.back() }
+        )
+        FrnkButton(
+            state = FrnkButtonState.Content(text = "Present sheet", variant = FrnkButtonVariant.Outlined),
+            onClick = { navigator.present(DEMO_SHEET_KEY) }
+        )
     }
 }

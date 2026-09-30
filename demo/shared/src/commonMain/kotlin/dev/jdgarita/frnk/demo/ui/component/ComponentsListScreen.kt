@@ -50,7 +50,10 @@ private val componentNames =
         "FrnkLabeledValue",
         "FrnkEmptyState",
         "FrnkListSection",
-        "FrnkProfileHeader"
+        "FrnkProfileHeader",
+        "FrnkModalSheet",
+        "FrnkHeadlineTopBar",
+        "FrnkStackShell"
     )
 
 @Composable

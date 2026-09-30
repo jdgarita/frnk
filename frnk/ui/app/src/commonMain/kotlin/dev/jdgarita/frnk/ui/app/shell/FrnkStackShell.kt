@@ -57,6 +57,15 @@ import org.koin.compose.viewmodel.koinViewModel
  * swallows back and refuses the swipe and the outside tap; only [FrnkShellNavigator.dismiss] lowers it.
  * At the start route with no sheet up, nothing here claims back, so the system takes it and leaves.
  *
+ * **Known limit.** On targets where back reaches the host window rather than the sheet's own window
+ * (non-Android), a `BackHandler` inside a destination pushed after the shell composed is registered later
+ * than a visible sheet's fallback handler and can outrank it, so back may pop or be claimed by that
+ * destination instead of closing the sheet.
+ *
+ * **One shell per owner.** The shell's ViewModel is keyed by class, so use one [FrnkStackShell] per
+ * `ViewModelStoreOwner`. Sheet presentation is not saved across process death: a host that needs a gate
+ * sheet up after a restart re-presents it itself.
+ *
  * **Insets.** There is no bottom bar, so [LocalFrnkBottomBarInset] carries the navigation-bar inset for
  * the screens to clear.
  */

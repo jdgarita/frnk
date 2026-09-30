@@ -86,8 +86,10 @@ import dev.jdgarita.frnk.ui.theme.colors
  * once the predicate has reported it — so a sheet reads a tap on the scrim exactly as it reads a
  * swipe down, and the veto's refusal is the one signal either gesture leaves behind. Back is
  * deliberately not gated: a sheet that needs the veto also needs to hear about the attempt, and
- * the caller decides what to do with it. Programmatic hides ([visible] going false) are never
- * vetoed — the caller has already decided.
+ * the caller decides what to do with it. The veto also applies to a programmatic hide: while
+ * `canDismiss = { false }`, setting [visible] to false does not hide the sheet. A host that must close
+ * a vetoing sheet itself makes [canDismiss] return true once it has set [visible] to false, as
+ * `FrnkStackShell` does with `canDismiss = { dismissible || !visible }`.
  *
  * [dismissSwipe] is how much of a swipe it takes to leave: the drag length, or the flick speed,
  * past which a release settles at Hidden rather than springing back. Every sheet takes
