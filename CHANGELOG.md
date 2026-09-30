@@ -30,8 +30,11 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   `koin-core`.
 - **`FrnkDialog`** (`:ui-components`): the alert dialog (`FrnkDialogState`, `FrnkDialogAction`,
   `FrnkDialogActionKind` Cancel / Primary / Destructive, `FrnkDialogActionLayout` Row / Stacked,
-  `FrnkDialogVariant` Accent / Destructive / Warning / Success / Neutral, `FrnkDialogDefaults`), drawn in
-  the composition over a scrim that swallows gestures, with an optional `extra` slot.
+  `FrnkDialogVariant` Accent / Destructive / Warning / Success / Neutral, `FrnkDialogDefaults`), presented
+  through compose-unstyled `Modal` (its own dialog window, so the screen beneath is out of reach of
+  screen readers and keyboard focus; focus starts on the first action), with an optional `extra` slot and
+  `onDismissRequest`: the dialog always consumes system back while shown and calls it when non-null.
+  `:ui-components` now depends on `compose-unstyled-modal` and `compose-ui-backhandler`.
 - **`NoSubscriptionFoundDialog`** (`:shared-monetization-ui`): the empty-restore dialog, worded for the
   store the build ships through (`FrnkAppStore`, `frnkAppStore`: Google Play on Android, the App Store on
   iOS), with an `onShown` hook for host analytics.

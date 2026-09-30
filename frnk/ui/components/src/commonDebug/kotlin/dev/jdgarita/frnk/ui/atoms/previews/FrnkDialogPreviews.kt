@@ -6,10 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.jdgarita.frnk.ui.atoms.FrnkDialog
 import dev.jdgarita.frnk.ui.atoms.FrnkDialogAction
 import dev.jdgarita.frnk.ui.atoms.FrnkDialogActionKind
 import dev.jdgarita.frnk.ui.atoms.FrnkDialogActionLayout
+import dev.jdgarita.frnk.ui.atoms.FrnkDialogOverlay
 import dev.jdgarita.frnk.ui.atoms.FrnkDialogState
 import dev.jdgarita.frnk.ui.atoms.FrnkDialogSurface
 import dev.jdgarita.frnk.ui.atoms.FrnkDialogVariant
@@ -119,13 +119,13 @@ private fun FrnkDialog_Neutral_CustomIcon_Light() {
     }
 }
 
-/** The full overlay: the scrim fills the space and the card sits centered over it. */
+/** The overlay FrnkDialog draws in its modal window: the scrim fills the space, the card sits centered. */
 @Preview(widthDp = 390, heightDp = 640)
 @Composable
 private fun FrnkDialog_Overlay_Dark() {
     PreviewSurface(appearance = Appearance.Dark) {
         Box(Modifier.height(600.dp)) {
-            FrnkDialog(state = accentState, onAction = {})
+            FrnkDialogOverlay(state = accentState, onAction = {})
         }
     }
 }

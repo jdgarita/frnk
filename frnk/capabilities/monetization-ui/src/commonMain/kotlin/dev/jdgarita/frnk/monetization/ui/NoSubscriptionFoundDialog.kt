@@ -40,8 +40,8 @@ const val NO_SUBSCRIPTION_FOUND_CONFIRM_KEY = "no_subscription_found_confirm"
  * `stringNoSubscriptionFound*` tokens (EN + ES bundled); a host overriding a body token keeps the
  * `{product}` placeholder where the product name goes.
  *
- * Like every [FrnkDialog] it is drawn in the composition: compose it last in a full-screen `Box`
- * while the host's state says it is shown, and drop it on [onDismiss].
+ * Like every [FrnkDialog] it is shown while composed (in its own modal window) and dismissed by
+ * dropping it from the composition on [onDismiss], which "Got It" and system back both call.
  *
  * @param onShown called once per presentation (not per recomposition), for the host's analytics — e.g.
  *   `analytics.trackCustom("restore_no_subscription_shown", mapOf("source" to "settings"))`. The
@@ -81,6 +81,8 @@ fun NoSubscriptionFoundDialog(
                     )
             ),
         onAction = { onDismiss() },
-        modifier = modifier
+        modifier = modifier,
+        // Back acknowledges it too: the dialog only informs, so there is nothing to lose.
+        onDismissRequest = onDismiss
     )
 }

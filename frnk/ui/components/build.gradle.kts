@@ -27,6 +27,10 @@ kotlin {
             implementation(libs.compose.unstyled.button)
             implementation(libs.compose.unstyled.icon)
             implementation(libs.compose.unstyled.separators)
+            // FrnkDialog presents through compose-unstyled's Modal (its own platform window with dialog
+            // semantics, as FrnkModalSheet does) and swallows back with the multiplatform BackHandler.
+            implementation(libs.compose.unstyled.modal)
+            implementation(libs.compose.ui.backhandler)
             // Default Lucide vectors used by atom previews + the FrnkTopAppBar host test. Hosts override
             // every icon via FrnkThemeConfig, so consumers don't take a Lucide dependency unless they
             // reference Lucide vectors at their own call sites.

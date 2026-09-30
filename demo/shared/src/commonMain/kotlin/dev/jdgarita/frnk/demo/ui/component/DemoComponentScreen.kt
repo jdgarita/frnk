@@ -861,9 +861,6 @@ private fun ShellPage(
     }
 }
 
-/** Height of the in-place stage the dialog demos draw into (the demo screen scrolls, so no full-screen overlay). */
-private val DialogStageHeight = 520.dp
-
 @Composable
 private fun DialogDemo() {
     var shown by remember { mutableStateOf<FrnkDialogVariant?>(null) }
@@ -872,8 +869,8 @@ private fun DialogDemo() {
         state =
             FrnkTextState.BodySmall(
                 text =
-                    "FrnkDialog draws in the composition over a scrim that swallows taps. Here it fills the " +
-                        "stage below; an app composes it last in its shell. Last action: $lastAction",
+                    "FrnkDialog opens in its own modal window over a scrim; back closes it here " +
+                        "(onDismissRequest). Last action: $lastAction",
                 color = colorOnSurfaceVariant
             )
     )
@@ -891,24 +888,26 @@ private fun DialogDemo() {
                 FrnkDialogAction(key = "delete", label = FrnkStringSource.Raw("Delete"), kind = FrnkDialogActionKind.Destructive)
             else -> FrnkDialogAction(key = "ok", label = FrnkStringSource.Raw("OK"), kind = FrnkDialogActionKind.Primary)
         }
-    Box(Modifier.fillMaxWidth().height(DialogStageHeight)) {
-        FrnkDialog(
-            state =
-                FrnkDialogState(
-                    title = FrnkStringSource.Raw("$variant dialog"),
-                    eyebrow = FrnkStringSource.Raw("Demo"),
-                    body = FrnkStringSource.Raw("Tap an action to close it. Taps on the scrim do nothing."),
-                    variant = variant,
-                    actions = if (variant == FrnkDialogVariant.Warning) listOf(answer, cancel) else listOf(cancel, answer),
-                    actionLayout =
-                        if (variant == FrnkDialogVariant.Warning) FrnkDialogActionLayout.Stacked else FrnkDialogActionLayout.Row
-                ),
-            onAction = { action ->
-                lastAction = action.key
-                shown = null
-            }
-        )
-    }
+    FrnkDialog(
+        state =
+            FrnkDialogState(
+                title = FrnkStringSource.Raw("$variant dialog"),
+                eyebrow = FrnkStringSource.Raw("Demo"),
+                body = FrnkStringSource.Raw("Tap an action to close it. Taps on the scrim do nothing."),
+                variant = variant,
+                actions = if (variant == FrnkDialogVariant.Warning) listOf(answer, cancel) else listOf(cancel, answer),
+                actionLayout =
+                    if (variant == FrnkDialogVariant.Warning) FrnkDialogActionLayout.Stacked else FrnkDialogActionLayout.Row
+            ),
+        onAction = { action ->
+            lastAction = action.key
+            shown = null
+        },
+        onDismissRequest = {
+            lastAction = "back"
+            shown = null
+        }
+    )
 }
 
 @Composable
@@ -930,7 +929,5 @@ private fun NoSubscriptionFoundDemo() {
         )
     }
     val selected = store ?: return
-    Box(Modifier.fillMaxWidth().height(DialogStageHeight)) {
-        NoSubscriptionFoundDialog(onDismiss = { store = null }, store = selected)
-    }
+    NoSubscriptionFoundDialog(onDismiss = { store = null }, store = selected)
 }

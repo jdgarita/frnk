@@ -15,17 +15,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import com.composeunstyled.Modal
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
+import com.composeunstyled.rememberModalState
 import com.composeunstyled.theme.Theme
 import com.composeunstyled.theme.ThemeToken
 import dev.jdgarita.frnk.ui.atoms.ext.defaultIconToken
@@ -71,29 +86,67 @@ private const val NEUTRAL_BADGE_FILL_ALPHA = 0.05f
  * centered over a scrim. Upstreamed from Faint's `PoAlert`; styled from theme tokens only, so each
  * host's `FrnkThemeConfig` decides how it looks.
  *
- * **Placement.** The dialog is drawn in the composition, not in a platform window: it fills the
- * space it is given, so compose it last in a full-screen `Box` (the app shell, above the screen it
- * interrupts) and remove it from the composition to dismiss it. It has no dismiss of its own — no
- * outside tap, no back handling — because every exit is an action the host chose; a host that wants
- * back to cancel installs its own `BackHandler` while the dialog is shown.
+ * **Presentation.** Composing it shows it; removing it from the composition dismisses it. It is
+ * presented through compose-unstyled's `Modal` — the same primitive `FrnkModalSheet` uses — so on
+ * Android it sits in its own dialog window (inside a `ModalHost`, in that host's portal instead), marked
+ * with dialog semantics. That keeps the screen beneath out of reach of TalkBack / VoiceOver and of
+ * keyboard focus, not just of touch. Focus starts on the first action, and the title is a heading.
  *
- * **Gestures.** The scrim swallows every gesture that misses the card, so nothing underneath reacts
- * to a tap, long press or swipe while the dialog is up. The scrim is a sibling *below* the card, not
- * a modifier around it: an ancestor that consumed every pointer change would also cancel the card's
- * own buttons, since a press is cancelled by a move consumed anywhere on its path and a real finger
- * always drifts a pixel or two between down and up.
+ * **Back.** The dialog always consumes system back (and Escape) while it is shown, so back never pops
+ * the screen beneath a still-visible dialog. It calls [onDismissRequest] when that is non-null; with
+ * `null` (the default) back does nothing, and every exit is one of the [FrnkDialogState.actions]. There
+ * is no outside-tap dismiss.
+ *
+ * **Gestures.** The scrim swallows every gesture that misses the card. The scrim is a sibling *below*
+ * the card, not a modifier around it: an ancestor that consumed every pointer change would also cancel
+ * the card's own buttons, since a press is cancelled by a move consumed anywhere on its path and a real
+ * finger always drifts a pixel or two between down and up.
  *
  * Each action button fires `HapticType.Click` and reports its [FrnkDialogAction] through [onAction].
  *
+ * @param onDismissRequest called on system back / Escape; `null` makes back a no-op while shown.
  * @param extra optional content between the body and the actions (an error code chip, a checkbox).
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FrnkDialog(
     state: FrnkDialogState,
     onAction: (FrnkDialogAction) -> Unit,
     modifier: Modifier = Modifier,
+    onDismissRequest: (() -> Unit)? = null,
     extra: (@Composable () -> Unit)? = null
 ) {
+    val modalState = rememberModalState(initiallyVisible = true)
+    val currentDismissRequest by rememberUpdatedState(onDismissRequest)
+    Modal(
+        state = modalState,
+        onKeyEvent = { event ->
+            if (event.key == Key.Escape) {
+                if (event.type == KeyEventType.KeyUp) currentDismissRequest?.invoke()
+                true
+            } else {
+                false
+            }
+        }
+    ) {
+        // Always enabled: a modal owns back while it is up, whether or not the host lets it dismiss.
+        BackHandler(enabled = true) { currentDismissRequest?.invoke() }
+        FrnkDialogOverlay(state = state, onAction = onAction, modifier = modifier, extra = extra)
+    }
+}
+
+/**
+ * The scrim and the centered card, filling the space given — what [FrnkDialog] draws inside its modal
+ * window, and what the overlay preview renders (a platform window can't be previewed).
+ */
+@Composable
+internal fun FrnkDialogOverlay(
+    state: FrnkDialogState,
+    onAction: (FrnkDialogAction) -> Unit,
+    modifier: Modifier = Modifier,
+    extra: (@Composable () -> Unit)? = null
+) {
+    val firstAction = remember { FocusRequester() }
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Box(
             Modifier
@@ -111,8 +164,12 @@ fun FrnkDialog(
             state = state,
             onAction = onAction,
             modifier = Modifier.padding(Theme[spacing][spacingXl]),
-            extra = extra
+            extra = extra,
+            firstActionFocus = firstAction
         )
+    }
+    if (state.actions.isNotEmpty()) {
+        LaunchedEffect(firstAction) { firstAction.requestFocus() }
     }
 }
 
@@ -122,7 +179,8 @@ internal fun FrnkDialogSurface(
     state: FrnkDialogState,
     onAction: (FrnkDialogAction) -> Unit,
     modifier: Modifier = Modifier,
-    extra: (@Composable () -> Unit)? = null
+    extra: (@Composable () -> Unit)? = null,
+    firstActionFocus: FocusRequester? = null
 ) {
     val shape = Theme[shapes][shapeCard]
     val tintToken = state.variant.tintToken()
@@ -179,7 +237,7 @@ internal fun FrnkDialogSurface(
                         fontWeight = FontWeight.Bold,
                         style = titleLarge
                     ),
-                modifier = Modifier.padding(top = Theme[spacing][spacingXs])
+                modifier = Modifier.padding(top = Theme[spacing][spacingXs]).semantics { heading() }
             )
 
             state.body?.let { body ->
@@ -214,24 +272,24 @@ internal fun FrnkDialogSurface(
         when (state.actionLayout) {
             FrnkDialogActionLayout.Row ->
                 Row(modifier = actionsPadding, horizontalArrangement = gap) {
-                    state.actions.forEach { action ->
+                    state.actions.forEachIndexed { index, action ->
                         FrnkDialogButton(
                             action = action,
                             variant = state.variant,
                             onClick = { onAction(action) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).focusFirst(index, firstActionFocus)
                         )
                     }
                 }
 
             FrnkDialogActionLayout.Stacked ->
                 Column(modifier = actionsPadding, verticalArrangement = gap) {
-                    state.actions.forEach { action ->
+                    state.actions.forEachIndexed { index, action ->
                         FrnkDialogButton(
                             action = action,
                             variant = state.variant,
                             onClick = { onAction(action) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().focusFirst(index, firstActionFocus)
                         )
                     }
                 }
@@ -331,3 +389,9 @@ private fun FrnkDialogButton(
         }
     }
 }
+
+/** Attaches [requester] to the first action only, so the dialog can move focus there when it opens. */
+private fun Modifier.focusFirst(
+    index: Int,
+    requester: FocusRequester?
+): Modifier = if (index == 0 && requester != null) focusRequester(requester) else this

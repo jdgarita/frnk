@@ -25,7 +25,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * [FrnkDialog]'s contract, ported from Faint's `PoAlertTest` plus the copy and layout promises: its scrim
+ * [FrnkDialog]'s contract, ported from Faint's `PoAlertTest` plus the copy and layout promises (modality,
+ * focus and back are in `FrnkDialogModalTest`): its scrim
  * swallows what would otherwise reach the screen beneath, its actions still take a real finger, and each
  * action reports itself by key. The scrim and the buttons pull in opposite directions — a scrim that
  * consumes every change of every gesture also cancels the tap on its own buttons — so both are pinned.
@@ -75,6 +76,11 @@ class FrnkDialogTest : RobolectricComposeTest() {
             assertEquals(listOf("cancel", "confirm"), fired)
         }
 
+    /**
+     * Drawn with the in-window [FrnkDialogOverlay]: the test harness injects touches straight into a
+     * node's own window, so it can't show the dialog window covering the activity. The scrim still has
+     * to swallow them inside that window, and inside a `ModalHost` portal, where it shares one.
+     */
     @Test
     fun the_scrim_keeps_taps_from_what_lies_beneath() =
         runComposeUiTest {
@@ -87,7 +93,7 @@ class FrnkDialogTest : RobolectricComposeTest() {
                             .testTag("beneath")
                             .clickable { beneathClicks += 1 }
                     )
-                    FrnkDialog(state = state(), onAction = {})
+                    FrnkDialogOverlay(state = state(), onAction = {})
                 }
             }
 
