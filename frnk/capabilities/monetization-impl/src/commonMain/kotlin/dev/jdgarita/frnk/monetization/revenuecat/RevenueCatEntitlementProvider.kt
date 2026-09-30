@@ -4,9 +4,14 @@ import com.revenuecat.purchases.kmp.Purchases
 import com.revenuecat.purchases.kmp.PurchasesDelegate
 import com.revenuecat.purchases.kmp.ktx.SuccessfulLogin
 import com.revenuecat.purchases.kmp.models.CustomerInfo
+import com.revenuecat.purchases.kmp.models.DiscountPaymentMode
+import com.revenuecat.purchases.kmp.models.OfferPaymentMode
 import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
 import com.revenuecat.purchases.kmp.models.PackageType
+import com.revenuecat.purchases.kmp.models.Period
+import com.revenuecat.purchases.kmp.models.PeriodUnit
+import com.revenuecat.purchases.kmp.models.PricingPhase
 import com.revenuecat.purchases.kmp.models.PurchasesError
 import com.revenuecat.purchases.kmp.models.PurchasesErrorCode
 import com.revenuecat.purchases.kmp.models.PurchasesException
@@ -24,6 +29,8 @@ import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
 import dev.jdgarita.frnk.monetization.ProMetadata
+import dev.jdgarita.frnk.monetization.ProPeriod
+import dev.jdgarita.frnk.monetization.ProPeriodUnit
 import dev.jdgarita.frnk.monetization.ProPlan
 import dev.jdgarita.frnk.monetization.ProPrice
 import dev.jdgarita.frnk.monetization.ProProduct
@@ -283,17 +290,64 @@ private fun mapProducts(
         val product = pkg.storeProduct
         val plan = pkg.packageType.toProPlan()
         val perMonthMicros = product.pricePerMonth?.amountMicros
+        // Android reports trials on the subscription option the SDK buys (`defaultOption`, never an
+        // `introductoryDiscount`); iOS on the introductory discount (no subscription options).
+        val freeTrial =
+            product.defaultOption?.let { freeTrialOf(it.pricingPhases) }
+                ?: product.introductoryDiscount?.let {
+                    freeTrialOf(it.paymentMode, it.subscriptionPeriod, it.numberOfPeriods)
+                }
         ProProduct(
             id = pkg.identifier,
             plan = plan,
             title = product.title,
             priceFormatted = product.price.formatted,
             pricePerMonthFormatted = product.pricePerMonth?.formatted,
-            hasFreeTrial = product.introductoryDiscount != null,
+            // Any introductory offer (iOS, as before) or a free trial of known length (Android too).
+            hasFreeTrial = product.introductoryDiscount != null || freeTrial != null,
             badge = savingsBadge(plan, monthlyMicros, perMonthMicros, savingsBadgeTemplate),
-            price = ProPrice(amountMicros = product.price.amountMicros, currencyCode = product.price.currencyCode)
+            price = ProPrice(amountMicros = product.price.amountMicros, currencyCode = product.price.currencyCode),
+            freeTrialPeriod = freeTrial
         )
     }
+}
+
+/**
+ * Pure free-trial length from a Play subscription option's pricing phases (Android): the first
+ * phase before the full-price one that is free — flagged `FREE_TRIAL`, or priced at zero — lasting
+ * its billing period times its cycle count. `null` when the option has no free phase.
+ */
+internal fun freeTrialOf(phases: List<PricingPhase>): ProPeriod? {
+    val free =
+        phases.dropLast(1).firstOrNull {
+            it.offerPaymentMode == OfferPaymentMode.FREE_TRIAL || it.price.amountMicros == 0L
+        } ?: return null
+    return free.billingPeriod.toProPeriod(times = (free.billingCycleCount ?: 1).toLong())
+}
+
+/**
+ * Pure free-trial length from a StoreKit introductory discount (iOS): only a `FREE_TRIAL` payment
+ * mode is a trial (pay-as-you-go / pay-up-front offers are paid); it lasts its period times
+ * [numberOfPeriods].
+ */
+internal fun freeTrialOf(
+    paymentMode: DiscountPaymentMode,
+    period: Period,
+    numberOfPeriods: Long
+): ProPeriod? = if (paymentMode == DiscountPaymentMode.FREE_TRIAL) period.toProPeriod(times = numberOfPeriods) else null
+
+/** `null` for an unknown unit or an empty / overflowing length — the copy then just omits the length. */
+private fun Period.toProPeriod(times: Long): ProPeriod? {
+    val proUnit =
+        when (unit) {
+            PeriodUnit.DAY -> ProPeriodUnit.Day
+            PeriodUnit.WEEK -> ProPeriodUnit.Week
+            PeriodUnit.MONTH -> ProPeriodUnit.Month
+            PeriodUnit.YEAR -> ProPeriodUnit.Year
+            PeriodUnit.UNKNOWN -> return null
+        }
+    val total = value.toLong() * times.coerceAtLeast(1L)
+    return if (total in 1..Int.MAX_VALUE) ProPeriod(total.toInt(), proUnit) else null
 }
 
 private fun savingsBadge(

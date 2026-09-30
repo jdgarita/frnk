@@ -15,6 +15,10 @@ enum class ProPlan { Weekly, Monthly, Yearly, Lifetime, Other }
  * @param price the same total as [priceFormatted], as a number with its currency — for analytics
  * and revenue reporting, never for display. `null` when the provider has no store price (a fake
  * provider, or a product the store answered without one).
+ * @param freeTrialPeriod the length of the introductory free trial, as the store states it (e.g.
+ * 1 week, or 7 days) — for copy such as "7 days free, then …". `null` when the product has no free
+ * trial, or the provider does not report its length. Set whenever a trial's length is known, in which
+ * case [hasFreeTrial] is true as well.
  */
 data class ProProduct(
     val id: String,
@@ -24,8 +28,48 @@ data class ProProduct(
     val pricePerMonthFormatted: String? = null,
     val hasFreeTrial: Boolean = false,
     val badge: String? = null,
-    val price: ProPrice? = null
+    val price: ProPrice? = null,
+    val freeTrialPeriod: ProPeriod? = null
 )
+
+/** The unit of a [ProPeriod]. */
+enum class ProPeriodUnit { Day, Week, Month, Year }
+
+/**
+ * A store duration, e.g. a free trial of `ProPeriod(1, Week)` or `ProPeriod(7, Day)` — kept in the
+ * store's own terms (StoreKit often reports a 7-day trial as one week), so copy can say either.
+ *
+ * @param value how many [unit]s, at least 1.
+ */
+data class ProPeriod(
+    val value: Int,
+    val unit: ProPeriodUnit
+) {
+    init {
+        require(value >= 1) { "ProPeriod.value must be at least 1, was $value" }
+    }
+
+    /**
+     * The period in days, for plural copy ("7 days free"): exact for [ProPeriodUnit.Day] and
+     * [ProPeriodUnit.Week]; a month counts as 30 days and a year as 365, so prefer [value] + [unit]
+     * for those.
+     */
+    val approximateDays: Int
+        get() =
+            value *
+                when (unit) {
+                    ProPeriodUnit.Day -> 1
+                    ProPeriodUnit.Week -> DAYS_PER_WEEK
+                    ProPeriodUnit.Month -> DAYS_PER_MONTH
+                    ProPeriodUnit.Year -> DAYS_PER_YEAR
+                }
+
+    private companion object {
+        const val DAYS_PER_WEEK = 7
+        const val DAYS_PER_MONTH = 30
+        const val DAYS_PER_YEAR = 365
+    }
+}
 
 /**
  * A store price as a number: what [ProProduct.priceFormatted] renders, in a shape an analytics
