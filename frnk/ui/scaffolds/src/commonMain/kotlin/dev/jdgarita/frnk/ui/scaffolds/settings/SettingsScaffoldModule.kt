@@ -13,8 +13,10 @@ import org.koin.dsl.module
  *
  * The `ObserveProStatusUseCase` is resolved via Koin (`get()`) — its binding ships in
  * `monetizationModule`, so hosts that use the VM-backed Settings scaffold must install monetization.
+ * A `HapticsPreference` (`hapticsPreferenceModule`) is optional: when bound, the haptics row shows
+ * the stored switch.
  */
 val settingsScaffoldModule =
     module {
-        viewModel { SettingsViewModel(observeProStatus = get()) }
+        viewModel { SettingsViewModel(observeProStatus = get(), hapticsPreference = getOrNull()) }
     }

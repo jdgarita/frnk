@@ -1,6 +1,9 @@
 package dev.jdgarita.frnk.ui.scaffolds.settings
 
+import androidx.lifecycle.viewModelScope
 import dev.jdgarita.frnk.monetization.usecase.ObserveProStatusUseCase
+import dev.jdgarita.frnk.ui.haptics.HAPTICS_TOGGLE_ID
+import dev.jdgarita.frnk.ui.haptics.HapticsPreference
 import dev.jdgarita.frnk.ui.mvi.ModelStateFactory
 import dev.jdgarita.frnk.ui.mvi.MviViewModel
 import dev.jdgarita.frnk.ui.scaffolds.settings.ext.mergedWith
@@ -8,6 +11,7 @@ import dev.jdgarita.frnk.ui.scaffolds.settings.ext.toUiState
 import dev.jdgarita.frnk.ui.scaffolds.settings.ext.withTheme
 import dev.jdgarita.frnk.ui.scaffolds.settings.ext.withToggle
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Thin UI-state machine for [FrnkSettingsScreen]. Owns nothing but the rendered row state: theme
@@ -22,18 +26,34 @@ import kotlinx.coroutines.flow.StateFlow
  * @param observeProStatus the Free/Pro use case, resolved via Koin. Exposed as [isPro] for internal
  *   use — groundwork for the Settings VM to own the subscription catalogue (today the Free/Pro rows
  *   are still built upstream).
+ * @param hapticsPreference the stored haptics switch (A5), when the host binds one
+ *   (`hapticsPreferenceModule`; resolved with `getOrNull()`). The `HAPTICS_TOGGLE_ID` row then starts
+ *   at the stored value instead of the catalogue's "on", follows every later write, and keeps that
+ *   value across [SettingsIntent.ConfigChanged]. The VM only *reads* it: the write stays with the
+ *   host's `ToggleChanged` handler (`rememberFrnkSettingsHandler` → `LocalFrnkHaptics.setEnabled`,
+ *   which is the preference under `FrnkApp`), so there is one writer.
  */
 class SettingsViewModel(
-    observeProStatus: ObserveProStatusUseCase
+    observeProStatus: ObserveProStatusUseCase,
+    private val hapticsPreference: HapticsPreference? = null
 ) : MviViewModel<SettingsArguments, SettingsModelState, SettingsScreenState, SettingsIntent, SettingsEffect>(
         factory =
             object : ModelStateFactory<SettingsModelState> {
-                override fun initialModelState() = SettingsModelState.DEFAULT
+                override fun initialModelState() =
+                    hapticsPreference?.let { SettingsModelState.DEFAULT.withToggle(HAPTICS_TOGGLE_ID, it.isEnabled.value) }
+                        ?: SettingsModelState.DEFAULT
             },
         mapper = SettingsModelState::toUiState
     ) {
     /** Reactive Free/Pro status. */
     val isPro: StateFlow<Boolean> = observeProStatus.invoke()
+
+    override fun onAttached(arguments: SettingsArguments) {
+        val preference = hapticsPreference ?: return
+        viewModelScope.launch {
+            preference.isEnabled.collect { enabled -> updateModel { withToggle(HAPTICS_TOGGLE_ID, enabled) } }
+        }
+    }
 
     override suspend fun onIntent(intent: SettingsIntent) {
         when (intent) {

@@ -21,9 +21,13 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   `KeyValueHapticsPreference` (stored in the host's `KeyValueStore` under a host-supplied key, on by
   default), `PersistentHapticFeedback` (a `HapticFeedback` whose enabled flag is the preference),
   `hapticsPreferenceModule(key, default = true)` and a `rememberFrnkHaptics(preference)` overload. `FrnkApp`
-  builds the ambient `LocalFrnkHaptics` over a bound `HapticsPreference`, so the default Settings "Haptic
-  feedback" toggle now survives relaunch once a host adds the module. `:haptics` now depends on
-  `:data-prefs-api` and `koin-core`.
+  builds the ambient `LocalFrnkHaptics` over a bound `HapticsPreference`, and `SettingsViewModel` takes
+  it as an optional dependency (`getOrNull()` in `settingsScaffoldModule`): the Settings "Haptic
+  feedback" row starts at the stored value and follows it. The switch is written by the host's
+  `SettingsEffect.ToggleChanged` handler calling `LocalFrnkHaptics.current.setEnabled` (as
+  `rememberFrnkSettingsHandler` already does), so it survives relaunch once the host adds
+  `hapticsPreferenceModule(key)` and `prefsModule`. `:haptics` now depends on `:data-prefs-api` and
+  `koin-core`.
 - **`FrnkDialog`** (`:ui-components`): the alert dialog (`FrnkDialogState`, `FrnkDialogAction`,
   `FrnkDialogActionKind` Cancel / Primary / Destructive, `FrnkDialogActionLayout` Row / Stacked,
   `FrnkDialogVariant` Accent / Destructive / Warning / Success / Neutral, `FrnkDialogDefaults`), drawn in
