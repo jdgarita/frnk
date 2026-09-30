@@ -65,6 +65,9 @@ object FrnkFullScreenScaffoldDefaults {
  * @param closeContentDescription accessibility label for the ✕; defaults to the `stringClose` token.
  * @param contentPadding extra padding folded into the [PaddingValues] handed to [content], on top of
  *   the safe-drawing insets and the reserved close-button band.
+ * @param showCloseButton `false` renders no ✕ (and reserves no band for it) — for a screen the user
+ *   must not leave, such as a hard paywall; [onCloseClick] is then never called. System back is the
+ *   caller's to swallow.
  * @param content the immersive body; receives the merged [PaddingValues] to apply to its content.
  */
 @Composable
@@ -74,6 +77,7 @@ fun FrnkFullScreenScaffold(
     containerColor: Color = Theme[colors][colorBackground],
     closeContentDescription: String = Theme[strings][stringClose],
     contentPadding: PaddingValues = PaddingValues(),
+    showCloseButton: Boolean = true,
     content: @Composable BoxScope.(contentPadding: PaddingValues) -> Unit
 ) {
     Box(
@@ -91,7 +95,7 @@ fun FrnkFullScreenScaffold(
                 start = safe.calculateStartPadding(layoutDirection) + contentPadding.calculateStartPadding(layoutDirection),
                 top =
                     safe.calculateTopPadding() +
-                        FrnkFullScreenScaffoldDefaults.CloseButtonHeight +
+                        (if (showCloseButton) FrnkFullScreenScaffoldDefaults.CloseButtonHeight else 0.dp) +
                         contentPadding.calculateTopPadding(),
                 end = safe.calculateEndPadding(layoutDirection) + contentPadding.calculateEndPadding(layoutDirection),
                 bottom = safe.calculateBottomPadding() + contentPadding.calculateBottomPadding()
@@ -99,6 +103,7 @@ fun FrnkFullScreenScaffold(
 
         content(merged)
 
+        if (!showCloseButton) return@Box
         FrnkIconButton(
             modifier =
                 Modifier

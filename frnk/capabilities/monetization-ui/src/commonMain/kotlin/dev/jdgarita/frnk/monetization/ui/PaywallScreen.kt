@@ -17,8 +17,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.composeunstyled.theme.Theme
 import dev.jdgarita.frnk.monetization.ProProduct
@@ -51,6 +55,7 @@ import dev.jdgarita.frnk.ui.theme.spacing
 import dev.jdgarita.frnk.ui.theme.spacingLg
 import dev.jdgarita.frnk.ui.theme.spacingMd
 import dev.jdgarita.frnk.ui.theme.spacingSm
+import dev.jdgarita.frnk.ui.theme.spacingXs
 import dev.jdgarita.frnk.ui.theme.spacingXxs
 import dev.jdgarita.frnk.ui.theme.stringAppName
 import dev.jdgarita.frnk.ui.theme.stringPaywallContinue
@@ -64,6 +69,7 @@ import dev.jdgarita.frnk.ui.theme.stringPaywallTitlePrefix
 import dev.jdgarita.frnk.ui.theme.stringPerMonthSuffix
 import dev.jdgarita.frnk.ui.theme.stringProName
 import dev.jdgarita.frnk.ui.theme.stringRestorePurchases
+import dev.jdgarita.frnk.ui.theme.stringRetry
 import dev.jdgarita.frnk.ui.theme.strings
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -74,6 +80,19 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * @param source analytics source (where the paywall was opened from).
  * @param features short benefit bullets shown above the plans (host-supplied).
+ * @param dismissible `false` presents a **hard paywall**: no ✕, system back (and the iOS back swipe) is
+ * swallowed — even under a `FrnkNavDisplay`, whose pop it pre-empts — and [PaywallIntent.Close] is
+ * ignored, so only a purchase, a restore or the silent receipt sync that finds Pro emits
+ * [PaywallEffect.Dismiss]. With `ObserveProStatusUseCase` bound (`monetizationModule`) it also closes as soon
+ * as the customer becomes Pro any other way; a pending purchase keeps it up with a "pending" message. Read
+ * once per presentation (it travels in [PaywallArguments]); a hard presentation gets its own ViewModel key.
+ * @param legalLinks the host's Terms / Privacy URLs: when set, the footer's "Terms · Privacy" become
+ * links opened through `LocalUriHandler`; when `null` the footer stays plain text.
+ * @param onLegalLinkClick called when a legal link is tapped, before it opens (and even if opening then fails) —
+ * the host's analytics hook, so record it as "tapped".
+ * @param planDisclosure the host's line under the CTA for the selected plan (trial / renewal terms, e.g.
+ * "7 days free, then $4.99/month. Cancel anytime."), composed only while a plan is selected; `null`
+ * renders nothing there.
  */
 @Composable
 fun PaywallScreen(
@@ -81,47 +100,94 @@ fun PaywallScreen(
     features: List<String>,
     modifier: Modifier = Modifier,
     vmKey: String? = null,
+    dismissible: Boolean = true,
+    legalLinks: PaywallLegalLinks? = null,
+    onLegalLinkClick: (PaywallLegalLink) -> Unit = {},
+    planDisclosure: (@Composable (ProProduct) -> Unit)? = null,
     onEffect: (PaywallEffect) -> Unit = {}
 ) {
-    val vm: PaywallViewModel = koinViewModel(key = vmKey)
-    FrnkScreen(
+    // The mode is read once per ViewModel (PaywallArguments attach once), so a hard and a soft presentation
+    // never share one: the ✕ the screen shows and the Close the ViewModel honours always agree.
+    val vm: PaywallViewModel = koinViewModel(key = if (dismissible) vmKey else "${vmKey ?: "frnk-paywall"}#hard")
+    PaywallScreen(
         viewModel = vm,
-        arguments = PaywallArguments(source),
+        source = source,
+        features = features,
+        modifier = modifier,
+        dismissible = dismissible,
+        legalLinks = legalLinks,
+        onLegalLinkClick = onLegalLinkClick,
+        planDisclosure = planDisclosure,
+        onEffect = onEffect
+    )
+}
+
+/** [PaywallScreen] over a given [viewModel] — the public overload resolves it from Koin. */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+internal fun PaywallScreen(
+    viewModel: PaywallViewModel,
+    source: String,
+    features: List<String>,
+    modifier: Modifier = Modifier,
+    dismissible: Boolean = true,
+    legalLinks: PaywallLegalLinks? = null,
+    onLegalLinkClick: (PaywallLegalLink) -> Unit = {},
+    planDisclosure: (@Composable (ProProduct) -> Unit)? = null,
+    onEffect: (PaywallEffect) -> Unit = {}
+) {
+    FrnkScreen(
+        viewModel = viewModel,
+        arguments = PaywallArguments(source = source, dismissible = dismissible),
         onEffect = { effect ->
             when (effect) {
                 is PaywallEffect -> onEffect(effect)
                 // FrnkScreen installs a BackHandler that routes system back to CommonUiEffect.DidPressBack;
-                // treat it as a close so the paywall dismisses on back, mirroring the ✕.
-                is CommonUiEffect.DidPressBack -> vm.send(PaywallIntent.Close)
+                // treat it as a close so the paywall dismisses on back, mirroring the ✕ (the ViewModel
+                // ignores it on a hard paywall).
+                is CommonUiEffect.DidPressBack -> viewModel.send(PaywallIntent.Close)
                 else -> Unit
             }
         }
     ) { state ->
+        // A hard paywall swallows back. Registered inside the screen, it outranks the handlers above it —
+        // a FrnkNavDisplay's pop, FrnkScreen's own — on Android and on iOS (the back swipe) alike.
+        BackHandler(enabled = !dismissible) {}
         FrnkFullScreenScaffold(
-            onCloseClick = { vm.send(PaywallIntent.Close) },
+            onCloseClick = { viewModel.send(PaywallIntent.Close) },
             modifier = modifier,
-            contentPadding = PaddingValues(Theme[spacing][spacingLg])
+            contentPadding = PaddingValues(Theme[spacing][spacingLg]),
+            showCloseButton = dismissible
         ) { padding ->
             // The scaffold folds safe-area insets + the close-button band into `padding`; applying it as
             // the scroll's contentPadding makes the header clear the ✕ and the list scroll under it.
             PaywallScreenContent(
                 state = state,
                 features = features,
-                onIntent = vm::send,
-                contentPadding = padding
+                onIntent = viewModel::send,
+                contentPadding = padding,
+                legalLinks = legalLinks,
+                onLegalLinkClick = onLegalLinkClick,
+                planDisclosure = planDisclosure
             )
         }
     }
 }
 
-/** Stateless paywall body — header, feature checklist, plan cards, CTA, restore + legal. */
+/**
+ * Stateless paywall body — header, feature checklist, plan cards, CTA, the host's [planDisclosure],
+ * restore + legal. [legalLinks], [onLegalLinkClick] and [planDisclosure] are as on [PaywallScreen].
+ */
 @Composable
 fun PaywallScreenContent(
     state: PaywallScreenState,
     features: List<String>,
     onIntent: (PaywallIntent) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg])
+    contentPadding: PaddingValues = PaddingValues(Theme[spacing][spacingLg]),
+    legalLinks: PaywallLegalLinks? = null,
+    onLegalLinkClick: (PaywallLegalLink) -> Unit = {},
+    planDisclosure: (@Composable (ProProduct) -> Unit)? = null
 ) {
     val title = "${Theme[strings][stringPaywallTitlePrefix]} ${Theme[strings][stringAppName]} ${Theme[strings][stringProName]}"
     Column(
@@ -157,7 +223,15 @@ fun PaywallScreenContent(
         when {
             state.isLoading -> repeat(2) { SkeletonCard() }
             state.products.isEmpty() ->
-                FrnkText(state = FrnkTextState.Body(text = Theme[strings][stringPaywallEmpty], color = colorOnSurfaceVariant))
+                Column(verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])) {
+                    FrnkText(state = FrnkTextState.Body(text = Theme[strings][stringPaywallEmpty], color = colorOnSurfaceVariant))
+                    // Never a dead end — a hard paywall has no other way past failed offerings.
+                    FrnkButton(
+                        state = FrnkButtonState.Content(text = Theme[strings][stringRetry], variant = FrnkButtonVariant.Outlined),
+                        onClick = { onIntent(PaywallIntent.Retry) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             else ->
                 Column(verticalArrangement = Arrangement.spacedBy(Theme[spacing][spacingSm])) {
                     state.products.forEach { product ->
@@ -186,6 +260,9 @@ fun PaywallScreenContent(
             modifier = Modifier.fillMaxWidth()
         )
 
+        val selected = state.selectedProduct
+        if (planDisclosure != null && selected != null) planDisclosure(selected)
+
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -205,16 +282,51 @@ fun PaywallScreenContent(
                     ),
                 onClick = { onIntent(PaywallIntent.Restore) }
             )
-            FrnkText(
-                state =
-                    FrnkTextState.Raw(
-                        text = "${Theme[strings][stringPaywallTerms]} · ${Theme[strings][stringPaywallPrivacy]}",
-                        style = labelSmall,
-                        color = colorOnSurfaceVariant
-                    )
-            )
+            PaywallLegalFooter(links = legalLinks, onLegalLinkClick = onLegalLinkClick)
         }
     }
+}
+
+/** "Terms · Privacy": plain text, or — given the host's [links] — two links opened via `LocalUriHandler`. */
+@Composable
+private fun PaywallLegalFooter(
+    links: PaywallLegalLinks?,
+    onLegalLinkClick: (PaywallLegalLink) -> Unit
+) {
+    val terms = Theme[strings][stringPaywallTerms]
+    val privacy = Theme[strings][stringPaywallPrivacy]
+    if (links == null) {
+        FrnkText(state = FrnkTextState.Raw(text = "$terms · $privacy", style = labelSmall, color = colorOnSurfaceVariant))
+        return
+    }
+    val uriHandler = LocalUriHandler.current
+    val open = { link: PaywallLegalLink ->
+        onLegalLinkClick(link)
+        // AndroidUriHandler throws when nothing can open the URL; a host that wants to say so provides
+        // its own UriHandler. The paywall itself must never crash on a legal link.
+        runCatching { uriHandler.openUri(links.urlFor(link)) }
+        Unit
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        PaywallLegalLinkText(text = terms, onClick = { open(PaywallLegalLink.Terms) })
+        FrnkText(state = FrnkTextState.Raw(text = "·", style = labelSmall, color = colorOnSurfaceVariant))
+        PaywallLegalLinkText(text = privacy, onClick = { open(PaywallLegalLink.Privacy) })
+    }
+}
+
+@Composable
+private fun PaywallLegalLinkText(
+    text: String,
+    onClick: () -> Unit
+) {
+    FrnkText(
+        state = FrnkTextState.Raw(text = text, style = labelSmall, color = colorPrimary),
+        modifier =
+            Modifier
+                .clip(Theme[shapes][shapeCard])
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(Theme[spacing][spacingXs])
+    )
 }
 
 @Composable

@@ -15,6 +15,56 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-30
+
+### Changed
+
+- **Breaking (source): `PaywallIntent` gains `Retry`.** Hosts that match `PaywallIntent` with an
+  exhaustive `when` must add a `Retry` branch. Everything else in this release is additive and keeps
+  today's behaviour by default (`dismissible = true`, no legal URLs, no disclosure slot).
+
+### Added
+
+- **Hard paywall** (`:shared-monetization-ui`): `dismissible: Boolean = true` on `PaywallScreen`,
+  `FrnkPaywallDestination`, `frnkPaywallNavigation` and `PaywallArguments`. When `false` the paywall has no
+  close button, swallows system back and the iOS back swipe (also under a `FrnkNavDisplay`), and
+  `PaywallViewModel` ignores `PaywallIntent.Close` (no `Dismiss`, no `Paywall_Dismissed`). It closes only on
+  Pro: a purchase that activated it, a restore, the silent receipt sync, or — through the new optional
+  `ObserveProStatusUseCase` dependency of `PaywallViewModel` (resolved with `getOrNull()` in
+  `paywallScaffoldModule`) — Pro arriving any other way (an approved pending purchase, a late sync, another
+  device), with at most one `Dismiss`. A pending purchase keeps a hard paywall up with the new
+  `stringPaywallPurchasePending` message (EN + ES); a dismissible paywall still closes on it, as before. A
+  hard presentation gets its own ViewModel key.
+- **Paywall legal links** (`:shared-monetization-ui`): `PaywallLegalLinks(termsUrl, privacyUrl)` +
+  `PaywallLegalLink { Terms, Privacy }`. Passed as `legalLinks`, they make the "Terms · Privacy" footer
+  tappable, opened through `LocalUriHandler`, with `onLegalLinkClick` for analytics. Without them the footer
+  is the same plain text as before.
+- **`PaywallIntent.Retry`** (`:shared-monetization-ui`): reloads the offerings in the same ViewModel. The
+  stock paywall now shows a **Retry** button (`stringRetry`) under its empty-offerings copy, in every mode.
+  Note: a host that matches `PaywallIntent` with an exhaustive `when` must add a `Retry` branch.
+- **Plan disclosure slot** (`:shared-monetization-ui`): `planDisclosure: (@Composable (ProProduct) -> Unit)?`
+  on the same entry points and `PaywallScreenContent`, rendered under the CTA for the selected plan.
+- **Free-trial length** (`:monetization-api`): `ProProduct.freeTrialPeriod: ProPeriod?`, with `ProPeriod(value,
+  unit)`, `ProPeriodUnit { Day, Week, Month, Year }` and `ProPeriod.approximateDays`. `:monetization-impl` fills
+  it from RevenueCat: the free pricing phase of the Play subscription option the SDK buys (Android), or a
+  `FREE_TRIAL` introductory discount (iOS) the customer is eligible for (below).
+- `FrnkFullScreenScaffold(showCloseButton = true)` (`:ui-scaffolds`): `false` renders no close button and
+  reserves no space for it.
+- Theme token `stringPaywallPurchasePending` (EN + ES).
+
+### Fixed
+
+- `ProProduct.hasFreeTrial` is now true for an Android product with a free trial. purchases-kmp never
+  reports an Android `introductoryDiscount`, so it was always false there. **Visible on Android:** the stock
+  paywall's plan card gains the "Free trial" badge and its CTA reads "Start free trial" instead of
+  "Continue" for such a plan, and hosts that report `hasFreeTrial` in analytics (e.g. `trial = true` with a
+  zero value on a trial purchase) start doing so for Android trial purchases, which moves their revenue
+  numbers.
+- iOS trials are reported only to eligible customers: `:monetization-impl` checks RevenueCat's
+  `checkTrialOrIntroPriceEligibility` (3 s timeout) and reports `hasFreeTrial` / `freeTrialPeriod` for an
+  introductory offer only when the status is `ELIGIBLE`. A lapsed subscriber, an `UNKNOWN` status or a failed
+  check now shows the regular price (`hasFreeTrial = false`) instead of a trial they would not get.
+
 ## [0.10.1] - 2026-09-30
 
 ### Added
@@ -568,7 +618,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/jdgarita/frnk/releases/tag/v0.11.0
 [0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
 [0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
 [0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2

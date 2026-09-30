@@ -7,10 +7,15 @@ import dev.jdgarita.frnk.demo.ui.component.ComponentsListScreen
 import dev.jdgarita.frnk.demo.ui.home.HomeScreen
 import dev.jdgarita.frnk.demo.ui.onboarding.OnboardingScreen
 import dev.jdgarita.frnk.demo.ui.settings.SettingsScreen
+import dev.jdgarita.frnk.monetization.ProPlan
+import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.ui.FrnkPaywallDestination
+import dev.jdgarita.frnk.monetization.ui.PaywallLegalLinks
 import dev.jdgarita.frnk.ui.app.FrnkApp
 import dev.jdgarita.frnk.ui.app.frnkTabbedRootModule
 import dev.jdgarita.frnk.ui.app.rememberFrnkRootStartRoute
+import dev.jdgarita.frnk.ui.atoms.FrnkText
+import dev.jdgarita.frnk.ui.atoms.FrnkTextState
 import dev.jdgarita.frnk.ui.bottomnav.FrnkCustomTab
 import dev.jdgarita.frnk.ui.mvi.CommonUiEffect
 import dev.jdgarita.frnk.ui.nav.FrnkTabRoute
@@ -18,6 +23,7 @@ import dev.jdgarita.frnk.ui.nav.frnkRootNavConfig
 import dev.jdgarita.frnk.ui.scaffolds.home.HomeEffect
 import dev.jdgarita.frnk.ui.scaffolds.onboarding.OnboardingEffect
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
+import dev.jdgarita.frnk.ui.theme.colorOnSurfaceVariant
 import dev.jdgarita.frnk.ui.theme.iconNavComponent
 
 /**
@@ -92,9 +98,38 @@ fun FrnkDemoApp() {
                                 "Priority support"
                             ),
                         source = "demo",
+                        legalLinks = DemoPaywallLegalLinks,
+                        planDisclosure = { product -> DemoPlanDisclosure(product) },
                         onClose = onClose
                     )
                 }
             }
     )
+}
+
+/** The demo's legal pages — a real host passes its own Terms of Use / Privacy Policy URLs. */
+private val DemoPaywallLegalLinks =
+    PaywallLegalLinks(termsUrl = "https://example.com/terms", privacyUrl = "https://example.com/privacy")
+
+/**
+ * The demo's disclosure under the paywall CTA for the selected plan, using the store's trial length
+ * (`ProProduct.freeTrialPeriod`). A real host localizes it (plurals) and covers every plan it sells.
+ */
+@Composable
+private fun DemoPlanDisclosure(product: ProProduct) {
+    val trialDays = product.freeTrialPeriod?.approximateDays
+    val price =
+        when (product.plan) {
+            ProPlan.Weekly -> "${product.priceFormatted}/week"
+            ProPlan.Monthly -> "${product.priceFormatted}/month"
+            ProPlan.Yearly -> "${product.priceFormatted}/year"
+            else -> product.priceFormatted
+        }
+    val text =
+        when {
+            product.plan == ProPlan.Lifetime -> "${product.priceFormatted} once."
+            trialDays != null -> "$trialDays days free, then $price. Cancel anytime."
+            else -> "$price, renews automatically. Cancel anytime."
+        }
+    FrnkText(state = FrnkTextState.BodySmall(text = text, color = colorOnSurfaceVariant))
 }

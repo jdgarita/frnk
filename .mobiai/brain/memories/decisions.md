@@ -1665,3 +1665,34 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
 - frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkDialog.kt
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/NoSubscriptionFoundDialog.kt
+
+## Hard paywall, legal links, trial length (0.11.0)
+
+- id: hard-paywall-legal-links-trial-length-0-10-2-20260930-192952
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization-ui
+- date: 2026-09-30
+
+- Hard mode is enforced in two layers: the VM ignores PaywallIntent.Close when PaywallArguments.dismissible is false (covers hosts that drive PaywallViewModel through their own FrnkScreen, e.g. Still/Faint), and PaywallScreen installs BackHandler(enabled = !dismissible) {} inside the screen so it outranks an enclosing FrnkNavDisplay's pop (FrnkScreen installs no handler under a NavDisplay). Success paths (purchase / restore / silent sync) still emit Dismiss. dismissible is read once per presentation (Arguments attach once).
+- FrnkFullScreenScaffold(showCloseButton = false) drops the reserved 48dp band too, not only the icon.
+- Legal links open through LocalUriHandler (runCatching: AndroidUriHandler throws without a browser); hosts that want a failure message provide their own UriHandler rather than frnk growing an opener callback. onLegalLinkClick is analytics only.
+- purchases-kmp 3.7 never sets introductoryDiscount on Android (always null), so hasFreeTrial was always false there. freeTrialPeriod reads defaultOption's free pricing phase on Android and a FREE_TRIAL introductoryDiscount on iOS; hasFreeTrial = introductoryDiscount != null || freeTrialPeriod != null (keeps iOS paid intro offers counting as before). iOS intro discounts are not eligibility-checked.
+
+### Files
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreen.kt
+- frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProvider.kt
+
+## Hard paywall closes only on Pro; iOS trial eligibility (0.11.0 fix round)
+
+- id: hard-paywall-closes-only-on-pro-ios-trial-eligibility-0-10-2-20260930-194046
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization-ui
+- date: 2026-09-30
+
+- Hard mode: a pending purchase (Success(false)) keeps the paywall up (stringPaywallPurchasePending); the VM collects the optional ObserveProStatusUseCase (getOrNull in paywallScaffoldModule) and dismisses on Pro from any cause. The observer skips while isPurchasing/isRestoring so Purchased precedes Dismiss; failure/pending paths re-check isPro afterwards; one dedup flag (dismissedForPro) — hard mode only, soft mode emits exactly as before.
+- PaywallIntent.Retry added (breaks exhaustive `when` over PaywallIntent in hosts, e.g. Still's PaywallFunnel) — accepted in the PATCH at the coordinator's request, called out in the CHANGELOG.
+- iOS trials: checkTrialOrIntroPriceEligibility (3 s timeout) for products with introductoryDiscount and no defaultOption; only ELIGIBLE reports a trial (UNKNOWN/failure = regular price, RevenueCat's own advice). Pure decision in trialInfoOf().
