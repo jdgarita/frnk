@@ -15,6 +15,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-09-30
+
 ### Added
 
 - **Persisted haptics switch** (`:haptics`): `HapticsPreference` (the durable on/off switch),
@@ -566,7 +568,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
 [0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
 [0.9.2]: https://github.com/jdgarita/frnk/releases/tag/v0.9.2
 [0.9.1]: https://github.com/jdgarita/frnk/releases/tag/v0.9.1
