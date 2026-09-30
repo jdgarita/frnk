@@ -1665,3 +1665,21 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 - frnk/ui/app/src/commonMain/kotlin/dev/jdgarita/frnk/ui/app/FrnkApp.kt
 - frnk/ui/components/src/commonMain/kotlin/dev/jdgarita/frnk/ui/atoms/FrnkDialog.kt
 - frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/NoSubscriptionFoundDialog.kt
+
+## Hard paywall, legal links, trial length (0.10.2)
+
+- id: hard-paywall-legal-links-trial-length-0-10-2-20260930-192952
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization-ui
+- date: 2026-09-30
+
+- Hard mode is enforced in two layers: the VM ignores PaywallIntent.Close when PaywallArguments.dismissible is false (covers hosts that drive PaywallViewModel through their own FrnkScreen, e.g. Still/Faint), and PaywallScreen installs BackHandler(enabled = !dismissible) {} inside the screen so it outranks an enclosing FrnkNavDisplay's pop (FrnkScreen installs no handler under a NavDisplay). Success paths (purchase / restore / silent sync) still emit Dismiss. dismissible is read once per presentation (Arguments attach once).
+- FrnkFullScreenScaffold(showCloseButton = false) drops the reserved 48dp band too, not only the icon.
+- Legal links open through LocalUriHandler (runCatching: AndroidUriHandler throws without a browser); hosts that want a failure message provide their own UriHandler rather than frnk growing an opener callback. onLegalLinkClick is analytics only.
+- purchases-kmp 3.7 never sets introductoryDiscount on Android (always null), so hasFreeTrial was always false there. freeTrialPeriod reads defaultOption's free pricing phase on Android and a FREE_TRIAL introductoryDiscount on iOS; hasFreeTrial = introductoryDiscount != null || freeTrialPeriod != null (keeps iOS paid intro offers counting as before). iOS intro discounts are not eligibility-checked.
+
+### Files
+- frnk/capabilities/monetization-ui/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ui/PaywallScreen.kt
+- frnk/capabilities/monetization-impl/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/revenuecat/RevenueCatEntitlementProvider.kt
