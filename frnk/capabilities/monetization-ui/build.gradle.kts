@@ -22,6 +22,8 @@ kotlin {
             // (the Stage 8 precondition).
             api(projects.uiScaffolds)
             api(projects.monetizationApi)
+            // Multiplatform BackHandler — the hard paywall swallows system back / the iOS back swipe.
+            implementation(libs.compose.ui.backhandler)
         }
 
         // The Compose host-test bundle (kotlin-test + coroutines-test arrive from commonTest via

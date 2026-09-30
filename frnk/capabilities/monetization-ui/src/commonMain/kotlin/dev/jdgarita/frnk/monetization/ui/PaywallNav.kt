@@ -23,6 +23,9 @@ import org.koin.dsl.navigation3.navigation
  * state and render via `FrnkStringSource.resolve()` (a toast/snackbar/dialog under the ambient `FrnkTheme`).
  * @param onPurchased a purchase activated the entitlement, with the [ProProduct] bought — the host's hook
  * for its own conversion event (plan + `price`); [onClose] follows immediately after.
+ * @param dismissible `false` presents a hard paywall (no ✕, back swallowed): [onClose] is then called only
+ * after a purchase, a restore or the silent receipt sync found Pro. See [PaywallScreen].
+ * @param legalLinks / [onLegalLinkClick] / [planDisclosure] as on [PaywallScreen].
  */
 @Composable
 fun FrnkPaywallDestination(
@@ -30,9 +33,20 @@ fun FrnkPaywallDestination(
     source: String = "paywall",
     onMessage: (FrnkStringSource) -> Unit = {},
     onPurchased: (ProProduct) -> Unit = {},
+    dismissible: Boolean = true,
+    legalLinks: PaywallLegalLinks? = null,
+    onLegalLinkClick: (PaywallLegalLink) -> Unit = {},
+    planDisclosure: (@Composable (ProProduct) -> Unit)? = null,
     onClose: () -> Unit
 ) {
-    PaywallScreen(source = source, features = features) { effect ->
+    PaywallScreen(
+        source = source,
+        features = features,
+        dismissible = dismissible,
+        legalLinks = legalLinks,
+        onLegalLinkClick = onLegalLinkClick,
+        planDisclosure = planDisclosure
+    ) { effect ->
         when (effect) {
             PaywallEffect.Dismiss -> onClose()
             is PaywallEffect.Purchased -> onPurchased(effect.product)
@@ -49,6 +63,8 @@ fun FrnkPaywallDestination(
  * ```
  * val appNavModule = module { frnkPaywallNavigation(features = proFeatures, source = "settings") { backStack.back() } }
  * ```
+ *
+ * Parameters as on [FrnkPaywallDestination].
  */
 @OptIn(KoinExperimentalAPI::class)
 fun Module.frnkPaywallNavigation(
@@ -56,6 +72,10 @@ fun Module.frnkPaywallNavigation(
     source: String = "paywall",
     onMessage: (FrnkStringSource) -> Unit = {},
     onPurchased: (ProProduct) -> Unit = {},
+    dismissible: Boolean = true,
+    legalLinks: PaywallLegalLinks? = null,
+    onLegalLinkClick: (PaywallLegalLink) -> Unit = {},
+    planDisclosure: (@Composable (ProProduct) -> Unit)? = null,
     onClose: () -> Unit
 ) {
     navigation<FrnkRootRoute.Paywall> {
@@ -64,6 +84,10 @@ fun Module.frnkPaywallNavigation(
             source = source,
             onMessage = onMessage,
             onPurchased = onPurchased,
+            dismissible = dismissible,
+            legalLinks = legalLinks,
+            onLegalLinkClick = onLegalLinkClick,
+            planDisclosure = planDisclosure,
             onClose = onClose
         )
     }

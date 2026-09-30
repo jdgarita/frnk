@@ -35,7 +35,8 @@ import kotlinx.coroutines.launch
  *
  * Owns a [PaywallModelState] (the data) and maps it to [PaywallScreenState] (the rendered state).
  * Runtime input arrives as [PaywallArguments] at attach time (see [onAttached]); the `source` they carry
- * tags the analytics funnel (`Paywall_Viewed` / `Paywall_Dismissed`).
+ * tags the analytics funnel (`Paywall_Viewed` / `Paywall_Dismissed`), and `dismissible = false` makes it a
+ * hard paywall that ignores [PaywallIntent.Close].
  */
 class PaywallViewModel(
     private val paywallPurchaseUseCase: PaywallPurchaseUseCase,
@@ -68,6 +69,8 @@ class PaywallViewModel(
             PaywallIntent.Purchase -> purchase()
             PaywallIntent.Restore -> restore()
             PaywallIntent.Close -> {
+                // A hard paywall only closes on success (purchase / restore / silent sync).
+                if (!arguments.dismissible) return
                 analytics.track(ToolkitEvent.PaywallDismissed, mapOf("source" to arguments.source))
                 emit(PaywallEffect.Dismiss)
             }

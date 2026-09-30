@@ -457,9 +457,94 @@ class PaywallViewModelTest {
             runCurrent()
             assertFalse(vm.state.value.isRestoring)
         }
+
+    @Test
+    fun close_dismisses_and_tracks_by_default() =
+        runTest(dispatcher) {
+            val analytics = FakeAnalytics()
+            val vm = viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), analytics)
+            vm.attach(PaywallArguments("home_topbar"))
+            runCurrent()
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(PaywallIntent.Close)
+            runCurrent()
+
+            assertTrue(effects.any { it is PaywallEffect.Dismiss })
+            assertTrue(analytics.tracked.contains(ToolkitEvent.PaywallDismissed.key))
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_paywall_ignores_close() =
+        runTest(dispatcher) {
+            val analytics = FakeAnalytics()
+            val vm = viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products)), analytics)
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(PaywallIntent.Close)
+            runCurrent()
+
+            assertTrue(effects.none { it is PaywallEffect.Dismiss })
+            assertFalse(analytics.tracked.contains(ToolkitEvent.PaywallDismissed.key))
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_paywall_still_closes_on_a_purchase() =
+        runTest(dispatcher) {
+            val vm =
+                viewModel(
+                    FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), purchase = AppResult.Success(true))
+                )
+            vm.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+            val effects = mutableListOf<UiEffect>()
+            val job = launch { vm.effects.toList(effects) }
+            runCurrent()
+
+            vm.send(PaywallIntent.Purchase)
+            runCurrent()
+
+            assertTrue(effects.any { it is PaywallEffect.Purchased })
+            assertTrue(effects.any { it is PaywallEffect.Dismiss })
+            job.cancel()
+        }
+
+    @Test
+    fun a_hard_paywall_still_closes_on_a_restore_and_on_the_silent_sync() =
+        runTest(dispatcher) {
+            val restoring =
+                viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), restore = AppResult.Success(true)))
+            restoring.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+            val restoreEffects = mutableListOf<UiEffect>()
+            val restoreJob = launch { restoring.effects.toList(restoreEffects) }
+            runCurrent()
+            restoring.send(PaywallIntent.Restore)
+            runCurrent()
+            assertTrue(restoreEffects.any { it is PaywallEffect.Dismiss })
+            restoreJob.cancel()
+
+            val syncing =
+                viewModel(FakePaywallPurchaseUseCase(offerings = AppResult.Success(products), sync = AppResult.Success(true)))
+            val syncEffects = mutableListOf<UiEffect>()
+            val syncJob = launch { syncing.effects.toList(syncEffects) }
+            runCurrent()
+            syncing.attach(PaywallArguments("launch_gate", dismissible = false))
+            runCurrent()
+            assertTrue(syncEffects.any { it is PaywallEffect.Dismiss })
+            syncJob.cancel()
+        }
 }
 
-private class FakePaywallPurchaseUseCase(
+internal class FakePaywallPurchaseUseCase(
     private val offerings: AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList()),
     private val purchase: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
     private val restore: AppResult<Boolean, MonetizationError> = AppResult.Success(true),
@@ -491,7 +576,7 @@ private class FakePaywallPurchaseUseCase(
     }
 }
 
-private class FakeSyncAuthUseCase(
+internal class FakeSyncAuthUseCase(
     private val result: AppResult<Unit, CommonError> = AppResult.Success(Unit)
 ) : SyncAuthUseCase {
     var identifyCount = 0
@@ -503,7 +588,7 @@ private class FakeSyncAuthUseCase(
     }
 }
 
-private class FakeAnalytics : AnalyticsTracker {
+internal class FakeAnalytics : AnalyticsTracker {
     val tracked = mutableListOf<String>()
 
     override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
