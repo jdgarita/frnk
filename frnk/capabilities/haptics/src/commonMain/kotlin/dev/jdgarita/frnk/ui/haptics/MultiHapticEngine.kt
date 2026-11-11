@@ -1,6 +1,10 @@
 package dev.jdgarita.frnk.ui.haptics
 
 import top.ltfan.multihaptic.DelayType
+import top.ltfan.multihaptic.click
+import top.ltfan.multihaptic.quickRise
+import top.ltfan.multihaptic.thud
+import top.ltfan.multihaptic.tick
 import top.ltfan.multihaptic.vibrator.Vibrator
 import kotlin.time.Duration.Companion.milliseconds
 

@@ -15,6 +15,17 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-11-10
+
+### Fixed
+
+- **`:haptics` compiles against multihaptic 0.4.0.** The 0.12.0 bump to multihaptic 0.4.0 (#93) left
+  `MultiHapticEngine` on the 0.3.x DSL, so `:haptics` failed `compileCommonMainKotlinMetadata` with
+  unresolved `click` / `tick` / `thud` / `quickRise` (and the `delay` / `delayType` inside them). 0.4.0
+  moved those primitives from members of `HapticEffect.Builder` to top-level extensions on
+  `HapticEffectDsl`, so they now need explicit imports; the compositions themselves are unchanged.
+  0.12.0 does not build for any host that includes `:haptics` — take 0.12.1 instead.
+
 ## [0.12.0] - 2026-11-10
 
 ### Changed
@@ -638,7 +649,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/jdgarita/frnk/releases/tag/v0.12.1
 [0.12.0]: https://github.com/jdgarita/frnk/releases/tag/v0.12.0
 [0.11.0]: https://github.com/jdgarita/frnk/releases/tag/v0.11.0
 [0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
