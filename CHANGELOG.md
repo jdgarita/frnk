@@ -15,6 +15,26 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-10
+
+### Changed
+
+- **Breaking (build): toolchain and SDK refresh** (`gradle/libs.versions.toml`, #93). The catalog is shared
+  with composite-build hosts, so these versions flow into every host that inherits it. No frnk source or
+  public API changed in this release.
+  - Toolchain: AGP 9.4.0 → 9.5.1, Kotlin 2.4.10 → 2.4.21. JDK 17, Gradle 9.6.0 and the SDK levels
+    (`minSdk` 26 / `compileSdk` 37 / `targetSdk` 36) are unchanged.
+  - Compose: Compose Multiplatform 1.12.0 → 1.12.2 (pinned `androidx-compose-ui` 1.12.0 → 1.12.1),
+    compose-unstyled 2.9.2 → 2.10.2, ripple-indication 1.1.0 → 1.1.1.
+  - Navigation3: runtime 1.1.7 → 1.2.1, CMP `navigation3-ui` 1.1.1 → 1.2.0.
+  - Data: kotlinx-serialization 1.11.0 → 1.12.0, Room 2.8.4 → 2.8.5, SQLite 2.7.0 → 2.7.1.
+  - **RevenueCat purchases-kmp 3.7.0 → 4.1.0 (major).** iOS hosts must move their RevenueCat Swift
+    package to the version purchases-kmp 4.1.0 expects; the symbols resolve at the host's link step
+    (`-undefined dynamic_lookup`), so a stale pin fails there, not in the frnk build.
+  - PostHog KMP 0.5.1 → 0.10.0 and Sentry KMP 0.27.0 → 0.29.0 (Sentry Android Gradle plugin
+    6.22.0 → 6.26.0). iOS hosts re-align their `PostHog` and `Sentry` Swift packages to match.
+  - multihaptic 0.3.2 → 0.4.0, Robolectric 4.16.1 → 4.17 (test-only).
+
 ## [0.11.0] - 2026-09-30
 
 ### Changed
@@ -618,7 +638,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/jdgarita/frnk/releases/tag/v0.12.0
 [0.11.0]: https://github.com/jdgarita/frnk/releases/tag/v0.11.0
 [0.10.1]: https://github.com/jdgarita/frnk/releases/tag/v0.10.1
 [0.10.0]: https://github.com/jdgarita/frnk/releases/tag/v0.10.0
