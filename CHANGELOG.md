@@ -15,6 +15,15 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-11-10
+
+### Fixed
+
+- **multihaptic held at 0.3.2.** multihaptic 0.4.0 (taken in 0.12.0) declares a minimum compileSdk of
+  **37.2** in its AAR metadata, so every host that includes `:haptics` failed `checkAarMetadata` on
+  compileSdk 37. The catalog pins 0.3.2 again and `MultiHapticEngine` is back on the 0.3.x DSL (the
+  0.12.1 imports are removed). No source or API change for hosts; 0.12.0 and 0.12.1 should be skipped.
+
 ## [0.12.1] - 2026-11-10
 
 ### Fixed
@@ -649,7 +658,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.12.1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.12.2...HEAD
+[0.12.2]: https://github.com/jdgarita/frnk/releases/tag/v0.12.2
 [0.12.1]: https://github.com/jdgarita/frnk/releases/tag/v0.12.1
 [0.12.0]: https://github.com/jdgarita/frnk/releases/tag/v0.12.0
 [0.11.0]: https://github.com/jdgarita/frnk/releases/tag/v0.11.0

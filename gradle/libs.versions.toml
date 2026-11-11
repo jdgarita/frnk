@@ -42,7 +42,9 @@ sentry-android-gradle = "6.26.0"
 # PostHog's KMP SDK wraps posthog-android 3.62 / posthog-ios 3.64; the consuming Xcode project links
 # posthog-ios (SPM product `PostHog`), matching the Firebase/RevenueCat native-framework contract.
 posthog-kmp = "0.10.0"
-multihaptic = "0.4.0"
+# Held at 0.3.2: 0.4.0 declares minCompileSdk 37.2 (AAR metadata), which would force every host onto the
+# minor-level compileSdk DSL and the 37.2 platform. Revisit when hosts move to 37.2+.
+multihaptic = "0.3.2"
 robolectric = "4.17"
 # AndroidX Compose UI version that compose-multiplatform 1.12.0 resolves to on Android — used only to
 # pin the matching ui-test-manifest artifact (provides the ComponentActivity the Compose test host launches).
