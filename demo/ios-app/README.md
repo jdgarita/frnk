@@ -26,7 +26,8 @@ no *optional* `*-impl` module; it references three native SDKs (each supplied by
   Store** (real `RevenueCatEntitlementProvider` + `revenueCatIdentityModule`, parity with
   `demo-android`), through the same `bootstrapDemoKoinWithSdks(...)` call.
 
-So this app links the **native Sentry + PostHog + RevenueCat SDKs** (added via SPM, below). There is
+So this app links the **native Sentry + PostHog SDKs** (added via SPM, below). RevenueCat needs no
+package: purchases-kmp 4.x bundles purchases-ios inside DemoKit. There is
 **no Firebase on iOS**: nothing in DemoKit's iOS path reads it (identity comes from RevenueCat; the
 toolkit has no remote config), so the project carries no `firebase-ios-sdk` package and no
 `GoogleService-Info.plist`.
@@ -38,15 +39,10 @@ integration notes in `docs/HOST_INTEGRATION.md` §6.
 ## RevenueCat setup (one-time, for the paywall)
 
 The paywall runs against the RevenueCat **Test Store** — no App Store Connect / sandbox
-tester needed. The native RevenueCat Apple SDK must be linked into this Xcode project:
+tester needed. **Don't add the `purchases-ios` Swift package**: purchases-kmp 4.x already bundles
+purchases-ios inside DemoKit, and a second copy crashes the app at launch in `Purchases.init`.
 
-1. In Xcode: **File ▸ Add Package Dependencies…**
-2. Enter `https://github.com/RevenueCat/purchases-ios.git`, version **`5.87.1` or later** — the
-   `purchases-ios` release `purchases-kmp` 3.7.0 wraps (see `gradle/libs.versions.toml`); anything
-   below 5.78.0 does not compile on Xcode 27. The project already pins this as the SPM minimum.
-3. Add the **`RevenueCat`** product to the `iosDemoApp` target. *(purchases-kmp 3.0+ binds
-   directly against `purchases-ios` — **not** `PurchasesHybridCommon`.)*
-4. The Test Store `test_` API key is already wired in `iosDemoAppApp.swift`
+The Test Store `test_` API key is already wired in `iosDemoAppApp.swift`
    (`bootstrapDemoKoinWithSdks`). It's a public key for the throwaway `frnk-demo`
    project; swap it (and the dashboard products/offering) for your own to use a different store.
 

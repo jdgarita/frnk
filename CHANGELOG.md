@@ -15,6 +15,21 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Fixed
+
+- **iOS hosts link again: sentry-cocoa 9.30.x.** 0.12.0 bumped sentry-kmp to 0.29.0, which is built
+  against sentry-cocoa **9.30.2** (sentry-kmp moved to Cocoa 9 in 0.28.0). The demo's Xcode project,
+  and the docs, still pointed hosts at 8.58.x, so every iOS app on 0.12.x failed to link with undefined
+  `SentryId` / `SentryAttribute` / `SentryDependencyContainer` symbols. `iosDemoApp` now requires
+  sentry-cocoa 9.30.2 ("Up to Next Minor"); **iOS hosts must bump their own `sentry-cocoa` SPM
+  requirement the same way.** Cocoa 9 needs iOS 15+. Android is unaffected.
+- **iOS launch crash in `Purchases.init`: stop linking purchases-ios.** purchases-kmp 4.x (0.12.0
+  bumped it to 4.1.0) bundles purchases-ios 5.99.0 inside its klib, so it already ships inside the
+  umbrella framework. The demo, and the docs, still had the app link the `RevenueCat` Swift package as
+  well. With two copies loaded, the app crashed at launch with `EXC_BAD_ACCESS` (purchases-kmp #882).
+  `iosDemoApp` no longer links the package. **iOS hosts must remove the purchases-ios package too** and
+  configure RevenueCat from Kotlin (purchases-kmp's `Purchases.configure`), not the Swift API.
+
 ## [0.12.2] - 2026-11-10
 
 ### Fixed

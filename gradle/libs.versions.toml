@@ -32,8 +32,13 @@ viewmodel = "2.11.0"
 navigation3Runtime = "1.2.1"
 navigation3UI = "1.2.0"
 navigation3ViewModel = "2.11.0"
+# purchases-kmp 4.x bundles purchases-ios (4.1.0 carries 5.99.0) inside its klib. iOS hosts must NOT also
+# link purchases-ios via SPM: two copies crash at launch in Purchases.init (purchases-kmp #882).
 revenuecat = "4.1.0"
-# Sentry KMP bundles sentry-android 8.41.0 and pairs with sentry-cocoa 8.58.2 (its compat table). The
+# Sentry KMP 0.29.0 bundles sentry-android 8.61.0 and is built against sentry-cocoa 9.30.2 (its CHANGELOG;
+# 0.28.0 moved to Cocoa 9). Every iOS host — iosDemoApp included — must link sentry-cocoa 9.30.x via SPM:
+# an 8.x checkout fails the app link with undefined `_OBJC_CLASS_$_SentryId` / Swift `Sentry*` symbols.
+# Bump the Xcode SPM requirement whenever this crosses a Cocoa minor. The
 # Android Gradle plugin uploads R8 mappings; keep its `autoInstallation` OFF or it raises sentry-android
 # past what the KMP SDK expects (sentry-kotlin-multiplatform #450). AGP stays 9.4.0 until the plugin's
 # 9.4.1 breakage (sentry-android-gradle-plugin #1455) is fixed.

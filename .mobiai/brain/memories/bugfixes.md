@@ -162,3 +162,10 @@ ALSO (same day): iOS demo keys moved from Swift constants to Faint's xcconfig ap
 - demo/ios-app/Configuration/Config.xcconfig
 - demo/ios-app/Configuration/Secrets.xcconfig.template
 - demo/shared/src/iosMain/kotlin/dev/jdgarita/frnk/demo/DemoSdks.kt
+
+## iOS launch crash: purchases-ios linked twice (purchases-kmp 4.x bundles it)
+
+- id: ios-launch-crash-purchases-ios-linked-twice-purchases-kmp-4-20261117-205912
+- type: bug_fix
+- status: active
+- date: 2026-11-17
