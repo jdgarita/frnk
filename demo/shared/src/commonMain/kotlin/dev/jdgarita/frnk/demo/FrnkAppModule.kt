@@ -9,6 +9,7 @@ import dev.jdgarita.frnk.identity.AnonymousIdentityProvider
 import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProEntitlementDetails
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPeriod
 import dev.jdgarita.frnk.monetization.ProPeriodUnit
@@ -18,6 +19,7 @@ import dev.jdgarita.frnk.monetization.ProProduct
 import dev.jdgarita.frnk.monetization.WebPurchaseRedemptionError
 import dev.jdgarita.frnk.monetization.monetizationModule
 import dev.jdgarita.frnk.monetization.ui.paywallScaffoldModule
+import dev.jdgarita.frnk.notifications.impl.localNotificationsModule
 import dev.jdgarita.frnk.permissions.permissionsModule
 import dev.jdgarita.frnk.ui.haptics.hapticsPreferenceModule
 import dev.jdgarita.frnk.utils.AppResult
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 /**
  * The demo's host-side fakes, installed through `frnkModules { modules(frnkAppModule) }` in
@@ -42,6 +45,9 @@ val frnkAppModule =
         // everywhere (demoed as such).
         includes(cameraModule)
         includes(permissionsModule)
+        // The REAL local-notifications impl on both platforms (WorkManager / UNUserNotificationCenter
+        // — OS APIs only, no paid SDK), driving the Home tab's trial-reminder demo.
+        includes(localNotificationsModule)
         // The real frnk monetization layer (DefaultEntitlementManager + FeatureGate) over a FAKE
         // provider — so the demo exercises the actual god-mode / Free-Pro logic cross-platform without
         // a paid SDK. A real host installs `revenueCatModule` instead (androidDemoApp does).
@@ -63,13 +69,22 @@ val frnkAppModule =
         // demoNotesModule (demo-owned DemoDatabase over DatabaseFactory, OQ-2) — and the
         // Robolectric round-trip is covered by NoteStoreRoundTripTest.
         single<NoteStore> { FakeNoteStore() }
-        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { DemoHomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
 
-/** In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK. */
-class FakeEntitlementProvider : EntitlementProvider {
+/**
+ * In-memory [EntitlementProvider] so the demo exercises offerings + purchase/restore without a paid SDK.
+ * Purchases mirror the store's entitlement shape: the yearly plan starts its one-week free trial, the
+ * monthly plan renews monthly, lifetime never expires — so the trial-reminder demo has real data.
+ */
+class FakeEntitlementProvider(
+    private val clock: Clock = Clock.System
+) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
+
+    private val _proDetails = MutableStateFlow(ProEntitlementDetails.None)
+    override val proDetails: StateFlow<ProEntitlementDetails> = _proDetails.asStateFlow()
 
     override suspend fun refresh() = Unit
 
@@ -108,6 +123,14 @@ class FakeEntitlementProvider : EntitlementProvider {
         )
 
     override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> {
+        val now = clock.now()
+        // Details first, then Pro — the order EntitlementProvider.proDetails asks for.
+        _proDetails.value =
+            when (productId) {
+                "yearly" -> ProEntitlementDetails(isTrial = true, expiresAt = now + 7.days, willRenew = true)
+                "monthly" -> ProEntitlementDetails(isTrial = false, expiresAt = now + 30.days, willRenew = true)
+                else -> ProEntitlementDetails.None
+            }
         _isPro.value = true
         return AppResult.Success(true)
     }

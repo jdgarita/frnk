@@ -256,6 +256,37 @@ fun HomeScreen(
                         )
                     }
                 }
+
+                FrnkDivider(state = FrnkDividerState.Horizontal())
+
+                Section(title = "6. Trial reminders") {
+                    FrnkText(
+                        state =
+                            FrnkTextState.Body(
+                                text =
+                                    "EntitlementStatus carries isTrial / expiresAt / willRenew; :local-notifications " +
+                                        "schedules the reminder (WorkManager on Android, UNUserNotificationCenter on " +
+                                        "iOS). The fake provider's Yearly plan starts a 7-day trial; RevenueCat's Test Store has none.",
+                                color = colorOnSurfaceVariant
+                            )
+                    )
+                    FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Trial", value = state.isTrial.toString()))
+                    FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Expires", value = state.expiresAt))
+                    FrnkLabeledValue(state = FrnkLabeledValueState.Content(label = "Will renew", value = state.willRenew.toString()))
+                    FrnkLabeledValue(
+                        state = FrnkLabeledValueState.Content(label = "Notifications", value = state.notificationPermission)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+                        FrnkButton(
+                            state = FrnkButtonState.Content(text = "Remind me"),
+                            onClick = { homeViewModel.send(DemoHomeIntent.ScheduleTrialReminder) }
+                        )
+                        FrnkButton(
+                            state = FrnkButtonState.Content(text = "Cancel reminder", variant = FrnkButtonVariant.Outlined),
+                            onClick = { homeViewModel.send(DemoHomeIntent.CancelTrialReminder) }
+                        )
+                    }
+                }
             }
 
             DemoMessageOverlay(

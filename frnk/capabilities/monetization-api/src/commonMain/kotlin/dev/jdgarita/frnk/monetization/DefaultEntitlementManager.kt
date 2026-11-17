@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
  * god-mode override, and emits analytics user-properties so Pro/god-mode sessions are segmentable.
  *
  * - `isPro = provider.isPro || godMode`. God mode wins as the [ProSource].
+ * - Trial / expiry / renewal come from `provider.proDetails`, only while the source is a purchase.
  * - God mode is persisted via [KeyValueStore] so it survives restarts (usable in release builds).
  * - Every purchase/restore routes through here so the funnel analytics fire in one place.
  * - Construction kicks off `provider.refresh()` so purchased state hydrates on cold launch —
@@ -50,12 +51,13 @@ class DefaultEntitlementManager(
      * tagged `is_pro=false` / `pro_source=None`.
      */
     override val status: StateFlow<EntitlementStatus> =
-        combine(provider.isPro, _isGodMode) { providerPro, god -> compute(providerPro, god) }
-            .distinctUntilChanged()
+        combine(provider.isPro, provider.proDetails, _isGodMode) { providerPro, details, god ->
+            compute(providerPro, details, god)
+        }.distinctUntilChanged()
             .onEach { next ->
                 analytics.setUserProperty("is_pro", next.isPro.toString())
                 analytics.setUserProperty("pro_source", next.source.name)
-            }.stateIn(scope, SharingStarted.Eagerly, compute(provider.isPro.value, _isGodMode.value))
+            }.stateIn(scope, SharingStarted.Eagerly, compute(provider.isPro.value, provider.proDetails.value, _isGodMode.value))
 
     override val isPro: StateFlow<Boolean> =
         status.map { it.isPro }.stateIn(scope, SharingStarted.Eagerly, status.value.isPro)
@@ -133,18 +135,24 @@ class DefaultEntitlementManager(
         return result
     }
 
+    /** God mode wins and reports no trial / expiration / renewal; only a purchase carries [details]. */
     private fun compute(
         providerPro: Boolean,
+        details: ProEntitlementDetails,
         god: Boolean
-    ): EntitlementStatus {
-        val source =
-            when {
-                god -> ProSource.GodMode
-                providerPro -> ProSource.Purchase
-                else -> ProSource.None
-            }
-        return EntitlementStatus(isPro = god || providerPro, source = source)
-    }
+    ): EntitlementStatus =
+        when {
+            god -> EntitlementStatus(isPro = true, source = ProSource.GodMode)
+            providerPro ->
+                EntitlementStatus(
+                    isPro = true,
+                    source = ProSource.Purchase,
+                    isTrial = details.isTrial,
+                    expiresAt = details.expiresAt,
+                    willRenew = details.willRenew
+                )
+            else -> EntitlementStatus.Free
+        }
 
     private companion object {
         const val GOD_MODE_KEY = "frnk.god_mode"

@@ -1696,3 +1696,23 @@ WHY (JD): a contract with no toolkit backend, a no-op and a slot is dead optiona
 - Hard mode: a pending purchase (Success(false)) keeps the paywall up (stringPaywallPurchasePending); the VM collects the optional ObserveProStatusUseCase (getOrNull in paywallScaffoldModule) and dismisses on Pro from any cause. The observer skips while isPurchasing/isRestoring so Purchased precedes Dismiss; failure/pending paths re-check isPro afterwards; one dedup flag (dismissedForPro) — hard mode only, soft mode emits exactly as before.
 - PaywallIntent.Retry added (breaks exhaustive `when` over PaywallIntent in hosts, e.g. Still's PaywallFunnel) — accepted in the PATCH at the coordinator's request, called out in the CHANGELOG.
 - iOS trials: checkTrialOrIntroPriceEligibility (3 s timeout) for products with introductoryDiscount and no defaultOption; only ELIGIBLE reports a trial (UNKNOWN/failure = regular price, RevenueCat's own advice). Pure decision in trialInfoOf().
+
+## Trial reminders: proDetails flow + local-notifications trampoline (0.13.0)
+
+- id: trial-reminders-prodetails-flow-local-notifications-trampoli-20261117-034321
+- type: architecture_decision
+- status: active
+- platform: kmp
+- area: monetization,notifications
+- date: 2026-11-17
+
+- **Why a separate `EntitlementProvider.proDetails` flow, not widening `isPro`:** keeps every existing provider/fake source-compatible (interface default returns a shared constant `None` flow). Cost: two flows can momentarily disagree, so providers publish details *before* turning `isPro` on and *after* turning it off; `DefaultEntitlementManager.compute` only reads details when the provider says Pro, so any intermediate state is still consistent.
+- **God mode masks trial fields** (no trial / no expiry / no renew) by request — a forced-Pro dev session must never schedule a trial reminder.
+- **RC mapping reads `expirationDateMillis`**, not `expirationDate`, to avoid leaking RevenueCat's `@ExperimentalTime` opt-in. RevenueCat Test Store products have no trial phase, so on-device RC tests only ever show `isTrial=false`; trial=true is covered by the fake provider + `ProEntitlementDetailsMappingTest` (public `EntitlementInfo` constructor, no statics).
+- **Android permission prompt via a translucent trampoline activity** (`NotificationPermissionActivity`) so `requestPermission()` is a suspend call usable from a ViewModel without the host registering an ActivityResultLauncher. Android can't distinguish never-asked from denied, so a persisted "asked" flag in SharedPreferences `frnk_local_notifications` does it.
+- **WorkManager, not AlarmManager:** no exact-alarm permission, reboot persistence for free, worker is self-contained (all data in input) so it runs under the default WorkerFactory without Koin.
+- **Demo:** the impl uses only OS frameworks, so it lives in `:demo-shared` commonMain and DemoKit without new link deps.
+
+### Files
+- frnk/capabilities/monetization-api/src/commonMain/kotlin/dev/jdgarita/frnk/monetization/ProEntitlementDetails.kt
+- frnk/capabilities/local-notifications-impl/src/androidMain/kotlin/dev/jdgarita/frnk/notifications/impl/NotificationPermissionActivity.kt

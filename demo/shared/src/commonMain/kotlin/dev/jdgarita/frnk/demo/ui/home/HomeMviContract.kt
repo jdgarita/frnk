@@ -29,13 +29,18 @@ data class DemoHomeScreenState(
     // Stage 11 capability scaffolds — Remote Config value + camera/permission no-op outcomes.
     val cameraResult: String = "Not captured",
     val cameraPermission: String = "",
+    // Trial reminders — EntitlementStatus trial/expiry/renewal + the local-notification permission.
+    val isTrial: Boolean = false,
+    val expiresAt: String = "—",
+    val willRenew: Boolean = false,
+    val notificationPermission: String = "",
     val frnkHomeState: HomeScreenState
 ) : UiState
 
 @Immutable
 data class DemoHomeModelState(
     val count: Int = 0,
-    val email: String = "",
+    val email: String = "guy.turner@example.com",
     val isPro: Boolean = false,
     val isGodMode: Boolean = false,
     // Where Pro comes from (None / Purchase / GodMode) — shown in the FeatureGate demo section.
@@ -50,7 +55,12 @@ data class DemoHomeModelState(
     val galleryNavIndex: Int = 0,
     // Stage 11 capability scaffolds — Remote Config value + camera/permission no-op outcomes.
     val cameraResult: String = "Not captured",
-    val cameraPermission: String = ""
+    val cameraPermission: String = "",
+    // Trial reminders — EntitlementStatus trial/expiry/renewal + the local-notification permission.
+    val isTrial: Boolean = false,
+    val expiresAt: String = "—",
+    val willRenew: Boolean = false,
+    val notificationPermission: String = ""
 ) : ModelState
 
 sealed interface DemoHomeIntent : UiIntent {
@@ -111,6 +121,11 @@ sealed interface DemoHomeIntent : UiIntent {
     data object CapturePhoto : DemoHomeIntent
 
     data object RequestCameraPermission : DemoHomeIntent
+
+    // Trial reminder — requests notification permission, then schedules a local notification.
+    data object ScheduleTrialReminder : DemoHomeIntent
+
+    data object CancelTrialReminder : DemoHomeIntent
 }
 
 @Immutable

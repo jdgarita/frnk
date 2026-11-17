@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Android 13+ runtime permission; ignored below API 33. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+        <!-- Headless trampoline that hosts the POST_NOTIFICATIONS prompt for
+             LocalNotificationScheduler.requestPermission(), so the call works from a ViewModel. -->
+        <activity
+            android:name="dev.jdgarita.frnk.notifications.impl.NotificationPermissionActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+    </application>
+</manifest>

@@ -33,7 +33,12 @@ Two layers, so god mode + Pro logic stay independent of any billing SDK:
   whose `isPro` starts `false` would otherwise report Free until some paywall interaction fetched
   customer info); the binding stays lazy (NOT `createdAtStart`, which would crash `startKoin` before
   `validateFrnkBootstrap` can explain a missing dep) — the validated path resolves it at bootstrap.
-- `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode})`.
+- `monetization/EntitlementStatus.kt` — `EntitlementStatus(isPro, source: ProSource{None,Purchase,GodMode},
+  isTrial = false, expiresAt: Instant? = null, willRenew = false)`. The three trial fields come from
+  `EntitlementProvider.proDetails` (`ProEntitlementDetails`; defaulted to a constant `None` flow so
+  older providers/fakes compile) and are populated **only** for `ProSource.Purchase` — Free and god
+  mode always report no trial / expiration / renewal. Providers publish details before turning
+  `isPro` on and after turning it off, so the manager's `combine` never pairs Pro with stale details.
 - `monetization/ProProduct.kt` — SDK-free purchasable plan (`ProPlan{Weekly,Monthly,Yearly,Lifetime,Other}`,
   prices, `hasFreeTrial`, `badge`, `freeTrialPeriod: ProPeriod?` — the store's trial length as `value` + `ProPeriodUnit`,
   with `approximateDays` for plural copy) the paywall renders.

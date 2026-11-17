@@ -37,6 +37,8 @@ the typesafe accessor column is for builds (frnk's own + a host that `includeBui
 | `:identity-api` | `identity-api` | `projects.identityApi` | SDK-free `AnonymousIdentityProvider` contract (bound by `revenueCatIdentityModule`, `:monetization-impl`). |
 | `:camera` | `camera` | `projects.camera` | api-only no-op scaffold → `cameraModule` (no impl yet). |
 | `:permissions` | `permissions` | `projects.permissions` | api-only no-op scaffold → `permissionsModule` (no impl yet). |
+| `:local-notifications-api` | `local-notifications-api` | `projects.localNotificationsApi` | `LocalNotificationScheduler` contract (schedule / cancel / permission). |
+| `:local-notifications-impl` | `local-notifications-impl` | `projects.localNotificationsImpl` | WorkManager (Android) / `UNUserNotificationCenter` (iOS) → `localNotificationsModule`. |
 | `:monetization-api` | `monetization-api` | `projects.monetizationApi` | `EntitlementManager`/`FeatureGate` → `monetizationModule`. |
 | `:monetization-impl` | `monetization-impl` | `projects.monetizationImpl` | RevenueCat `EntitlementProvider` → `revenueCatModule`. |
 | `:shared-monetization-ui` | `shared-monetization-ui` | `projects.sharedMonetizationUi` | Paywall UI + `paywallScaffoldModule` + `rememberFrnkSettingsHandler`. |
@@ -602,6 +604,34 @@ if (gate.canUse(AppFeature.CloudSync)) sync() else navigate(gate.requestUpgrade(
 toolkit paywall route key. `FeatureGate(freeFeatures = …)` whitelists features for Free users (matched by
 `Feature.id`) — but note it's **not wired through `monetizationModule`** today (binds the empty default),
 so configuring it means overriding the `FeatureGate` Koin binding.
+
+### Reminding users before a free trial ends
+
+`EntitlementManager.status` carries the purchased entitlement's `isTrial`, `expiresAt`
+(`kotlin.time.Instant`, `null` for lifetime) and `willRenew` — mapped by `revenueCatModule` from the
+`proEntitlementId` entitlement's `periodType == TRIAL` / `expirationDate` / `willRenew`. Free and god
+mode report no trial, no expiration, no renewal. Pair it with `:local-notifications-impl`:
+
+```kotlin
+// modules: … + localNotificationsModule  (override LocalNotificationsConfig for a localized channel name / icon)
+val status = entitlementManager.status.value
+val ends = status.expiresAt
+if (status.isTrial && status.willRenew && ends != null) {
+    if (scheduler.requestPermission() == NotificationPermissionStatus.Granted) {
+        scheduler.schedule(id = "trial_reminder", at = ends - 2.days, title = …, body = …)
+    }
+} else {
+    scheduler.cancel("trial_reminder")
+}
+```
+
+Re-run it on each launch / status change: re-using an `id` replaces the pending notification, so it
+stays idempotent. Android delivery is **inexact** (WorkManager — no exact-alarm permission), so leave
+slack. `requestPermission()` is a plain suspend call — the impl hosts the Android 13+ prompt in its own
+translucent activity, and its manifest merges `POST_NOTIFICATIONS`. A tapped Android notification
+opens the launcher activity with `LocalNotificationWorker.EXTRA_NOTIFICATION_ID`. iOS hides
+notifications while the app is in the foreground unless the host's `UNUserNotificationCenterDelegate`
+opts in. Host tests can copy `FakeLocalNotificationScheduler` (`:local-notifications-api` `commonTest`).
 
 ### Sentry setup (the crash reporter)
 

@@ -54,6 +54,10 @@ kotlin {
             // common surface so DemoKit links no extra native cinterop).
             export(projects.camera)
             export(projects.permissions)
+            // Local notifications contract (trial reminders). Its impl uses only the OS
+            // UserNotifications framework — no third-party native SDK — so it ships in DemoKit's
+            // common surface without adding any link-time dependency.
+            export(projects.localNotificationsApi)
             export(projects.dataDbApi)
             export(projects.dataPrefsApi)
             export(projects.monetizationApi)
@@ -87,6 +91,8 @@ kotlin {
             // Stage 11 capability scaffolds (matches the iOS export list above). Only the *-api modules.
             api(projects.camera)
             api(projects.permissions)
+            api(projects.localNotificationsApi)
+            implementation(projects.localNotificationsImpl)
             api(projects.dataDbApi)
             api(projects.dataPrefsApi)
             api(projects.monetizationApi)
