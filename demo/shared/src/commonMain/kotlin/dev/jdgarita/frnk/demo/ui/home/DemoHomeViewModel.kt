@@ -187,8 +187,8 @@ class DemoHomeViewModel(
     private suspend fun scheduleTrialReminder() {
         val status = entitlements.status.value
         val expiresAt = status.expiresAt
-        if (!status.isTrial || expiresAt == null) {
-            emit(DemoHomeEffect.Toast("No active trial — buy the Yearly plan on the paywall first"))
+        if (expiresAt == null) {
+            emit(DemoHomeEffect.Toast("Nothing expires — buy the Yearly (trial) or Monthly plan on the paywall first"))
             return
         }
         val permission = notifications.requestPermission()
@@ -197,14 +197,22 @@ class DemoHomeViewModel(
             emit(DemoHomeEffect.Toast("Notifications not allowed ($permission)"))
             return
         }
+        // RevenueCat's Test Store products carry no trial phase, so the same reminder covers a
+        // renewing subscription too; the copy follows isTrial / willRenew.
+        val title =
+            when {
+                status.isTrial -> "Your free trial ends soon"
+                status.willRenew -> "Your subscription renews soon"
+                else -> "Your Pro access ends soon"
+            }
         notifications
             .schedule(
                 id = TRIAL_REMINDER_ID,
                 at = Clock.System.now() + DEMO_REMINDER_DELAY,
-                title = "Your free trial ends soon",
-                body = "Your Pro trial ends at $expiresAt. Cancel before then to avoid being charged."
+                title = title,
+                body = "Pro ends at $expiresAt. Cancel before then to avoid being charged."
             ).fold(
-                onSuccess = { emit(DemoHomeEffect.Toast("Trial reminder in ${DEMO_REMINDER_DELAY.inWholeSeconds}s — background the app")) },
+                onSuccess = { emit(DemoHomeEffect.Toast("Reminder in ${DEMO_REMINDER_DELAY.inWholeSeconds}s — background the app")) },
                 onFailure = { emit(DemoHomeEffect.Toast("Couldn't schedule: ${it.message}")) }
             )
     }

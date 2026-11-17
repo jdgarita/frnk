@@ -266,7 +266,7 @@ fun HomeScreen(
                                 text =
                                     "EntitlementStatus carries isTrial / expiresAt / willRenew; :local-notifications " +
                                         "schedules the reminder (WorkManager on Android, UNUserNotificationCenter on " +
-                                        "iOS). Buy the Yearly plan to start the fake 7-day trial.",
+                                        "iOS). The fake provider's Yearly plan starts a 7-day trial; RevenueCat's Test Store has none.",
                                 color = colorOnSurfaceVariant
                             )
                     )
