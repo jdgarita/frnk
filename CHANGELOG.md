@@ -15,6 +15,16 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-11-17
+
+### Fixed
+
+- **`LocalNotificationWorker.EXTRA_NOTIFICATION_ID` is reachable from hosts.** 0.13.0 declared
+  `LocalNotificationWorker` `internal`, which hid its companion constant, so a host could not read
+  the tapped notification's id off the launch intent as `docs/HOST_INTEGRATION.md` describes. The
+  class is now public with an `internal` constructor (WorkManager still instantiates it
+  reflectively; hosts cannot), and the constant's value is unchanged.
+
 ## [0.13.0] - 2026-11-17
 
 ### Added
@@ -706,7 +716,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/jdgarita/frnk/releases/tag/v0.13.1
 [0.13.0]: https://github.com/jdgarita/frnk/releases/tag/v0.13.0
 [0.12.2]: https://github.com/jdgarita/frnk/releases/tag/v0.12.2
 [0.12.1]: https://github.com/jdgarita/frnk/releases/tag/v0.12.1

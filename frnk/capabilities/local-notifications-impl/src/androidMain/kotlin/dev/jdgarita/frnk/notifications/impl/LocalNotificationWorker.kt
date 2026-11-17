@@ -12,8 +12,11 @@ import dev.jdgarita.frnk.notifications.NotificationPermissionStatus
 /**
  * Posts one scheduled local notification. Self-contained — everything it needs travels in its input
  * data — so it runs under WorkManager's default factory without Koin, including after a reboot.
+ *
+ * Public only so hosts can read [EXTRA_NOTIFICATION_ID] off a tapped notification's launch intent;
+ * the constructor stays internal (WorkManager reaches it reflectively), so hosts never build one.
  */
-internal class LocalNotificationWorker(
+class LocalNotificationWorker internal constructor(
     context: Context,
     params: WorkerParameters
 ) : Worker(context, params) {
