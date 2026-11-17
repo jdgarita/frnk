@@ -67,6 +67,8 @@ compose-material3-expressive = "1.10.0-alpha05"
 ktlint = "14.2.0"
 iconsLucide = "2.2.1"
 androidx-activity = "1.13.0"
+# WorkManager — :local-notifications-impl schedules inexact, reboot-surviving local notifications.
+androidx-work = "2.11.2"
 # Android SDK targets exposed to composite-build host apps (Still + future hosts) so they inherit the
 # toolkit's SDK floor/ceiling from the shared catalog (see HOST_ALIGNMENT.md → "Inherit build config").
 # This is the SINGLE source of truth for SDK targets — the `frnk.kmp.library` convention plugin, the
@@ -80,6 +82,7 @@ android-compileSdk = "37"
 android-targetSdk = "36"
 
 [libraries]
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
