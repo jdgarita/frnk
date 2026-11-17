@@ -15,6 +15,14 @@ interface EntitlementProvider : IdentitySource {
     /** The provider's own purchased-entitlement state (no god-mode overlay). */
     val isPro: StateFlow<Boolean>
 
+    /**
+     * Trial / expiry / renewal of the active purchased Pro entitlement, refreshed alongside [isPro].
+     * Defaults to a constant [ProEntitlementDetails.None] so providers that predate it (and fakes)
+     * keep compiling; a provider that overrides it should publish the details **before** flipping
+     * [isPro] on, and after flipping it off, so observers never see Pro paired with stale details.
+     */
+    val proDetails: StateFlow<ProEntitlementDetails> get() = ProEntitlementDetails.NoneFlow
+
     /** Re-fetch the latest customer info from the store/backend. */
     suspend fun refresh()
 

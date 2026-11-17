@@ -14,7 +14,9 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 class DefaultEntitlementManagerTest {
     private fun manager(
@@ -161,6 +163,48 @@ class DefaultEntitlementManagerTest {
     }
 
     @Test
+    fun purchased_trial_details_flow_into_status() {
+        val provider = FakeProvider()
+        val mgr = manager(provider)
+        val expiry = Instant.fromEpochMilliseconds(1_800_000_000_000)
+        provider.setDetails(ProEntitlementDetails(isTrial = true, expiresAt = expiry, willRenew = true))
+        provider.setPro(true)
+        assertEquals(
+            EntitlementStatus(isPro = true, source = ProSource.Purchase, isTrial = true, expiresAt = expiry, willRenew = true),
+            mgr.status.value
+        )
+    }
+
+    @Test
+    fun details_are_ignored_while_free() {
+        val provider = FakeProvider()
+        val mgr = manager(provider)
+        provider.setDetails(ProEntitlementDetails(isTrial = true, expiresAt = Instant.fromEpochMilliseconds(1), willRenew = true))
+        assertEquals(EntitlementStatus.Free, mgr.status.value)
+    }
+
+    @Test
+    fun god_mode_reports_no_trial_and_no_expiration() {
+        val provider = FakeProvider()
+        val mgr = manager(provider)
+        provider.setDetails(ProEntitlementDetails(isTrial = true, expiresAt = Instant.fromEpochMilliseconds(1), willRenew = true))
+        provider.setPro(true)
+        mgr.setGodMode(true)
+        assertEquals(EntitlementStatus(isPro = true, source = ProSource.GodMode), mgr.status.value)
+        assertFalse(mgr.status.value.isTrial)
+        assertNull(mgr.status.value.expiresAt)
+        assertFalse(mgr.status.value.willRenew)
+    }
+
+    @Test
+    fun provider_without_details_override_keeps_todays_status_shape() {
+        val provider = LegacyProvider()
+        val mgr = DefaultEntitlementManager(provider, FakeKeyValueStore(), FakeAnalytics(), CoroutineScope(Dispatchers.Unconfined))
+        provider.pro.value = true
+        assertEquals(EntitlementStatus(isPro = true, source = ProSource.Purchase), mgr.status.value)
+    }
+
+    @Test
     fun purchase_failure_emits_failed_event() {
         val analytics = FakeAnalytics()
         val mgr =
@@ -191,8 +235,15 @@ private class FakeProvider(
 
     val identifiedUserIds = mutableListOf<String>()
 
+    private val _proDetails = MutableStateFlow(ProEntitlementDetails.None)
+    override val proDetails: StateFlow<ProEntitlementDetails> = _proDetails.asStateFlow()
+
     fun setPro(value: Boolean) {
         _isPro.value = value
+    }
+
+    fun setDetails(value: ProEntitlementDetails) {
+        _proDetails.value = value
     }
 
     override suspend fun refresh() {
@@ -223,6 +274,31 @@ private class FakeProvider(
     override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
 
     override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> = redeemResult
+}
+
+/** A provider written before `proDetails` existed — relies on the interface default. */
+private class LegacyProvider : EntitlementProvider {
+    val pro = MutableStateFlow(false)
+    override val isPro: StateFlow<Boolean> = pro
+
+    override suspend fun refresh() = Unit
+
+    override suspend fun identify(id: String): AppResult<Unit, IdentityError> = AppResult.Success(Unit)
+
+    override suspend fun offerings(): AppResult<List<ProProduct>, MonetizationError> = AppResult.Success(emptyList())
+
+    override suspend fun purchase(productId: String): AppResult<Boolean, MonetizationError> = AppResult.Success(true)
+
+    override suspend fun restore(): AppResult<Boolean, MonetizationError> = AppResult.Success(false)
+
+    override suspend fun syncPurchases(): AppResult<Boolean, MonetizationError> = AppResult.Success(false)
+
+    override suspend fun managementUrl(): AppResult<String?, MonetizationError> = AppResult.Success(null)
+
+    override suspend fun fetchMetadata(): AppResult<ProMetadata, MonetizationError> = AppResult.Success(ProMetadata.DUMMY)
+
+    override suspend fun redeemWebPurchase(url: String): AppResult<Boolean, WebPurchaseRedemptionError> =
+        AppResult.Failure(WebPurchaseRedemptionError.NotARedemptionLink)
 }
 
 private class FakeKeyValueStore : KeyValueStore {
