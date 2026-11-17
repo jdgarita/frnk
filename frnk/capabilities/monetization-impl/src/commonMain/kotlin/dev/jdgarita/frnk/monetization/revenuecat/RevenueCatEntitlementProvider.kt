@@ -5,12 +5,14 @@ import com.revenuecat.purchases.kmp.PurchasesDelegate
 import com.revenuecat.purchases.kmp.ktx.SuccessfulLogin
 import com.revenuecat.purchases.kmp.models.CustomerInfo
 import com.revenuecat.purchases.kmp.models.DiscountPaymentMode
+import com.revenuecat.purchases.kmp.models.EntitlementInfo
 import com.revenuecat.purchases.kmp.models.IntroEligibilityStatus
 import com.revenuecat.purchases.kmp.models.OfferPaymentMode
 import com.revenuecat.purchases.kmp.models.Offering
 import com.revenuecat.purchases.kmp.models.Package
 import com.revenuecat.purchases.kmp.models.PackageType
 import com.revenuecat.purchases.kmp.models.Period
+import com.revenuecat.purchases.kmp.models.PeriodType
 import com.revenuecat.purchases.kmp.models.PeriodUnit
 import com.revenuecat.purchases.kmp.models.PricingPhase
 import com.revenuecat.purchases.kmp.models.PurchasesError
@@ -29,6 +31,7 @@ import com.revenuecat.purchases.kmp.result.awaitSyncPurchasesResult
 import dev.jdgarita.frnk.identity.IdentityError
 import dev.jdgarita.frnk.monetization.EntitlementProvider
 import dev.jdgarita.frnk.monetization.MonetizationError
+import dev.jdgarita.frnk.monetization.ProEntitlementDetails
 import dev.jdgarita.frnk.monetization.ProMetadata
 import dev.jdgarita.frnk.monetization.ProPeriod
 import dev.jdgarita.frnk.monetization.ProPeriodUnit
@@ -47,6 +50,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 /**
  * [EntitlementProvider] backed by the RevenueCat KMP SDK.
@@ -60,6 +64,9 @@ internal class RevenueCatEntitlementProvider(
 ) : EntitlementProvider {
     private val _isPro = MutableStateFlow(false)
     override val isPro: StateFlow<Boolean> = _isPro.asStateFlow()
+
+    private val _proDetails = MutableStateFlow(ProEntitlementDetails.None)
+    override val proDetails: StateFlow<ProEntitlementDetails> = _proDetails.asStateFlow()
 
     private companion object {
         const val TAG = "EntitlementProvider"
@@ -259,8 +266,22 @@ internal class RevenueCatEntitlementProvider(
         }
     }
 
+    /**
+     * The single path every CustomerInfo (refresh, purchase, restore, sync, login, web redemption,
+     * delegate push) flows through. Details are published before Pro turns on and after it turns
+     * off, so `DefaultEntitlementManager`'s combine never pairs Pro with stale details.
+     */
     private fun updateFrom(customerInfo: CustomerInfo) {
-        _isPro.value = isProFor(customerInfo.entitlements.active.keys, config.proEntitlementId)
+        val active = customerInfo.entitlements.active
+        val pro = isProFor(active.keys, config.proEntitlementId)
+        val details = proEntitlementDetailsFor(active, config.proEntitlementId)
+        if (pro) {
+            _proDetails.value = details
+            _isPro.value = true
+        } else {
+            _isPro.value = false
+            _proDetails.value = details
+        }
     }
 
     private suspend fun extractPaywallMetadata(offering: Offering): ProMetadata =
@@ -485,6 +506,24 @@ internal fun webPurchaseRedemptionErrorFor(result: RedeemWebPurchaseListener.Res
                 else -> WebPurchaseRedemptionError.Unknown
             }
     }
+
+/**
+ * Pure trial / expiry / renewal mapping for the active [proEntitlementId] entitlement:
+ * `periodType == TRIAL`, `expirationDate` (`null` for lifetime) and `willRenew`. No active Pro
+ * entitlement maps to [ProEntitlementDetails.None]. Reads the millis field so no
+ * `@ExperimentalTime` opt-in leaks from the SDK's `Instant` accessors.
+ */
+internal fun proEntitlementDetailsFor(
+    activeEntitlements: Map<String, EntitlementInfo>,
+    proEntitlementId: String
+): ProEntitlementDetails {
+    val entitlement = activeEntitlements[proEntitlementId] ?: return ProEntitlementDetails.None
+    return ProEntitlementDetails(
+        isTrial = entitlement.periodType == PeriodType.TRIAL,
+        expiresAt = entitlement.expirationDateMillis?.let(Instant::fromEpochMilliseconds),
+        willRenew = entitlement.willRenew
+    )
+}
 
 /**
  * Pure, SDK-free Free-vs-Pro decision, split out so it is unit-testable without the static
