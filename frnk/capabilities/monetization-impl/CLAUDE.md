@@ -62,7 +62,7 @@ demo's fake with `revenueCatModule` via Koin `allowOverride(true)` when a key is
 
 ## iOS native-framework contract (important)
 
-The RevenueCat KMP SDK cinterops with the native purchases-ios SDK. That framework is **not** vendored inside any toolkit framework — the consumer Xcode project supplies it via SPM/CocoaPods. Umbrella XCFrameworks bundling this module (DemoKit, host frameworks) set `linkerOpts("-undefined", "dynamic_lookup")` precisely to make the iOS link succeed without the native dep present locally; the symbols resolve when the consumer app links.
+The RevenueCat KMP SDK cinterops with the native purchases-ios SDK, and since purchases-kmp 4.x the klib **bundles** purchases-ios (4.1.0 ↔ 5.99.0), so it ends up inside any umbrella framework that includes this module. The consumer Xcode project must **not** also link purchases-ios via SPM/CocoaPods: two copies crash at launch in `Purchases.init` (purchases-kmp #882). Umbrella XCFrameworks bundling this module (DemoKit, host frameworks) still set `linkerOpts("-undefined", "dynamic_lookup")` for the PostHog and Sentry SDKs, which the app does link.
 
 If you change anything that touches this contract — e.g. adding a new cinterop, depending on a different RC SDK module — document it in `docs/ARCHITECTURE.md` so consumers know what extra pod to add.
 

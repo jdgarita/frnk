@@ -458,8 +458,9 @@ Two rules carry over from the old packaging:
 
 - `isStatic = true` + `linkerOpts("-undefined", "dynamic_lookup")` on the framework — bundled impls
   (`:monetization-impl`, and the always-present `:analytics-posthog` + `:crash-sentry`) reference
-  native iOS SDKs (purchases-ios, posthog-ios, sentry-cocoa) that **your app** supplies via SPM;
-  deferred symbol resolution lets the framework link without them.
+  native iOS SDKs (posthog-ios, sentry-cocoa) that **your app** supplies via SPM; deferred symbol
+  resolution lets the framework link without them. purchases-ios is the exception: purchases-kmp 4.x
+  bundles its own copy in the klib, so it ends up inside your framework (see RevenueCat setup below).
 - Don't add `linkerOpts` for specific frameworks — the consumer keeps full control of the native
   dep list.
 - Set `kotlin.disableSwiftPMImport=true` in the host's `gradle.properties`, as frnk's own does.
@@ -532,8 +533,8 @@ Keep the **common** surface free of *optional* `*-impl` modules so the framework
 cinterop it doesn't need. PostHog + Sentry are the exception by design — `:ui-app` carries them, so
 every umbrella framework references posthog-ios + sentry-cocoa and the Xcode project links the
 `PostHog` + `Sentry` SPM products. RevenueCat goes **only** in `iosMain` (the demo adds
-`monetizationImpl` + `revenuecat.core` there) — the consumer Xcode project then supplies the native
-SDK via SPM, and the `dynamic_lookup` flag above lets the framework link locally without it.
+`monetizationImpl` + `revenuecat.core` there). purchases-kmp 4.x carries purchases-ios inside the klib,
+so the framework is self-contained for RevenueCat and the Xcode project must **not** add it again.
 
 Build it with the generated task `assemble<Name>{Debug,Release}XCFramework` — e.g.
 `./gradlew :your-shared:assembleYourAppKitDebugXCFramework`.
@@ -566,11 +567,12 @@ phase and its skip-when-absent guard.
 
 The toolkit never calls `Purchases.configure(...)`; the consumer app must:
 
-1. Add the **`RevenueCat`** Swift package (`github.com/RevenueCat/purchases-ios`, the 5.x release the
-   pinned `purchases-kmp` wraps — 3.7.0 ↔ `from: 5.87.1`; 5.78.0+ is the floor for Xcode 27) via SPM. **Add only the `RevenueCat` product** —
-   skip `RevenueCatUI` (frnk ships its own Compose paywall), `ReceiptParser`, and
-   `RevenueCat_CustomEntitlementComputation` (mutually-exclusive alternate build).
-2. Call `Purchases.configure(withAPIKey:)` on launch before using the gate — a RevenueCat
+1. **Don't link `purchases-ios` in Xcode.** purchases-kmp 4.x bundles it (purchases-kmp 4.1.0 carries
+   purchases-ios 5.99.0) inside the klib, so it ships in your umbrella framework. Adding the
+   `RevenueCat` Swift package too loads two copies, and the app crashes at launch with
+   `EXC_BAD_ACCESS` in `Purchases.init` (purchases-kmp #882). Remove it if an older frnk told you to add it.
+2. Call purchases-kmp's `Purchases.configure(apiKey)` from the Kotlin bootstrap on launch, before using
+   the gate (not the Swift API, which would need the SPM package). Use a RevenueCat
    **Test Store** `test_…` key for testing (project-level, same key works on iOS and Android), the
    platform's production key (`appl_…` / `goog_…`) for release.
 3. Ensure the dashboard entitlement identifier matches `RevenueCatConfig.proEntitlementId`
@@ -613,7 +615,9 @@ no native hook of its own: `Sentry.init` runs inside `startKoin` (the binding is
 installs the SDK's unhandled-Kotlin-exception hook on Apple itself. What the app must still do:
 
 1. **Link `sentry-cocoa`** — SPM product `Sentry`, at the version frnk's catalog pairs with
-   `sentry-kmp` (the KMP SDK's compat table). The umbrella framework defers the symbols under
+   `sentry-kmp` (see the comment above `sentry-kmp` in `gradle/libs.versions.toml`): today
+   **9.30.x** for sentry-kmp 0.29.0 ("Up to Next Minor" from 9.30.2). An 8.x checkout fails the app
+   link with undefined `SentryId` / `Sentry*` symbols. Cocoa 9 requires iOS 15+. The umbrella framework defers the symbols under
    `dynamic_lookup`, so a project that forgets this fails at the app link step, loudly.
 2. **Supply the DSN** from the gitignored `Configuration/Secrets.xcconfig` → `Info.plist` value, read
    with `NSBundle` in the Kotlin bootstrap — [the standard](#supplying-per-app-keys--the-standard).
