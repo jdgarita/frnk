@@ -26,6 +26,8 @@ data/  + capabilities/   — each SDK-backed domain is an api ── impl pair (
                                                   monetization-api  ── monetization-impl  (RevenueCat)
                                                   haptics       (contract + multihaptic engine; UI-feedback, no api/impl split)
                                                   camera, permissions   (api-only no-op scaffolds — no impl yet)
+                                                  local-notifications-api ── local-notifications-impl
+                                                                (WorkManager / UNUserNotificationCenter; no push)
 
 ui/   (floor → ceiling; haptics ← theme ← components ← scaffolds ← bottom-nav ← app)
   theme       ── FrnkTheme + tokens (compose-unstyled; installs ripple + haptics)
@@ -133,7 +135,7 @@ Each domain that pulls in a third-party SDK is split:
 - **`*-api`** — pure-interface module. No Ktor, no SDK, no SQLite driver. Domain code depends only on these.
 - **`*-impl`** (e.g. `:analytics-posthog`, `:crash-sentry`, `:data-db-impl`, `:data-prefs-impl`, `:monetization-impl`) — concrete bindings exposed as Koin modules. `:analytics-api`'s two contracts have exactly one impl each (PostHog, Sentry) and both are mandatory; the other pairs are host choices.
 
-Capabilities (`frnk/capabilities/`) follow the same rule: **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — bound by `revenueCatIdentityModule` (`:monetization-impl`, the RevenueCat app user id) or a host-owned binding; `frnkModules { identity = … }` takes exactly one. (The Firebase-backed `:identity-impl` and the whole remote-config pair `:remote-config-api` / `:remote-config-impl` were retired on 2026-09-22 — with no toolkit backend, a remote-config contract + no-op + slot was dead optionality; a host that needs it owns it outside frnk.) **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands.
+Capabilities (`frnk/capabilities/`) follow the same rule: **`:identity-api`** exposes the SDK-free `AnonymousIdentityProvider` — plus `IdentitySource`, the `identify(id)` contract every identity consumer implements — bound by `revenueCatIdentityModule` (`:monetization-impl`, the RevenueCat app user id) or a host-owned binding; `frnkModules { identity = … }` takes exactly one. (The Firebase-backed `:identity-impl` and the whole remote-config pair `:remote-config-api` / `:remote-config-impl` were retired on 2026-09-22 — with no toolkit backend, a remote-config contract + no-op + slot was dead optionality; a host that needs it owns it outside frnk.) **`:camera`** and **`:permissions`** are api-only **scaffolds** (Stage 11) — interface + no-op default + Koin module, no impl yet, no native cinterop — so they stay out of every XCFramework's link surface until a real impl lands. **`:local-notifications-api`** (`LocalNotificationScheduler`) / **`:local-notifications-impl`** (`localNotificationsModule`) schedule on-device one-shot notifications — WorkManager + a channel + a `POST_NOTIFICATIONS` trampoline activity on Android, `UNUserNotificationCenter` on iOS. OS APIs only, so the impl adds nothing to a framework's link surface.
 
 Benefits:
 - **Parallel Gradle compilation** — api modules build before any impl module starts.

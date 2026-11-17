@@ -15,6 +15,37 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-17
+
+### Added
+
+- **Trial / expiry / renewal on `EntitlementStatus`.** `EntitlementStatus` gains `isTrial`,
+  `expiresAt: kotlin.time.Instant?` (`null` for lifetime) and `willRenew`, all defaulted (`false` /
+  `null` / `false`), so existing constructor calls and `copy` call sites keep compiling. They are
+  populated only for a purchased Pro entitlement; Free and god mode report no trial, no expiration
+  and no renewal. Providers feed them through the new `EntitlementProvider.proDetails:
+  StateFlow<ProEntitlementDetails>`, which has a default implementation (constant `None`), so
+  existing providers and fakes compile unchanged.
+- **RevenueCat mapping.** `revenueCatModule` maps the `proEntitlementId` entitlement's
+  `periodType == TRIAL`, `expirationDate` and `willRenew` into those fields, on the same
+  CustomerInfo path `isPro` refreshes on (refresh, purchase, restore, sync, login, web redemption,
+  delegate updates).
+- **`:local-notifications-api` + `:local-notifications-impl`** (new modules). `LocalNotificationScheduler`
+  provides `schedule(id, at, title, body)` / `cancel(id)` / `permissionStatus()` /
+  `requestPermission()`, bound by `localNotificationsModule`. On Android it uses WorkManager
+  (inexact, persisted across reboots, no exact-alarm permission), a notification channel
+  (`LocalNotificationsConfig`), and `POST_NOTIFICATIONS` merged from the impl's manifest, with the
+  prompt shown in a built-in translucent activity. On iOS it uses `UNUserNotificationCenter`. There is
+  no push and no Firebase. `FakeLocalNotificationScheduler` (`commonTest`) is the host-test fake. See
+  `docs/HOST_INTEGRATION.md` "Reminding users before a free trial ends".
+
+### Changed
+
+- **`EntitlementStatus` is a wider data class.** It is source-compatible but **not
+  binary-compatible** (the constructor and `copy` signatures changed), which only matters to
+  prebuilt consumers; composite-build hosts recompile. `DefaultEntitlementManager.status` now emits
+  when the expiry or renewal changes, not only on Pro or source flips.
+
 ### Fixed
 
 - **iOS hosts link again: sentry-cocoa 9.30.x.** 0.12.0 bumped sentry-kmp to 0.29.0, which is built
@@ -29,6 +60,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
   well. With two copies loaded, the app crashed at launch with `EXC_BAD_ACCESS` (purchases-kmp #882).
   `iosDemoApp` no longer links the package. **iOS hosts must remove the purchases-ios package too** and
   configure RevenueCat from Kotlin (purchases-kmp's `Purchases.configure`), not the Swift API.
+- **Demo Home labels now update.** `DemoHomeViewModel`'s mapper ignored the model, so "Pro = … via …",
+  god mode and the gallery widgets showed their initial values forever. Demo-only.
 
 ## [0.12.2] - 2026-11-10
 
@@ -673,7 +706,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.12.2...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/jdgarita/frnk/releases/tag/v0.13.0
 [0.12.2]: https://github.com/jdgarita/frnk/releases/tag/v0.12.2
 [0.12.1]: https://github.com/jdgarita/frnk/releases/tag/v0.12.1
 [0.12.0]: https://github.com/jdgarita/frnk/releases/tag/v0.12.0
