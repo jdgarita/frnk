@@ -9,6 +9,8 @@ import dev.jdgarita.frnk.demo.notes.NoteStore
 import dev.jdgarita.frnk.monetization.EntitlementManager
 import dev.jdgarita.frnk.monetization.FeatureGate
 import dev.jdgarita.frnk.monetization.FrnkFeature
+import dev.jdgarita.frnk.notifications.LocalNotificationScheduler
+import dev.jdgarita.frnk.notifications.NotificationPermissionStatus
 import dev.jdgarita.frnk.permissions.Permission
 import dev.jdgarita.frnk.permissions.PermissionController
 import dev.jdgarita.frnk.ui.atoms.FrnkTopAppBarState
@@ -22,6 +24,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
 
 class DemoHomeViewModel(
     private val gate: FeatureGate,
@@ -30,22 +34,36 @@ class DemoHomeViewModel(
     private val notes: NoteStore,
     private val crash: CrashReporter,
     private val camera: CameraController,
-    private val permissions: PermissionController
+    private val permissions: PermissionController,
+    private val notifications: LocalNotificationScheduler
 ) : MviViewModel<DemoHomeArguments, DemoHomeModelState, DemoHomeScreenState, DemoHomeIntent, DemoHomeEffect>(
         factory = DemoHomeModelStateFactory,
-        mapper = { demoHomeScreenState() }
+        mapper = ::demoHomeScreenState
     ) {
     init {
         analytics.track(ToolkitEvent.AppOpened, mapOf("source" to "demo"))
         entitlements.status
-            .onEach { status -> updateModel { copy(isPro = status.isPro, proSource = status.source.name) } }
-            .launchIn(viewModelScope)
+            .onEach { status ->
+                updateModel {
+                    copy(
+                        isPro = status.isPro,
+                        proSource = status.source.name,
+                        isTrial = status.isTrial,
+                        expiresAt = status.expiresAt?.toString() ?: "—",
+                        willRenew = status.willRenew
+                    )
+                }
+            }.launchIn(viewModelScope)
         entitlements.isGodMode
             .onEach { god -> updateModel { copy(isGodMode = god) } }
             .launchIn(viewModelScope)
         // Stage 11: seed the current camera permission from its no-op provider.
         updateModel { copy(cameraPermission = permissions.status(Permission.Camera).name) }
         viewModelScope.launch { loadNotes() }
+        viewModelScope.launch {
+            val status = notifications.permissionStatus()
+            updateModel { copy(notificationPermission = status.name) }
+        }
     }
 
     private suspend fun loadNotes() {
@@ -150,15 +168,74 @@ class DemoHomeViewModel(
                 val status = permissions.request(Permission.Camera)
                 updateModel { copy(cameraPermission = status.name) }
             }
+
+            DemoHomeIntent.ScheduleTrialReminder -> scheduleTrialReminder()
+
+            DemoHomeIntent.CancelTrialReminder ->
+                notifications.cancel(TRIAL_REMINDER_ID).fold(
+                    onSuccess = { emit(DemoHomeEffect.Toast("Trial reminder cancelled")) },
+                    onFailure = { emit(DemoHomeEffect.Toast("Cancel failed: ${it.message}")) }
+                )
         }
+    }
+
+    /**
+     * The host recipe for a trial-end reminder: read [EntitlementManager.status], ask for permission,
+     * then schedule a local notification ahead of `expiresAt`. A real host would fire it a day or two
+     * before expiry; the demo fires it [DEMO_REMINDER_DELAY] from now so it can be watched.
+     */
+    private suspend fun scheduleTrialReminder() {
+        val status = entitlements.status.value
+        val expiresAt = status.expiresAt
+        if (!status.isTrial || expiresAt == null) {
+            emit(DemoHomeEffect.Toast("No active trial — buy the Yearly plan on the paywall first"))
+            return
+        }
+        val permission = notifications.requestPermission()
+        updateModel { copy(notificationPermission = permission.name) }
+        if (permission != NotificationPermissionStatus.Granted) {
+            emit(DemoHomeEffect.Toast("Notifications not allowed ($permission)"))
+            return
+        }
+        notifications
+            .schedule(
+                id = TRIAL_REMINDER_ID,
+                at = Clock.System.now() + DEMO_REMINDER_DELAY,
+                title = "Your free trial ends soon",
+                body = "Your Pro trial ends at $expiresAt. Cancel before then to avoid being charged."
+            ).fold(
+                onSuccess = { emit(DemoHomeEffect.Toast("Trial reminder in ${DEMO_REMINDER_DELAY.inWholeSeconds}s — background the app")) },
+                onFailure = { emit(DemoHomeEffect.Toast("Couldn't schedule: ${it.message}")) }
+            )
+    }
+
+    private companion object {
+        const val TRIAL_REMINDER_ID = "trial_reminder"
+        val DEMO_REMINDER_DELAY = 15.seconds
     }
 }
 
-private fun demoHomeScreenState(): DemoHomeScreenState =
+// Pure model → UI mapping. (It previously ignored the model and returned a constant, so the Pro /
+// god-mode labels never updated.)
+private fun demoHomeScreenState(model: DemoHomeModelState): DemoHomeScreenState =
     DemoHomeScreenState(
-        email = "guy.turner@example.com",
-        isPro = false,
-        isGodMode = false,
+        count = model.count,
+        email = model.email,
+        isPro = model.isPro,
+        isGodMode = model.isGodMode,
+        proSource = model.proSource,
+        notes = model.notes,
+        searchActive = model.searchActive,
+        searchQuery = model.searchQuery,
+        gallerySwitchOn = model.gallerySwitchOn,
+        gallerySegmentIndex = model.gallerySegmentIndex,
+        galleryNavIndex = model.galleryNavIndex,
+        cameraResult = model.cameraResult,
+        cameraPermission = model.cameraPermission,
+        isTrial = model.isTrial,
+        expiresAt = model.expiresAt,
+        willRenew = model.willRenew,
+        notificationPermission = model.notificationPermission,
         frnkHomeState =
             HomeScreenState(
                 topBar =
