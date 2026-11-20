@@ -711,7 +711,7 @@ private fun StepFlowDemo() {
                 color = colorOnSurfaceVariant
             )
     )
-    FrnkStepMeter(current = step, count = DemoStepCount, contentDescription = "Step ${step + 1} of $DemoStepCount")
+    FrnkStepMeter(current = step, count = DEMO_STEP_COUNT, contentDescription = "Step ${step + 1} of $DEMO_STEP_COUNT")
     FrnkStepFlow(
         step = step,
         stepIndex = { it },
@@ -720,14 +720,14 @@ private fun StepFlowDemo() {
         Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
             FrnkText(state = FrnkTextState.Body(text = "Page ${page + 1}"))
             FrnkButton(
-                state = FrnkButtonState.Content(text = if (page < DemoStepCount - 1) "Next" else "Start over"),
-                onClick = { step = (page + 1) % DemoStepCount }
+                state = FrnkButtonState.Content(text = if (page < DEMO_STEP_COUNT - 1) "Next" else "Start over"),
+                onClick = { step = (page + 1) % DEMO_STEP_COUNT }
             )
         }
     }
 }
 
-private const val DemoStepCount = 3
+private const val DEMO_STEP_COUNT = 3
 
 @Composable
 private fun HeadlineTopBarDemo(

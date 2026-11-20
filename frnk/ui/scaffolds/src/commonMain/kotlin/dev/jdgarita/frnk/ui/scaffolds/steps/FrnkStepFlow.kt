@@ -105,14 +105,14 @@ internal fun frnkStepSlideSign(
 /** The page turn's timing, shared by [frnkStepTransition] and hosts that match it elsewhere. */
 object FrnkStepFlowDefaults {
     /** How long a page takes to turn. */
-    const val TurnMillis: Int = 380
+    val TurnMillis: Int = 380
 
     /** The crossfade that replaces the turn under reduced motion. */
-    const val ReducedFadeMillis: Int = 150
+    val ReducedFadeMillis: Int = 150
 
     /** `cubic-bezier(.2, .8, .2, 1)`: quick out of the gate, a long soft landing. */
     val Easing: Easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 
     /** How far a page travels as it turns: a quarter of the width, enough to read as a step sideways. */
-    const val SlideDivisor: Int = 4
+    val SlideDivisor: Int = 4
 }
