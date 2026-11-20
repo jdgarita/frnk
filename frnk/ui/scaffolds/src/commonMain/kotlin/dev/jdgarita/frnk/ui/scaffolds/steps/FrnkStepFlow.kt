@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import dev.jdgarita.frnk.ui.theme.frnkReducedMotion
 
 /**
@@ -25,7 +27,8 @@ import dev.jdgarita.frnk.ui.theme.frnkReducedMotion
  *
  * [step] is the page shown and [stepIndex] its position in the run, which decides the direction:
  * a page with a higher index slides in from the end edge (forward), a lower one from the start
- * edge (back). The turn is [frnkStepTransition]: a quarter-width slide plus a fade, ~380 ms, or a
+ * edge (back), so in a right-to-left layout forward comes in from the left, in step with the
+ * [FrnkStepMeter]. The turn is [frnkStepTransition]: a quarter-width slide plus a fade, ~380 ms, or a
  * 150 ms crossfade when [reducedMotion] is on.
  *
  * [onBack], when not null, takes system back (Android's back, the iOS back swipe where the host
@@ -46,11 +49,16 @@ fun <T> FrnkStepFlow(
     content: @Composable AnimatedContentScope.(T) -> Unit
 ) {
     BackHandler(enabled = onBack != null) { onBack?.invoke() }
+    val layoutDirection = LocalLayoutDirection.current
     AnimatedContent(
         targetState = step,
         modifier = modifier,
         transitionSpec = {
-            frnkStepTransition(forward = stepIndex(targetState) > stepIndex(initialState), reducedMotion = reducedMotion)
+            frnkStepTransition(
+                forward = stepIndex(targetState) > stepIndex(initialState),
+                reducedMotion = reducedMotion,
+                layoutDirection = layoutDirection
+            )
         },
         label = label,
         content = content
@@ -61,22 +69,37 @@ fun <T> FrnkStepFlow(
  * The page turn [FrnkStepFlow] plays, for a host that drives its own `AnimatedContent`: the new
  * page slides in from the side it lies on (the end edge going [forward], the start edge going
  * back) and fades up while the old one slides the other way and fades out, [FrnkStepFlowDefaults.TurnMillis]
- * on [FrnkStepFlowDefaults.Easing]. Under [reducedMotion] it is a plain
- * [FrnkStepFlowDefaults.ReducedFadeMillis] crossfade.
+ * on [FrnkStepFlowDefaults.Easing]. The edges follow [layoutDirection]: the end edge is the left one
+ * right-to-left. Under [reducedMotion] it is a plain [FrnkStepFlowDefaults.ReducedFadeMillis]
+ * crossfade with no size animation either, so pages of different heights swap without the
+ * container growing or shrinking.
  */
 fun frnkStepTransition(
     forward: Boolean,
-    reducedMotion: Boolean
+    reducedMotion: Boolean,
+    layoutDirection: LayoutDirection = LayoutDirection.Ltr
 ): ContentTransform {
     if (reducedMotion) {
         val fade = tween<Float>(FrnkStepFlowDefaults.ReducedFadeMillis)
-        return fadeIn(fade) togetherWith fadeOut(fade)
+        return (fadeIn(fade) togetherWith fadeOut(fade)).using(null)
     }
-    val sign = if (forward) 1 else -1
+    val sign = frnkStepSlideSign(forward, layoutDirection)
     val slide = tween<IntOffset>(FrnkStepFlowDefaults.TurnMillis, easing = FrnkStepFlowDefaults.Easing)
     val fade = tween<Float>(FrnkStepFlowDefaults.TurnMillis, easing = FrnkStepFlowDefaults.Easing)
     return (slideInHorizontally(slide) { width -> sign * width / FrnkStepFlowDefaults.SlideDivisor } + fadeIn(fade)) togetherWith
         (slideOutHorizontally(slide) { width -> -sign * width / FrnkStepFlowDefaults.SlideDivisor } + fadeOut(fade))
+}
+
+/**
+ * Which way the incoming page travels on the x axis: `1` from the right, `-1` from the left. Forward
+ * comes from the end edge, which is the right one left-to-right and the left one right-to-left.
+ */
+internal fun frnkStepSlideSign(
+    forward: Boolean,
+    layoutDirection: LayoutDirection
+): Int {
+    val fromEnd = if (forward) 1 else -1
+    return if (layoutDirection == LayoutDirection.Rtl) -fromEnd else fromEnd
 }
 
 /** The page turn's timing, shared by [frnkStepTransition] and hosts that match it elsewhere. */

@@ -15,11 +15,14 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.waitUntilDoesNotExist
 import androidx.compose.ui.test.waitUntilExactlyOneExists
+import androidx.compose.ui.unit.LayoutDirection
 import dev.jdgarita.frnk.ui.atoms.RobolectricComposeTest
 import dev.jdgarita.frnk.ui.atoms.setFrnkContent
 import dev.jdgarita.frnk.ui.theme.LocalFrnkReducedMotion
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 /** [FrnkStepFlow] turns to the page it is given; [FrnkStepMeter] colours and reads one node. */
 @OptIn(ExperimentalTestApi::class)
@@ -41,6 +44,20 @@ class FrnkStepFlowTest : RobolectricComposeTest() {
             waitUntilExactlyOneExists(hasTestTag("page-1"))
             waitUntilDoesNotExist(hasTestTag("page-0"))
         }
+
+    @Test
+    fun forward_comes_from_the_end_edge_which_is_the_left_one_right_to_left() {
+        assertEquals(1, frnkStepSlideSign(forward = true, layoutDirection = LayoutDirection.Ltr))
+        assertEquals(-1, frnkStepSlideSign(forward = false, layoutDirection = LayoutDirection.Ltr))
+        assertEquals(-1, frnkStepSlideSign(forward = true, layoutDirection = LayoutDirection.Rtl))
+        assertEquals(1, frnkStepSlideSign(forward = false, layoutDirection = LayoutDirection.Rtl))
+    }
+
+    @Test
+    fun reduced_motion_is_a_crossfade_with_no_size_animation() {
+        assertNull(frnkStepTransition(forward = true, reducedMotion = true).sizeTransform)
+        assertNotNull(frnkStepTransition(forward = true, reducedMotion = false).sizeTransform)
+    }
 
     @Test
     fun the_meter_is_one_node_read_as_its_description() =
