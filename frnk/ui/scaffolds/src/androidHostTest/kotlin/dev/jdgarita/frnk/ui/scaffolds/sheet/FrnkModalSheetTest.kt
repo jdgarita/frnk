@@ -82,6 +82,33 @@ class FrnkModalSheetTest : RobolectricComposeTest() {
         }
 
     /**
+     * `draggable = false` is for a sheet only its own buttons close: a full swipe down must leave it
+     * up and report nothing. The veto alone cannot do this — a drag that reaches the Hidden anchor
+     * before release never settles for it to refuse.
+     */
+    @Test
+    fun a_sheet_that_is_not_draggable_survives_a_swipe_down() =
+        runComposeUiTest {
+            var dismissals = 0
+            setFrnkContent {
+                FrnkModalSheet(
+                    visible = true,
+                    onDismiss = { dismissals += 1 },
+                    dismissOnBackPress = false,
+                    draggable = false
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth().height(320.dp).testTag(BODY_TAG))
+                }
+            }
+            waitUntilExactlyOneExists(hasTestTag(BODY_TAG))
+
+            onNodeWithTag(BODY_TAG).performTouchInput { swipeDown() }
+            waitForIdle()
+            onNodeWithTag(BODY_TAG).assertIsDisplayed()
+            runOnIdle { assertEquals(0, dismissals) }
+        }
+
+    /**
      * On Android the sheet lives in compose-unstyled's own `ComponentDialog` window, so system back
      * reaches the dialog's dispatcher, never the activity's — which is why the sheet owns its
      * `BackHandler`. The test presses back where a real one lands while the sheet is up: on the
