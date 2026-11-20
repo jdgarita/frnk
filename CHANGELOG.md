@@ -15,6 +15,16 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-11-20
+
+### Fixed
+
+- **ktlint passes again** (`standard:property-naming`). `FrnkStepFlowDefaults.TurnMillis`,
+  `ReducedFadeMillis` and `SlideDivisor` are plain `val`s instead of `const val`s, with the same
+  names and values, matching the other `*Defaults` objects; only a caller that used them as
+  compile-time constants (an annotation argument) would notice. The demo's private step count is
+  `DEMO_STEP_COUNT`.
+
 ## [0.14.0] - 2026-11-19
 
 ### Added
@@ -741,7 +751,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.14.1...HEAD
+[0.14.1]: https://github.com/jdgarita/frnk/releases/tag/v0.14.1
 [0.14.0]: https://github.com/jdgarita/frnk/releases/tag/v0.14.0
 [0.13.1]: https://github.com/jdgarita/frnk/releases/tag/v0.13.1
 [0.13.0]: https://github.com/jdgarita/frnk/releases/tag/v0.13.0
