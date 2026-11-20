@@ -80,6 +80,8 @@ import dev.jdgarita.frnk.ui.organisms.FrnkProfileHeaderState
 import dev.jdgarita.frnk.ui.scaffolds.sheet.FrnkModalSheet
 import dev.jdgarita.frnk.ui.scaffolds.sheet.FrnkModalSheetCloseHandler
 import dev.jdgarita.frnk.ui.scaffolds.sheet.FrnkSheetHeader
+import dev.jdgarita.frnk.ui.scaffolds.steps.FrnkStepFlow
+import dev.jdgarita.frnk.ui.scaffolds.steps.FrnkStepMeter
 import dev.jdgarita.frnk.ui.theme.FrnkIconSource
 import dev.jdgarita.frnk.ui.theme.FrnkStringSource
 import dev.jdgarita.frnk.ui.theme.colorOnBackground
@@ -616,6 +618,8 @@ private fun ComponentGallery(
 
         "FrnkModalSheet" -> ModalSheetDemo()
 
+        "FrnkStepFlow" -> StepFlowDemo()
+
         "FrnkHeadlineTopBar" ->
             HeadlineTopBarDemo(
                 searchActive = state.searchActive,
@@ -648,8 +652,8 @@ private fun ModalSheetDemo() {
         state =
             FrnkTextState.BodySmall(
                 text =
-                    "A modal sheet over the screen. The second one vetoes every user exit (back, swipe, " +
-                        "outside tap) with canDismiss = { false }; its button closes it from the host.",
+                    "A modal sheet over the screen. The second one cannot be dragged (draggable = false) and " +
+                        "vetoes back and outside taps with canDismiss = { false }; its button closes it from the host.",
                 color = colorOnSurfaceVariant
             )
     )
@@ -681,7 +685,9 @@ private fun ModalSheetDemo() {
         heightFraction = 0.4f,
         surfaceColor = Theme[colors][colorSurfaceVariant],
         // Vetoes only the user's gestures; the host's own hide (the button below) is never refused.
-        canDismiss = { false }
+        canDismiss = { false },
+        // Without this a drag pulled all the way down still carries it off before the veto is asked.
+        draggable = false
     ) {
         FrnkSheetHeader(
             title = "Locked sheet",
@@ -694,6 +700,34 @@ private fun ModalSheetDemo() {
         )
     }
 }
+
+@Composable
+private fun StepFlowDemo() {
+    var step by remember { mutableStateOf(0) }
+    FrnkText(
+        state =
+            FrnkTextState.BodySmall(
+                text = "Three pages that turn in place, with the step meter over them. Back on pages 2–3 turns back.",
+                color = colorOnSurfaceVariant
+            )
+    )
+    FrnkStepMeter(current = step, count = DemoStepCount, contentDescription = "Step ${step + 1} of $DemoStepCount")
+    FrnkStepFlow(
+        step = step,
+        stepIndex = { it },
+        onBack = if (step > 0) ({ step -= 1 }) else null
+    ) { page ->
+        Column(verticalArrangement = Arrangement.spacedBy(FrnkSpacing.sm)) {
+            FrnkText(state = FrnkTextState.Body(text = "Page ${page + 1}"))
+            FrnkButton(
+                state = FrnkButtonState.Content(text = if (page < DemoStepCount - 1) "Next" else "Start over"),
+                onClick = { step = (page + 1) % DemoStepCount }
+            )
+        }
+    }
+}
+
+private const val DemoStepCount = 3
 
 @Composable
 private fun HeadlineTopBarDemo(

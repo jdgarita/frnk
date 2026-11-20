@@ -93,6 +93,12 @@ import dev.jdgarita.frnk.ui.theme.colors
  * [canDismiss] only gates the user's gestures (swipe, scrim tap), so a host can always close a
  * vetoing sheet itself.
  *
+ * [draggable] off takes the drag away entirely, for a sheet that must never be swiped away (an
+ * offer that only its own buttons close): [canDismiss] alone cannot hold one, because a drag
+ * pulled all the way to the bottom lands on the Hidden anchor before there is any release for the
+ * veto to refuse. Pair it with `dismissOnBackPress = false` and no [dismissOnClickOutside], and
+ * ignore back in [onDismiss], for a sheet nothing but the host can close.
+ *
  * [dismissSwipe] is how much of a swipe it takes to leave: the drag length, or the flick speed,
  * past which a release settles at Hidden rather than springing back. Every sheet takes
  * [FrnkSheetDismissSwipe.Default], the library's own feel; a sheet whose body scrolls under the
@@ -148,6 +154,7 @@ fun FrnkModalSheet(
     offsetForIme: Boolean = true,
     canDismiss: () -> Boolean = { true },
     dismissSwipe: FrnkSheetDismissSwipe = FrnkSheetDismissSwipe.Default,
+    draggable: Boolean = true,
     content: @Composable () -> Unit
 ) {
     // No dismissAnimationSpec: compose-unstyled's own `requestDismiss` path (tap outside, and
@@ -236,6 +243,10 @@ fun FrnkModalSheet(
 
     UnstyledModalBottomSheet(
         state = sheetState,
+        // Off for a sheet that must not be swiped away at all: the [canDismiss] veto refuses a
+        // release's settle, but a drag pulled all the way down reaches the Hidden anchor before any
+        // release, and the sheet is gone without a settle to refuse.
+        enabled = draggable,
         // The library's dismissOnClickOutside stays OFF even when [dismissOnClickOutside] is set:
         // its internal `requestDismiss` never goes through `targetDetent` — it animates the sheet
         // directly and collapses the scrim concurrently with the slide — so a tap-out read
