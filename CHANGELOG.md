@@ -29,6 +29,9 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 - **`yearlySavingsPercent()`** (`:monetization-api`). The yearly plan's saving over twelve monthly
   payments, as a whole percent, from the two store prices (`null` for a missing price, mixed
   currencies or no saving), plus the `List<ProProduct>` form for an offering.
+- **`localizedDateTime(instant, skeleton)`** (`:shared-utils`). An instant in the device's locale
+  and time zone from a CLDR skeleton (`EEEMMMd`, `jmm`), with the platform choosing order,
+  separators and the 12/24-hour clock. Upstreamed from Faint's trial dates.
 - **`FrnkModalSheet(draggable = …)`**, default `true`. `false` takes the drag away entirely, for a
   sheet only its own buttons close: `canDismiss` alone cannot hold one, because a drag pulled all
   the way down reaches the Hidden anchor before there is a release to veto. The demo's locked sheet
