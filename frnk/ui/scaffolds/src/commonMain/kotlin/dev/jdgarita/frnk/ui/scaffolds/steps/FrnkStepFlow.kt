@@ -11,7 +11,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.using
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -82,7 +81,7 @@ fun frnkStepTransition(
 ): ContentTransform {
     if (reducedMotion) {
         val fade = tween<Float>(FrnkStepFlowDefaults.ReducedFadeMillis)
-        return (fadeIn(fade) togetherWith fadeOut(fade)).using(null)
+        return ContentTransform(targetContentEnter = fadeIn(fade), initialContentExit = fadeOut(fade), sizeTransform = null)
     }
     val sign = frnkStepSlideSign(forward, layoutDirection)
     val slide = tween<IntOffset>(FrnkStepFlowDefaults.TurnMillis, easing = FrnkStepFlowDefaults.Easing)
