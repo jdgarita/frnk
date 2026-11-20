@@ -52,6 +52,7 @@ private val componentNames =
         "FrnkListSection",
         "FrnkProfileHeader",
         "FrnkModalSheet",
+        "FrnkStepFlow",
         "FrnkHeadlineTopBar",
         "FrnkStackShell",
         "FrnkDialog",

@@ -15,6 +15,25 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+### Added
+
+- **`frnkReducedMotion()` + `LocalFrnkReducedMotion`** (`:ui-theme`). Whether the OS asks for less
+  motion: Android's animator duration scale of 0 ("Remove animations"), iOS's Reduce Motion. A test
+  or preview pins it through the composition local. Upstreamed from Faint's `PoReducedMotion`.
+- **`FrnkStepFlow` + `FrnkStepMeter`** (`:ui-scaffolds`, package `…ui.scaffolds.steps`). A short run
+  of pages that turn in place (a quarter-width slide plus fade, 380 ms on `cubic-bezier(.2,.8,.2,1)`,
+  direction from the step index; a 150 ms crossfade under reduced motion), an optional back handler
+  for turning back, and the 22×4 dp segment meter read as one node. `frnkStepTransition` and
+  `FrnkStepFlowDefaults` for hosts that drive their own `AnimatedContent`. Upstreamed from Faint's
+  three-page paywall; Still's paywall is the second user.
+- **`yearlySavingsPercent()`** (`:monetization-api`). The yearly plan's saving over twelve monthly
+  payments, as a whole percent, from the two store prices (`null` for a missing price, mixed
+  currencies or no saving), plus the `List<ProProduct>` form for an offering.
+- **`FrnkModalSheet(draggable = …)`**, default `true`. `false` takes the drag away entirely, for a
+  sheet only its own buttons close: `canDismiss` alone cannot hold one, because a drag pulled all
+  the way down reaches the Hidden anchor before there is a release to veto. The demo's locked sheet
+  uses it.
+
 ## [0.13.1] - 2026-11-17
 
 ### Fixed
