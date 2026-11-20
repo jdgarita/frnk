@@ -15,6 +15,8 @@ Once a `1.0.0` ships, normal SemVer applies: breaking changes are `MAJOR`-only.
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-19
+
 ### Added
 
 - **`frnkReducedMotion()` + `LocalFrnkReducedMotion`** (`:ui-theme`). Whether the OS asks for less
@@ -739,7 +741,8 @@ Initial tagged release of the capability-based KMP toolkit.
 - `:shared-demo` KMP module + `DemoKit.xcframework` powering `androidDemoApp` / `iosDemoApp`. Internal-only — not part of the consumer surface.
 - `Frnk.VERSION` constant in `shared-utils` for runtime introspection.
 
-[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/jdgarita/frnk/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/jdgarita/frnk/releases/tag/v0.14.0
 [0.13.1]: https://github.com/jdgarita/frnk/releases/tag/v0.13.1
 [0.13.0]: https://github.com/jdgarita/frnk/releases/tag/v0.13.0
 [0.12.2]: https://github.com/jdgarita/frnk/releases/tag/v0.12.2
